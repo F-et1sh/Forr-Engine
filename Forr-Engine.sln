@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Forr.Engine", "Forr.Engine\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Forr.Core", "Forr.Core\Forr.Core.vcxproj", "{FED084C3-B7A4-49E5-B4E8-88F3DCA40870}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Forr.RHI", "Forr.RHI\Forr.RHI.vcxproj", "{473AB657-9949-486A-8889-1913207538E3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{FED084C3-B7A4-49E5-B4E8-88F3DCA40870}.Release|x64.Build.0 = Release|x64
 		{FED084C3-B7A4-49E5-B4E8-88F3DCA40870}.RelWithDebInfo|x64.ActiveCfg = Debug|x64
 		{FED084C3-B7A4-49E5-B4E8-88F3DCA40870}.RelWithDebInfo|x64.Build.0 = Debug|x64
+		{473AB657-9949-486A-8889-1913207538E3}.Debug|x64.ActiveCfg = Debug|x64
+		{473AB657-9949-486A-8889-1913207538E3}.Debug|x64.Build.0 = Debug|x64
+		{473AB657-9949-486A-8889-1913207538E3}.MinSizeRel|x64.ActiveCfg = Release|x64
+		{473AB657-9949-486A-8889-1913207538E3}.MinSizeRel|x64.Build.0 = Release|x64
+		{473AB657-9949-486A-8889-1913207538E3}.Release|x64.ActiveCfg = Release|x64
+		{473AB657-9949-486A-8889-1913207538E3}.Release|x64.Build.0 = Release|x64
+		{473AB657-9949-486A-8889-1913207538E3}.RelWithDebInfo|x64.ActiveCfg = Debug|x64
+		{473AB657-9949-486A-8889-1913207538E3}.RelWithDebInfo|x64.Build.0 = Debug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
