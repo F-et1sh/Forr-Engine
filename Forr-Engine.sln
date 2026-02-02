@@ -21,6 +21,20 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Forr.Scripting", "Forr.Scri
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Forr.Platform", "Forr.Platform\Forr.Platform.vcxproj", "{E04A82CD-033E-4FAC-90EB-3E2E955B7057}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		.clang-format = .clang-format
+		.clang-tidy = .clang-tidy
+		.gitignore = .gitignore
+		LICENSE.txt = LICENSE.txt
+		README.md = README.md
+		settings.json = settings.json
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Forr.Editor", "Forr.Editor\Forr.Editor.vcxproj", "{BE08C38D-2182-4FB3-B9B6-17B838C3B928}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Forr.Game", "Forr.Game\Forr.Game.vcxproj", "{CADD7A51-CED8-4D72-85D3-A9F8935FAEC8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -101,6 +115,22 @@ Global
 		{E04A82CD-033E-4FAC-90EB-3E2E955B7057}.Release|x64.Build.0 = Release|x64
 		{E04A82CD-033E-4FAC-90EB-3E2E955B7057}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
 		{E04A82CD-033E-4FAC-90EB-3E2E955B7057}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
+		{BE08C38D-2182-4FB3-B9B6-17B838C3B928}.Debug|x64.ActiveCfg = Debug|x64
+		{BE08C38D-2182-4FB3-B9B6-17B838C3B928}.Debug|x64.Build.0 = Debug|x64
+		{BE08C38D-2182-4FB3-B9B6-17B838C3B928}.MinSizeRel|x64.ActiveCfg = MinSizeRel|x64
+		{BE08C38D-2182-4FB3-B9B6-17B838C3B928}.MinSizeRel|x64.Build.0 = MinSizeRel|x64
+		{BE08C38D-2182-4FB3-B9B6-17B838C3B928}.Release|x64.ActiveCfg = Release|x64
+		{BE08C38D-2182-4FB3-B9B6-17B838C3B928}.Release|x64.Build.0 = Release|x64
+		{BE08C38D-2182-4FB3-B9B6-17B838C3B928}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
+		{BE08C38D-2182-4FB3-B9B6-17B838C3B928}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
+		{CADD7A51-CED8-4D72-85D3-A9F8935FAEC8}.Debug|x64.ActiveCfg = Debug|x64
+		{CADD7A51-CED8-4D72-85D3-A9F8935FAEC8}.Debug|x64.Build.0 = Debug|x64
+		{CADD7A51-CED8-4D72-85D3-A9F8935FAEC8}.MinSizeRel|x64.ActiveCfg = MinSizeRel|x64
+		{CADD7A51-CED8-4D72-85D3-A9F8935FAEC8}.MinSizeRel|x64.Build.0 = MinSizeRel|x64
+		{CADD7A51-CED8-4D72-85D3-A9F8935FAEC8}.Release|x64.ActiveCfg = Release|x64
+		{CADD7A51-CED8-4D72-85D3-A9F8935FAEC8}.Release|x64.Build.0 = Release|x64
+		{CADD7A51-CED8-4D72-85D3-A9F8935FAEC8}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
+		{CADD7A51-CED8-4D72-85D3-A9F8935FAEC8}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
