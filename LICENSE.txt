@@ -1,0 +1,11 @@
+=================================================
+		Forr-Engine
+=================================================
+
+Copyright (c) 2026 Farrakh Fattakhov
+
+This file code is provided for informational and demonstration purposes only.
+Any use, reproduction, modification, distribution, or commercial exploitation 
+of this code, in whole or in part, is strictly prohibited.
+
+All rights reserved.
