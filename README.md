@@ -10,27 +10,27 @@
 
 ## Solution projects
 
-Forr.Core - .lib ( shared structures and logic )
+Forr.Core      - .lib ( shared structures and logic )
 
-Forr.Platform - .lib ( window and raw events )
+Forr.Platform  - .lib ( window and raw events )
 
-Forr.Renderer - .lib ( full renderer, uses Forr.RHI )
+Forr.Renderer  - .lib ( full renderer, uses Forr.RHI )
 
-Forr.Resource - .lib ( cpu resource manegement )
+Forr.Resource  - .lib ( cpu resource manegement )
 
-Forr.RHI - .lib ( render-hardware-interface/nvrhi )
+Forr.RHI       - .lib ( render-hardware-interface/nvrhi )
 
-Forr.Scene - .lib ( ECS scene )
+Forr.Scene     - .lib ( ECS scene )
 
 Forr.Scripting - .lib ( C++ native scripting)
 
-Forr.Engine	- .dll ( glue code for modules )
+Forr.Engine    - .dll ( glue code for modules )
 
-Forr.Editor - .exe ( GUI editor for engine )
+Forr.Editor    - .exe ( GUI editor for engine )
 
-Forr.Game - .exe ( game entry point )
+Forr.Game      - .exe ( game entry point )
 
-Game.Module - .dll ( game code/scripts ) ( NOT CREATED YET )
+Game.Module    - .dll ( game code/scripts ) ( NOT CREATED YET )
 
 ---
 
