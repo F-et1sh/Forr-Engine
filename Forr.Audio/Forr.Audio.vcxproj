@@ -155,6 +155,11 @@
   <ItemGroup>
     <ClCompile Include="Include\Forr\Audio\main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Forr.Core\Forr.Core.vcxproj">
+      <Project>{fed084c3-b7a4-49e5-b4e8-88f3dca40870}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -9,5 +9,11 @@
     Forr.Core configured
     attributes.hpp, custom_allocators.hpp, logging.hpp/cpp and pointer.hpp are added
     Handler recreated
+    + colorful logging
+    + DLL linking
+    + Forr.Core refers configured
 ### Problem
     -
+
+---
+

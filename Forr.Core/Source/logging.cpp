@@ -24,10 +24,11 @@
 
 namespace fe::logging {
     static constexpr size_t G_MESSAGE_BUFFER_SIZE   = 4096;
-    static std::string      G_ERROR_MESSAGE_CAPTION = "Architecture Test Adventure";
+    static std::string      G_ERROR_MESSAGE_CAPTION = "Forr Engine";
+    static Severity         G_MIN_SEVERITY          = Severity::None;
 
 #if _WIN32
-    static bool G_OUTPUT_TO_MESSAGE_BOX = true;
+    static bool G_OUTPUT_TO_MESSAGE_BOX = false;
     static bool G_OUTPUT_TO_DEBUG       = true;
     static bool G_OUTPUT_TO_CONSOLE     = true;
 #else
@@ -43,53 +44,54 @@ namespace fe::logging {
 
         // clang-format off
         switch (severity) {
-            case Severity::Debug  : severity_text = "DEBUG"      ; break;
-            case Severity::Info   : severity_text = "INFO"       ; break;
-            case Severity::Warning: severity_text = "WARNING"    ; break;
-            case Severity::Error  : severity_text = "ERROR"      ; break;
-            case Severity::Fatal  : severity_text = "FATAL ERROR"; break;
+            case Severity::Debug  : severity_text = "DEBUG"      ; std::print("\033[1;33m"); break;
+            case Severity::Info   : severity_text = "INFO"       ; std::print("\033[1;37m"); break;
+            case Severity::Warning: severity_text = "WARNING"    ; std::print("\033[0;33m"); break;
+            case Severity::Error  : severity_text = "ERROR"      ; std::print("\033[0;31m"); break;
+            case Severity::Fatal  : severity_text = "FATAL ERROR"; std::print("\033[0;35m"); break;
             default: break;
         }
         // clang-format on
 
-        char buf[G_MESSAGE_BUFFER_SIZE];
-        snprintf(buf, std::size(buf), "%s : %s", severity_text, message);
+        char buffer[G_MESSAGE_BUFFER_SIZE];
+        snprintf(buffer, std::size(buffer), "%s : %s", severity_text, message);
 
         std::lock_guard<std::mutex> lock_guard(G_LOG_MUTEX);
 
 #if _WIN32
         if (G_OUTPUT_TO_DEBUG) {
-            OutputDebugStringA(buf);
+            OutputDebugStringA(buffer);
             OutputDebugStringA("\n\n");
         }
 
         if (G_OUTPUT_TO_MESSAGE_BOX) {
             if (severity == Severity::Error || severity == Severity::Fatal) {
-                MessageBoxA(0, buf, G_ERROR_MESSAGE_CAPTION.c_str(), MB_ICONERROR);
+                MessageBoxA(0, buffer, G_ERROR_MESSAGE_CAPTION.c_str(), MB_ICONERROR);
             }
         }
 
 #endif
         if (G_OUTPUT_TO_CONSOLE) {
             if (severity == Severity::Error || severity == Severity::Fatal) {
-                std::print(stderr, "{}\n\n", buf);
+                std::print(stderr, "{}\n\n", buffer);
             }
             else {
-                std::print(stdout, "{}\n\n", buf);
+                std::print(stdout, "{}\n\n", buffer);
             }
         }
+
+        std::print("\033[0m"); // reset color
 
         if (severity == Severity::Fatal) {
             abort();
         }
     }
 
+    static Callback G_CALLBACK = &DefaultCallback;
+
     void setErrorMessageCaption(const char* caption) {
         G_ERROR_MESSAGE_CAPTION = ((caption) != nullptr) ? caption : "";
     }
-
-    static Callback G_CALLBACK     = &DefaultCallback;
-    static Severity G_MIN_SEVERITY = Severity::Info;
 
     void setMinSeverity(Severity severity) {
         G_MIN_SEVERITY = severity;
