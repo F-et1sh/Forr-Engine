@@ -18,6 +18,15 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Include\Forr\Core\attributes.hpp" />
+    <ClInclude Include="Include\Forr\Core\custom_allocators.hpp" />
+    <ClInclude Include="Include\Forr\Core\logging.hpp" />
+    <ClInclude Include="Include\Forr\Core\pointer.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\logging.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -152,9 +161,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Include\Forr\Core\main.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
