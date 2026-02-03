@@ -79,7 +79,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Game;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Engine\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -96,7 +96,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Game;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Engine\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -115,7 +115,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Game;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Engine\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild />
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
@@ -139,7 +139,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Game;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Engine\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MinSpace</Optimization>
       <DebugInformationFormat />
       <SupportJustMyCode />
@@ -154,6 +154,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Include\Forr\Game\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Forr.Engine\Forr.Engine.vcxproj">
+      <Project>{3318de07-5d24-488f-8f5f-0ecf0d20bf1d}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

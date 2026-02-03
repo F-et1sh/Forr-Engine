@@ -1,3 +1,9 @@
+#include "Engine/header.hpp"
+
 int main() {
-	return 0;
+
+    someclass cls{};
+    cls.func();
+
+    return 0;
 }

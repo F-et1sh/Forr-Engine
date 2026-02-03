@@ -14,6 +14,8 @@
 
 #include <functional>
 
+#include "attributes.hpp"
+
 namespace fe::logging {
 
     enum class Severity {
