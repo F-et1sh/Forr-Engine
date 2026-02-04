@@ -78,7 +78,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;FORRENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -98,7 +98,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;FORRENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -125,7 +125,7 @@
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <MinimalRebuild />
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;FORRENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -152,7 +152,7 @@
       <Optimization>MinSpace</Optimization>
       <MinimalRebuild />
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;FORRENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -164,18 +164,33 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\source.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Include\Forr\Engine\header.hpp" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\Forr.Audio\Forr.Audio.vcxproj">
+      <Project>{5f3d1682-7d70-43d8-8a23-c83efe459b80}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Forr.Core\Forr.Core.vcxproj">
       <Project>{fed084c3-b7a4-49e5-b4e8-88f3dca40870}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Forr.Platform\Forr.Platform.vcxproj">
       <Project>{e04a82cd-033e-4fac-90eb-3e2e955b7057}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Forr.Renderer\Forr.Renderer.vcxproj">
+      <Project>{abae7f04-0f37-4848-8dfe-3221361de43f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Forr.Resource\Forr.Resource.vcxproj">
+      <Project>{034ffafa-2e39-47dc-a14c-b4f5367e8c23}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Forr.Scene\Forr.Scene.vcxproj">
+      <Project>{cb8ec98c-3012-43ce-9ace-f300714431ef}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Forr.Scripting\Forr.Scripting.vcxproj">
+      <Project>{512f68d1-fc50-427c-b3da-40b8c77055b9}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Include\Forr\Engine\Engine.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\Engine.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
