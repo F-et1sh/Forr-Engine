@@ -78,13 +78,16 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Core\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;FORRENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>call "$(SolutionDir)Scripts\collect_licenses.bat" "$(TargetDir)" "$(SolutionDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -95,13 +98,16 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Core\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;FORRENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>call "$(SolutionDir)Scripts\collect_licenses.bat" "$(TargetDir)" "$(SolutionDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
@@ -119,13 +125,16 @@
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <MinimalRebuild />
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Core\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;FORRENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>call "$(SolutionDir)Scripts\collect_licenses.bat" "$(TargetDir)" "$(SolutionDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
     <ClCompile>
@@ -143,13 +152,16 @@
       <Optimization>MinSpace</Optimization>
       <MinimalRebuild />
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Core\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;FORRENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>call "$(SolutionDir)Scripts\collect_licenses.bat" "$(TargetDir)" "$(SolutionDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\source.cpp" />
@@ -160,6 +172,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Forr.Core\Forr.Core.vcxproj">
       <Project>{fed084c3-b7a4-49e5-b4e8-88f3dca40870}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Forr.Platform\Forr.Platform.vcxproj">
+      <Project>{e04a82cd-033e-4fac-90eb-3e2e955b7057}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
