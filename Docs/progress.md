@@ -17,3 +17,22 @@
 
 ---
 
+## 04.02.2026
+### Goal
+    Create GLFW window in Forr.Platform
+### Done
+    -
+### Problem
+    -
+
+---
+
+## 05.02.2026
+### Goal
+    -
+### Done
+    -
+### Problem
+    -
+
+---
