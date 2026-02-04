@@ -15,17 +15,18 @@
 ### Problem
     -
 
----
+----
 
 ## 04.02.2026
 ### Goal
     Create GLFW window in Forr.Platform
+    Configure relationship between Forr.Platform, Forr.Engine and Forr.Editor
 ### Done
-    -
+    GLFW added
 ### Problem
     -
 
----
+----
 
 ## 05.02.2026
 ### Goal
@@ -35,4 +36,4 @@
 ### Problem
     -
 
----
+----
