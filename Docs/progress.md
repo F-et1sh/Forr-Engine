@@ -42,8 +42,10 @@
 ### Goal
     Add modular namespaces
     Create Window class, which will ask Forr.Platform to create GLFW window
+    Create Forr.Shared
 ### Done
-    -
+    Modular namespaces added
+
 ### Problem
     
 
