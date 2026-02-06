@@ -185,6 +185,9 @@
     <ProjectReference Include="..\Forr.Scripting\Forr.Scripting.vcxproj">
       <Project>{512f68d1-fc50-427c-b3da-40b8c77055b9}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Forr.Shared\Forr.Shared.vcxproj">
+      <Project>{0df67fde-dd12-45b8-8276-505e1c83424f}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Include\Forr\Engine\Source.cpp" />
