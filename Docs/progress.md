@@ -45,7 +45,7 @@
     Create Forr.Shared
 ### Done
     Modular namespaces added
-
+    Forr.Shared added
 ### Problem
     
 
