@@ -30,10 +30,21 @@
 
 ## 05.02.2026
 ### Goal
-    -
+    Add modular namespaces
 ### Done
     -
 ### Problem
+    Got ill. Fell asleep
+
+---
+
+## 06.02.2026
+### Goal
+    Add modular namespaces
+    Create Window class, which will ask Forr.Platform to create GLFW window
+### Done
     -
+### Problem
+    
 
 ---

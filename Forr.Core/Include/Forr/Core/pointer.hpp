@@ -21,7 +21,7 @@
 #include <shared_mutex>
 #include <type_traits>
 
-namespace fe {
+namespace fe::core {
     using handle_t = uint64_t; // can be replaced by uint32_t
 
     template <typename _Ty>
@@ -184,4 +184,4 @@ namespace fe {
         mutable std::shared_mutex m_registry_mutex;
     };
 
-} // namespace fe
+} // namespace fe::core

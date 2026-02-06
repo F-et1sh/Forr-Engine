@@ -14,14 +14,14 @@
 
 #include <GLFW/glfw3.h>
 
-struct fe::Window::Impl {
+struct fe::platform::Window::Impl {
     GLFWwindow* p_GLFWwindow = nullptr;
 };
 
-fe::Window::Window() {
+fe::platform::Window::Window() {
     p_Impl = new Impl();
 }
 
-fe::Window::~Window() {
+fe::platform::Window::~Window() {
     delete p_Impl;
 }

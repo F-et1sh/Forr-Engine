@@ -16,7 +16,7 @@
 
 #include "attributes.hpp"
 
-namespace fe::logging {
+namespace fe::core::logging {
 
     enum class Severity {
         None = 0,
@@ -64,4 +64,4 @@ namespace fe::logging {
     void error(const char* fmt, ...);
     void fatal(const char* fmt, ...);
 
-} // namespace fe::logging
+} // namespace fe::core::logging

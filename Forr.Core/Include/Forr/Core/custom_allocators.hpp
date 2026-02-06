@@ -18,7 +18,7 @@
 
 #include "attributes.hpp"
 
-namespace fe {
+namespace fe::core {
     struct ArenaMarker {
         size_t offset{};
     };
@@ -126,4 +126,4 @@ namespace fe {
         FreeNode*  m_free_list = nullptr;
     };
 
-} // namespace fe
+} // namespace fe::core

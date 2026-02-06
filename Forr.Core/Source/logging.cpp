@@ -22,7 +22,7 @@
 #include <Windows.h>
 #endif
 
-namespace fe::logging {
+namespace fe::core::logging {
     static constexpr size_t G_MESSAGE_BUFFER_SIZE   = 4096;
     static std::string      G_ERROR_MESSAGE_CAPTION = "Forr Engine";
     static Severity         G_MIN_SEVERITY          = Severity::None;
@@ -213,4 +213,4 @@ namespace fe::logging {
         va_end(args);
     }
 
-} // namespace fe::logging
+} // namespace fe::core::logging
