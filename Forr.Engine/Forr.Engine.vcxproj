@@ -187,10 +187,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Include\Forr\Engine\Engine.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Source\Engine.cpp" />
+    <ClCompile Include="Include\Forr\Engine\Source.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -12,7 +12,7 @@
 
 #pragma once
 
-namespace fe {
+namespace fe::platform {
     class Window {
     public:
         Window();
