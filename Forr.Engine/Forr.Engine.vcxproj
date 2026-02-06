@@ -78,7 +78,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;$(SolutionDir)Forr.Shared\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;FORRENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -98,7 +98,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;$(SolutionDir)Forr.Shared\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;FORRENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -125,7 +125,7 @@
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <MinimalRebuild />
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;$(SolutionDir)Forr.Shared\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;FORRENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -152,7 +152,7 @@
       <Optimization>MinSpace</Optimization>
       <MinimalRebuild />
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr\Engine;$(SolutionDir)Forr.Audio\Include\Forr;$(SolutionDir)Forr.Core\Include\Forr;$(SolutionDir)Forr.Platform\Include\Forr;$(SolutionDir)Forr.Renderer\Include\Forr;$(SolutionDir)Forr.Resource\Include\Forr;$(SolutionDir)Forr.Scene\Include\Forr;$(SolutionDir)Forr.Scripting\Include\Forr;$(SolutionDir)Forr.Shared\Include\Forr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;FORRENGINE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
