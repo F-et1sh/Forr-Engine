@@ -41,11 +41,15 @@
 ## 06.02.2026
 ### Goal
     Add modular namespaces
-    Create Window class, which will ask Forr.Platform to create GLFW window
     Create Forr.Shared
+    Add Forr.Shared to README.md
+    Unload or remove unused projects for now
+    Create Window class, which will ask Forr.Platform to create GLFW window
 ### Done
     Modular namespaces added
     Forr.Shared added
+    Unused projects removed
+    README.md updated
 ### Problem
     
 
