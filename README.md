@@ -10,14 +10,15 @@
 
 ## Solution projects
 
-**Forr.Core**      - .lib ( shared structures and logic )  
+**Forr.Core**      - .lib ( stable independent logic )  
 **Forr.Audio**     - .lib ( sound and music )  
 **Forr.Platform**  - .lib ( window and raw events )  
 **Forr.Renderer**  - .lib ( full renderer, uses Forr.RHI )  
 **Forr.Resource**  - .lib ( cpu resource manegement )  
 **Forr.RHI**       - .lib ( render-hardware-interface/nvrhi )  
 **Forr.Scene**     - .lib ( ECS scene )  
-**Forr.Scripting** - .lib ( C++ native scripting)  
+**Forr.Scripting** - .lib ( C++ native scripting )  
+**Forr.Shared**    - .lib ( shared structures and logic )   
 
 **Forr.Engine**    - .dll ( glue code for modules )  
 
