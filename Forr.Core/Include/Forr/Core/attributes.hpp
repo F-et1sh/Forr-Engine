@@ -12,16 +12,6 @@
 
 #pragma once
 
-#ifdef _WIN32
-#ifdef FORRENGINE_EXPORTS
-#define FORR_API __declspec(dllexport)
-#else
-#define FORR_API __declspec(dllimport)
-#endif
-#else
-#define FORR_API
-#endif
-
 #if __cplusplus >= 201703L // C++17
 #define FORR_MAYBE_UNUSED [[maybe_unused]]
 #else
