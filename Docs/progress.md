@@ -44,7 +44,8 @@
     Create Forr.Shared
     Add Forr.Shared to README.md
     Unload or remove unused projects for now
-    Create Window class, which will ask Forr.Platform to create GLFW window
+    Remove services
+    Create Window class, which will ask Forr.Platform to create GLFW window 
 ### Done
     Modular namespaces added
     Forr.Shared added
