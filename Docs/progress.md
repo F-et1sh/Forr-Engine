@@ -54,6 +54,16 @@
     Services removed
     Window created
 ### Problem
-    
+    -
+
+---
+
+## 07.02.2026
+### Goal
+    Delete all code. Recreate the project
+### Done
+    -
+### Problem
+    -
 
 ---
