@@ -67,3 +67,13 @@
     -
 
 ---
+
+## 10.02.2026
+### Goal
+    Create first project and class : ForrPlayer and Application
+### Done
+    -
+### Problem
+    -
+
+---
