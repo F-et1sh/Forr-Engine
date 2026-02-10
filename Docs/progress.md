@@ -72,6 +72,21 @@
 ### Goal
     Create first project and class : ForrPlayer and Application
 ### Done
+    Project and class are created.  
+### Problem
+    -
+
+---
+
+## 11.02.2026
+### Goal
+    Create ForrEditor
+    Create ForrGame
+    Configure classes
+    Add Core
+    Create window
+    Create long-time plan. At least for 2 mounths
+### Done
     -
 ### Problem
     -
