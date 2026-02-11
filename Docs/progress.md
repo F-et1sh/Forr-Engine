@@ -85,6 +85,7 @@
     Configure classes
     Add Core
     Create window
+    Create Application Layers
     Create long-time plan. At least for 2 mounths
 ### Done
     -
