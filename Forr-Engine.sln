@@ -16,6 +16,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ForrPlayer", "ForrPlayer\ForrPlayer.vcxproj", "{E1D09905-8EFF-479A-8BE3-56F4E0F7ACED}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ForrGame", "ForrGame\ForrGame.vcxproj", "{38CA8431-599D-4927-9871-B0ACD6085B88}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ForrEditor", "ForrEditor\ForrEditor.vcxproj", "{70983DBA-247C-4DFD-BDDE-928776029495}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -26,6 +30,14 @@ Global
 		{E1D09905-8EFF-479A-8BE3-56F4E0F7ACED}.Debug|x64.Build.0 = Debug|x64
 		{E1D09905-8EFF-479A-8BE3-56F4E0F7ACED}.Release|x64.ActiveCfg = Release|x64
 		{E1D09905-8EFF-479A-8BE3-56F4E0F7ACED}.Release|x64.Build.0 = Release|x64
+		{38CA8431-599D-4927-9871-B0ACD6085B88}.Debug|x64.ActiveCfg = Debug|x64
+		{38CA8431-599D-4927-9871-B0ACD6085B88}.Debug|x64.Build.0 = Debug|x64
+		{38CA8431-599D-4927-9871-B0ACD6085B88}.Release|x64.ActiveCfg = Release|x64
+		{38CA8431-599D-4927-9871-B0ACD6085B88}.Release|x64.Build.0 = Release|x64
+		{70983DBA-247C-4DFD-BDDE-928776029495}.Debug|x64.ActiveCfg = Debug|x64
+		{70983DBA-247C-4DFD-BDDE-928776029495}.Debug|x64.Build.0 = Debug|x64
+		{70983DBA-247C-4DFD-BDDE-928776029495}.Release|x64.ActiveCfg = Release|x64
+		{70983DBA-247C-4DFD-BDDE-928776029495}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
