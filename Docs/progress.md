@@ -4,7 +4,6 @@
 ### Goal
     Create ForrEditor
     Create ForrGame
-    Configure projects
     Add Core
     Create window
     Create Application Layers
@@ -14,6 +13,13 @@
         and the newer ones are at the top
     ILayer added
     Core added
+    attributes.hpp updated
+    IPlatformSystem created
+    IWindow created
+    ForrEditor created
+    ForrGame created
+    Application layers created
+    Working on 2 mounth plan
 ### Problem
     -
 

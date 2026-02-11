@@ -12,7 +12,7 @@
 ===============================================*/
 
 #include "pch.hpp"
-#include "Core/logging.hpp"
+#include "core/logging.hpp"
 
 #include <cstdio>
 #include <cstdarg>
