@@ -4,14 +4,15 @@
 ### Goal
     Create ForrEditor
     Create ForrGame
-    Configure classes
+    Configure projects
     Add Core
     Create window
     Create Application Layers
     Create long-time plan. At least for 2 mounths
 ### Done
     Switched progress.md; Now the older days are at the bottom
-        and the newer ones are at the top 
+        and the newer ones are at the top
+    ILayer added
 ### Problem
     -
 

@@ -3,3 +3,6 @@
 
 void fe::Application::Initialize(const fe::ApplicationDesc& desc) {
 }
+
+void fe::Application::Run() {
+}

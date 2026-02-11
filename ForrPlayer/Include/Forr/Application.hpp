@@ -1,4 +1,7 @@
 #pragma once
+#include <memory>
+#include <vector>
+#include "Layer.hpp"
 
 namespace fe {
     struct ApplicationDesc {
@@ -20,6 +23,14 @@ namespace fe {
         void Release();
         void Initialize(const ApplicationDesc& desc);
 
+        void Run();
+
+        template <typename T> requires(std::is_base_of_v<ILayer, T>)
+        inline void PushLayer() {
+            m_LayerStack.push_back(std::make_unique<T>());
+        }
+
     private:
+        std::vector<std::unique_ptr<ILayer>> m_LayerStack;
     };
 } // namespace fe
