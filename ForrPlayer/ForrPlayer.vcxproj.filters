@@ -3,9 +3,11 @@
   <ItemGroup>
     <ClInclude Include="Include\Forr\Application.hpp" />
     <ClInclude Include="Include\Forr\pch\pch.hpp" />
+    <ClInclude Include="Include\Forr\Layer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
     <ClCompile Include="Source\pch.cpp" />
+    <ClCompile Include="Source\Layer.cpp" />
   </ItemGroup>
 </Project>
