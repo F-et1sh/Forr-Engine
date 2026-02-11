@@ -1,40 +1,39 @@
 # Forr-Engine Devlog
 
-## 03.02.2026
+## 11.02.2026
 ### Goal
-    Configure Forr.Core
-    Add attributes.hpp and custom_allocators.hpp etc
-    Setup file handler
+    Create ForrEditor
+    Create ForrGame
+    Configure classes
+    Add Core
+    Create window
+    Create Application Layers
+    Create long-time plan. At least for 2 mounths
 ### Done
-    Forr.Core configured
-    attributes.hpp, custom_allocators.hpp, logging.hpp/cpp and pointer.hpp are added
-    Handler recreated
-    + colorful logging
-    + DLL linking
-    + Forr.Core refers configured
+    Switched progress.md; Now the older days are at the bottom
+        and the newer ones are at the top 
 ### Problem
     -
 
 ---
 
-## 04.02.2026
+## 10.02.2026
 ### Goal
-    Create GLFW window in Forr.Platform
-    Configure relationship between Forr.Platform, Forr.Engine and Forr.Editor
+    Create first project and class : ForrPlayer and Application
 ### Done
-    GLFW added
+    Project and class are created.  
 ### Problem
     -
 
 ---
 
-## 05.02.2026
+## 07.02.2026
 ### Goal
-    Add modular namespaces
+    Delete all code. Recreate the project
 ### Done
     -
 ### Problem
-    Got ill. Fell asleep
+    -
 
 ---
 
@@ -58,37 +57,39 @@
 
 ---
 
-## 07.02.2026
+## 05.02.2026
 ### Goal
-    Delete all code. Recreate the project
+    Add modular namespaces
 ### Done
     -
+### Problem
+    Got ill. Fell asleep
+
+---
+
+## 04.02.2026
+### Goal
+    Create GLFW window in Forr.Platform
+    Configure relationship between Forr.Platform, Forr.Engine and Forr.Editor
+### Done
+    GLFW added
 ### Problem
     -
 
 ---
 
-## 10.02.2026
+## 03.02.2026
 ### Goal
-    Create first project and class : ForrPlayer and Application
+    Configure Forr.Core
+    Add attributes.hpp and custom_allocators.hpp etc
+    Setup file handler
 ### Done
-    Project and class are created.  
-### Problem
-    -
-
----
-
-## 11.02.2026
-### Goal
-    Create ForrEditor
-    Create ForrGame
-    Configure classes
-    Add Core
-    Create window
-    Create Application Layers
-    Create long-time plan. At least for 2 mounths
-### Done
-    -
+    Forr.Core configured
+    attributes.hpp, custom_allocators.hpp, logging.hpp/cpp and pointer.hpp are added
+    Handler recreated
+    + colorful logging
+    + DLL linking
+    + Forr.Core refers configured
 ### Problem
     -
 
