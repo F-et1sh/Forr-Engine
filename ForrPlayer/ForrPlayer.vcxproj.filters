@@ -4,10 +4,15 @@
     <ClInclude Include="Include\Forr\Application.hpp" />
     <ClInclude Include="Include\Forr\pch\pch.hpp" />
     <ClInclude Include="Include\Forr\Layer.hpp" />
+    <ClInclude Include="Include\Forr\Core\attributes.hpp" />
+    <ClInclude Include="Include\Forr\Core\custom_allocators.hpp" />
+    <ClInclude Include="Include\Forr\Core\logging.hpp" />
+    <ClInclude Include="Include\Forr\Core\pointer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
     <ClCompile Include="Source\pch.cpp" />
     <ClCompile Include="Source\Layer.cpp" />
+    <ClCompile Include="Source\logging.cpp" />
   </ItemGroup>
 </Project>
