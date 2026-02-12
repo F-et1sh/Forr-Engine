@@ -11,6 +11,7 @@
 ===============================================*/
 
 #pragma once
+#include <string>
 #include "Core/attributes.hpp"
 
 namespace fe {
@@ -22,15 +23,16 @@ namespace fe {
 
     class FORR_API IWindow {
     public:
+        IWindow() = default;
+        virtual ~IWindow() = default;
+        
         FORR_CLASS_NONCOPYABLE(IWindow)
 
+        virtual void Release() {}
         virtual void Initialize(const WindowDesc& desc) {}
+
         virtual void PollEvents() {}
 
-        virtual void* getNativeHandle() {}
-
-    protected:
-        virtual void Release() {}
-        virtual ~IWindow() = default;
+        FORR_FORCE_INLINE virtual void* getNativeHandle() { return nullptr; }
     };
 } // namespace fe

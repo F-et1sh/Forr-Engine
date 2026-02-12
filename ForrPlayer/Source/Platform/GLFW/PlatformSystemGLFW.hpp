@@ -23,8 +23,8 @@ namespace fe {
 
         IWindow& CreateWindow(const WindowDesc& desc) override;
 
-        size_t   getWindowCount() override { return m_WindowList.size(); }
-        IWindow& getWindow(size_t index) override { return *m_WindowList[index]; }
+        FORR_NODISCARD size_t   getWindowCount() override { return m_WindowList.size(); }
+        FORR_NODISCARD IWindow& getWindow(size_t index) override { return *m_WindowList[index]; }
 
     protected:
         // this should be protected, see IPlatformSystem for more info
