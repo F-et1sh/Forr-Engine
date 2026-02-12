@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "core/attributes.hpp"
-#include "core/custom_allocators.hpp"
-#include "core/logging.hpp"
-#include "core/pointer.hpp"
+#include "Core/attributes.hpp"
+#include "Core/custom_allocators.hpp"
+#include "Core/logging.hpp"
+#include "Core/pointer.hpp"
