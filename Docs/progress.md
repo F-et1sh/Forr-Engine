@@ -6,7 +6,8 @@
     Create GLFW window
     Consolidate the 2 month plan
 ### Done
-    -
+    Platform system created
+    Colorful logging returned
 ### Problem
     -
 
