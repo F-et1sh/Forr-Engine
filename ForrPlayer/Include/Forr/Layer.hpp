@@ -11,7 +11,7 @@
 ===============================================*/
 
 #pragma once
-#include "core/attributes.hpp"
+#include "Core/attributes.hpp"
 
 namespace fe {
     class FORR_API ILayer {

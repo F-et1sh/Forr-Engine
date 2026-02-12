@@ -98,6 +98,7 @@
     <ClInclude Include="Include\Forr\Layer.hpp" />
     <ClInclude Include="Include\Forr\PCH\pch.hpp" />
     <ClInclude Include="Include\Forr\Platform\IPlatformSystem.hpp" />
+    <ClInclude Include="Include\Forr\Platform\IWindow.hpp" />
     <ClInclude Include="Source\Platform\PlatformSystemGLFW.hpp" />
   </ItemGroup>
   <ItemGroup>
