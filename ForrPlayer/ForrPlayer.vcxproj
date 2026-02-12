@@ -99,7 +99,8 @@
     <ClInclude Include="Include\Forr\PCH\pch.hpp" />
     <ClInclude Include="Include\Forr\Platform\IPlatformSystem.hpp" />
     <ClInclude Include="Include\Forr\Platform\IWindow.hpp" />
-    <ClInclude Include="Source\Platform\PlatformSystemGLFW.hpp" />
+    <ClInclude Include="Source\Platform\GLFW\PlatformSystemGLFW.hpp" />
+    <ClInclude Include="Source\Platform\GLFW\WindowGLFW.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -110,7 +111,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Source\Platform\IPlatformSystem.cpp" />
-    <ClCompile Include="Source\Platform\PlatformSystemGLFW.cpp" />
+    <ClCompile Include="Source\Platform\GLFW\PlatformSystemGLFW.cpp" />
+    <ClCompile Include="Source\Platform\GLFW\PlatformSystemGLFW.cpp" />
+    <ClCompile Include="Source\Platform\GLFW\WindowGLFW.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

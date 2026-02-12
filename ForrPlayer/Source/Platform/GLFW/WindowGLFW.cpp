@@ -1,0 +1,30 @@
+/*===============================================
+
+    Forr Engine
+
+    File : WindowGLFW.cpp
+    Role : GLFW window implemetation
+
+    Copyright (C) 2026 Farrakh
+    All Rights Reserved.
+
+===============================================*/
+
+#include "pch.hpp"
+#include "WindowGLFW.hpp"
+
+void fe::WindowGLFW::Initialize(const WindowDesc& desc) {
+    m_GLFWwindow = glfwCreateWindow(desc.width, desc.height, desc.name.c_str(), nullptr, nullptr); // TODO : check nullptrs
+    if (!m_GLFWwindow) {
+        fe::logging::error("Failed to create GLFW window");
+        return;
+    }
+}
+
+void fe::WindowGLFW::PollEvents() {
+    glfwPollEvents();
+}
+
+void fe::WindowGLFW::Release() {
+    glfwDestroyWindow(m_GLFWwindow);
+}

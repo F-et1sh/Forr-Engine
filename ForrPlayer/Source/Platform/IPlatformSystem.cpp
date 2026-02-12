@@ -13,7 +13,7 @@
 #include "pch.hpp"
 #include "Platform/IPlatformSystem.hpp"
 
-#include "PlatformSystemGLFW.hpp"
+#include "GLFW/PlatformSystemGLFW.hpp"
 
 std::unique_ptr<fe::IPlatformSystem> fe::IPlatformSystem::Create(const PlatformSystemDesc& desc) {
     std::unique_ptr<fe::IPlatformSystem> result{};

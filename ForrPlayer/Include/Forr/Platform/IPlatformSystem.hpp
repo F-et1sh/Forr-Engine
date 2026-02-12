@@ -34,10 +34,10 @@ namespace fe {
 
         static std::unique_ptr<IPlatformSystem> Create(const PlatformSystemDesc& desc);
 
-        virtual IWindow& CreateWindow(const WindowDesc& desc) {}
+        virtual IWindow& CreateWindow(const WindowDesc& desc) = 0;
 
-        FORR_FORCE_INLINE virtual size_t   getWindowCount() {}
-        FORR_FORCE_INLINE virtual IWindow& getWindow(size_t index) {}
+        FORR_FORCE_INLINE virtual size_t   getWindowCount() = 0;
+        FORR_FORCE_INLINE virtual IWindow& getWindow(size_t index) = 0;
 
     protected:
         // protected, because PlatformSystem initializes in fe::IPlatformSystem::Create(...)

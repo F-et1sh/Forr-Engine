@@ -9,8 +9,10 @@
     <ClInclude Include="Include\Forr\Core\logging.hpp" />
     <ClInclude Include="Include\Forr\Core\pointer.hpp" />
     <ClInclude Include="Include\Forr\Platform\IPlatformSystem.hpp" />
-    <ClInclude Include="Source\Platform\PlatformSystemGLFW.hpp" />
     <ClInclude Include="Include\Forr\Platform\IWindow.hpp" />
+    <ClInclude Include="Source\Platform\GLFW\PlatformSystemGLFW.hpp" />
+    <ClInclude Include="Source\Platform\GLFW\WindowGLFW.hpp" />
+    <ClInclude Include="Source\Platform\GLFW\PlatformSystemGLFW.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -18,6 +20,8 @@
     <ClCompile Include="Source\Layer.cpp" />
     <ClCompile Include="Source\logging.cpp" />
     <ClCompile Include="Source\Platform\IPlatformSystem.cpp" />
-    <ClCompile Include="Source\Platform\PlatformSystemGLFW.cpp" />
+    <ClCompile Include="Source\Platform\GLFW\PlatformSystemGLFW.cpp" />
+    <ClCompile Include="Source\Platform\GLFW\PlatformSystemGLFW.cpp" />
+    <ClCompile Include="Source\Platform\GLFW\WindowGLFW.cpp" />
   </ItemGroup>
 </Project>
