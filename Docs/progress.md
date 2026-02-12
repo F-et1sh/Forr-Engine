@@ -1,5 +1,17 @@
 # Forr-Engine Devlog
 
+## 12.02.2026
+### Goal
+    Create platform system
+    Create GLFW window
+    Consolidate the 2 month plan
+### Done
+    -
+### Problem
+    -
+
+---
+
 ## 11.02.2026
 ### Goal
     Create ForrEditor
@@ -7,7 +19,7 @@
     Add Core
     Create window
     Create Application Layers
-    Create long-time plan. At least for 2 mounths
+    Create long-time plan. At least for 2 months
 ### Done
     Switched progress.md; Now the older days are at the bottom
         and the newer ones are at the top
@@ -19,7 +31,7 @@
     ForrEditor created
     ForrGame created
     Application layers created
-    Working on 2 mounth plan
+    Working on 2 month plan
 ### Problem
     -
 
