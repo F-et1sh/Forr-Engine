@@ -112,7 +112,6 @@
     </ClCompile>
     <ClCompile Include="Source\Platform\IPlatformSystem.cpp" />
     <ClCompile Include="Source\Platform\GLFW\PlatformSystemGLFW.cpp" />
-    <ClCompile Include="Source\Platform\GLFW\PlatformSystemGLFW.cpp" />
     <ClCompile Include="Source\Platform\GLFW\WindowGLFW.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

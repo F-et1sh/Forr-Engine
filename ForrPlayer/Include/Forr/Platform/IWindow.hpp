@@ -23,16 +23,16 @@ namespace fe {
 
     class FORR_API IWindow {
     public:
-        IWindow() = default;
+        IWindow()          = default;
         virtual ~IWindow() = default;
-        
+
         FORR_CLASS_NONCOPYABLE(IWindow)
 
-        virtual void Release() {}
-        virtual void Initialize(const WindowDesc& desc) {}
+        virtual void Initialize(const WindowDesc& desc) = 0;
 
-        virtual void PollEvents() {}
+        FORR_FORCE_INLINE FORR_NODISCARD virtual bool IsOpen()     = 0;
+        virtual void                                  PollEvents() = 0;
 
-        FORR_FORCE_INLINE virtual void* getNativeHandle() { return nullptr; }
+        FORR_FORCE_INLINE virtual void* getNativeHandle() = 0;
     };
 } // namespace fe

@@ -8,6 +8,7 @@
 ### Done
     Platform system created
     Colorful logging returned
+    GLFW window created
 ### Problem
     -
 
