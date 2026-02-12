@@ -11,8 +11,11 @@
 ===============================================*/
 
 #pragma once
+#include <vector>
 #include <memory>
-#include "core/attributes.hpp"
+#include "Core/attributes.hpp"
+
+#include "IWindow.hpp"
 
 namespace fe {
     enum class FORR_API PlatformBackend {
@@ -27,10 +30,17 @@ namespace fe {
     public:
         virtual ~IPlatformSystem() = default;
 
+        virtual void Release() {}
+
         static std::unique_ptr<IPlatformSystem> Create(const PlatformSystemDesc& desc);
 
+        virtual IWindow& CreateWindow(const WindowDesc& desc) {}
+
+        FORR_FORCE_INLINE virtual size_t   getWindowCount() {}
+        FORR_FORCE_INLINE virtual IWindow& getWindow(size_t index) {}
+
     protected:
-        virtual void Release() {}
+        // protected, because PlatformSystem initializes in fe::IPlatformSystem::Create(...)
         virtual void Initialize(const PlatformSystemDesc& desc) {}
     };
 } // namespace fe

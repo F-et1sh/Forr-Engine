@@ -10,6 +10,7 @@
     <ClInclude Include="Include\Forr\Core\pointer.hpp" />
     <ClInclude Include="Include\Forr\Platform\IPlatformSystem.hpp" />
     <ClInclude Include="Source\Platform\PlatformSystemGLFW.hpp" />
+    <ClInclude Include="Include\Forr\Platform\IWindow.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
