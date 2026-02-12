@@ -14,13 +14,11 @@
 #include <memory>
 #include <vector>
 
-#include "Layer.hpp"
+#include "Platform/IPlatformSystem.hpp"
 
 namespace fe {
     struct FORR_API ApplicationDesc {
-    public:
-        int window_width  = 0;
-        int window_height = 0;
+        PlatformSystemDesc platform_desc;
 
         ApplicationDesc()  = default;
         ~ApplicationDesc() = default;
@@ -38,12 +36,7 @@ namespace fe {
 
         void Run();
 
-        template<typename T> requires std::is_base_of_v<ILayer, T>
-        inline void PushLayer() {
-            //m_LayerStack.push_back(std::make_unique<T>());
-        }
-
     private:
-        //std::vector<std::unique_ptr<ILayer>> m_LayerStack;
+        std::unique_ptr<IPlatformSystem> m_PlatformSystem;
     };
 } // namespace fe
