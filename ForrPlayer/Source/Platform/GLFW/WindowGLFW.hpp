@@ -19,16 +19,18 @@ namespace fe {
     class WindowGLFW : public IWindow {
     public:
         WindowGLFW() = default;
-        ~WindowGLFW() { this->Release(); }
+        ~WindowGLFW();
 
-        void Release();
         void Initialize(const WindowDesc& desc) override;
 
+        bool IsOpen() override;
         void PollEvents() override;
 
         FORR_NODISCARD void* getNativeHandle() { return static_cast<void*>(m_GLFWwindow); }
 
     private:
         GLFWwindow* m_GLFWwindow = nullptr;
+
+        WindowDesc m_Desc;
     };
 } // namespace fe

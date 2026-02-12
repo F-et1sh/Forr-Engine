@@ -6,5 +6,4 @@ int main() {
 
     app.Initialize(desc);
     app.Run();
-    app.Release();
 }

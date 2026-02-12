@@ -17,11 +17,10 @@ namespace fe {
     class PlatformSystemGLFW : public IPlatformSystem {
     public:
         PlatformSystemGLFW()  = default;
-        ~PlatformSystemGLFW() = default;
+        ~PlatformSystemGLFW();
 
-        void Release() override;
-
-        IWindow& CreateWindow(const WindowDesc& desc) override;
+        // returns window index
+        size_t CreateWindow(const WindowDesc& desc) override;
 
         FORR_NODISCARD size_t   getWindowCount() override { return m_WindowList.size(); }
         FORR_NODISCARD IWindow& getWindow(size_t index) override { return *m_WindowList[index]; }

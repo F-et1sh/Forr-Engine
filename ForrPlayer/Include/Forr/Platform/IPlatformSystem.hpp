@@ -30,11 +30,10 @@ namespace fe {
     public:
         virtual ~IPlatformSystem() = default;
 
-        virtual void Release() {}
-
         static std::unique_ptr<IPlatformSystem> Create(const PlatformSystemDesc& desc);
 
-        virtual IWindow& CreateWindow(const WindowDesc& desc) = 0;
+        // returns window index
+        virtual size_t CreateWindow(const WindowDesc& desc) = 0;
 
         FORR_FORCE_INLINE virtual size_t   getWindowCount() = 0;
         FORR_FORCE_INLINE virtual IWindow& getWindow(size_t index) = 0;
