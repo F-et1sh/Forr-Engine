@@ -15,17 +15,17 @@
 
 #include "OpenGL/RendererOpenGL.hpp"
 
-std::unique_ptr<fe::IRenderer> fe::IRenderer::Create(const RendererDesc& desc) {
+std::unique_ptr<fe::IRenderer> fe::IRenderer::Create(const RendererDesc& desc, IPlatformSystem& platform_system, size_t primary_window_index) {
     std::unique_ptr<fe::IRenderer> result{};
 
     switch (desc.backend) {
         case GraphicsBackend::OpenGL:
-            result = std::make_unique<RendererOpenGL>(desc);
+            result = std::make_unique<RendererOpenGL>(desc, platform_system, primary_window_index);
             break;
         default:
             fe::logging::warning("The selected renderer backend %i was not found. Using the default one", desc.backend);
 
-            result = std::make_unique<RendererOpenGL>(desc);
+            result = std::make_unique<RendererOpenGL>(desc, platform_system, primary_window_index);
             break;
     }
 

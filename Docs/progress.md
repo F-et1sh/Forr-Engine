@@ -7,6 +7,9 @@
 ### Done
     Initialize()s removed
     Renderer creating
+    OpenGL context created
+    Glad added ( nothing in External, yeah, idk,
+        README says that I have to just download it by zip, so I did it )
 ### Problem
     -
 
