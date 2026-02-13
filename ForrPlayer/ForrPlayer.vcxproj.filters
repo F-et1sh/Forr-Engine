@@ -18,6 +18,7 @@
     <ClInclude Include="Source\Graphics\OpenGL\GPUTypes.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\VertexBuffers.hpp" />
     <ClInclude Include="Include\Forr\Core\types.hpp" />
+    <ClInclude Include="Include\Forr\Core\path.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -32,5 +33,6 @@
     <ClCompile Include="Source\Graphics\OpenGL\GPUResourceManager.cpp" />
     <ClCompile Include="..\ThirdParty\glad\src\gl.c" />
     <ClCompile Include="Source\Graphics\OpenGL\VertexBuffers.cpp" />
+    <ClCompile Include="Source\path.cpp" />
   </ItemGroup>
 </Project>

@@ -94,6 +94,7 @@
     <ClInclude Include="Include\Forr\Core\attributes.hpp" />
     <ClInclude Include="Include\Forr\Core\custom_allocators.hpp" />
     <ClInclude Include="Include\Forr\Core\logging.hpp" />
+    <ClInclude Include="Include\Forr\Core\path.hpp" />
     <ClInclude Include="Include\Forr\Core\pointer.hpp" />
     <ClInclude Include="Include\Forr\Core\types.hpp" />
     <ClInclude Include="Include\Forr\Graphics\IRenderer.hpp" />
@@ -120,6 +121,7 @@
     <ClCompile Include="Source\Graphics\OpenGL\VertexBuffers.cpp" />
     <ClCompile Include="Source\Layer.cpp" />
     <ClCompile Include="Source\logging.cpp" />
+    <ClCompile Include="Source\path.cpp" />
     <ClCompile Include="Source\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

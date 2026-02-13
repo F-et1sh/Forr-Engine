@@ -12,6 +12,7 @@
         README says that I have to just download it by zip, so I did it )
     GLM added
     Triangle added, but no Shader yet
+    PathManager added
 ### Problem
     -
 
