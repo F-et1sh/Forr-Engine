@@ -25,19 +25,19 @@ namespace fe {
             return path_manager;
         }
 
-        [[nodiscard]] const std::filesystem::path& getExecutablePath() const noexcept {
+        FORR_FORCE_INLINE FORR_NODISCARD const std::filesystem::path& getExecutablePath() const noexcept {
             return m_ExecutablePath;
         }
 
-        [[nodiscard]] const std::filesystem::path& getAssetsPath() const noexcept {
+        FORR_FORCE_INLINE FORR_NODISCARD const std::filesystem::path& getAssetsPath() const noexcept {
             return m_AssetsPath;
         }
 
-        [[nodiscard]] std::filesystem::path getShadersPath() const {
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getShadersPath() const {
             return this->getAssetsPath() / L"Shaders";
         }
 
-        [[nodiscard]] std::filesystem::path getResourcesPath() const noexcept {
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getResourcesPath() const noexcept {
             return m_AssetsPath / L"Resources";
         }
 

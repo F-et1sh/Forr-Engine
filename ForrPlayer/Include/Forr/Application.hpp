@@ -23,6 +23,8 @@ namespace fe {
         WindowDesc         primary_window_desc;
         RendererDesc       renderer_desc;
 
+        char** argv;
+
         ApplicationDesc()  = default;
         ~ApplicationDesc() = default;
     };
