@@ -36,6 +36,6 @@ size_t fe::PlatformSystemGLFW::CreateWindow(const WindowDesc& desc) {
     return m_WindowList.size() - 1;
 }
 
-void fe::PlatformSystemGLFW::Initialize(const PlatformSystemDesc& desc) {
+fe::PlatformSystemGLFW::PlatformSystemGLFW(const PlatformSystemDesc& desc) {
     CHECK_GLFW(glfwInit())
 }

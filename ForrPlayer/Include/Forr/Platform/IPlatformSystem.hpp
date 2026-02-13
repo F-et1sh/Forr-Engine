@@ -37,9 +37,5 @@ namespace fe {
 
         FORR_FORCE_INLINE virtual size_t   getWindowCount() = 0;
         FORR_FORCE_INLINE virtual IWindow& getWindow(size_t index) = 0;
-
-    protected:
-        // protected, because PlatformSystem initializes in fe::IPlatformSystem::Create(...)
-        virtual void Initialize(const PlatformSystemDesc& desc) {}
     };
 } // namespace fe

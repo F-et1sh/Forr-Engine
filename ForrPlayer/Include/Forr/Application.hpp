@@ -15,11 +15,13 @@
 #include <vector>
 
 #include "Platform/IPlatformSystem.hpp"
+#include "Graphics/IRenderer.hpp"
 
 namespace fe {
     struct FORR_API ApplicationDesc {
         PlatformSystemDesc platform_desc;
         WindowDesc         primary_window_desc;
+        RendererDesc       renderer_desc;
 
         ApplicationDesc()  = default;
         ~ApplicationDesc() = default;
@@ -27,17 +29,14 @@ namespace fe {
 
     class FORR_API Application {
     public:
-        Application() = default;
-        Application(const ApplicationDesc& desc) { this->Initialize(desc); }
-
+        Application(const ApplicationDesc& desc);
         ~Application() = default;
-
-        void Initialize(const ApplicationDesc& desc);
 
         void Run();
 
     private:
         std::unique_ptr<IPlatformSystem> m_PlatformSystem;
+        std::unique_ptr<IRenderer>       m_Renderer;
 
         size_t   m_PrimaryWindowID = 0;
         IWindow* m_PrimaryWindow   = nullptr;

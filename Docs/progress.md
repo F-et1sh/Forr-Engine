@@ -5,7 +5,8 @@
     Consolidate the 2 month plan
     Create Renderer aka Graphics
 ### Done
-    -
+    Initialize()s removed
+    Renderer creating
 ### Problem
     -
 
