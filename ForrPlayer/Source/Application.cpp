@@ -4,13 +4,20 @@
 fe::Application::Application(const ApplicationDesc& desc) {
     PATH.init(*desc.argv, true);
 
-    m_PlatformSystem = IPlatformSystem::Create(desc.platform_desc);
+    PlatformSystemDesc platform_desc{};
+    platform_desc.graphics_backend = desc.graphics_backend;
+    platform_desc.platform_backend = desc.platform_backend;
+
+    m_PlatformSystem = IPlatformSystem::Create(platform_desc);
 
     // create primary window
     m_PrimaryWindowID = m_PlatformSystem->CreateWindow(desc.primary_window_desc);
     m_PrimaryWindow   = &m_PlatformSystem->getWindow(m_PrimaryWindowID);
 
-    m_Renderer = IRenderer::Create(desc.renderer_desc, *m_PlatformSystem, m_PrimaryWindowID);
+    RendererDesc renderer_desc{};
+    renderer_desc.graphics_backend = desc.graphics_backend;
+
+    m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID);
 
     m_Triangle = m_Renderer->CreateTriangle();
 }

@@ -18,12 +18,18 @@
 #include "IWindow.hpp"
 
 namespace fe {
+    enum class FORR_API GraphicsBackend {
+        OpenGL,
+        Vulkan
+    };
+
     enum class FORR_API PlatformBackend {
         GLFW
     };
 
     struct FORR_API PlatformSystemDesc {
-        PlatformBackend backend;
+        PlatformBackend platform_backend;
+        GraphicsBackend graphics_backend;
     };
 
     class FORR_API IPlatformSystem {
@@ -35,7 +41,7 @@ namespace fe {
         // returns window index
         virtual size_t CreateWindow(const WindowDesc& desc) = 0;
 
-        FORR_FORCE_INLINE virtual size_t   getWindowCount() = 0;
+        FORR_FORCE_INLINE virtual size_t   getWindowCount()        = 0;
         FORR_FORCE_INLINE virtual IWindow& getWindow(size_t index) = 0;
     };
 } // namespace fe

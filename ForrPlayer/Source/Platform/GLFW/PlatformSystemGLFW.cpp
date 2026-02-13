@@ -15,13 +15,7 @@
 
 #include "WindowGLFW.hpp"
 
-#define CHECK_GLFW(func)                                                          \
-    {                                                                             \
-        int result = func;                                                        \
-        if (result != GLFW_TRUE) {                                                \
-            fe::logging::error("Failed to call %s in file %s", ##func, __FILE__); \
-        }                                                                         \
-    }
+#include "Tools.hpp"
 
 fe::PlatformSystemGLFW::~PlatformSystemGLFW() {
     glfwTerminate();
@@ -37,5 +31,18 @@ size_t fe::PlatformSystemGLFW::CreateWindow(const WindowDesc& desc) {
 }
 
 fe::PlatformSystemGLFW::PlatformSystemGLFW(const PlatformSystemDesc& desc) {
-    CHECK_GLFW(glfwInit())
+    GLFW_CHECK_RESULT(glfwInit())
+
+    switch (desc.graphics_backend) {
+        case GraphicsBackend::OpenGL:
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+            break;
+        case GraphicsBackend::Vulkan:
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+            break;
+        default:
+            break;
+    }
 }

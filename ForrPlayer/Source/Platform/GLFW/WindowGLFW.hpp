@@ -29,6 +29,7 @@ namespace fe {
         void*    getNativeHandle() override { return static_cast<void*>(m_GLFWwindow); }
         uint32_t getWidth() override { return m_Desc.width; }
         uint32_t getHeight() override { return m_Desc.height; }
+        std::string getName() override { return m_Desc.name; }
 
     private:
         GLFWwindow* m_GLFWwindow = nullptr;
