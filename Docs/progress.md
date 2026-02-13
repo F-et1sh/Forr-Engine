@@ -1,5 +1,16 @@
 # Forr-Engine Devlog
 
+## 13.02.2026
+### Goal
+    Consolidate the 2 month plan
+    Create Renderer aka Graphics
+### Done
+    -
+### Problem
+    -
+
+---
+
 ## 12.02.2026
 ### Goal
     Create platform system
