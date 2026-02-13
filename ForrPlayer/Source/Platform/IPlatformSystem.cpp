@@ -18,12 +18,12 @@
 std::unique_ptr<fe::IPlatformSystem> fe::IPlatformSystem::Create(const PlatformSystemDesc& desc) {
     std::unique_ptr<fe::IPlatformSystem> result{};
 
-    switch (desc.backend) {
+    switch (desc.platform_backend) {
         case PlatformBackend::GLFW:
             result = std::make_unique<PlatformSystemGLFW>(desc);
             break;
         default:
-            fe::logging::warning("The selected platform backend %i was not found. Using the default one", desc.backend);
+            fe::logging::warning("The selected platform backend %i was not found. Using the default one", desc.platform_backend);
 
             result = std::make_unique<PlatformSystemGLFW>(desc);
             break;

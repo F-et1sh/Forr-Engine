@@ -20,6 +20,8 @@
     <ClInclude Include="Include\Forr\Core\types.hpp" />
     <ClInclude Include="Include\Forr\Core\path.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\Shader.hpp" />
+    <ClInclude Include="Source\Tools.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -36,5 +38,6 @@
     <ClCompile Include="Source\Graphics\OpenGL\VertexBuffers.cpp" />
     <ClCompile Include="Source\path.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
   </ItemGroup>
 </Project>

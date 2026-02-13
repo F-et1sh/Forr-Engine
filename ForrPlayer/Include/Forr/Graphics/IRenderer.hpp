@@ -15,12 +15,8 @@
 #include "Core/types.hpp"
 
 namespace fe {
-    enum class FORR_API GraphicsBackend {
-        OpenGL
-    };
-
     struct FORR_API RendererDesc {
-        GraphicsBackend backend;
+        GraphicsBackend graphics_backend;
     };
 
     class FORR_API IRenderer {

@@ -19,12 +19,8 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
     : m_PlatformSystem(platform_system),
       m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index)) {
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
     m_GLFWwindow = (GLFWwindow*)m_PrimaryWindow.getNativeHandle();
-    
+
     glfwMakeContextCurrent(m_GLFWwindow);
 
     // Load OpenGL functions, gladLoadGL returns the loaded version, 0 on error.

@@ -19,11 +19,12 @@
 
 namespace fe {
     struct FORR_API ApplicationDesc {
-        PlatformSystemDesc platform_desc;
-        WindowDesc         primary_window_desc;
-        RendererDesc       renderer_desc;
-
         char** argv;
+
+        WindowDesc primary_window_desc;
+
+        GraphicsBackend graphics_backend;
+        PlatformBackend platform_backend;
 
         ApplicationDesc()  = default;
         ~ApplicationDesc() = default;
