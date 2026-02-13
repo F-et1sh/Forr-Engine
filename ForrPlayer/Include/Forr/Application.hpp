@@ -40,5 +40,7 @@ namespace fe {
 
         size_t   m_PrimaryWindowID = 0;
         IWindow* m_PrimaryWindow   = nullptr;
+
+        MeshID m_Triangle = 0; // temp
     };
 } // namespace fe

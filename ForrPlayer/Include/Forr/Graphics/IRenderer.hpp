@@ -12,6 +12,7 @@
 
 #pragma once
 #include "Platform/IPlatformSystem.hpp"
+#include "Core/types.hpp"
 
 namespace fe {
     enum class FORR_API GraphicsBackend {
@@ -30,5 +31,8 @@ namespace fe {
 
         virtual void ClearScreen(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) = 0;
         virtual void SwapBuffers()                                                                            = 0;
+
+        virtual void                                    Draw(MeshID index) = 0;
+        FORR_FORCE_INLINE FORR_NODISCARD virtual MeshID CreateTriangle()   = 0;
     };
 } // namespace fe

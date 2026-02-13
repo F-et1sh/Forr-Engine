@@ -49,3 +49,11 @@ void fe::RendererOpenGL::ClearScreen(float red, float green, float blue, float a
 void fe::RendererOpenGL::SwapBuffers() {
     glfwSwapBuffers(m_GLFWwindow);
 }
+
+void fe::RendererOpenGL::Draw(MeshID index) {
+    auto& mesh = m_GPUResourceManager.getMesh(index);
+    
+    mesh.vao.bind();
+    glDrawElements(GL_TRIANGLES, mesh.index_count, GL_UNSIGNED_INT, 0);
+    mesh.vao.unbind();
+}

@@ -11,13 +11,36 @@
 ===============================================*/
 
 #pragma once
+#include "GPUTypes.hpp"
+#include "VertexBuffers.hpp"
 
 namespace fe {
+    struct Mesh {
+        VAO vao;
+        VBO vbo;
+        EBO ebo;
+
+        size_t index_count = 0; // temp
+
+        Mesh(const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices) : vbo(vertices), ebo(indices), index_count(indices.size()) {}
+        Mesh(const std::vector<Vertex>& vertices, const Indices& indices_variant) : vbo(vertices), ebo(indices_variant) {
+            std::visit([&](const auto& indices) {
+                index_count = indices.size();
+            },
+                       indices_variant);
+        }
+        ~Mesh() = default;
+    };
+
     class GPUResourceManager {
     public:
-        GPUResourceManager() = default;
+        GPUResourceManager()  = default;
         ~GPUResourceManager() = default;
 
+        MeshID                                 CreateTriangle();
+        FORR_FORCE_INLINE FORR_NODISCARD Mesh& getMesh(MeshID index) { return m_Meshes[index]; }
+
     private:
+        std::vector<Mesh> m_Meshes;
     };
 } // namespace fe
