@@ -2,7 +2,7 @@
 ::
 ::  Forr Engine - Scripts
 ::
-::  File : copy_to_third_party.bat
+::  File : PROCESS_ALL.bat
 ::  Role : run all scripts in queue
 ::
 ::  Copyright (C) 2026 Farrakh

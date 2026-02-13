@@ -26,7 +26,9 @@ namespace fe {
         bool IsOpen() override;
         void PollEvents() override;
 
-        FORR_NODISCARD void* getNativeHandle() { return static_cast<void*>(m_GLFWwindow); }
+        void*    getNativeHandle() override { return static_cast<void*>(m_GLFWwindow); }
+        uint32_t getWidth() override { return m_Desc.width; }
+        uint32_t getHeight() override { return m_Desc.height; }
 
     private:
         GLFWwindow* m_GLFWwindow = nullptr;

@@ -14,6 +14,7 @@
     <ClInclude Include="Source\Platform\GLFW\WindowGLFW.hpp" />
     <ClInclude Include="Include\Forr\Graphics\IRenderer.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
+    <ClInclude Include="Source\Graphics\OpenGL\GPUResourceManager.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -25,5 +26,7 @@
     <ClCompile Include="Source\Platform\GLFW\WindowGLFW.cpp" />
     <ClCompile Include="Source\Graphics\IRenderer.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\RendererOpenGL.cpp" />
+    <ClCompile Include="Source\Graphics\OpenGL\GPUResourceManager.cpp" />
+    <ClCompile Include="..\ThirdParty\glad\src\gl.c" />
   </ItemGroup>
 </Project>
