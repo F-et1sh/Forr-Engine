@@ -1,9 +1,9 @@
 #include "pch.hpp"
 #include "Application.hpp"
 
-void fe::Application::Initialize(const fe::ApplicationDesc& desc) {
-
+fe::Application::Application(const ApplicationDesc& desc) {
     m_PlatformSystem = IPlatformSystem::Create(desc.platform_desc);
+    m_Renderer       = IRenderer::Create(desc.renderer_desc);
 
     // create primary window
     m_PrimaryWindowID = m_PlatformSystem->CreateWindow(desc.primary_window_desc);

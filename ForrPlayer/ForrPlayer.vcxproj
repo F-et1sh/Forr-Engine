@@ -95,15 +95,19 @@
     <ClInclude Include="Include\Forr\Core\custom_allocators.hpp" />
     <ClInclude Include="Include\Forr\Core\logging.hpp" />
     <ClInclude Include="Include\Forr\Core\pointer.hpp" />
+    <ClInclude Include="Include\Forr\Graphics\IRenderer.hpp" />
     <ClInclude Include="Include\Forr\Layer.hpp" />
     <ClInclude Include="Include\Forr\PCH\pch.hpp" />
     <ClInclude Include="Include\Forr\Platform\IPlatformSystem.hpp" />
     <ClInclude Include="Include\Forr\Platform\IWindow.hpp" />
+    <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
     <ClInclude Include="Source\Platform\GLFW\PlatformSystemGLFW.hpp" />
     <ClInclude Include="Source\Platform\GLFW\WindowGLFW.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
+    <ClCompile Include="Source\Graphics\IRenderer.cpp" />
+    <ClCompile Include="Source\Graphics\OpenGL\RendererOpenGL.cpp" />
     <ClCompile Include="Source\Layer.cpp" />
     <ClCompile Include="Source\logging.cpp" />
     <ClCompile Include="Source\pch.cpp">

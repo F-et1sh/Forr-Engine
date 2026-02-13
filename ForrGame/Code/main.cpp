@@ -6,8 +6,6 @@ int main() {
     desc.primary_window_desc.height = 1080;
     desc.primary_window_desc.name   = "Gmod Realism";
 
-    fe::Application app{};
-
-    app.Initialize(desc);
+    fe::Application app{desc};
     app.Run();
 }
