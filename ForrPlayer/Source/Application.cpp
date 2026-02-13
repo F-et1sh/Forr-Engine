@@ -2,6 +2,8 @@
 #include "Application.hpp"
 
 fe::Application::Application(const ApplicationDesc& desc) {
+    PATH.init(*desc.argv, true);
+
     m_PlatformSystem = IPlatformSystem::Create(desc.platform_desc);
 
     // create primary window

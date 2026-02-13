@@ -36,6 +36,9 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
 
     glViewport(0, 0, m_PrimaryWindow.getWidth(), m_PrimaryWindow.getHeight());
     glEnable(GL_DEPTH_TEST);
+
+    std::filesystem::path shader_path = PATH.getShadersPath() / "default";
+    m_Shader.LoadShader(shader_path);
 }
 
 fe::RendererOpenGL::~RendererOpenGL() {
@@ -51,9 +54,13 @@ void fe::RendererOpenGL::SwapBuffers() {
 }
 
 void fe::RendererOpenGL::Draw(MeshID index) {
+    m_Shader.bind();
+
     auto& mesh = m_GPUResourceManager.getMesh(index);
     
     mesh.vao.bind();
-    glDrawElements(GL_TRIANGLES, mesh.index_count, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, mesh.index_count, GL_UNSIGNED_BYTE, 0);
     mesh.vao.unbind();
+
+    m_Shader.unbind();
 }

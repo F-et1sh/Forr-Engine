@@ -15,7 +15,7 @@
 
 #include "GPUResourceManager.hpp"
 
-#include <glad/gl.h>
+#include "Shader.hpp"
 #include <GLFW/glfw3.h>
 
 namespace fe {
@@ -31,6 +31,7 @@ namespace fe {
         FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return m_GPUResourceManager.CreateTriangle(); };
 
     private:
+        Shader             m_Shader;
         GPUResourceManager m_GPUResourceManager;
 
         IPlatformSystem& m_PlatformSystem;

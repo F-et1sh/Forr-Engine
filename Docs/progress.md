@@ -13,6 +13,8 @@
     GLM added
     Triangle added, but no Shader yet
     PathManager added
+    Shader added ( using legacy code )
+    Triagnle done
 ### Problem
     -
 
