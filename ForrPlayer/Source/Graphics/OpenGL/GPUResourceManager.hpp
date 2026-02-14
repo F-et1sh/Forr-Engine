@@ -11,7 +11,6 @@
 ===============================================*/
 
 #pragma once
-#include "GPUTypes.hpp"
 #include "VertexBuffers.hpp"
 
 namespace fe {

@@ -6,6 +6,7 @@
     Create Vulkan triangle
 ### Done
     Vulkan window successfully created
+    Vulkan triangle done
 ### Problem
     -
 

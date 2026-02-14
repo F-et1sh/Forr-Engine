@@ -19,6 +19,8 @@
 
 #include "Volk/volk.h"
 
+#include "Graphics/GPUTypes.hpp"
+
 namespace fe {
     class RendererVulkan : public IRenderer {
     public:
@@ -36,10 +38,29 @@ namespace fe {
         std::string    load_shader(const std::filesystem::path& path);
         void           record_command_buffer(VkCommandBuffer command_buffer, uint32_t image_index, VkRenderPass render_pass, std::vector<VkFramebuffer> swapchain_framebuffers, VkExtent2D swapchain_extent, VkPipeline graphics_pipeline);
 
+        uint32_t findMemoryType(VkPhysicalDevice physical_device, uint32_t type_filter, VkMemoryPropertyFlags properties);
+        void     createBuffer(VkDevice device, VkPhysicalDevice physical_device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& buffer_memory);
+
+        VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool command_pool);
+        void            endSingleTimeCommands(VkDevice device, VkQueue graphics_queue, VkCommandPool command_pool, VkCommandBuffer command_buffer);
+        void            copyBuffer(VkDevice device, VkQueue graphics_queue, VkCommandPool command_pool, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
+        void createVertexBuffer(VkDevice device, VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool);
+        void createIndexBuffer(VkDevice device, VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool);
+
     private:
         IPlatformSystem& m_PlatformSystem;
         IWindow&         m_PrimaryWindow;
 
         GLFWwindow* m_GLFWwindow = nullptr;
+
+        std::vector<Vertex>   m_Vertices;
+        std::vector<uint32_t> m_Indices;
+
+        VkBuffer              m_VertexBuffer;
+        VkDeviceMemory        m_VertexBufferMemory;
+
+        VkBuffer              m_IndexBuffer;
+        VkDeviceMemory        m_IndexBufferMemory;
     };
 } // namespace fe

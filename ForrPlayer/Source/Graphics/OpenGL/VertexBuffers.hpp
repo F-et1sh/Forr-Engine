@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "GPUTypes.hpp"
+#include "Graphics/GPUTypes.hpp"
 
 #include <vector>
 #include <variant>

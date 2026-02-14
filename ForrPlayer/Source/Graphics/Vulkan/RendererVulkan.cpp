@@ -76,9 +76,132 @@ void fe::RendererVulkan::record_command_buffer(VkCommandBuffer command_buffer, u
 
     vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
-    vkCmdDraw(command_buffer, 3, 1, 0, 0);
+    VkBuffer     vertex_buffers[] = { m_VertexBuffer };
+    VkDeviceSize offsets[]       = { 0 };
+    vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+    vkCmdBindIndexBuffer(command_buffer, m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+    vkCmdDrawIndexed(command_buffer, m_Indices.size(), 1, 0, 0, 0);
+
     vkCmdEndRenderPass(command_buffer);
     VK_CHECK_RESULT(vkEndCommandBuffer(command_buffer));
+}
+
+uint32_t fe::RendererVulkan::findMemoryType(VkPhysicalDevice physical_device, uint32_t type_filter, VkMemoryPropertyFlags properties) {
+    VkPhysicalDeviceMemoryProperties memory_properties;
+    vkGetPhysicalDeviceMemoryProperties(physical_device, &memory_properties);
+
+    for (uint32_t i = 0; i < memory_properties.memoryTypeCount; i++) {
+        if ((type_filter & (1 << i)) && (memory_properties.memoryTypes[i].propertyFlags & properties) == properties) {
+            return i;
+        }
+    }
+
+    throw std::runtime_error("failed to find suitable memory type!");
+}
+
+void fe::RendererVulkan::createBuffer(VkDevice device, VkPhysicalDevice physical_device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& buffer_memory) {
+    VkBufferCreateInfo buffer_info{};
+    buffer_info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buffer_info.size        = size;
+    buffer_info.usage       = usage;
+    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VK_CHECK_RESULT(vkCreateBuffer(device, &buffer_info, nullptr, &buffer))
+
+    VkMemoryRequirements memory_requirements;
+    vkGetBufferMemoryRequirements(device, buffer, &memory_requirements);
+
+    VkMemoryAllocateInfo allocate_info{};
+    allocate_info.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocate_info.allocationSize  = memory_requirements.size;
+    allocate_info.memoryTypeIndex = findMemoryType(physical_device, memory_requirements.memoryTypeBits, properties);
+
+    VK_CHECK_RESULT(vkAllocateMemory(device, &allocate_info, nullptr, &buffer_memory))
+    VK_CHECK_RESULT(vkBindBufferMemory(device, buffer, buffer_memory, 0));
+}
+
+VkCommandBuffer fe::RendererVulkan::beginSingleTimeCommands(VkDevice device, VkCommandPool command_pool) {
+    VkCommandBufferAllocateInfo allocate_info{};
+    allocate_info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocate_info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocate_info.commandPool        = command_pool;
+    allocate_info.commandBufferCount = 1;
+
+    VkCommandBuffer command_buffer;
+    vkAllocateCommandBuffers(device, &allocate_info, &command_buffer);
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    VK_CHECK_RESULT(vkBeginCommandBuffer(command_buffer, &beginInfo));
+
+    return command_buffer;
+}
+
+void fe::RendererVulkan::endSingleTimeCommands(VkDevice device, VkQueue graphics_queue, VkCommandPool command_pool, VkCommandBuffer command_buffer) {
+    VK_CHECK_RESULT(vkEndCommandBuffer(command_buffer));
+
+    VkSubmitInfo submit_info{};
+    submit_info.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers    = &command_buffer;
+
+    VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &submit_info, VK_NULL_HANDLE));
+    VK_CHECK_RESULT(vkQueueWaitIdle(graphics_queue));
+
+    vkFreeCommandBuffers(device, command_pool, 1, &command_buffer);
+}
+
+void fe::RendererVulkan::copyBuffer(VkDevice device, VkQueue graphics_queue, VkCommandPool command_pool, VkBuffer src_buffer, VkBuffer dst_buffer, VkDeviceSize size) {
+    VkCommandBuffer command_buffer = beginSingleTimeCommands(device, command_pool);
+
+    VkBufferCopy copy_region{};
+    copy_region.size = size;
+    vkCmdCopyBuffer(command_buffer, src_buffer, dst_buffer, 1, &copy_region);
+
+    endSingleTimeCommands(device, graphics_queue, command_pool, command_buffer);
+}
+
+void fe::RendererVulkan::createVertexBuffer(VkDevice device, VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool) {
+    VkDeviceSize buffer_size = sizeof(m_Vertices[0]) * m_Vertices.size();
+
+    VkBuffer       staging_buffer;
+    VkDeviceMemory staging_buffer_memory;
+    createBuffer(device, physical_device, buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, staging_buffer, staging_buffer_memory);
+
+    void* data;
+    vkMapMemory(device, staging_buffer_memory, 0, buffer_size, 0, &data);
+    memcpy(data, m_Vertices.data(), (size_t) buffer_size);
+    vkUnmapMemory(device, staging_buffer_memory);
+
+    createBuffer(device, physical_device, buffer_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VertexBuffer, m_VertexBufferMemory);
+
+    copyBuffer(device, graphics_queue, command_pool, staging_buffer, m_VertexBuffer, buffer_size);
+
+    vkDestroyBuffer(device, staging_buffer, nullptr);
+    vkFreeMemory(device, staging_buffer_memory, nullptr);
+}
+
+void fe::RendererVulkan::createIndexBuffer(VkDevice device, VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool) {
+    VkDeviceSize buffer_size = sizeof(m_Indices[0]) * m_Indices.size();
+
+    VkBuffer       staging_buffer;
+    VkDeviceMemory staging_buffer_memory;
+    createBuffer(device, physical_device, buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, staging_buffer, staging_buffer_memory);
+
+    void* data;
+    vkMapMemory(device, staging_buffer_memory, 0, buffer_size, 0, &data);
+    memcpy(data, m_Indices.data(), (size_t) buffer_size);
+    vkUnmapMemory(device, staging_buffer_memory);
+
+    createBuffer(device, physical_device, buffer_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_IndexBuffer, m_IndexBufferMemory);
+
+    copyBuffer(device, graphics_queue, command_pool, staging_buffer, m_IndexBuffer, buffer_size);
+
+    vkDestroyBuffer(device, staging_buffer, nullptr);
+    vkFreeMemory(device, staging_buffer_memory, nullptr);
 }
 
 fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
@@ -111,7 +234,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
 
     VkInstance instance{};
     VK_CHECK_RESULT(vkCreateInstance(&create_info, nullptr, &instance))
-    
+
     volkLoadInstance(instance);
 
     VkSurfaceKHR surface{};
@@ -211,7 +334,6 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
         }
     }
 
-    
     VkSurfaceCapabilitiesKHR capabilities{};
     VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &capabilities));
     VkExtent2D extent      = capabilities.currentExtent;
@@ -323,7 +445,6 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     render_pass_create_info.dependencyCount = 1;
     render_pass_create_info.pDependencies   = &subpass_dependency;
 
-    
     VkRenderPass render_pass{};
     VK_CHECK_RESULT(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass));
 
@@ -350,10 +471,25 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
         frag_pipeline_shader_stage_create_info
     };
 
+    VkVertexInputBindingDescription binding{}; // VERTICES
+    binding.binding   = 0;
+    binding.stride    = sizeof(Vertex);
+    binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    VkVertexInputAttributeDescription attribute{};
+    attribute.binding  = 0;
+    attribute.location = 0;
+    attribute.format   = VK_FORMAT_R32G32B32_SFLOAT;
+    attribute.offset   = offsetof(Vertex, position);
+
     VkPipelineVertexInputStateCreateInfo pipeline_vertex_input_state_create_info{};
-    pipeline_vertex_input_state_create_info.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    pipeline_vertex_input_state_create_info.vertexAttributeDescriptionCount = 0;
-    pipeline_vertex_input_state_create_info.vertexBindingDescriptionCount   = 0;
+    pipeline_vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
+    pipeline_vertex_input_state_create_info.vertexBindingDescriptionCount = 1;
+    pipeline_vertex_input_state_create_info.pVertexBindingDescriptions    = &binding;
+
+    pipeline_vertex_input_state_create_info.vertexAttributeDescriptionCount = 1;
+    pipeline_vertex_input_state_create_info.pVertexAttributeDescriptions    = &attribute;
 
     VkPipelineInputAssemblyStateCreateInfo pipeline_input_assembly_state_create_info{};
     pipeline_input_assembly_state_create_info.sType                  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -372,7 +508,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     pipeline_rasterization_state_create_info.depthBiasEnable         = VK_FALSE;
     pipeline_rasterization_state_create_info.polygonMode             = VK_POLYGON_MODE_FILL;
     pipeline_rasterization_state_create_info.lineWidth               = 1.0f;
-    pipeline_rasterization_state_create_info.cullMode                = VK_CULL_MODE_BACK_BIT;
+    pipeline_rasterization_state_create_info.cullMode                = VK_CULL_MODE_FRONT_BIT;
     pipeline_rasterization_state_create_info.frontFace               = VK_FRONT_FACE_CLOCKWISE;
 
     VkPipelineMultisampleStateCreateInfo pipeline_multisample_state_create_info{};
@@ -455,6 +591,17 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     command_pool_create_info.queueFamilyIndex = graphics_queue_family_index;
 
     VK_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool));
+
+    m_Vertices.emplace_back(Vertex{ glm::vec3(-0.5f,  0.5f, 0.0f) });
+    m_Vertices.emplace_back(Vertex{ glm::vec3( 0.5f,  0.5f, 0.0f) });
+    m_Vertices.emplace_back(Vertex{ glm::vec3( 0.0f, -0.5f, 0.0f) });
+
+    m_Indices.emplace_back(0);
+    m_Indices.emplace_back(1);
+    m_Indices.emplace_back(2);
+
+    this->createVertexBuffer(device, physical_device, graphics_queue, command_pool);
+    this->createIndexBuffer(device, physical_device, graphics_queue, command_pool);
 
     constexpr int                MAX_FRAMES_IN_FLIGHT = 2;
     std::vector<VkCommandBuffer> command_buffers(MAX_FRAMES_IN_FLIGHT);
