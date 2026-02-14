@@ -103,7 +103,7 @@
     <ClInclude Include="Include\Forr\Platform\IPlatformSystem.hpp" />
     <ClInclude Include="Include\Forr\Platform\IWindow.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\GPUResourceManager.hpp" />
-    <ClInclude Include="Source\Graphics\OpenGL\GPUTypes.hpp" />
+    <ClInclude Include="Source\Graphics\GPUTypes.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\Shader.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\VertexBuffers.hpp" />

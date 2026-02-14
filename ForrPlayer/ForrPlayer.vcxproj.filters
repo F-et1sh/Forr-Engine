@@ -15,7 +15,7 @@
     <ClInclude Include="Include\Forr\Graphics\IRenderer.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\GPUResourceManager.hpp" />
-    <ClInclude Include="Source\Graphics\OpenGL\GPUTypes.hpp" />
+    <ClInclude Include="Source\Graphics\GPUTypes.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\VertexBuffers.hpp" />
     <ClInclude Include="Include\Forr\Core\types.hpp" />
     <ClInclude Include="Include\Forr\Core\path.hpp" />
