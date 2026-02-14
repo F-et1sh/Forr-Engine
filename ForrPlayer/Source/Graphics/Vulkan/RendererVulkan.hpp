@@ -17,6 +17,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include "Volk/volk.h"
+
 namespace fe {
     class RendererVulkan : public IRenderer {
     public:
@@ -28,6 +30,11 @@ namespace fe {
 
         void                                    Draw(MeshID index) override;
         FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return 0; }; // temp
+
+    private:
+        VkShaderModule create_shader_module(const std::string& code, VkDevice device);
+        std::string    load_shader(const std::filesystem::path& path);
+        void           record_command_buffer(VkCommandBuffer command_buffer, uint32_t image_index, VkRenderPass render_pass, std::vector<VkFramebuffer> swapchain_framebuffers, VkExtent2D swapchain_extent, VkPipeline graphics_pipeline);
 
     private:
         IPlatformSystem& m_PlatformSystem;
