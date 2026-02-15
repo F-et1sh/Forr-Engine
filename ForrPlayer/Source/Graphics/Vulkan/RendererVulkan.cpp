@@ -39,7 +39,7 @@ std::string fe::RendererVulkan::load_shader(const std::filesystem::path& path) {
     return { (std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>() };
 }
 
-void fe::RendererVulkan::record_command_buffer(VkCommandBuffer command_buffer, uint32_t image_index, VkRenderPass render_pass, std::vector<VkFramebuffer> swapchain_framebuffers, VkExtent2D swapchain_extent, VkPipeline graphics_pipeline) {
+void fe::RendererVulkan::record_command_buffer(VkCommandBuffer command_buffer, uint32_t image_index, VkRenderPass render_pass, std::vector<VkFramebuffer> swapchain_framebuffers, VkExtent2D swapchain_extent) {
     VkCommandBufferBeginInfo begin_info{};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -58,7 +58,7 @@ void fe::RendererVulkan::record_command_buffer(VkCommandBuffer command_buffer, u
 
     vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
-    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline);
+    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline);
 
     VkViewport viewport{};
     viewport.x        = 0.0f;
@@ -77,7 +77,7 @@ void fe::RendererVulkan::record_command_buffer(VkCommandBuffer command_buffer, u
     vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
     VkBuffer     vertex_buffers[] = { m_VertexBuffer };
-    VkDeviceSize offsets[]       = { 0 };
+    VkDeviceSize offsets[]        = { 0 };
     vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
     vkCmdBindIndexBuffer(command_buffer, m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
@@ -232,7 +232,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     create_info.enabledExtensionCount   = extensions.size();
     create_info.ppEnabledExtensionNames = extensions.data();
 
-    VK_CHECK_RESULT(vkCreateInstance(&create_info, nullptr, (VkInstance*)&m_Instance))
+    VK_CHECK_RESULT(vkCreateInstance(&create_info, nullptr, (VkInstance*) &m_Instance))
     volkLoadInstance(m_Instance);
 
     VkSurfaceKHR surface{};
@@ -311,7 +311,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     device_create_info.queueCreateInfoCount = queue_create_infos.size();
     device_create_info.pQueueCreateInfos    = queue_create_infos.data();
 
-    VK_CHECK_RESULT(vkCreateDevice(physical_device, &device_create_info, nullptr, (VkDevice*)&m_Device))
+    VK_CHECK_RESULT(vkCreateDevice(physical_device, &device_create_info, nullptr, (VkDevice*) &m_Device))
 
     VkQueue graphics_queue{};
     VkQueue present_queue{};
@@ -375,13 +375,12 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     swapchain_create_info.imageFormat     = surface_format.format;
     swapchain_create_info.imageColorSpace = surface_format.colorSpace;
 
-    VkSwapchainKHR swapchain{};
-    VK_CHECK_RESULT(vkCreateSwapchainKHR(m_Device, &swapchain_create_info, nullptr, &swapchain));
+    fe::vk::create_and_wrap(m_Swapchain, m_Device, vkCreateSwapchainKHR, &swapchain_create_info, nullptr);
 
     uint32_t swapchain_image_count = 0;
-    VK_CHECK_RESULT(vkGetSwapchainImagesKHR(m_Device, swapchain, &swapchain_image_count, nullptr));
+    VK_CHECK_RESULT(vkGetSwapchainImagesKHR(m_Device, m_Swapchain, &swapchain_image_count, nullptr));
     std::vector<VkImage> swapchain_images(swapchain_image_count);
-    VK_CHECK_RESULT(vkGetSwapchainImagesKHR(m_Device, swapchain, &swapchain_image_count, swapchain_images.data()));
+    VK_CHECK_RESULT(vkGetSwapchainImagesKHR(m_Device, m_Swapchain, &swapchain_image_count, swapchain_images.data()));
 
     VkFormat                 swapchain_image_format = surface_format.format;
     VkExtent2D               swapchain_extent       = extent;
@@ -557,8 +556,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     graphics_pipeline_create_info.subpass             = 0;
     graphics_pipeline_create_info.basePipelineHandle  = VK_NULL_HANDLE;
 
-    VkPipeline graphics_pipeline{};
-    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr, &graphics_pipeline));
+    fe::vk::create_and_wrap(m_Pipeline, m_Device, vkCreateGraphicsPipelines, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr);
 
     vkDestroyShaderModule(m_Device, vert_shader_module, nullptr);
     vkDestroyShaderModule(m_Device, frag_shader_module, nullptr);
@@ -589,9 +587,9 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
 
     VK_CHECK_RESULT(vkCreateCommandPool(m_Device, &command_pool_create_info, nullptr, &command_pool));
 
-    m_Vertices.emplace_back(Vertex{ glm::vec3(-0.5f,  0.5f, 0.0f) });
-    m_Vertices.emplace_back(Vertex{ glm::vec3( 0.5f,  0.5f, 0.0f) });
-    m_Vertices.emplace_back(Vertex{ glm::vec3( 0.0f, -0.5f, 0.0f) });
+    m_Vertices.emplace_back(Vertex{ glm::vec3(-0.5f, 0.5f, 0.0f) });
+    m_Vertices.emplace_back(Vertex{ glm::vec3(0.5f, 0.5f, 0.0f) });
+    m_Vertices.emplace_back(Vertex{ glm::vec3(0.0f, -0.5f, 0.0f) });
 
     m_Indices.emplace_back(0);
     m_Indices.emplace_back(1);
@@ -636,16 +634,16 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
         glfwPollEvents();
 
         uint32_t image_index = 0;
-        VK_CHECK_RESULT(vkAcquireNextImageKHR(m_Device, swapchain, UINT64_MAX, image_avaliable_semaphores[current_frame], VK_NULL_HANDLE, &image_index));
+        VK_CHECK_RESULT(vkAcquireNextImageKHR(m_Device, m_Swapchain, UINT64_MAX, image_avaliable_semaphores[current_frame], VK_NULL_HANDLE, &image_index));
 
         VK_CHECK_RESULT(vkResetCommandBuffer(command_buffers[current_frame], 0));
 
-        record_command_buffer(command_buffers[current_frame], image_index, render_pass, swapchain_framebuffers, swapchain_extent, graphics_pipeline);
+        record_command_buffer(command_buffers[current_frame], image_index, render_pass, swapchain_framebuffers, swapchain_extent);
 
         VkPipelineStageFlags wait_stages[]       = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
         VkSemaphore          wait_semaphores[]   = { image_avaliable_semaphores[current_frame] };
         VkSemaphore          signal_semaphores[] = { render_finished_semaphores[current_frame] };
-        VkSwapchainKHR       swapchains[]        = { swapchain };
+        VkSwapchainKHR       swapchains[]        = { m_Swapchain };
 
         VkSubmitInfo submit_info{};
         submit_info.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;

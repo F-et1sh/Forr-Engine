@@ -4,9 +4,36 @@
 ### Goal
     Consolidate the 2 month plan
     Create Vulkan architecture
+
+    Handles needs for :
+    - Instance
+    - Device
+    - SurfaceKHR
+    - SwapchainKHR
+    - Buffer
+    - Image
+    - ImageView
+    - Sampler
+    - ShaderModule
+    - RenderPass
+    - Framebuffer
+    - Pipeline
+    - PipelineLayout
+    - DescriptorSetLayout
+    - DescriptorPool
+    - CommandPool
+    - Fence
+    - Semaphore
+    - Event
+    
 ### Done
     Trying to add Vulkan types
-    fe::vk::Device and fe::vk::Instance added
+
+    Handles done for :
+    - all
+
+    fe::vk::create_and_wrap() added
+
 ### Problem
     -
 
