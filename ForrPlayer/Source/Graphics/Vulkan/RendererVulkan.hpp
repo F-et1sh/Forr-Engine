@@ -37,7 +37,7 @@ namespace fe {
     private:
         VkShaderModule create_shader_module(const std::string& code);
         std::string    load_shader(const std::filesystem::path& path);
-        void           record_command_buffer(VkCommandBuffer command_buffer, uint32_t image_index, VkRenderPass render_pass, std::vector<VkFramebuffer> swapchain_framebuffers, VkExtent2D swapchain_extent, VkPipeline graphics_pipeline);
+        void           record_command_buffer(VkCommandBuffer command_buffer, uint32_t image_index, VkRenderPass render_pass, std::vector<VkFramebuffer> swapchain_framebuffers, VkExtent2D swapchain_extent);
 
         uint32_t findMemoryType(VkPhysicalDevice physical_device, uint32_t type_filter, VkMemoryPropertyFlags properties);
         void     createBuffer(VkPhysicalDevice physical_device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& buffer_memory);
@@ -56,15 +56,19 @@ namespace fe {
         GLFWwindow* m_GLFWwindow = nullptr;
 
         fe::vk::Instance m_Instance;
-        fe::vk::Device m_Device;
+        fe::vk::Device   m_Device;
+
+        fe::vk::Swapchain m_Swapchain;
+
+        fe::vk::Pipeline m_Pipeline;
 
         std::vector<Vertex>   m_Vertices;
         std::vector<uint32_t> m_Indices;
 
-        VkBuffer              m_VertexBuffer;
-        VkDeviceMemory        m_VertexBufferMemory;
+        VkBuffer       m_VertexBuffer;
+        VkDeviceMemory m_VertexBufferMemory;
 
-        VkBuffer              m_IndexBuffer;
-        VkDeviceMemory        m_IndexBufferMemory;
+        VkBuffer       m_IndexBuffer;
+        VkDeviceMemory m_IndexBufferMemory;
     };
 } // namespace fe
