@@ -3,6 +3,17 @@
 ## 14.02.2026
 ### Goal
     Consolidate the 2 month plan
+    Create Vulkan architecture
+### Done
+    Trying to add Vulkan types
+### Problem
+    -
+
+---
+
+## 14.02.2026
+### Goal
+    Consolidate the 2 month plan
     Create Vulkan triangle
 ### Done
     Vulkan window successfully created
