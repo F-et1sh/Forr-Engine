@@ -18,14 +18,14 @@
 
 #include "Tools.hpp"
 
-VkShaderModule fe::RendererVulkan::create_shader_module(const std::string& code, VkDevice device) {
+VkShaderModule fe::RendererVulkan::create_shader_module(const std::string& code) {
     VkShaderModuleCreateInfo shader_module_create_info{};
     shader_module_create_info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     shader_module_create_info.codeSize = code.size();
     shader_module_create_info.pCode    = reinterpret_cast<const uint32_t*>(code.data());
 
     VkShaderModule shader_module{};
-    VK_CHECK_RESULT(vkCreateShaderModule(device, &shader_module_create_info, nullptr, &shader_module));
+    VK_CHECK_RESULT(vkCreateShaderModule(m_Device, &shader_module_create_info, nullptr, &shader_module));
 
     return shader_module;
 }
@@ -100,28 +100,28 @@ uint32_t fe::RendererVulkan::findMemoryType(VkPhysicalDevice physical_device, ui
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void fe::RendererVulkan::createBuffer(VkDevice device, VkPhysicalDevice physical_device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& buffer_memory) {
+void fe::RendererVulkan::createBuffer(VkPhysicalDevice physical_device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& buffer_memory) {
     VkBufferCreateInfo buffer_info{};
     buffer_info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     buffer_info.size        = size;
     buffer_info.usage       = usage;
     buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    VK_CHECK_RESULT(vkCreateBuffer(device, &buffer_info, nullptr, &buffer))
+    VK_CHECK_RESULT(vkCreateBuffer(m_Device, &buffer_info, nullptr, &buffer))
 
     VkMemoryRequirements memory_requirements;
-    vkGetBufferMemoryRequirements(device, buffer, &memory_requirements);
+    vkGetBufferMemoryRequirements(m_Device, buffer, &memory_requirements);
 
     VkMemoryAllocateInfo allocate_info{};
     allocate_info.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocate_info.allocationSize  = memory_requirements.size;
     allocate_info.memoryTypeIndex = findMemoryType(physical_device, memory_requirements.memoryTypeBits, properties);
 
-    VK_CHECK_RESULT(vkAllocateMemory(device, &allocate_info, nullptr, &buffer_memory))
-    VK_CHECK_RESULT(vkBindBufferMemory(device, buffer, buffer_memory, 0));
+    VK_CHECK_RESULT(vkAllocateMemory(m_Device, &allocate_info, nullptr, &buffer_memory))
+    VK_CHECK_RESULT(vkBindBufferMemory(m_Device, buffer, buffer_memory, 0));
 }
 
-VkCommandBuffer fe::RendererVulkan::beginSingleTimeCommands(VkDevice device, VkCommandPool command_pool) {
+VkCommandBuffer fe::RendererVulkan::beginSingleTimeCommands(VkCommandPool command_pool) {
     VkCommandBufferAllocateInfo allocate_info{};
     allocate_info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocate_info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -129,7 +129,7 @@ VkCommandBuffer fe::RendererVulkan::beginSingleTimeCommands(VkDevice device, VkC
     allocate_info.commandBufferCount = 1;
 
     VkCommandBuffer command_buffer;
-    vkAllocateCommandBuffers(device, &allocate_info, &command_buffer);
+    vkAllocateCommandBuffers(m_Device, &allocate_info, &command_buffer);
 
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -140,7 +140,7 @@ VkCommandBuffer fe::RendererVulkan::beginSingleTimeCommands(VkDevice device, VkC
     return command_buffer;
 }
 
-void fe::RendererVulkan::endSingleTimeCommands(VkDevice device, VkQueue graphics_queue, VkCommandPool command_pool, VkCommandBuffer command_buffer) {
+void fe::RendererVulkan::endSingleTimeCommands(VkQueue graphics_queue, VkCommandPool command_pool, VkCommandBuffer command_buffer) {
     VK_CHECK_RESULT(vkEndCommandBuffer(command_buffer));
 
     VkSubmitInfo submit_info{};
@@ -151,57 +151,57 @@ void fe::RendererVulkan::endSingleTimeCommands(VkDevice device, VkQueue graphics
     VK_CHECK_RESULT(vkQueueSubmit(graphics_queue, 1, &submit_info, VK_NULL_HANDLE));
     VK_CHECK_RESULT(vkQueueWaitIdle(graphics_queue));
 
-    vkFreeCommandBuffers(device, command_pool, 1, &command_buffer);
+    vkFreeCommandBuffers(m_Device, command_pool, 1, &command_buffer);
 }
 
-void fe::RendererVulkan::copyBuffer(VkDevice device, VkQueue graphics_queue, VkCommandPool command_pool, VkBuffer src_buffer, VkBuffer dst_buffer, VkDeviceSize size) {
-    VkCommandBuffer command_buffer = beginSingleTimeCommands(device, command_pool);
+void fe::RendererVulkan::copyBuffer(VkQueue graphics_queue, VkCommandPool command_pool, VkBuffer src_buffer, VkBuffer dst_buffer, VkDeviceSize size) {
+    VkCommandBuffer command_buffer = beginSingleTimeCommands(command_pool);
 
     VkBufferCopy copy_region{};
     copy_region.size = size;
     vkCmdCopyBuffer(command_buffer, src_buffer, dst_buffer, 1, &copy_region);
 
-    endSingleTimeCommands(device, graphics_queue, command_pool, command_buffer);
+    endSingleTimeCommands(graphics_queue, command_pool, command_buffer);
 }
 
-void fe::RendererVulkan::createVertexBuffer(VkDevice device, VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool) {
+void fe::RendererVulkan::createVertexBuffer(VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool) {
     VkDeviceSize buffer_size = sizeof(m_Vertices[0]) * m_Vertices.size();
 
     VkBuffer       staging_buffer;
     VkDeviceMemory staging_buffer_memory;
-    createBuffer(device, physical_device, buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, staging_buffer, staging_buffer_memory);
+    createBuffer(physical_device, buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, staging_buffer, staging_buffer_memory);
 
     void* data;
-    vkMapMemory(device, staging_buffer_memory, 0, buffer_size, 0, &data);
+    vkMapMemory(m_Device, staging_buffer_memory, 0, buffer_size, 0, &data);
     memcpy(data, m_Vertices.data(), (size_t) buffer_size);
-    vkUnmapMemory(device, staging_buffer_memory);
+    vkUnmapMemory(m_Device, staging_buffer_memory);
 
-    createBuffer(device, physical_device, buffer_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VertexBuffer, m_VertexBufferMemory);
+    createBuffer(physical_device, buffer_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VertexBuffer, m_VertexBufferMemory);
 
-    copyBuffer(device, graphics_queue, command_pool, staging_buffer, m_VertexBuffer, buffer_size);
+    copyBuffer(graphics_queue, command_pool, staging_buffer, m_VertexBuffer, buffer_size);
 
-    vkDestroyBuffer(device, staging_buffer, nullptr);
-    vkFreeMemory(device, staging_buffer_memory, nullptr);
+    vkDestroyBuffer(m_Device, staging_buffer, nullptr);
+    vkFreeMemory(m_Device, staging_buffer_memory, nullptr);
 }
 
-void fe::RendererVulkan::createIndexBuffer(VkDevice device, VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool) {
+void fe::RendererVulkan::createIndexBuffer(VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool) {
     VkDeviceSize buffer_size = sizeof(m_Indices[0]) * m_Indices.size();
 
     VkBuffer       staging_buffer;
     VkDeviceMemory staging_buffer_memory;
-    createBuffer(device, physical_device, buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, staging_buffer, staging_buffer_memory);
+    createBuffer(physical_device, buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, staging_buffer, staging_buffer_memory);
 
     void* data;
-    vkMapMemory(device, staging_buffer_memory, 0, buffer_size, 0, &data);
+    vkMapMemory(m_Device, staging_buffer_memory, 0, buffer_size, 0, &data);
     memcpy(data, m_Indices.data(), (size_t) buffer_size);
-    vkUnmapMemory(device, staging_buffer_memory);
+    vkUnmapMemory(m_Device, staging_buffer_memory);
 
-    createBuffer(device, physical_device, buffer_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_IndexBuffer, m_IndexBufferMemory);
+    createBuffer(physical_device, buffer_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_IndexBuffer, m_IndexBufferMemory);
 
-    copyBuffer(device, graphics_queue, command_pool, staging_buffer, m_IndexBuffer, buffer_size);
+    copyBuffer(graphics_queue, command_pool, staging_buffer, m_IndexBuffer, buffer_size);
 
-    vkDestroyBuffer(device, staging_buffer, nullptr);
-    vkFreeMemory(device, staging_buffer_memory, nullptr);
+    vkDestroyBuffer(m_Device, staging_buffer, nullptr);
+    vkFreeMemory(m_Device, staging_buffer_memory, nullptr);
 }
 
 fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
@@ -232,22 +232,20 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     create_info.enabledExtensionCount   = extensions.size();
     create_info.ppEnabledExtensionNames = extensions.data();
 
-    VkInstance instance{};
-    VK_CHECK_RESULT(vkCreateInstance(&create_info, nullptr, &instance))
-
-    volkLoadInstance(instance);
+    VK_CHECK_RESULT(vkCreateInstance(&create_info, nullptr, (VkInstance*)&m_Instance))
+    volkLoadInstance(m_Instance);
 
     VkSurfaceKHR surface{};
-    VK_CHECK_RESULT(glfwCreateWindowSurface(instance, m_GLFWwindow, nullptr, &surface))
+    VK_CHECK_RESULT(glfwCreateWindowSurface(m_Instance, m_GLFWwindow, nullptr, &surface))
 
     uint32_t device_count = 0;
-    VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, nullptr));
+    VK_CHECK_RESULT(vkEnumeratePhysicalDevices(m_Instance, &device_count, nullptr));
     if (device_count == 0) {
         fe::logging::error("Failed to initialize Vulkan Renderer. No Vulkan devices found");
         return;
     }
     std::vector<VkPhysicalDevice> devices(device_count);
-    VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &device_count, devices.data()));
+    VK_CHECK_RESULT(vkEnumeratePhysicalDevices(m_Instance, &device_count, devices.data()));
 
     VkPhysicalDevice physical_device = devices[0]; // CHOOSING FIRST DEVICE
 
@@ -313,13 +311,12 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     device_create_info.queueCreateInfoCount = queue_create_infos.size();
     device_create_info.pQueueCreateInfos    = queue_create_infos.data();
 
-    VkDevice device{};
-    VK_CHECK_RESULT(vkCreateDevice(physical_device, &device_create_info, nullptr, &device))
+    VK_CHECK_RESULT(vkCreateDevice(physical_device, &device_create_info, nullptr, (VkDevice*)&m_Device))
 
     VkQueue graphics_queue{};
     VkQueue present_queue{};
-    vkGetDeviceQueue(device, graphics_queue_family_index, 0, &graphics_queue);
-    vkGetDeviceQueue(device, present_queue_family_index, 0, &present_queue);
+    vkGetDeviceQueue(m_Device, graphics_queue_family_index, 0, &graphics_queue);
+    vkGetDeviceQueue(m_Device, present_queue_family_index, 0, &present_queue);
 
     uint32_t format_count = 0;
     VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, nullptr));
@@ -379,12 +376,12 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     swapchain_create_info.imageColorSpace = surface_format.colorSpace;
 
     VkSwapchainKHR swapchain{};
-    VK_CHECK_RESULT(vkCreateSwapchainKHR(device, &swapchain_create_info, nullptr, &swapchain));
+    VK_CHECK_RESULT(vkCreateSwapchainKHR(m_Device, &swapchain_create_info, nullptr, &swapchain));
 
     uint32_t swapchain_image_count = 0;
-    VK_CHECK_RESULT(vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, nullptr));
+    VK_CHECK_RESULT(vkGetSwapchainImagesKHR(m_Device, swapchain, &swapchain_image_count, nullptr));
     std::vector<VkImage> swapchain_images(swapchain_image_count);
-    VK_CHECK_RESULT(vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, swapchain_images.data()));
+    VK_CHECK_RESULT(vkGetSwapchainImagesKHR(m_Device, swapchain, &swapchain_image_count, swapchain_images.data()));
 
     VkFormat                 swapchain_image_format = surface_format.format;
     VkExtent2D               swapchain_extent       = extent;
@@ -406,7 +403,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
         image_view_create_info.subresourceRange.baseArrayLayer = 0;
         image_view_create_info.subresourceRange.layerCount     = 1;
 
-        VK_CHECK_RESULT(vkCreateImageView(device, &image_view_create_info, nullptr, &swapchain_image_views[i]));
+        VK_CHECK_RESULT(vkCreateImageView(m_Device, &image_view_create_info, nullptr, &swapchain_image_views[i]));
     }
 
     VkAttachmentDescription color_attachment_description{};
@@ -446,13 +443,13 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     render_pass_create_info.pDependencies   = &subpass_dependency;
 
     VkRenderPass render_pass{};
-    VK_CHECK_RESULT(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass));
+    VK_CHECK_RESULT(vkCreateRenderPass(m_Device, &render_pass_create_info, nullptr, &render_pass));
 
     std::string vert_source = load_shader(PATH.getShadersPath() / L"default.vert.spv");
     std::string frag_source = load_shader(PATH.getShadersPath() / L"default.frag.spv");
 
-    VkShaderModule vert_shader_module = create_shader_module(vert_source, device);
-    VkShaderModule frag_shader_module = create_shader_module(frag_source, device);
+    VkShaderModule vert_shader_module = create_shader_module(vert_source);
+    VkShaderModule frag_shader_module = create_shader_module(frag_source);
 
     VkPipelineShaderStageCreateInfo vert_pipeline_shader_stage_create_info{};
     vert_pipeline_shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -542,7 +539,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     pipeline_layout_create_info.setLayoutCount         = 0;
     pipeline_layout_create_info.pushConstantRangeCount = 0;
 
-    VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &pipeline_layout));
+    VK_CHECK_RESULT(vkCreatePipelineLayout(m_Device, &pipeline_layout_create_info, nullptr, &pipeline_layout));
 
     VkGraphicsPipelineCreateInfo graphics_pipeline_create_info{};
     graphics_pipeline_create_info.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -561,10 +558,10 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     graphics_pipeline_create_info.basePipelineHandle  = VK_NULL_HANDLE;
 
     VkPipeline graphics_pipeline{};
-    VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr, &graphics_pipeline));
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr, &graphics_pipeline));
 
-    vkDestroyShaderModule(device, vert_shader_module, nullptr);
-    vkDestroyShaderModule(device, frag_shader_module, nullptr);
+    vkDestroyShaderModule(m_Device, vert_shader_module, nullptr);
+    vkDestroyShaderModule(m_Device, frag_shader_module, nullptr);
 
     std::vector<VkFramebuffer> swapchain_framebuffers(swapchain_image_views.size());
 
@@ -581,7 +578,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
         framebuffer_create_info.height          = swapchain_extent.height;
         framebuffer_create_info.layers          = 1;
 
-        VK_CHECK_RESULT(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &swapchain_framebuffers[i]));
+        VK_CHECK_RESULT(vkCreateFramebuffer(m_Device, &framebuffer_create_info, nullptr, &swapchain_framebuffers[i]));
     }
 
     VkCommandPool           command_pool{};
@@ -590,7 +587,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     command_pool_create_info.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     command_pool_create_info.queueFamilyIndex = graphics_queue_family_index;
 
-    VK_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool));
+    VK_CHECK_RESULT(vkCreateCommandPool(m_Device, &command_pool_create_info, nullptr, &command_pool));
 
     m_Vertices.emplace_back(Vertex{ glm::vec3(-0.5f,  0.5f, 0.0f) });
     m_Vertices.emplace_back(Vertex{ glm::vec3( 0.5f,  0.5f, 0.0f) });
@@ -600,8 +597,8 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     m_Indices.emplace_back(1);
     m_Indices.emplace_back(2);
 
-    this->createVertexBuffer(device, physical_device, graphics_queue, command_pool);
-    this->createIndexBuffer(device, physical_device, graphics_queue, command_pool);
+    this->createVertexBuffer(physical_device, graphics_queue, command_pool);
+    this->createIndexBuffer(physical_device, graphics_queue, command_pool);
 
     constexpr int                MAX_FRAMES_IN_FLIGHT = 2;
     std::vector<VkCommandBuffer> command_buffers(MAX_FRAMES_IN_FLIGHT);
@@ -611,7 +608,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     command_buffer_allocate_info.commandPool        = command_pool;
     command_buffer_allocate_info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &command_buffer_allocate_info, command_buffers.data()));
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Device, &command_buffer_allocate_info, command_buffers.data()));
 
     std::vector<VkSemaphore> image_avaliable_semaphores(MAX_FRAMES_IN_FLIGHT);
     std::vector<VkSemaphore> render_finished_semaphores(MAX_FRAMES_IN_FLIGHT);
@@ -624,9 +621,9 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphore_create_info, nullptr, &image_avaliable_semaphores[i]));
-        VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphore_create_info, nullptr, &render_finished_semaphores[i]));
-        VK_CHECK_RESULT(vkCreateFence(device, &fence_create_info, nullptr, &in_flight_fences[i]));
+        VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphore_create_info, nullptr, &image_avaliable_semaphores[i]));
+        VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphore_create_info, nullptr, &render_finished_semaphores[i]));
+        VK_CHECK_RESULT(vkCreateFence(m_Device, &fence_create_info, nullptr, &in_flight_fences[i]));
     }
 
     uint32_t current_frame = 0;
@@ -639,7 +636,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
         glfwPollEvents();
 
         uint32_t image_index = 0;
-        VK_CHECK_RESULT(vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, image_avaliable_semaphores[current_frame], VK_NULL_HANDLE, &image_index));
+        VK_CHECK_RESULT(vkAcquireNextImageKHR(m_Device, swapchain, UINT64_MAX, image_avaliable_semaphores[current_frame], VK_NULL_HANDLE, &image_index));
 
         VK_CHECK_RESULT(vkResetCommandBuffer(command_buffers[current_frame], 0));
 
@@ -684,9 +681,6 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
             last_time = now;
         }
     }
-
-    vkDestroyDevice(device, nullptr);
-    vkDestroyInstance(instance, nullptr);
 }
 
 fe::RendererVulkan::~RendererVulkan() {

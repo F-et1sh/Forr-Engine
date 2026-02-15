@@ -20,6 +20,7 @@
 #include "Volk/volk.h"
 
 #include "Graphics/GPUTypes.hpp"
+#include "VKTypes.hpp"
 
 namespace fe {
     class RendererVulkan : public IRenderer {
@@ -34,25 +35,28 @@ namespace fe {
         FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return 0; }; // temp
 
     private:
-        VkShaderModule create_shader_module(const std::string& code, VkDevice device);
+        VkShaderModule create_shader_module(const std::string& code);
         std::string    load_shader(const std::filesystem::path& path);
         void           record_command_buffer(VkCommandBuffer command_buffer, uint32_t image_index, VkRenderPass render_pass, std::vector<VkFramebuffer> swapchain_framebuffers, VkExtent2D swapchain_extent, VkPipeline graphics_pipeline);
 
         uint32_t findMemoryType(VkPhysicalDevice physical_device, uint32_t type_filter, VkMemoryPropertyFlags properties);
-        void     createBuffer(VkDevice device, VkPhysicalDevice physical_device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& buffer_memory);
+        void     createBuffer(VkPhysicalDevice physical_device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& buffer_memory);
 
-        VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool command_pool);
-        void            endSingleTimeCommands(VkDevice device, VkQueue graphics_queue, VkCommandPool command_pool, VkCommandBuffer command_buffer);
-        void            copyBuffer(VkDevice device, VkQueue graphics_queue, VkCommandPool command_pool, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+        VkCommandBuffer beginSingleTimeCommands(VkCommandPool command_pool);
+        void            endSingleTimeCommands(VkQueue graphics_queue, VkCommandPool command_pool, VkCommandBuffer command_buffer);
+        void            copyBuffer(VkQueue graphics_queue, VkCommandPool command_pool, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
-        void createVertexBuffer(VkDevice device, VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool);
-        void createIndexBuffer(VkDevice device, VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool);
+        void createVertexBuffer(VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool);
+        void createIndexBuffer(VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool);
 
     private:
         IPlatformSystem& m_PlatformSystem;
         IWindow&         m_PrimaryWindow;
 
         GLFWwindow* m_GLFWwindow = nullptr;
+
+        fe::vk::Instance m_Instance;
+        fe::vk::Device m_Device;
 
         std::vector<Vertex>   m_Vertices;
         std::vector<uint32_t> m_Indices;
