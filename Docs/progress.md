@@ -6,6 +6,7 @@
     Create Vulkan architecture
 ### Done
     Trying to add Vulkan types
+    fe::vk::Device and fe::vk::Instance added
 ### Problem
     -
 

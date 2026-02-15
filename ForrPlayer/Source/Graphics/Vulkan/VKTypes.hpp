@@ -17,36 +17,88 @@
 #include "Core/logging.hpp"
 #include "Core/attributes.hpp"
 
-#include <vulkan/vulkan_core.h>
+#include <Volk/volk.h>
 
 #include "Tools.hpp"
 
-namespace fe::vk { // TODO : work with this
-    class Device {
-        Device(VkPhysicalDevice                         physical_device,
-               std::span<const VkDeviceQueueCreateInfo> queues,
-               std::span<const char* const>             extensions) {
+namespace fe::vk {
+    struct Instance {
+        Instance() = default;
 
-            VkDeviceCreateInfo create_info{
-                .sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-                .queueCreateInfoCount    = uint32_t(queues.size()),
-                .pQueueCreateInfos       = queues.data(),
-                .enabledExtensionCount   = uint32_t(extensions.size()),
-                .ppEnabledExtensionNames = extensions.data(),
-            };
+        explicit Instance(VkInstance handle) noexcept : instance(handle) {}
+        ~Instance() { this->reset(); }
 
-            VK_CHECK_RESULT(vkCreateDevice(physical_device, &create_info, nullptr, &device))
+        FORR_CLASS_NONCOPYABLE(Instance)
+
+        Instance(Instance&& other) noexcept : instance(other.instance) {
+            other.instance = VK_NULL_HANDLE;
         }
 
-        ~Device() {
-            if (device) vkDestroyDevice(device, nullptr);
+        Instance& operator=(Instance&& other) noexcept {
+            if (this != &other) {
+                this->attach(other.instance);
+                other.instance = VK_NULL_HANDLE; // NOT other.reset()
+            }
+            return *this;
         }
+
+        void reset() noexcept {
+            if (instance) {
+                vkDestroyInstance(instance, nullptr);
+                instance = VK_NULL_HANDLE;
+            }
+        }
+
+        void attach(VkInstance handle) noexcept {
+            if (instance != handle) {
+                this->reset();
+                instance = handle;
+            }
+        }
+
+        FORR_NODISCARD VkInstance get() const noexcept { return instance; }
+
+        operator VkInstance() const noexcept { return instance; }
+
+    private:
+        VkInstance instance = VK_NULL_HANDLE;
+    };
+
+    struct Device {
+        Device() = default;
+
+        explicit Device(VkDevice handle) noexcept : device(handle) {}
+        ~Device() { this->reset(); }
 
         FORR_CLASS_NONCOPYABLE(Device)
 
         Device(Device&& other) noexcept : device(other.device) {
             other.device = VK_NULL_HANDLE;
         }
+
+        Device& operator=(Device&& other) noexcept {
+            if (this != &other) {
+                this->attach(other.device);
+                other.device = VK_NULL_HANDLE; // NOT other.reset()
+            }
+            return *this;
+        }
+
+        void reset() noexcept {
+            if (device) {
+                vkDestroyDevice(device, nullptr);
+                device = VK_NULL_HANDLE;
+            }
+        }
+
+        void attach(VkDevice handle) noexcept {
+            if (device != handle) {
+                this->reset();
+                device = handle;
+            }
+        }
+
+        FORR_NODISCARD VkDevice get() const noexcept { return device; }
 
         operator VkDevice() const noexcept { return device; }
 
