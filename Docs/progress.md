@@ -1,5 +1,21 @@
 # Forr-Engine Devlog
 
+## 17.02.2026
+### Goal
+    Consolidate the 2 month plan
+    Consolidate Vulkan architecture
+    Use Sascha Willems Vulkan Examples to build the architecture
+
+    Just separate Vulkan initialization by different methods for now
+    
+### Done
+    -
+
+### Problem
+    -
+
+---
+
 ## 16.02.2026
 ### Goal
     Consolidate the 2 month plan
