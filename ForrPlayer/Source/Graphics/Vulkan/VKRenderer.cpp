@@ -2,13 +2,13 @@
 #include "pch.hpp"
 #include "VKRenderer.hpp"
 
-void fe::VKRenderer::Initialize() {
+void fe::VKRenderer::Initialize(GLFWwindow* glfw_window) {
     if (useDynamicRendering && apiVersion < VK_API_VERSION_1_3) {
         fe::logging::error("Using the core variant of dynamic rendering requires Vulkan 1.3");
         exit(-1);
     }
 
-    createSurface();
+    createSurface(glfw_window);
     createCommandPool();
     createSwapchain();
     createCommandBuffers();
@@ -32,7 +32,8 @@ void fe::VKRenderer::Initialize() {
     //}
 }
 
-void fe::VKRenderer::createSurface() {
+void fe::VKRenderer::createSurface(GLFWwindow* glfw_window) {
+    swapchain.initSurface(glfw_window);
     //#if defined(_WIN32)
     //	swapChain.initSurface(windowInstance, window);
     //#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
@@ -55,16 +56,21 @@ void fe::VKRenderer::createSurface() {
 }
 
 void fe::VKRenderer::createCommandPool() {
-    //VkCommandPoolCreateInfo cmdPoolInfo{
-    //	.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-    //	.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-    //	.queueFamilyIndex = swapChain.queueNodeIndex,
-    //};
-    //VK_CHECK_RESULT(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
+    VkCommandPoolCreateInfo cmdPoolInfo{
+        .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+        .queueFamilyIndex = swapchain.queueNodeIndex,
+    };
+    VK_CHECK_RESULT(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
 }
 
 void fe::VKRenderer::createSwapchain() {
-    //swapChain.create(width, height, settings.vsync, settings.fullscreen);
+    struct {
+        bool vsync      = 1;
+        bool fullscreen = 1;
+    } settings; // TODO : Move this to desc
+
+    swapchain.create(width, height, settings.vsync, settings.fullscreen);
 }
 
 void fe::VKRenderer::createCommandBuffers() {
@@ -88,12 +94,12 @@ void fe::VKRenderer::createSynchronizationPrimitives() {
         VkSemaphoreCreateInfo semaphoreCI{ .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
         VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCI, nullptr, &semaphore));
     }
-    //// Semaphore used to ensure that all commands submitted have been finished before submitting the image to the queue
-    //renderCompleteSemaphores.resize(swapChain.images.size());
-    //for (auto& semaphore : renderCompleteSemaphores) {
-    //	VkSemaphoreCreateInfo semaphoreCI{ .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
-    //	VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCI, nullptr, &semaphore));
-    //}
+    // Semaphore used to ensure that all commands submitted have been finished before submitting the image to the queue
+    renderCompleteSemaphores.resize(swapchain.images.size());
+    for (auto& semaphore : renderCompleteSemaphores) {
+        VkSemaphoreCreateInfo semaphoreCI{ .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
+        VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCI, nullptr, &semaphore));
+    }
 }
 
 void fe::VKRenderer::setupDepthStencil() {
@@ -112,12 +118,12 @@ void fe::VKRenderer::setupDepthStencil() {
     VkMemoryRequirements memReqs{};
     vkGetImageMemoryRequirements(device, depthStencil.image, &memReqs);
 
-    //VkMemoryAllocateInfo memAllloc{
-    //	.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-    //	.allocationSize = memReqs.size,
-    //	.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-    //};
-    //VK_CHECK_RESULT(vkAllocateMemory(device, &memAllloc, nullptr, &depthStencil.memory));
+    VkMemoryAllocateInfo memAllloc{
+        .sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+        .allocationSize  = memReqs.size,
+        //.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) // TODO : Create Vulkan device
+    };
+    VK_CHECK_RESULT(vkAllocateMemory(device, &memAllloc, nullptr, &depthStencil.memory));
     VK_CHECK_RESULT(vkBindImageMemory(device, depthStencil.image, depthStencil.memory, 0));
 
     VkImageViewCreateInfo imageViewCI{
@@ -149,7 +155,7 @@ void fe::VKRenderer::setupRenderPass() {
     std::array<VkAttachmentDescription, 2> attachments{
         // Color attachment
         VkAttachmentDescription{
-            //            .format         = swapChain.colorFormat,
+            .format         = swapchain.colorFormat,
             .samples        = VK_SAMPLE_COUNT_1_BIT,
             .loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR,
             .storeOp        = VK_ATTACHMENT_STORE_OP_STORE,
@@ -223,18 +229,18 @@ void fe::VKRenderer::setupFrameBuffer() {
         return;
     }
     // Create frame buffers for every swap chain image, only one depth/stencil attachment is required, as this is owned by the application
-    //frameBuffers.resize(swapChain.images.size());
-    //for (uint32_t i = 0; i < frameBuffers.size(); i++) {
-    //    const VkImageView       attachments[2] = { swapChain.imageViews[i], depthStencil.view };
-    //    VkFramebufferCreateInfo frameBufferCreateInfo{
-    //        .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-    //        .renderPass      = renderPass,
-    //        .attachmentCount = 2,
-    //        .pAttachments    = attachments,
-    //        .width           = width,
-    //        .height          = height,
-    //        .layers          = 1
-    //    };
-    //    VK_CHECK_RESULT(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
-    //}
+    frameBuffers.resize(swapchain.images.size());
+    for (uint32_t i = 0; i < frameBuffers.size(); i++) {
+        const VkImageView       attachments[2] = { swapchain.imageViews[i], depthStencil.view };
+        VkFramebufferCreateInfo frameBufferCreateInfo{
+            .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+            .renderPass      = renderPass,
+            .attachmentCount = 2,
+            .pAttachments    = attachments,
+            .width           = width,
+            .height          = height,
+            .layers          = 1
+        };
+        VK_CHECK_RESULT(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
+    }
 }
