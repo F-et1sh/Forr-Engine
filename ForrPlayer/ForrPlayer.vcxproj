@@ -108,6 +108,9 @@
     <ClInclude Include="Source\Graphics\OpenGL\Shader.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\VertexBuffers.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VKBuffer.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VKDevice.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VKInitializers.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VKRenderer.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VKSwapchain.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VKTypes.hpp" />
@@ -127,6 +130,8 @@
     <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\VertexBuffers.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VKBuffer.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VKDevice.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VKRenderer.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VKSwapchain.cpp" />
     <ClCompile Include="Source\Layer.cpp" />

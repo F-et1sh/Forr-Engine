@@ -6,6 +6,7 @@
 #include "VKTypes.hpp"
 
 #include "VKSwapchain.hpp"
+#include "VKDevice.hpp"
 
 namespace fe {
     constexpr uint32_t maxConcurrentFrames{ 2 };
@@ -13,11 +14,12 @@ namespace fe {
     class VKRenderer {
     public:
         VKRenderer()  = default;
-        ~VKRenderer() = default;
+        ~VKRenderer();
 
         void Initialize(GLFWwindow* glfw_window);
 
     private:
+        void initVulkan();
         void createSurface(GLFWwindow* glfw_window);
         void createCommandPool();
         void createSwapchain();
@@ -28,8 +30,38 @@ namespace fe {
         void createPipelineCache();
         void setupFrameBuffer();
 
+        void destroyCommandBuffers();
+
+        /** @brief (Virtual) Creates the application wide Vulkan instance */
+        VkResult createInstance();
+        ///** @brief (Pure virtual) Render function to be implemented by the sample application */
+        //virtual void render() = 0;
+        ///** @brief (Virtual) Called after a key was pressed, can be used to do custom key handling */
+        //virtual void keyPressed(uint32_t);
+        ///** @brief (Virtual) Called after the mouse cursor moved and before internal events (like camera rotation) is handled */
+        //virtual void mouseMoved(double x, double y, bool& handled);
+        ///** @brief (Virtual) Called when the window has been resized, can be used by the sample application to recreate resources */
+        //virtual void windowResized();
+        ///** @brief (Virtual) Setup default depth and stencil views */
+        //virtual void setupDepthStencil();
+        ///** @brief (Virtual) Setup default framebuffers for all requested swapchain images */
+        //virtual void setupFrameBuffer();
+        ///** @brief (Virtual) Setup a default renderpass */
+        //virtual void setupRenderPass();
+        ///** @brief (Virtual) Called after the physical device features have been read, can be used to set features to enable on the device */
+        //virtual void getEnabledFeatures();
+        ///** @brief (Virtual) Called after the physical device extensions have been read, can be used to enable extensions based on the supported extension listing*/
+        //virtual void getEnabledExtensions();
+        ///** @brief Begin dynamic rendering with the default setup for the base class color and depth attachment */
+        //void beginDynamicRendering(VkCommandBuffer cmdBuffer);
+        ///** @brief End dynamic rendering with the default setup for the base class color and depth attachment */
+        //void endDynamicRendering(VkCommandBuffer cmdBuffer);
+
     private:
         VKSwapchain swapchain;
+
+        /** @brief Encapsulated physical and logical vulkan device */
+        VKDevice* vulkanDevice{};
 
         // Frame counter to display fps
         uint32_t                                                    frameCounter = 0;
@@ -110,9 +142,12 @@ namespace fe {
 
         bool requiresStencil{ false };
 
-        uint32_t apiVersion = VK_API_VERSION_1_3;
-        uint32_t width      = 1920;
-        uint32_t height     = 1080;
+        std::string title      = "Vulkan Example";
+        std::string name       = "vulkanExample";
+        uint32_t    apiVersion = VK_API_VERSION_1_3;
+        uint32_t    width      = 1920;
+        uint32_t    height     = 1080;
+        std::string shaderDir  = "glsl";
 
         /** @brief Default depth stencil attachment used by the default render pass */
         struct {
