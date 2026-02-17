@@ -1,5 +1,18 @@
 # Forr-Engine Devlog
 
+## 18.02.2026
+### Goal
+    Consolidate the 2 month plan
+    Think about Vulkan architecture
+
+### Done
+    -
+
+### Problem
+    -
+
+---
+
 ## 17.02.2026
 ### Goal
     Consolidate the 2 month plan
@@ -11,14 +24,20 @@
     Add temp classes
     - VKRenderer
     - VKSwapchain
+    - VKBuffer
     - VKDevice
+
+    Think about Vulkan architecture
 
 ### Done
     VKRenderer added
     VKSwapchain added
+    VKBuffer added
+    VKDevice added
+    VKInitializers added
 
 ### Problem
-    -
+    I don't know how to make Vulkan architecture, I am tired
 
 ---
 
