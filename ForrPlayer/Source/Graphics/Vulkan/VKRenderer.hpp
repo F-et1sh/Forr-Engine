@@ -5,7 +5,7 @@
 #include <array>
 #include "VKTypes.hpp"
 
-//#include "VKSwapchain.hpp"
+#include "VKSwapchain.hpp"
 
 namespace fe {
     constexpr uint32_t maxConcurrentFrames{ 2 };
@@ -15,10 +15,10 @@ namespace fe {
         VKRenderer()  = default;
         ~VKRenderer() = default;
 
-        void Initialize();
+        void Initialize(GLFWwindow* glfw_window);
 
     private:
-        void createSurface();
+        void createSurface(GLFWwindow* glfw_window);
         void createCommandPool();
         void createSwapchain();
         void createCommandBuffers();
@@ -29,6 +29,8 @@ namespace fe {
         void setupFrameBuffer();
 
     private:
+        VKSwapchain swapchain;
+
         // Frame counter to display fps
         uint32_t                                                    frameCounter = 0;
         uint32_t                                                    lastFPS      = 0;

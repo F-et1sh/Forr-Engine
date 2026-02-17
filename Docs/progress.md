@@ -8,8 +8,14 @@
 
     Just separate Vulkan initialization by different methods for now
     
+    Add temp classes
+    - VKRenderer
+    - VKSwapchain
+    - VKDevice
+
 ### Done
-    -
+    VKRenderer added
+    VKSwapchain added
 
 ### Problem
     -
