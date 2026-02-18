@@ -9,7 +9,7 @@
         and some helper functions. I'll try to create it.
 
 ### Done
-    -
+    VulkanDevice started. Initialize() added
 
 ### Problem
     I've got MS Visual Studio 2026 in my .sln file.

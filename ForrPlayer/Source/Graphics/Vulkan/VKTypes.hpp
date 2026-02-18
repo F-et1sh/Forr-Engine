@@ -3,7 +3,7 @@
     Forr Engine
 
     File : VKTypes.cpp
-    Role : Thin wrapper classes to provide RAII to Vulkan.
+    Role : Thin wrapper classes to provide RAII to Vulkan and some structures.
         fe::vk:: - is a namespace that contains only thin wrappers.
         Classes/Structs like VulkanDevice won't be here, they will be in fe::
 
@@ -348,5 +348,14 @@ namespace fe::vk {
         VK_CHECK_RESULT(func(device, std::forward<Args>(args)..., &vk_object))
         object.attach(device, vk_object);
     }
+
+    struct QueueFamilyIndices {
+        uint32_t graphics{};
+        uint32_t compute{};
+        uint32_t transfer{};
+
+        QueueFamilyIndices() = default;
+        ~QueueFamilyIndices() = default;
+    };
 
 } // namespace fe::vk
