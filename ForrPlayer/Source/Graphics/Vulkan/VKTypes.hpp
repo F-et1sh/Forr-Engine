@@ -5,7 +5,7 @@
     File : VKTypes.cpp
     Role : Thin wrapper classes to provide RAII to Vulkan.
         fe::vk:: - is a namespace that contains only thin wrappers.
-        Classes/Structs like VulkanContext won't be here, they will be in fe::
+        Classes/Structs like VulkanDevice won't be here, they will be in fe::
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
