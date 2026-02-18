@@ -23,6 +23,7 @@
     <ClInclude Include="Source\Tools.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VKTypes.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanDevice.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -40,5 +41,6 @@
     <ClCompile Include="Source\path.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanDevice.cpp" />
   </ItemGroup>
 </Project>
