@@ -23,11 +23,6 @@
     <ClInclude Include="Source\Tools.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VKTypes.hpp" />
-    <ClInclude Include="Source\Graphics\Vulkan\VKRenderer.hpp" />
-    <ClInclude Include="Source\Graphics\Vulkan\VKSwapchain.hpp" />
-    <ClInclude Include="Source\Graphics\Vulkan\VKDevice.hpp" />
-    <ClInclude Include="Source\Graphics\Vulkan\VKBuffer.hpp" />
-    <ClInclude Include="Source\Graphics\Vulkan\VKInitializers.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -45,9 +40,5 @@
     <ClCompile Include="Source\path.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
-    <ClCompile Include="Source\Graphics\Vulkan\VKRenderer.cpp" />
-    <ClCompile Include="Source\Graphics\Vulkan\VKSwapchain.cpp" />
-    <ClCompile Include="Source\Graphics\Vulkan\VKBuffer.cpp" />
-    <ClCompile Include="Source\Graphics\Vulkan\VKDevice.cpp" />
   </ItemGroup>
 </Project>

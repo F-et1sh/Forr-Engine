@@ -27,8 +27,3 @@
             fe::logging::error("[VULKAN] Failed to call %s in file %s at line %i\nError : %i", #func, __FILE__, __LINE__, int(result)); \
         }                                                                                                                               \
     }
-
-// Custom define for better code readability
-#define VK_FLAGS_NONE 0
-// Default fence timeout in nanoseconds
-#define DEFAULT_FENCE_TIMEOUT 100000000000

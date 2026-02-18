@@ -5,11 +5,31 @@
     Consolidate the 2 month plan
     Think about Vulkan architecture
 
+    VulkanDevice - is a class, where I put physical and logical devices
+        and some helper functions. I'll try to create it.
+
 ### Done
     -
 
 ### Problem
-    -
+    I've got MS Visual Studio 2026 in my .sln file.
+    I specifically created the project on old 2022th version,
+        because 2026th version is shit right now.
+    Clang-Tidy from Clang Power Tools does not work.
+    GUI is inconvenience, Microsoft didn't fix it.
+    I wrote them about inconvenience GUI using the newest version of 2026th VS,
+        so they told me that this is already fixed and gave me link to other's message.
+    So, if I write you about the problem on the newest version, maybe that means that you
+        didn't fix the problem or fixed it badly?
+    Anyway, I didn't tell about it. I will better wait till this 2026th version will become useful.
+    It's like CS2. CS:GO was much better, CS:GO was that game I so much liked. But people say,
+        that CS:GO on release is also was hated like CS2 on release. And I trust it. I wish the time,
+        when CS2 will become that very game.
+
+    But Microsoft is not Valve and Visual Studio Installer is not Steam, 
+        also like MS Visual Studio is not Counter-Strike.
+    So, I can use whatever version I want. And I will use MS Visual Studio 2022.
+    But today I'll try MS Visual Studio 2026, maybe I'll like it.
 
 ---
 
