@@ -1,5 +1,18 @@
 # Forr-Engine Devlog
 
+## 19.02.2026
+### Goal
+    Consolidate the 2 month plan
+    Think about Vulkan architecture
+
+### Done
+    -
+
+### Problem
+    I am very tired. I will do it tomorrow
+
+---
+
 ## 18.02.2026
 ### Goal
     Consolidate the 2 month plan
