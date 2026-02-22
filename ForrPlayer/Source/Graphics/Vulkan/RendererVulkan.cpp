@@ -569,6 +569,68 @@ void fe::RendererVulkan::CreatePipeline() {
     vkDestroyShaderModule(m_Device, frag_shader_module, nullptr);
 }
 
+void fe::RendererVulkan::CreateSwapchainFramebuffers() {
+    m_Framebuffers.resize(m_ImageViews.size());
+
+    for (size_t i = 0; i < m_ImageViews.size(); i++) {
+
+        VkImageView attachments[] = { m_ImageViews[i] };
+
+        VkFramebufferCreateInfo framebuffer_create_info{};
+        framebuffer_create_info.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebuffer_create_info.renderPass      = m_RenderPass;
+        framebuffer_create_info.attachmentCount = 1;
+        framebuffer_create_info.pAttachments    = attachments;
+        framebuffer_create_info.width           = m_Extent.width;
+        framebuffer_create_info.height          = m_Extent.height;
+        framebuffer_create_info.layers          = 1;
+
+        VK_CHECK_RESULT(vkCreateFramebuffer(m_Device, &framebuffer_create_info, nullptr, &m_Framebuffers[i]));
+    }
+}
+
+void fe::RendererVulkan::CreateCommandPool() {
+    VkCommandPoolCreateInfo command_pool_create_info{};
+    command_pool_create_info.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    command_pool_create_info.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    command_pool_create_info.queueFamilyIndex = m_GraphicsQueueFamilyIndex;
+
+    VkCommandPool command_pool{};
+    VK_CHECK_RESULT(vkCreateCommandPool(m_Device, &command_pool_create_info, nullptr, &command_pool));
+    m_CommandPool.attach(m_Device, command_pool);
+}
+
+void fe::RendererVulkan::CreateCommandBuffers() {
+
+    m_CommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+
+    VkCommandBufferAllocateInfo command_buffer_allocate_info{};
+    command_buffer_allocate_info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    command_buffer_allocate_info.commandBufferCount = m_CommandBuffers.size();
+    command_buffer_allocate_info.commandPool        = m_CommandPool;
+    command_buffer_allocate_info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Device, &command_buffer_allocate_info, m_CommandBuffers.data()));
+}
+
+void fe::RendererVulkan::CreateSyncObjects() {
+    m_ImageAvaliableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+
+    VkSemaphoreCreateInfo semaphore_create_info{};
+    semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+    VkFenceCreateInfo fence_create_info{};
+    fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphore_create_info, nullptr, &m_ImageAvaliableSemaphores[i]));
+        VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphore_create_info, nullptr, &m_RenderFinishedSemaphores[i]));
+        VK_CHECK_RESULT(vkCreateFence(m_Device, &fence_create_info, nullptr, &m_InFlightFences[i]));
+    }
+}
+
 fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
                                    IPlatformSystem&    platform_system,
                                    size_t              primary_window_index)
@@ -593,34 +655,12 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
 
     this->CreateRenderPass();
 
+    this->CreateSwapchainFramebuffers();
+
     this->CreatePipelineLayout();
     this->CreatePipeline();
 
-    std::vector<VkFramebuffer> swapchain_framebuffers(m_ImageViews.size());
-
-    for (size_t i = 0; i < m_ImageViews.size(); i++) {
-
-        VkImageView attachments[] = { m_ImageViews[i] };
-
-        VkFramebufferCreateInfo framebuffer_create_info{};
-        framebuffer_create_info.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebuffer_create_info.renderPass      = m_RenderPass;
-        framebuffer_create_info.attachmentCount = 1;
-        framebuffer_create_info.pAttachments    = attachments;
-        framebuffer_create_info.width           = m_Extent.width;
-        framebuffer_create_info.height          = m_Extent.height;
-        framebuffer_create_info.layers          = 1;
-
-        VK_CHECK_RESULT(vkCreateFramebuffer(m_Device, &framebuffer_create_info, nullptr, &swapchain_framebuffers[i]));
-    }
-
-    VkCommandPool           command_pool{};
-    VkCommandPoolCreateInfo command_pool_create_info{};
-    command_pool_create_info.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    command_pool_create_info.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    command_pool_create_info.queueFamilyIndex = m_GraphicsQueueFamilyIndex;
-
-    VK_CHECK_RESULT(vkCreateCommandPool(m_Device, &command_pool_create_info, nullptr, &command_pool));
+    this->CreateCommandPool();
 
     m_Vertices.emplace_back(Vertex{ glm::vec3(-0.5f, 0.5f, 0.0f) });
     m_Vertices.emplace_back(Vertex{ glm::vec3(0.5f, 0.5f, 0.0f) });
@@ -630,34 +670,11 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     m_Indices.emplace_back(1);
     m_Indices.emplace_back(2);
 
-    this->createVertexBuffer(m_PhysicalDevice, m_GraphicsQueue, command_pool);
-    this->createIndexBuffer(m_PhysicalDevice, m_GraphicsQueue, command_pool);
+    this->createVertexBuffer(m_PhysicalDevice, m_GraphicsQueue, m_CommandPool);
+    this->createIndexBuffer(m_PhysicalDevice, m_GraphicsQueue, m_CommandPool);
 
-    constexpr int                MAX_FRAMES_IN_FLIGHT = 2;
-    std::vector<VkCommandBuffer> command_buffers(MAX_FRAMES_IN_FLIGHT);
-    VkCommandBufferAllocateInfo  command_buffer_allocate_info{};
-    command_buffer_allocate_info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    command_buffer_allocate_info.commandBufferCount = command_buffers.size();
-    command_buffer_allocate_info.commandPool        = command_pool;
-    command_buffer_allocate_info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-
-    VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Device, &command_buffer_allocate_info, command_buffers.data()));
-
-    std::vector<VkSemaphore> image_avaliable_semaphores(MAX_FRAMES_IN_FLIGHT);
-    std::vector<VkSemaphore> render_finished_semaphores(MAX_FRAMES_IN_FLIGHT);
-    std::vector<VkFence>     in_flight_fences(MAX_FRAMES_IN_FLIGHT);
-
-    VkSemaphoreCreateInfo semaphore_create_info{};
-    semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-    VkFenceCreateInfo fence_create_info{};
-    fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphore_create_info, nullptr, &image_avaliable_semaphores[i]));
-        VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphore_create_info, nullptr, &render_finished_semaphores[i]));
-        VK_CHECK_RESULT(vkCreateFence(m_Device, &fence_create_info, nullptr, &in_flight_fences[i]));
-    }
+    this->CreateCommandBuffers();
+    this->CreateSyncObjects();
 
     uint32_t current_frame = 0;
 
@@ -669,28 +686,28 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
         glfwPollEvents();
 
         uint32_t image_index = 0;
-        VK_CHECK_RESULT(vkAcquireNextImageKHR(m_Device, m_Swapchain, UINT64_MAX, image_avaliable_semaphores[current_frame], VK_NULL_HANDLE, &image_index));
+        VK_CHECK_RESULT(vkAcquireNextImageKHR(m_Device, m_Swapchain, UINT64_MAX, m_ImageAvaliableSemaphores[current_frame], VK_NULL_HANDLE, &image_index));
 
-        VK_CHECK_RESULT(vkResetCommandBuffer(command_buffers[current_frame], 0));
+        VK_CHECK_RESULT(vkResetCommandBuffer(m_CommandBuffers[current_frame], 0));
 
-        record_command_buffer(command_buffers[current_frame], image_index, m_RenderPass, swapchain_framebuffers, m_Extent);
+        record_command_buffer(m_CommandBuffers[current_frame], image_index, m_RenderPass, m_Framebuffers, m_Extent);
 
         VkPipelineStageFlags wait_stages[]       = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-        VkSemaphore          wait_semaphores[]   = { image_avaliable_semaphores[current_frame] };
-        VkSemaphore          signal_semaphores[] = { render_finished_semaphores[current_frame] };
+        VkSemaphore          wait_semaphores[]   = { m_ImageAvaliableSemaphores[current_frame] };
+        VkSemaphore          signal_semaphores[] = { m_RenderFinishedSemaphores[current_frame] };
         VkSwapchainKHR       swapchains[]        = { m_Swapchain };
 
         VkSubmitInfo submit_info{};
         submit_info.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submit_info.commandBufferCount   = 1;
-        submit_info.pCommandBuffers      = &command_buffers[current_frame];
+        submit_info.pCommandBuffers      = &m_CommandBuffers[current_frame];
         submit_info.pWaitDstStageMask    = wait_stages;
         submit_info.waitSemaphoreCount   = 1;
         submit_info.pWaitSemaphores      = wait_semaphores;
         submit_info.signalSemaphoreCount = 1;
         submit_info.pSignalSemaphores    = signal_semaphores;
 
-        VK_CHECK_RESULT(vkQueueSubmit(m_GraphicsQueue, 1, &submit_info, in_flight_fences[current_frame]));
+        VK_CHECK_RESULT(vkQueueSubmit(m_GraphicsQueue, 1, &submit_info, m_InFlightFences[current_frame]));
 
         VkPresentInfoKHR present_info{};
         present_info.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
