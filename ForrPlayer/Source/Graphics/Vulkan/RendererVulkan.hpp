@@ -58,6 +58,8 @@ namespace fe {
         void CreateSwapchain();
         void CreateSwapchainImageViews();
         void CreateRenderPass();
+        void CreatePipelineLayout();
+        void CreatePipeline();
 
     private:
         IPlatformSystem& m_PlatformSystem;
@@ -76,8 +78,6 @@ namespace fe {
         VkExtent2D               m_Extent{};
         std::vector<VkImageView> m_ImageViews{};
 
-        fe::vk::Pipeline m_Pipeline{};
-
         std::vector<Vertex>   m_Vertices{};
         std::vector<uint32_t> m_Indices{};
 
@@ -94,5 +94,8 @@ namespace fe {
         VkQueue m_PresentQueue{};
 
         fe::vk::RenderPass m_RenderPass{};
+
+        fe::vk::PipelineLayout m_PipelineLayout{};
+        fe::vk::Pipeline       m_Pipeline{};
     };
 } // namespace fe
