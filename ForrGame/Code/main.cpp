@@ -4,6 +4,7 @@
 int main(int argc, char* argv[]) {
     fe::ApplicationDesc desc{};
     desc.argv                       = argv;
+    desc.application_name           = "ForrGame";
     desc.primary_window_desc.width  = 1920;
     desc.primary_window_desc.height = 1080;
     desc.primary_window_desc.name   = "Gmod Realism";

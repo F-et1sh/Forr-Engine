@@ -23,6 +23,28 @@
 #include "VKTypes.hpp"
 
 namespace fe {
+    struct VulkanContext {
+        VkInstance       instance{};
+        VkPhysicalDevice physical_device{};
+
+        VkPhysicalDeviceProperties       device_properties{};
+        VkPhysicalDeviceFeatures         device_features{};
+        VkPhysicalDeviceMemoryProperties device_memory_properties{};
+        VkPhysicalDeviceFeatures         enabled_features{};
+
+        VkDevice         device{};
+
+        std::vector<const char*> enabled_device_extensions{};
+        std::vector<const char*> enabled_instance_extensions{};
+
+        std::vector<VkLayerSettingEXT> enabled_layer_settings{};
+
+        void* device_create_next_chain{};
+
+        VulkanContext()  = default;
+        ~VulkanContext() = default;
+    };
+
     class RendererVulkan : public IRenderer {
     public:
         RendererVulkan(const RendererDesc& desc, IPlatformSystem& platform_system, size_t primary_window_index);
@@ -35,81 +57,33 @@ namespace fe {
         FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return 0; }; // temp
 
     private:
-        VkShaderModule create_shader_module(const std::string& code);
-        std::string    load_shader(const std::filesystem::path& path);
-        void           record_command_buffer(VkCommandBuffer command_buffer, uint32_t image_index, VkRenderPass render_pass, std::vector<VkFramebuffer> swapchain_framebuffers, VkExtent2D swapchain_extent);
-
-        uint32_t findMemoryType(VkPhysicalDevice physical_device, uint32_t type_filter, VkMemoryPropertyFlags properties);
-        void     createBuffer(VkPhysicalDevice physical_device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& buffer_memory);
-
-        VkCommandBuffer beginSingleTimeCommands(VkCommandPool command_pool);
-        void            endSingleTimeCommands(VkQueue graphics_queue, VkCommandPool command_pool, VkCommandBuffer command_buffer);
-        void            copyBuffer(VkQueue graphics_queue, VkCommandPool command_pool, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-
-        void createVertexBuffer(VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool);
-        void createIndexBuffer(VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool);
+        // Create Vulkan base :
+        // - Initialize volk
+        // - Initialize fe::vk::Instance m_Instance
+        // - Initialize debug messanger
+        // - Initialize VkPhysicalDevice m_PhysicalDevice
+        void InitializeVulkan();
 
     private:
-        void CreateInstance();
-        void CreateSurface();
-        void ChoosePhysicalDevice();
-        void ChooseQueueFamilies();
-        void CreateLogicalDevice();
-        void CreateSwapchain();
-        void CreateSwapchainImageViews();
-        void CreateRenderPass();
-        void CreatePipelineLayout();
-        void CreatePipeline();
-        void CreateSwapchainFramebuffers();
-        void CreateCommandPool();
-        void CreateCommandBuffers();
-        void CreateSyncObjects();
+        void VKCreateInstance();
+        void VKChoosePhysicalDevice();
 
     private:
+        static VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessageCallback(
+            VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
+            VkDebugUtilsMessageTypeFlagsEXT             message_type,
+            const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+            void*                                       user_data);
+
+    private:
+        RendererDesc m_Description;
+
         IPlatformSystem& m_PlatformSystem;
         IWindow&         m_PrimaryWindow;
 
-        GLFWwindow* m_GLFWwindow = nullptr;
-
         fe::vk::Instance m_Instance{};
-        fe::vk::Device   m_Device{};
-
         VkPhysicalDevice m_PhysicalDevice{};
 
-        fe::vk::Swapchain          m_Swapchain{};
-        fe::vk::Surface            m_Surface{};
-        VkSurfaceFormatKHR         m_SurfaceFormat{};
-        VkExtent2D                 m_Extent{};
-        std::vector<VkImageView>   m_ImageViews{};
-        std::vector<VkFramebuffer> m_Framebuffers{};
-
-        std::vector<Vertex>   m_Vertices{};
-        std::vector<uint32_t> m_Indices{};
-
-        VkBuffer       m_VertexBuffer{};
-        VkDeviceMemory m_VertexBufferMemory{};
-
-        VkBuffer       m_IndexBuffer{};
-        VkDeviceMemory m_IndexBufferMemory{};
-
-        uint32_t m_GraphicsQueueFamilyIndex{};
-        uint32_t m_PresentQueueFamilyIndex{};
-
-        VkQueue m_GraphicsQueue{};
-        VkQueue m_PresentQueue{};
-
-        fe::vk::RenderPass m_RenderPass{};
-
-        fe::vk::PipelineLayout m_PipelineLayout{};
-        fe::vk::Pipeline       m_Pipeline{};
-
-        constexpr static int MAX_FRAMES_IN_FLIGHT = 2;
-
-        fe::vk::CommandPool          m_CommandPool{};
-        std::vector<VkCommandBuffer> m_CommandBuffers{};
-
-        std::vector<VkSemaphore> m_ImageAvaliableSemaphores{};
-        std::vector<VkSemaphore> m_RenderFinishedSemaphores{};
-        std::vector<VkFence>     m_InFlightFences{};
+        VulkanContext m_Context{};
     };
 } // namespace fe

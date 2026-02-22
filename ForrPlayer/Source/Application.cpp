@@ -16,6 +16,7 @@ fe::Application::Application(const ApplicationDesc& desc) {
 
     RendererDesc renderer_desc{};
     renderer_desc.graphics_backend = desc.graphics_backend;
+    renderer_desc.application_name = desc.application_name;
 
     m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID);
 

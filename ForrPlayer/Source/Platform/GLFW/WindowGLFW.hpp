@@ -27,13 +27,13 @@ namespace fe {
         void                PollEvents() override;
 
         FORR_NODISCARD void*    getNativeHandle() override { return static_cast<void*>(m_GLFWwindow); }
-        FORR_NODISCARD uint32_t getWidth() override { return m_Desc.width; }
-        FORR_NODISCARD uint32_t getHeight() override { return m_Desc.height; }
-        FORR_NODISCARD std::string getName() override { return m_Desc.name; }
+        FORR_NODISCARD uint32_t getWidth() override { return m_Description.width; }
+        FORR_NODISCARD uint32_t getHeight() override { return m_Description.height; }
+        FORR_NODISCARD std::string getName() override { return m_Description.name; }
 
     private:
         GLFWwindow* m_GLFWwindow = nullptr;
 
-        WindowDesc m_Desc;
+        WindowDesc m_Description;
     };
 } // namespace fe

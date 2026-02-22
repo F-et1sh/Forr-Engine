@@ -15,6 +15,9 @@
     fe::vk::create_and_wrap() removed
     mini debug messanger added
     GLFW a little bit limited
+    Application name added
+    m_Desc -> m_Description ( I always prefer full names )
+    Worked with Vulkan architecture ( still in progress )
 
 ### Problem
     The article uses too modern C++ and VkHpp

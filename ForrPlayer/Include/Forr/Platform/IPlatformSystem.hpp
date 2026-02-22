@@ -28,8 +28,11 @@ namespace fe {
     };
 
     struct FORR_API PlatformSystemDesc {
-        PlatformBackend platform_backend;
-        GraphicsBackend graphics_backend;
+        PlatformBackend platform_backend{};
+        GraphicsBackend graphics_backend{};
+
+        PlatformSystemDesc()  = default;
+        ~PlatformSystemDesc() = default;
     };
 
     class FORR_API IPlatformSystem {
