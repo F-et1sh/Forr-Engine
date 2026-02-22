@@ -21,10 +21,12 @@ namespace fe {
     struct FORR_API ApplicationDesc {
         char** argv;
 
-        WindowDesc primary_window_desc;
+        std::string application_name{};
 
-        GraphicsBackend graphics_backend;
-        PlatformBackend platform_backend;
+        WindowDesc primary_window_desc{};
+
+        GraphicsBackend graphics_backend{};
+        PlatformBackend platform_backend{};
 
         ApplicationDesc()  = default;
         ~ApplicationDesc() = default;

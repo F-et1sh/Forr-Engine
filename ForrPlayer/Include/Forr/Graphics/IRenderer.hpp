@@ -16,7 +16,11 @@
 
 namespace fe {
     struct FORR_API RendererDesc {
-        GraphicsBackend graphics_backend;
+        std::string     application_name{};
+        GraphicsBackend graphics_backend{};
+
+        RendererDesc()  = default;
+        ~RendererDesc() = default;
     };
 
     class FORR_API IRenderer {

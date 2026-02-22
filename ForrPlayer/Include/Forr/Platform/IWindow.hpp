@@ -16,9 +16,12 @@
 
 namespace fe {
     struct FORR_API WindowDesc {
-        uint32_t    width  = 0;
-        uint32_t    height = 0;
-        std::string name   = "Default Window";
+        uint32_t    width{};
+        uint32_t    height{};
+        std::string name{};
+
+        WindowDesc() = default;
+        ~WindowDesc() = default;
     };
 
     class FORR_API IWindow {

@@ -19,7 +19,7 @@ void fe::WindowGLFW::Initialize(const WindowDesc& desc) {
         fe::logging::error("Failed to create GLFW window");
         return;
     }
-    m_Desc = desc;
+    m_Description = desc;
 }
 
 bool fe::WindowGLFW::IsOpen() {
@@ -31,6 +31,6 @@ void fe::WindowGLFW::PollEvents() {
 }
 
 fe::WindowGLFW::~WindowGLFW() {
-    fe::logging::debug("Window \"%s\" destroyed", m_Desc.name.c_str());
+    fe::logging::debug("Window \"%s\" destroyed", m_Description.name.c_str());
     glfwDestroyWindow(m_GLFWwindow);
 }

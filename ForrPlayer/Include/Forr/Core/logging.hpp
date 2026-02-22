@@ -19,8 +19,8 @@ namespace fe::logging {
 
     enum class Severity {
         None = 0,
-        Debug,
         Info,
+        Debug,
         Warning,
         Error,
         Fatal
