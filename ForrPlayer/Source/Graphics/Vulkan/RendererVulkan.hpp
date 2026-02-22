@@ -41,6 +41,16 @@ namespace fe {
 
         void* device_create_next_chain{};
 
+        VkSurfaceKHR surface{};
+
+        // TODO : think about adding more queues like transfer and compute
+
+        VkQueue graphics_queue{};
+        VkQueue present_queue{};
+
+        uint32_t graphics_queue_family{};
+        uint32_t present_queue_family{};
+
         VulkanContext()  = default;
         ~VulkanContext() = default;
     };
