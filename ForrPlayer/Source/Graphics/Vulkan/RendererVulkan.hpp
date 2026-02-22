@@ -60,6 +60,10 @@ namespace fe {
         void CreateRenderPass();
         void CreatePipelineLayout();
         void CreatePipeline();
+        void CreateSwapchainFramebuffers();
+        void CreateCommandPool();
+        void CreateCommandBuffers();
+        void CreateSyncObjects();
 
     private:
         IPlatformSystem& m_PlatformSystem;
@@ -72,11 +76,12 @@ namespace fe {
 
         VkPhysicalDevice m_PhysicalDevice{};
 
-        fe::vk::Swapchain        m_Swapchain{};
-        fe::vk::Surface          m_Surface{};
-        VkSurfaceFormatKHR       m_SurfaceFormat{};
-        VkExtent2D               m_Extent{};
-        std::vector<VkImageView> m_ImageViews{};
+        fe::vk::Swapchain          m_Swapchain{};
+        fe::vk::Surface            m_Surface{};
+        VkSurfaceFormatKHR         m_SurfaceFormat{};
+        VkExtent2D                 m_Extent{};
+        std::vector<VkImageView>   m_ImageViews{};
+        std::vector<VkFramebuffer> m_Framebuffers{};
 
         std::vector<Vertex>   m_Vertices{};
         std::vector<uint32_t> m_Indices{};
@@ -97,5 +102,14 @@ namespace fe {
 
         fe::vk::PipelineLayout m_PipelineLayout{};
         fe::vk::Pipeline       m_Pipeline{};
+
+        constexpr static int MAX_FRAMES_IN_FLIGHT = 2;
+
+        fe::vk::CommandPool          m_CommandPool{};
+        std::vector<VkCommandBuffer> m_CommandBuffers{};
+
+        std::vector<VkSemaphore> m_ImageAvaliableSemaphores{};
+        std::vector<VkSemaphore> m_RenderFinishedSemaphores{};
+        std::vector<VkFence>     m_InFlightFences{};
     };
 } // namespace fe
