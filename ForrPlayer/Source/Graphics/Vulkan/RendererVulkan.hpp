@@ -30,10 +30,10 @@ namespace fe {
         VkPhysicalDeviceProperties       device_properties{};
         VkPhysicalDeviceFeatures         device_features{};
         VkPhysicalDeviceMemoryProperties device_memory_properties{};
-        VkPhysicalDeviceFeatures         enabled_features{};
 
         VkDevice device{};
 
+        VkPhysicalDeviceFeatures enabled_device_features{};
         std::vector<const char*> enabled_device_extensions{};
         std::vector<const char*> enabled_instance_extensions{};
 
