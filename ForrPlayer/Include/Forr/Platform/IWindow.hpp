@@ -30,12 +30,12 @@ namespace fe {
 
         virtual void Initialize(const WindowDesc& desc) = 0;
 
-        FORR_FORCE_INLINE FORR_NODISCARD virtual bool IsOpen()     = 0;
-        virtual void                                  PollEvents() = 0;
+        FORR_NODISCARD virtual bool IsOpen()     = 0;
+        virtual void                PollEvents() = 0;
 
-        FORR_FORCE_INLINE FORR_NODISCARD virtual void*    getNativeHandle() = 0;
-        FORR_FORCE_INLINE FORR_NODISCARD virtual uint32_t getWidth()        = 0;
-        FORR_FORCE_INLINE FORR_NODISCARD virtual uint32_t getHeight()       = 0;
-        FORR_FORCE_INLINE FORR_NODISCARD virtual std::string getName()      = 0;
+        FORR_NODISCARD virtual void*       getNativeHandle() = 0;
+        FORR_NODISCARD virtual uint32_t    getWidth()        = 0;
+        FORR_NODISCARD virtual uint32_t    getHeight()       = 0;
+        FORR_NODISCARD virtual std::string getName()         = 0;
     };
 } // namespace fe
