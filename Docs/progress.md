@@ -1,5 +1,18 @@
 # Forr-Engine Devlog
 
+## 23.02.2026
+### Goal
+    -
+
+### Done
+    -
+
+### Problem
+    -
+
+---
+
+
 ## 22.02.2026
 ### Goal
     Think about Vulkan architecture
@@ -18,6 +31,7 @@
     Application name added
     m_Desc -> m_Description ( I always prefer full names )
     Worked with Vulkan architecture ( still in progress )
+    fe::vk::DeviceMemory added
 
 ### Problem
     The article uses too modern C++ and VkHpp

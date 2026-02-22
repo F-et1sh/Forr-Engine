@@ -320,6 +320,12 @@ namespace fe::vk {
         }
     };
 
+    struct DeviceMemoryDestroy {
+        void operator()(VkDevice device, VkDeviceMemory handle) const noexcept {
+            vkFreeMemory(device, handle, nullptr);
+        }
+    };
+
     using Surface             = InstanceHandle<VkSurfaceKHR, SurfaceDestroy>;
     using Swapchain           = DeviceHandle<VkSwapchainKHR, SwapchainDestroy>;
     using Buffer              = DeviceHandle<VkBuffer, BufferDestroy>;
@@ -337,5 +343,6 @@ namespace fe::vk {
     using Fence               = DeviceHandle<VkFence, FenceDestroy>;
     using Semaphore           = DeviceHandle<VkSemaphore, SemaphoreDestroy>;
     using Event               = DeviceHandle<VkEvent, EventDestroy>;
+    using DeviceMemory        = DeviceHandle<VkDeviceMemory, DeviceMemoryDestroy>;
 
 } // namespace fe::vk
