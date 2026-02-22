@@ -50,25 +50,49 @@ namespace fe {
         void createIndexBuffer(VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool);
 
     private:
+        void CreateInstance();
+        void CreateSurface();
+        void ChoosePhysicalDevice();
+        void ChooseQueueFamilies();
+        void CreateLogicalDevice();
+        void CreateSwapchain();
+        void CreateSwapchainImageViews();
+        void CreateRenderPass();
+
+    private:
         IPlatformSystem& m_PlatformSystem;
         IWindow&         m_PrimaryWindow;
 
         GLFWwindow* m_GLFWwindow = nullptr;
 
-        fe::vk::Instance m_Instance;
-        fe::vk::Device   m_Device;
+        fe::vk::Instance m_Instance{};
+        fe::vk::Device   m_Device{};
 
-        fe::vk::Swapchain m_Swapchain;
+        VkPhysicalDevice m_PhysicalDevice{};
 
-        fe::vk::Pipeline m_Pipeline;
+        fe::vk::Swapchain        m_Swapchain{};
+        fe::vk::Surface          m_Surface{};
+        VkSurfaceFormatKHR       m_SurfaceFormat{};
+        VkExtent2D               m_Extent{};
+        std::vector<VkImageView> m_ImageViews{};
 
-        std::vector<Vertex>   m_Vertices;
-        std::vector<uint32_t> m_Indices;
+        fe::vk::Pipeline m_Pipeline{};
 
-        VkBuffer       m_VertexBuffer;
-        VkDeviceMemory m_VertexBufferMemory;
+        std::vector<Vertex>   m_Vertices{};
+        std::vector<uint32_t> m_Indices{};
 
-        VkBuffer       m_IndexBuffer;
-        VkDeviceMemory m_IndexBufferMemory;
+        VkBuffer       m_VertexBuffer{};
+        VkDeviceMemory m_VertexBufferMemory{};
+
+        VkBuffer       m_IndexBuffer{};
+        VkDeviceMemory m_IndexBufferMemory{};
+
+        uint32_t m_GraphicsQueueFamilyIndex{};
+        uint32_t m_PresentQueueFamilyIndex{};
+
+        VkQueue m_GraphicsQueue{};
+        VkQueue m_PresentQueue{};
+
+        fe::vk::RenderPass m_RenderPass{};
     };
 } // namespace fe

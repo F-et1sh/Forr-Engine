@@ -22,7 +22,7 @@ fe::PlatformSystemGLFW::~PlatformSystemGLFW() {
 }
 
 size_t fe::PlatformSystemGLFW::CreateWindow(const WindowDesc& desc) {
-    std::unique_ptr<IWindow> window = std::make_unique<WindowGLFW>(); // TODO : Create GLFW Window
+    std::unique_ptr<IWindow> window = std::make_unique<WindowGLFW>();
     window->Initialize(desc);
 
     m_WindowList.push_back(std::move(window));
