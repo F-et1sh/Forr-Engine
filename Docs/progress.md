@@ -32,6 +32,7 @@
     m_Desc -> m_Description ( I always prefer full names )
     Worked with Vulkan architecture ( still in progress )
     fe::vk::DeviceMemory added
+    VulkanContext updated
 
 ### Problem
     The article uses too modern C++ and VkHpp
