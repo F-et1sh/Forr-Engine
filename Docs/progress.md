@@ -1,5 +1,44 @@
 # Forr-Engine Devlog
 
+## 22.02.2026
+### Goal
+    Think about Vulkan architecture
+    Devide Vulkan initialization by functions
+
+### Done
+    -
+
+### Problem
+    -
+
+---
+
+## 21.02.2026
+### Goal
+    Consolidate the 2 month plan
+    Think about Vulkan architecture
+
+### Done
+    2 month plan consolidated
+
+### Problem
+    -
+
+---
+
+## 20.02.2026
+### Goal
+    Consolidate the 2 month plan
+    Think about Vulkan architecture
+
+### Done
+    -
+
+### Problem
+    Skipped data
+
+---
+
 ## 19.02.2026
 ### Goal
     Consolidate the 2 month plan
