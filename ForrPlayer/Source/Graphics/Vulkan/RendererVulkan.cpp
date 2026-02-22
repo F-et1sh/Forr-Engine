@@ -213,9 +213,7 @@ void fe::RendererVulkan::CreateInstance() {
     app_info.engineVersion      = VK_MAKE_VERSION(1, 0, 0);
     app_info.apiVersion         = VK_API_VERSION_1_3;
 
-    uint32_t                 glfw_extensions_count = 0;
-    const char**             glfw_extensions       = glfwGetRequiredInstanceExtensions(&glfw_extensions_count);
-    std::vector<const char*> extensions(glfw_extensions, glfw_extensions + glfw_extensions_count);
+    auto extensions = this->m_PlatformSystem.getSurfaceRequiredExtensions();
 
     VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCI{};
 

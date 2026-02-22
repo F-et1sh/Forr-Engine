@@ -30,6 +30,12 @@ size_t fe::PlatformSystemGLFW::CreateWindow(const WindowDesc& desc) {
     return m_WindowList.size() - 1;
 }
 
+FORR_NODISCARD std::vector<const char*> fe::PlatformSystemGLFW::getSurfaceRequiredExtensions() {
+    uint32_t     extensions_count = 0;
+    const char** extensions       = glfwGetRequiredInstanceExtensions(&extensions_count);
+    return { extensions, extensions + extensions_count };
+}
+
 fe::PlatformSystemGLFW::PlatformSystemGLFW(const PlatformSystemDesc& desc) {
     GLFW_CHECK_RESULT(glfwInit())
 

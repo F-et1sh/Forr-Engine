@@ -14,6 +14,7 @@
     Deviding Vulkan code in progress
     fe::vk::create_and_wrap() removed
     mini debug messanger added
+    GLFW a little bit limited
 
 ### Problem
     The article uses too modern C++ and VkHpp
