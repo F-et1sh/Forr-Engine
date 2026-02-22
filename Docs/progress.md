@@ -5,6 +5,8 @@
     Think about Vulkan architecture
     Devide Vulkan initialization by functions
 
+    Read article : https://habr.com/ru/articles/992894/
+
 ### Done
     -
 
