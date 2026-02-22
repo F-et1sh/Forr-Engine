@@ -17,6 +17,11 @@
 
 ### Problem
     The article uses too modern C++ and VkHpp
+    While copying code from Sascha Willems Vulkan Examples ( MIT License ) ( www.saschawillems.de )
+        I realized, that there are too many Vulkan Tools.
+        For example : vks::initializers::* or like in general, all vks::*.
+        Some vks::Buffer but I have different system. My fe::vk::Buffer is like ::vk::UniqueBuffer.
+        So, I guess for now I will just try to consolidate the architecture
 
 ---
 
