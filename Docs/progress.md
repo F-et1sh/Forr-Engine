@@ -9,6 +9,7 @@
 
 ### Done
     Deviding Vulkan code in progress
+    fe::vk::create_and_wrap() removed
 
 ### Problem
     The article uses too modern C++ and VkHpp

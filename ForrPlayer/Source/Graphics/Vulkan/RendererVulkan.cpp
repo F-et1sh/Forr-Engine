@@ -230,7 +230,7 @@ void fe::RendererVulkan::CreateInstance() {
 void fe::RendererVulkan::CreateSurface() {
     VkSurfaceKHR surface{};
     VK_CHECK_RESULT(glfwCreateWindowSurface(m_Instance, m_GLFWwindow, nullptr, &surface))
-    m_Surface.attach(m_Instance, m_Surface);
+    m_Surface.attach(m_Instance, surface);
 }
 
 void fe::RendererVulkan::ChoosePhysicalDevice() {
@@ -369,7 +369,9 @@ void fe::RendererVulkan::CreateSwapchain() {
     swapchain_create_info.imageFormat     = m_SurfaceFormat.format;
     swapchain_create_info.imageColorSpace = m_SurfaceFormat.colorSpace;
 
-    fe::vk::create_and_wrap(m_Swapchain, m_Device, vkCreateSwapchainKHR, &swapchain_create_info, nullptr);
+    VkSwapchainKHR swapchain{};
+    vkCreateSwapchainKHR(m_Device, &swapchain_create_info, nullptr, &swapchain);
+    m_Swapchain.attach(m_Device, swapchain);
 }
 
 void fe::RendererVulkan::CreateSwapchainImageViews() {
@@ -442,30 +444,19 @@ void fe::RendererVulkan::CreateRenderPass() {
     m_RenderPass.attach(m_Device, render_pass);
 }
 
-fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
-                                   IPlatformSystem&    platform_system,
-                                   size_t              primary_window_index)
-    : m_PlatformSystem(platform_system),
-      m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index)) {
+void fe::RendererVulkan::CreatePipelineLayout() {
+    VkPipelineLayout           pipeline_layout{};
+    VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
+    pipeline_layout_create_info.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipeline_layout_create_info.setLayoutCount         = 0;
+    pipeline_layout_create_info.pushConstantRangeCount = 0;
 
-    VK_CHECK_RESULT(volkInitialize());
+    VK_CHECK_RESULT(vkCreatePipelineLayout(m_Device, &pipeline_layout_create_info, nullptr, &pipeline_layout));
 
-    m_GLFWwindow = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
+    m_PipelineLayout.attach(m_Device, pipeline_layout);
+}
 
-    this->CreateInstance();
-    this->CreateSurface();
-    this->ChoosePhysicalDevice();
-    this->ChooseQueueFamilies();
-    this->CreateLogicalDevice();
-
-    vkGetDeviceQueue(m_Device, m_GraphicsQueueFamilyIndex, 0, &m_GraphicsQueue);
-    vkGetDeviceQueue(m_Device, m_PresentQueueFamilyIndex, 0, &m_PresentQueue);
-
-    this->CreateSwapchain();
-    this->CreateSwapchainImageViews();
-
-    this->CreateRenderPass();
-
+void fe::RendererVulkan::CreatePipeline() {
     std::string vert_source = load_shader(PATH.getShadersPath() / L"default.vert.spv");
     std::string frag_source = load_shader(PATH.getShadersPath() / L"default.frag.spv");
 
@@ -554,14 +545,6 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     pipeline_dynamic_state_create_info.dynamicStateCount = dynamic_states.size();
     pipeline_dynamic_state_create_info.pDynamicStates    = dynamic_states.data();
 
-    VkPipelineLayout           pipeline_layout{};
-    VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
-    pipeline_layout_create_info.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipeline_layout_create_info.setLayoutCount         = 0;
-    pipeline_layout_create_info.pushConstantRangeCount = 0;
-
-    VK_CHECK_RESULT(vkCreatePipelineLayout(m_Device, &pipeline_layout_create_info, nullptr, &pipeline_layout));
-
     VkGraphicsPipelineCreateInfo graphics_pipeline_create_info{};
     graphics_pipeline_create_info.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     graphics_pipeline_create_info.stageCount          = 2;
@@ -573,15 +556,45 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     graphics_pipeline_create_info.pMultisampleState   = &pipeline_multisample_state_create_info;
     graphics_pipeline_create_info.pColorBlendState    = &pipeline_color_blend_state_create_info;
     graphics_pipeline_create_info.pDynamicState       = &pipeline_dynamic_state_create_info;
-    graphics_pipeline_create_info.layout              = pipeline_layout;
+    graphics_pipeline_create_info.layout              = m_PipelineLayout;
     graphics_pipeline_create_info.renderPass          = m_RenderPass;
     graphics_pipeline_create_info.subpass             = 0;
     graphics_pipeline_create_info.basePipelineHandle  = VK_NULL_HANDLE;
 
-    fe::vk::create_and_wrap(m_Pipeline, m_Device, vkCreateGraphicsPipelines, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr);
+    VkPipeline pipeline{};
+    vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr, &pipeline);
+    m_Pipeline.attach(m_Device, pipeline);
 
     vkDestroyShaderModule(m_Device, vert_shader_module, nullptr);
     vkDestroyShaderModule(m_Device, frag_shader_module, nullptr);
+}
+
+fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
+                                   IPlatformSystem&    platform_system,
+                                   size_t              primary_window_index)
+    : m_PlatformSystem(platform_system),
+      m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index)) {
+
+    VK_CHECK_RESULT(volkInitialize());
+
+    m_GLFWwindow = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
+
+    this->CreateInstance();
+    this->CreateSurface();
+    this->ChoosePhysicalDevice();
+    this->ChooseQueueFamilies();
+    this->CreateLogicalDevice();
+
+    vkGetDeviceQueue(m_Device, m_GraphicsQueueFamilyIndex, 0, &m_GraphicsQueue);
+    vkGetDeviceQueue(m_Device, m_PresentQueueFamilyIndex, 0, &m_PresentQueue);
+
+    this->CreateSwapchain();
+    this->CreateSwapchainImageViews();
+
+    this->CreateRenderPass();
+
+    this->CreatePipelineLayout();
+    this->CreatePipeline();
 
     std::vector<VkFramebuffer> swapchain_framebuffers(m_ImageViews.size());
 

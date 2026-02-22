@@ -200,14 +200,12 @@ namespace fe::vk {
         }
 
         void attach(VkInstance instance, Handle handle) noexcept {
-            if (this->handle != handle ||
-                this->instance != instance) {
+            assert(this->handle != handle);
 
-                this->reset();
+            this->reset();
 
-                this->instance = instance;
-                this->handle   = handle;
-            }
+            this->instance = instance;
+            this->handle   = handle;
         }
 
         FORR_NODISCARD Handle     get() const noexcept { return handle; }
@@ -340,21 +338,12 @@ namespace fe::vk {
     using Semaphore           = DeviceHandle<VkSemaphore, SemaphoreDestroy>;
     using Event               = DeviceHandle<VkEvent, EventDestroy>;
 
-    // can be removed
-    template <typename T, typename Func, typename... Args>
-    void create_and_wrap(T& object, VkDevice device, Func&& func, Args&&... args) {
-        using VK_T = std::decay_t<decltype(object.get())>;
-        VK_T vk_object{};
-        VK_CHECK_RESULT(func(device, std::forward<Args>(args)..., &vk_object))
-        object.attach(device, vk_object);
-    }
-
     struct QueueFamilyIndices {
         uint32_t graphics{};
         uint32_t compute{};
         uint32_t transfer{};
 
-        QueueFamilyIndices() = default;
+        QueueFamilyIndices()  = default;
         ~QueueFamilyIndices() = default;
     };
 
