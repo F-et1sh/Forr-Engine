@@ -19,7 +19,7 @@
 
 namespace fe {
     struct FORR_API ApplicationDesc {
-        char** argv;
+        std::vector<const char*> args;
 
         std::string application_name{};
 

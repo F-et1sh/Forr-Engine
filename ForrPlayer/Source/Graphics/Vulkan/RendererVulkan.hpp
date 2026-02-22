@@ -43,17 +43,22 @@ namespace fe {
         // - Initialize debug messanger
         // - Initialize VkPhysicalDevice m_PhysicalDevice
         void InitializeVulkan();
+        // Create Vulkan logical device
+        void InitializeDevice();
 
     private:
         void VKCreateInstance();
         void VKChoosePhysicalDevice();
+        void VKGetQueueFamilyProperties();
+        void VKGetSupportedExtensions();
+        void VKCreateDevice();
+        void VKCreateCommandPool();
 
     private:
-        static VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessageCallback(
-            VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
-            VkDebugUtilsMessageTypeFlagsEXT             message_type,
-            const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
-            void*                                       user_data);
+        static VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
+                                                                        VkDebugUtilsMessageTypeFlagsEXT             message_type,
+                                                                        const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+                                                                        void*                                       user_data);
 
     private:
         RendererDesc m_Description;
@@ -62,7 +67,11 @@ namespace fe {
         IWindow&         m_PrimaryWindow;
 
         fe::vk::Instance m_Instance{};
-        VkPhysicalDevice m_PhysicalDevice{};
+        VkPhysicalDevice m_PhysicalDevice{}; // doesn't need to be destroyed
+
+        fe::vk::Device m_Device{};
+
+        fe::vk::CommandPool m_CommandPool{};
 
         VulkanContext m_Context{};
     };
