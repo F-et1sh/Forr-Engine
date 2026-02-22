@@ -2,10 +2,20 @@
 
 ## 23.02.2026
 ### Goal
-    -
+    Create VulkanSwapchain
+    Create VulkanDevice
+
+    Draw a triangle
+    Create Vulkan GPUResourceManager like in OpenGL
 
 ### Done
-    -
+    argv -> args in vk::ApplicationDesc
+    VulkanContext updated
+    Added : 
+    - VKGetQueueFamilyProperties()
+    - VKGetSupportedExtensions()
+    - VKCreateDevice() ( in progress )
+    - VKCreateCommandPool() ( in progress )
 
 ### Problem
     -

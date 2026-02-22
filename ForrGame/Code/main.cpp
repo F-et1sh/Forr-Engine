@@ -3,7 +3,7 @@
 
 int main(int argc, char* argv[]) {
     fe::ApplicationDesc desc{};
-    desc.argv                       = argv;
+    for (int i = 0; i < argc; i++) desc.args.emplace_back(argv[i]);
     desc.application_name           = "ForrGame";
     desc.primary_window_desc.width  = 1920;
     desc.primary_window_desc.height = 1080;

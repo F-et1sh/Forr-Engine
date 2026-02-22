@@ -104,6 +104,36 @@ void fe::RendererVulkan::VKChoosePhysicalDevice() {
     vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_Context.device_memory_properties); // device memory properties
 }
 
+void fe::RendererVulkan::VKGetQueueFamilyProperties() {
+    uint32_t queue_family_count{};
+    vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queue_family_count, nullptr);
+    assert(queue_family_count > 0);
+    m_Context.queue_family_properties.resize(queue_family_count);
+    vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queue_family_count, m_Context.queue_family_properties.data());
+}
+
+void fe::RendererVulkan::VKGetSupportedExtensions() {
+    uint32_t extension_count{};
+    vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extension_count, nullptr);
+
+    if (extension_count <= 0) return;
+
+    std::vector<VkExtensionProperties> extension_properties(extension_count);
+
+    VkResult result = vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extension_count, &extension_properties.front());
+    if (result == VK_SUCCESS) {
+        for (auto& e : extension_properties) {
+            m_Context.supported_extensions.push_back(e.extensionName);
+        }
+    }
+}
+
+void fe::RendererVulkan::VKCreateDevice() {
+}
+
+void fe::RendererVulkan::VKCreateCommandPool() {
+}
+
 VKAPI_ATTR VkBool32 VKAPI_CALL fe::RendererVulkan::debugUtilsMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
                                                                              VkDebugUtilsMessageTypeFlagsEXT             message_type,
                                                                              const VkDebugUtilsMessengerCallbackDataEXT* callback_data,

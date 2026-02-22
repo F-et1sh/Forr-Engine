@@ -16,7 +16,7 @@
 #include "Volk/volk.h"
 
 namespace fe {
-	struct VulkanContext {
+    struct VulkanContext {
         VkInstance       instance{};
         VkPhysicalDevice physical_device{};
 
@@ -25,6 +25,8 @@ namespace fe {
         VkPhysicalDeviceMemoryProperties device_memory_properties{};
 
         VkDevice device{};
+
+        std::vector<const char*> supported_extensions{};
 
         VkPhysicalDeviceFeatures enabled_device_features{};
         std::vector<const char*> enabled_device_extensions{};
@@ -36,15 +38,18 @@ namespace fe {
 
         VkSurfaceKHR surface{};
 
-        // TODO : think about adding more queues like transfer and compute
+        std::vector<VkQueueFamilyProperties> queue_family_properties{};
 
+        // TODO : think about adding more queues like transfer and compute
         VkQueue graphics_queue{};
         VkQueue present_queue{};
 
         uint32_t graphics_queue_family{};
         uint32_t present_queue_family{};
 
+        VkCommandPool command_pool{};
+
         VulkanContext()  = default;
         ~VulkanContext() = default;
     };
-}
+} // namespace fe

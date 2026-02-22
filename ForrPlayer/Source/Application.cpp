@@ -2,7 +2,7 @@
 #include "Application.hpp"
 
 fe::Application::Application(const ApplicationDesc& desc) {
-    PATH.init(*desc.argv, true);
+    PATH.init(desc.args[0], true);
 
     PlatformSystemDesc platform_desc{};
     platform_desc.graphics_backend = desc.graphics_backend;
