@@ -7,9 +7,13 @@
 
     Read article : https://habr.com/ru/articles/992894/
 
+    Create VulkanDevice ( progress )
+    Create VulkanSwapchain
+
 ### Done
     Deviding Vulkan code in progress
     fe::vk::create_and_wrap() removed
+    mini debug messanger added
 
 ### Problem
     The article uses too modern C++ and VkHpp

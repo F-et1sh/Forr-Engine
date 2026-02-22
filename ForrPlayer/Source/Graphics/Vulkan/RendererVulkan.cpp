@@ -217,11 +217,25 @@ void fe::RendererVulkan::CreateInstance() {
     const char**             glfw_extensions       = glfwGetRequiredInstanceExtensions(&glfw_extensions_count);
     std::vector<const char*> extensions(glfw_extensions, glfw_extensions + glfw_extensions_count);
 
+    VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCI{};
+
+    debugUtilsMessengerCI.sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    debugUtilsMessengerCI.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    debugUtilsMessengerCI.messageType     = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+    debugUtilsMessengerCI.pfnUserCallback = [](VkDebugUtilsMessageSeverityFlagBitsEXT,
+                                               VkDebugUtilsMessageTypeFlagsEXT,
+                                               VkDebugUtilsMessengerCallbackDataEXT const* pCallbackData,
+                                               void*) -> VkBool32 {
+        fe::logging::debug("[VULKAN VALIDATION LAYER] : %s", pCallbackData->pMessage);
+        return VK_FALSE;
+    };
+
     VkInstanceCreateInfo create_info{};
     create_info.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     create_info.pApplicationInfo        = &app_info;
     create_info.enabledExtensionCount   = extensions.size();
     create_info.ppEnabledExtensionNames = extensions.data();
+    create_info.pNext                   = &debugUtilsMessengerCI;
 
     VK_CHECK_RESULT(vkCreateInstance(&create_info, nullptr, (VkInstance*) &m_Instance))
     volkLoadInstance(m_Instance);
