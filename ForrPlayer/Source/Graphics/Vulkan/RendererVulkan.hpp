@@ -22,6 +22,8 @@
 #include "Graphics/GPUTypes.hpp"
 #include "VKTypes.hpp"
 
+#include "VulkanContext.hpp"
+
 namespace fe {
     class RendererVulkan : public IRenderer {
     public:
