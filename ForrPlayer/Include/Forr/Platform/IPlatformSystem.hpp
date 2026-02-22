@@ -35,7 +35,7 @@ namespace fe {
         ~PlatformSystemDesc() = default;
     };
 
-    class FORR_API IPlatformSystem {
+    class FORR_NODISCARD FORR_API IPlatformSystem {
     public:
         virtual ~IPlatformSystem() = default;
 
@@ -44,8 +44,8 @@ namespace fe {
         // returns window index
         FORR_NODISCARD virtual size_t CreateWindow(const WindowDesc& desc) = 0;
 
-        FORR_NODISCARD virtual size_t   getWindowCount()        = 0;
-        FORR_NODISCARD virtual IWindow& getWindow(size_t index) = 0;
+        FORR_NODISCARD virtual size_t getWindowCount()        = 0;
+        virtual IWindow&              getWindow(size_t index) = 0;
 
         FORR_NODISCARD virtual std::vector<const char*> getSurfaceRequiredExtensions() = 0;
     };

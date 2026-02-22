@@ -34,6 +34,8 @@
     fe::vk::DeviceMemory added
     VulkanContext updated
     VulkanContext updated again
+    MeshID updated
+    VulkanContext.hpp added
 
 ### Problem
     The article uses too modern C++ and VkHpp

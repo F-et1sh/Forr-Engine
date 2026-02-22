@@ -80,7 +80,8 @@ void fe::RendererVulkan::VKCreateInstance() {
 
     // === SETUP CONTEXT ===
 
-    m_Context.instance = m_Instance;
+    m_Context.instance                    = m_Instance; // instance
+    m_Context.enabled_instance_extensions = extensions; // enabled instance extensions
 }
 
 void fe::RendererVulkan::VKChoosePhysicalDevice() {

@@ -109,6 +109,7 @@
     <ClInclude Include="Source\Graphics\OpenGL\VertexBuffers.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VKTypes.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanContext.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanDevice.hpp" />
     <ClInclude Include="Source\Platform\GLFW\PlatformSystemGLFW.hpp" />
     <ClInclude Include="Source\Platform\GLFW\WindowGLFW.hpp" />
