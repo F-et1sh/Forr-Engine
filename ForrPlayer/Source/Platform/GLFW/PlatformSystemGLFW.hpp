@@ -23,7 +23,7 @@ namespace fe {
         FORR_NODISCARD size_t CreateWindow(const WindowDesc& desc) override;
 
         FORR_NODISCARD size_t   getWindowCount() override { return m_WindowList.size(); }
-        FORR_NODISCARD IWindow& getWindow(size_t index) override { return *m_WindowList[index]; }
+        IWindow& getWindow(size_t index) override { return *m_WindowList[index]; }
 
         FORR_NODISCARD std::vector<const char*> getSurfaceRequiredExtensions() override;
 
