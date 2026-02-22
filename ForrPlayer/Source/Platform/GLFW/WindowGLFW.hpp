@@ -26,9 +26,9 @@ namespace fe {
         bool IsOpen() override;
         void PollEvents() override;
 
-        void*    getNativeHandle() override { return static_cast<void*>(m_GLFWwindow); }
-        uint32_t getWidth() override { return m_Desc.width; }
-        uint32_t getHeight() override { return m_Desc.height; }
+        void*       getNativeHandle() override { return static_cast<void*>(m_GLFWwindow); }
+        uint32_t    getWidth() override { return m_Desc.width; }
+        uint32_t    getHeight() override { return m_Desc.height; }
         std::string getName() override { return m_Desc.name; }
 
     private:

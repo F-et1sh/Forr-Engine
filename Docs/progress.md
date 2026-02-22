@@ -8,10 +8,10 @@
     Read article : https://habr.com/ru/articles/992894/
 
 ### Done
-    -
+    Deviding Vulkan code in progress
 
 ### Problem
-    -
+    The article uses too modern C++ and VkHpp
 
 ---
 
