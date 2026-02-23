@@ -403,6 +403,12 @@ void fe::RendererVulkan::VKCreateCommandPool(VkCommandPoolCreateFlags create_fla
     m_Context.command_pool = m_CommandPool;
 }
 
+void fe::RendererVulkan::VKSetupQueues() {
+    vkGetDeviceQueue(m_Device, m_Context.queue_family_indices.graphics, 0, &m_Context.queue_graphics);
+    vkGetDeviceQueue(m_Device, m_Context.queue_family_indices.compute, 0, &m_Context.queue_compute);
+    vkGetDeviceQueue(m_Device, m_Context.queue_family_indices.transfer, 0, &m_Context.queue_transfer);
+}
+
 VKAPI_ATTR VkBool32 VKAPI_CALL fe::RendererVulkan::debugUtilsMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
                                                                              VkDebugUtilsMessageTypeFlagsEXT             message_type,
                                                                              const VkDebugUtilsMessengerCallbackDataEXT* callback_data,

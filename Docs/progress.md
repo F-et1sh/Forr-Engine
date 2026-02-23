@@ -34,6 +34,7 @@
     VKCreateInstance() replaced
     little fixes provided
     bug fixed
+    VKSetupQueues() done
 
 ### Problem
     -
