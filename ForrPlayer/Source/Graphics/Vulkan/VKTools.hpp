@@ -15,7 +15,7 @@
 #include "VulkanContext.hpp"
 
 namespace fe {
-    uint32_t getQueueFamilyIndex(const VulkanContext& context, VkQueueFlags queue_flags) {
+    static uint32_t getQueueFamilyIndex(const VulkanContext& context, VkQueueFlags queue_flags) {
         if ((queue_flags & VK_QUEUE_COMPUTE_BIT) == queue_flags) {
             for (uint32_t i = 0; i < static_cast<uint32_t>(context.queue_family_properties.size()); i++) {
                 if ((context.queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) && ((context.queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0)) {
@@ -39,5 +39,7 @@ namespace fe {
         }
 
         fe::logging::fatal("Could not find a matching queue family index");
+
+        return 0;
     }
 } // namespace fe

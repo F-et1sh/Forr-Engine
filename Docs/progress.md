@@ -23,6 +23,7 @@
     VKSetupQueueFamilies() -> VKGetQueueFamilyInfos()
     VKCreateDevice() done
     VKCreateCommandPool() done
+    getQueueFamilyIndex() now static
 
 ### Problem
     -
