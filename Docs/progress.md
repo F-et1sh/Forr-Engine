@@ -30,6 +30,7 @@
     VKCreateDevice() done
     VKCreateCommandPool() done
     getQueueFamilyIndex() now static
+    VKCreateInstance2() created
 
 ### Problem
     -

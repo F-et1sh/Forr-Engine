@@ -53,8 +53,11 @@ namespace fe {
         // - command pool
         void InitializeDevice();
 
+        // Create Vulkan
+
     private: // Vulkan step-by-step initialization functions and helper functions
         void VKCreateInstance();
+        void VKCreateInstance2(); // temp. This is gonna replace VKCreateInstance()
         void VKChoosePhysicalDevice();
         void VKSetupQueueFamilyProperties();
         void VKSetupSupportedExtensions();
@@ -65,6 +68,7 @@ namespace fe {
 
         void VKCreateDevice(bool use_swapchain = true, VkQueueFlags requested_queue_types = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
         void VKCreateCommandPool(VkCommandPoolCreateFlags create_flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+        void VKSetupQueues();
 
     private: // static functions
         static VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
