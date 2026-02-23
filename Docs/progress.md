@@ -35,6 +35,7 @@
     little fixes provided
     bug fixed
     VKSetupQueues() done
+    VulkanSwapchain created ( but is it really needed ? )
 
 ### Problem
     -

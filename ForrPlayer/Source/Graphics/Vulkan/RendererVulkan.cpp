@@ -27,6 +27,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
 
     this->InitializeVulkan();
     this->InitializeDevice();
+    this->InitializeSwapchain();
 }
 
 fe::RendererVulkan::~RendererVulkan() {
@@ -63,6 +64,13 @@ void fe::RendererVulkan::InitializeDevice() {
 
     this->VKCreateDevice();
     this->VKCreateCommandPool();
+    this->VKSetupQueues();
+}
+
+void fe::RendererVulkan::InitializeSwapchain() {
+
+    this->VKCreateSurface();
+    this->VKCreateSwapchain();
 }
 
 void fe::RendererVulkan::VKCreateInstance() {
@@ -257,79 +265,6 @@ void fe::RendererVulkan::VKSetupSupportedExtensions() {
     }
 }
 
-std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::VKGetQueueFamilyInfos(bool use_swapchain, VkQueueFlags requested_queue_types) {
-    std::vector<VkDeviceQueueCreateInfo> queue_create_infos{};
-
-    constexpr static float default_queue_priority = 1.0f;
-
-    if (requested_queue_types & VK_QUEUE_GRAPHICS_BIT) {
-        // === SETUP CONTEXT ===
-        m_Context.queue_family_indices.graphics = getQueueFamilyIndex(m_Context, VK_QUEUE_GRAPHICS_BIT);
-        // ===
-        VkDeviceQueueCreateInfo queue_info{
-            .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-            .queueFamilyIndex = m_Context.queue_family_indices.graphics,
-            .queueCount       = 1,
-            .pQueuePriorities = &default_queue_priority
-        };
-        queue_create_infos.push_back(queue_info);
-    }
-    else {
-        // === SETUP CONTEXT ===
-        m_Context.queue_family_indices.graphics = 0;
-        // ===
-    }
-
-    if (requested_queue_types & VK_QUEUE_COMPUTE_BIT) {
-        // === SETUP CONTEXT ===
-        m_Context.queue_family_indices.compute = getQueueFamilyIndex(m_Context, VK_QUEUE_COMPUTE_BIT);
-        // ===
-
-        auto result = m_Context.queue_family_indices.compute != m_Context.queue_family_indices.graphics;
-
-        if (result) {
-            VkDeviceQueueCreateInfo queue_info{
-                .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-                .queueFamilyIndex = m_Context.queue_family_indices.compute,
-                .queueCount       = 1,
-                .pQueuePriorities = &default_queue_priority,
-            };
-            queue_create_infos.push_back(queue_info);
-        }
-    }
-    else {
-        // === SETUP CONTEXT ===
-        m_Context.queue_family_indices.compute = m_Context.queue_family_indices.graphics;
-        // ===
-    }
-
-    if (requested_queue_types & VK_QUEUE_TRANSFER_BIT) {
-        // === SETUP CONTEXT ===
-        m_Context.queue_family_indices.transfer = getQueueFamilyIndex(m_Context, VK_QUEUE_TRANSFER_BIT);
-        // ===
-
-        auto result = (m_Context.queue_family_indices.transfer != m_Context.queue_family_indices.graphics) &&
-                      (m_Context.queue_family_indices.transfer != m_Context.queue_family_indices.compute);
-
-        if (result) {
-            VkDeviceQueueCreateInfo queue_info{
-                .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-                .queueFamilyIndex = m_Context.queue_family_indices.transfer,
-                .queueCount       = 1,
-                .pQueuePriorities = &default_queue_priority
-            };
-            queue_create_infos.push_back(queue_info);
-        }
-    }
-    else {
-        // === SETUP CONTEXT ===
-        m_Context.queue_family_indices.transfer = m_Context.queue_family_indices.graphics;
-        // ===
-    }
-
-    return queue_create_infos;
-}
-
 void fe::RendererVulkan::VKCreateDevice(bool use_swapchain, VkQueueFlags requested_queue_types) {
     if (use_swapchain) {
         // === SETUP CONTEXT ===
@@ -407,6 +342,85 @@ void fe::RendererVulkan::VKSetupQueues() {
     vkGetDeviceQueue(m_Device, m_Context.queue_family_indices.graphics, 0, &m_Context.queue_graphics);
     vkGetDeviceQueue(m_Device, m_Context.queue_family_indices.compute, 0, &m_Context.queue_compute);
     vkGetDeviceQueue(m_Device, m_Context.queue_family_indices.transfer, 0, &m_Context.queue_transfer);
+}
+
+void fe::RendererVulkan::VKCreateSurface() {
+}
+
+void fe::RendererVulkan::VKCreateSwapchain() {
+}
+
+std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::VKGetQueueFamilyInfos(bool use_swapchain, VkQueueFlags requested_queue_types) {
+    std::vector<VkDeviceQueueCreateInfo> queue_create_infos{};
+
+    constexpr static float default_queue_priority = 1.0f;
+
+    if (requested_queue_types & VK_QUEUE_GRAPHICS_BIT) {
+        // === SETUP CONTEXT ===
+        m_Context.queue_family_indices.graphics = getQueueFamilyIndex(m_Context, VK_QUEUE_GRAPHICS_BIT);
+        // ===
+        VkDeviceQueueCreateInfo queue_info{
+            .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+            .queueFamilyIndex = m_Context.queue_family_indices.graphics,
+            .queueCount       = 1,
+            .pQueuePriorities = &default_queue_priority
+        };
+        queue_create_infos.push_back(queue_info);
+    }
+    else {
+        // === SETUP CONTEXT ===
+        m_Context.queue_family_indices.graphics = 0;
+        // ===
+    }
+
+    if (requested_queue_types & VK_QUEUE_COMPUTE_BIT) {
+        // === SETUP CONTEXT ===
+        m_Context.queue_family_indices.compute = getQueueFamilyIndex(m_Context, VK_QUEUE_COMPUTE_BIT);
+        // ===
+
+        auto result = m_Context.queue_family_indices.compute != m_Context.queue_family_indices.graphics;
+
+        if (result) {
+            VkDeviceQueueCreateInfo queue_info{
+                .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+                .queueFamilyIndex = m_Context.queue_family_indices.compute,
+                .queueCount       = 1,
+                .pQueuePriorities = &default_queue_priority,
+            };
+            queue_create_infos.push_back(queue_info);
+        }
+    }
+    else {
+        // === SETUP CONTEXT ===
+        m_Context.queue_family_indices.compute = m_Context.queue_family_indices.graphics;
+        // ===
+    }
+
+    if (requested_queue_types & VK_QUEUE_TRANSFER_BIT) {
+        // === SETUP CONTEXT ===
+        m_Context.queue_family_indices.transfer = getQueueFamilyIndex(m_Context, VK_QUEUE_TRANSFER_BIT);
+        // ===
+
+        auto result = (m_Context.queue_family_indices.transfer != m_Context.queue_family_indices.graphics) &&
+                      (m_Context.queue_family_indices.transfer != m_Context.queue_family_indices.compute);
+
+        if (result) {
+            VkDeviceQueueCreateInfo queue_info{
+                .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+                .queueFamilyIndex = m_Context.queue_family_indices.transfer,
+                .queueCount       = 1,
+                .pQueuePriorities = &default_queue_priority
+            };
+            queue_create_infos.push_back(queue_info);
+        }
+    }
+    else {
+        // === SETUP CONTEXT ===
+        m_Context.queue_family_indices.transfer = m_Context.queue_family_indices.graphics;
+        // ===
+    }
+
+    return queue_create_infos;
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL fe::RendererVulkan::debugUtilsMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,

@@ -48,7 +48,8 @@ namespace fe {
 
         void* physical_device_create_next_chain{}; // TODO : this is unused for now. Add adding extra features in the future
 
-        VkSurfaceKHR surface{};
+        VkSwapchainKHR swapchain{};
+        VkSurfaceKHR   surface{};
 
         std::vector<VkQueueFamilyProperties> queue_family_properties{};
 
