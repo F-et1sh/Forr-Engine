@@ -19,6 +19,8 @@ namespace fe {
         std::string     application_name{};
         GraphicsBackend graphics_backend{};
 
+        bool validation_enabled = true;
+
         RendererDesc()  = default;
         ~RendererDesc() = default;
     };

@@ -30,22 +30,22 @@ namespace fe {
         VkInstance       instance{};
         VkPhysicalDevice physical_device{};
 
-        VkPhysicalDeviceProperties       device_properties{};
-        VkPhysicalDeviceFeatures         device_features{};
-        VkPhysicalDeviceMemoryProperties device_memory_properties{};
+        VkPhysicalDeviceProperties       physical_device_properties{};
+        VkPhysicalDeviceFeatures         physical_device_features{};
+        VkPhysicalDeviceMemoryProperties physical_device_memory_properties{};
 
         VkDevice device{};
 
-        std::vector<const char*> supported_instance_extensions;
+        std::vector<const char*> supported_instance_extensions{};
         std::vector<const char*> supported_device_extensions{};
 
-        VkPhysicalDeviceFeatures enabled_device_features{};
-        std::vector<const char*> enabled_device_extensions{};
+        VkPhysicalDeviceFeatures enabled_physical_device_features{};
+        std::vector<const char*> enabled_physical_device_extensions{};
         std::vector<const char*> enabled_instance_extensions{};
 
         std::vector<VkLayerSettingEXT> enabled_layer_settings{};
 
-        void* device_create_next_chain{}; // TODO : this is unused for now. Add adding extra features in the future
+        void* physical_device_create_next_chain{}; // TODO : this is unused for now. Add adding extra features in the future
 
         VkSurfaceKHR surface{};
 
@@ -58,6 +58,8 @@ namespace fe {
         QueueFamilyIndices queue_family_indices{};
 
         VkCommandPool command_pool{};
+
+        constexpr static uint32_t api_version = VK_API_VERSION_1_3; // hardcoded for now
 
         VulkanContext()  = default;
         ~VulkanContext() = default;

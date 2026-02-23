@@ -46,6 +46,10 @@ void fe::RendererVulkan::InitializeVulkan() {
 
     this->VKCreateInstance();
     this->VKChoosePhysicalDevice();
+
+    // TODO : After VKChoosePhysicalDevice() you getting
+    // m_Context::physical_device_features - they are not enabled.
+    // So, it's needed to provide ability to enable some of them if you need
 }
 
 void fe::RendererVulkan::InitializeDevice() {
@@ -62,29 +66,120 @@ void fe::RendererVulkan::InitializeDevice() {
 }
 
 void fe::RendererVulkan::VKCreateInstance() {
-    VkApplicationInfo app_info{};
-    app_info.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    app_info.pApplicationName   = m_Description.application_name.c_str();
-    app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    app_info.pEngineName        = "Forr Engine";
-    app_info.engineVersion      = VK_MAKE_VERSION(1, 0, 0);
-    app_info.apiVersion         = VK_API_VERSION_1_3;
+    m_Context.enabled_instance_extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 
-    auto extensions = this->m_PlatformSystem.getSurfaceRequiredExtensions();
+    auto surface_extensions = this->m_PlatformSystem.getSurfaceRequiredExtensions();
 
-    VkDebugUtilsMessengerCreateInfoEXT debug_utils_messenger_create_info{};
+    for (auto e : surface_extensions)
+        m_Context.enabled_instance_extensions.push_back(e);
 
-    debug_utils_messenger_create_info.sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    debug_utils_messenger_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    debug_utils_messenger_create_info.messageType     = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
-    debug_utils_messenger_create_info.pfnUserCallback = debugUtilsMessageCallback;
+    uint32_t extension_properties_count = 0;
+    vkEnumerateInstanceExtensionProperties(nullptr, &extension_properties_count, nullptr);
+
+    if (extension_properties_count > 0) {
+
+        std::vector<VkExtensionProperties> extension_properties(extension_properties_count);
+
+        VkResult result = vkEnumerateInstanceExtensionProperties(nullptr, &extension_properties_count, &extension_properties.front());
+        if (result == VK_SUCCESS) {
+            for (VkExtensionProperties& e : extension_properties) {
+                m_Context.supported_instance_extensions.push_back(e.extensionName);
+            }
+        }
+    }
+
+    if (!m_Context.enabled_instance_extensions.empty()) {
+        for (const char* enabled_extension : m_Context.enabled_instance_extensions) {
+            auto it = std::find(m_Context.supported_instance_extensions.begin(), m_Context.supported_instance_extensions.end(), enabled_extension);
+            if (it == m_Context.supported_instance_extensions.end()) {
+                fe::logging::error("Enabled instance extension %s is not present at instance level", enabled_extension);
+            }
+            m_Context.enabled_instance_extensions.push_back(enabled_extension);
+        }
+    }
+
+    if constexpr (true /* m_ShaderDir == "slang" */) {
+        if constexpr (m_Context.api_version < VK_API_VERSION_1_1) { // this is hardcoded for now. It will always be false
+            //m_Context.api_version = VK_API_VERSION_1_1;
+        }
+
+        m_Context.enabled_physical_device_extensions.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+        m_Context.enabled_physical_device_extensions.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
+        m_Context.enabled_physical_device_extensions.push_back(VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME);
+    }
+
+    VkApplicationInfo application_info{};
+    application_info.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+    application_info.pApplicationName   = m_Description.application_name.c_str(),
+    application_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+    application_info.pEngineName        = "Forr Engine";
+    application_info.engineVersion      = VK_MAKE_VERSION(1, 0, 0);
+    application_info.apiVersion         = m_Context.api_version;
 
     VkInstanceCreateInfo instance_create_info{};
-    instance_create_info.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    instance_create_info.pApplicationInfo        = &app_info;
-    instance_create_info.enabledExtensionCount   = static_cast<uint32_t>(extensions.size());
-    instance_create_info.ppEnabledExtensionNames = extensions.data();
-    instance_create_info.pNext                   = &debug_utils_messenger_create_info;
+    instance_create_info.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+    instance_create_info.pApplicationInfo = &application_info;
+
+    VkDebugUtilsMessengerCreateInfoEXT debug_utils_messenger_create_info{};
+    if (m_Description.validation_enabled) {
+        debug_utils_messenger_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+
+        debug_utils_messenger_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+                                                            VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+                                                            VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                                                            VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+
+        debug_utils_messenger_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+
+        debug_utils_messenger_create_info.pfnUserCallback = debugUtilsMessageCallback;
+
+        debug_utils_messenger_create_info.pNext = instance_create_info.pNext;
+        instance_create_info.pNext              = &debug_utils_messenger_create_info;
+    }
+
+    auto it = std::find(m_Context.supported_instance_extensions.begin(), m_Context.supported_instance_extensions.end(), VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    if (m_Description.validation_enabled || it != m_Context.supported_instance_extensions.end()) {
+        m_Context.enabled_instance_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
+
+    if (!m_Context.enabled_instance_extensions.empty()) {
+        instance_create_info.enabledExtensionCount   = (uint32_t) m_Context.enabled_instance_extensions.size();
+        instance_create_info.ppEnabledExtensionNames = m_Context.enabled_instance_extensions.data();
+    }
+
+    const char* validation_layer_name = "VK_LAYER_KHRONOS_validation";
+
+    if (m_Description.validation_enabled) {
+
+        uint32_t instance_layer_count{};
+        vkEnumerateInstanceLayerProperties(&instance_layer_count, nullptr);
+
+        std::vector<VkLayerProperties> instance_layer_properties(instance_layer_count);
+        vkEnumerateInstanceLayerProperties(&instance_layer_count, instance_layer_properties.data());
+
+        bool validation_layer_present = false;
+        for (auto& e : instance_layer_properties) {
+
+            if (strcmp(e.layerName, validation_layer_name) == 0) {
+                validation_layer_present = true;
+                break;
+            }
+        }
+        if (validation_layer_present) {
+            instance_create_info.ppEnabledLayerNames = &validation_layer_name;
+            instance_create_info.enabledLayerCount   = 1;
+        }
+        else
+            fe::logging::error("Validation layer %s not present, validation is disabled", validation_layer_name);
+    }
+
+    VkLayerSettingsCreateInfoEXT layer_settings_create_info{ .sType = VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT };
+    if (m_Context.enabled_layer_settings.size() > 0) {
+        layer_settings_create_info.settingCount = static_cast<uint32_t>(m_Context.enabled_layer_settings.size());
+        layer_settings_create_info.pSettings    = m_Context.enabled_layer_settings.data();
+        layer_settings_create_info.pNext        = instance_create_info.pNext;
+        instance_create_info.pNext              = &layer_settings_create_info;
+    }
 
     VkInstance instance{};
     VK_CHECK_RESULT(vkCreateInstance(&instance_create_info, nullptr, &instance))
@@ -94,11 +189,7 @@ void fe::RendererVulkan::VKCreateInstance() {
 
     // === SETUP CONTEXT ===
 
-    m_Context.instance                    = m_Instance; // instance
-    m_Context.enabled_instance_extensions = extensions; // enabled instance extensions
-}
-
-void fe::RendererVulkan::VKCreateInstance2() {
+    m_Context.instance = m_Instance; // instance
 }
 
 void fe::RendererVulkan::VKChoosePhysicalDevice() {
@@ -115,10 +206,10 @@ void fe::RendererVulkan::VKChoosePhysicalDevice() {
 
     // === SETUP CONTEXT ===
 
-    m_Context.physical_device = m_PhysicalDevice;                                               // physical device
-    vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_Context.device_properties);              // device properties
-    vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &m_Context.device_features);                  // device features
-    vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_Context.device_memory_properties); // device memory properties
+    m_Context.physical_device = m_PhysicalDevice;                                                        // physical device
+    vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_Context.physical_device_properties);              // physical device properties
+    vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &m_Context.physical_device_features);                  // physical device features
+    vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_Context.physical_device_memory_properties); // physical device memory properties
 }
 
 void fe::RendererVulkan::VKSetupQueueFamilyProperties() {
@@ -154,7 +245,7 @@ void fe::RendererVulkan::VKSetupSupportedExtensions() {
 std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::VKGetQueueFamilyInfos(bool use_swapchain, VkQueueFlags requested_queue_types) {
     std::vector<VkDeviceQueueCreateInfo> queue_create_infos{};
 
-    const float default_queue_priority{};
+    constexpr static float default_queue_priority = 1.0f;
 
     if (requested_queue_types & VK_QUEUE_GRAPHICS_BIT) {
         // === SETUP CONTEXT ===
@@ -225,10 +316,9 @@ std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::VKGetQueueFamilyInfos(b
 }
 
 void fe::RendererVulkan::VKCreateDevice(bool use_swapchain, VkQueueFlags requested_queue_types) {
-    std::vector<const char*> device_extensions(m_Context.enabled_device_extensions);
     if (use_swapchain) {
         // === SETUP CONTEXT ===
-        m_Context.enabled_device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+        m_Context.enabled_physical_device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
         // ===
     }
 
@@ -240,37 +330,40 @@ void fe::RendererVulkan::VKCreateDevice(bool use_swapchain, VkQueueFlags request
         .sType                = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         .queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size()),
         .pQueueCreateInfos    = queue_create_infos.data(),
-        .pEnabledFeatures     = &m_Context.enabled_device_features
+        .pEnabledFeatures     = &m_Context.enabled_physical_device_features
     };
 
     VkPhysicalDeviceFeatures2 physical_device_features2{};
-    if (m_Context.device_create_next_chain) {
+    if (m_Context.physical_device_create_next_chain) {
         physical_device_features2.sType     = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-        physical_device_features2.features  = m_Context.enabled_device_features;
-        physical_device_features2.pNext     = m_Context.device_create_next_chain;
+        physical_device_features2.features  = m_Context.enabled_physical_device_features;
+        physical_device_features2.pNext     = m_Context.physical_device_create_next_chain;
         device_create_info.pEnabledFeatures = nullptr;
         device_create_info.pNext            = &physical_device_features2;
     }
 
-    if (device_extensions.empty()) return;
+    if (!m_Context.enabled_physical_device_extensions.empty()) {
 
-    for (const char* e : device_extensions) {
+        for (const char* e : m_Context.enabled_physical_device_extensions) {
 
-        auto is_extension_supported = [&](const std::string& extension) -> bool {
-            return (std::find(m_Context.supported_device_extensions.begin(), m_Context.supported_device_extensions.end(), extension) != m_Context.supported_device_extensions.end());
-        };
+            auto is_extension_supported = [&](const std::string& extension) -> bool {
+                return (std::find(m_Context.supported_device_extensions.begin(), m_Context.supported_device_extensions.end(), extension) != m_Context.supported_device_extensions.end());
+            };
 
-        if (!is_extension_supported(e)) {
-            fe::logging::error("Enabled device extension %s is not present at device level", e);
+            if (!is_extension_supported(e)) {
+                fe::logging::error("Enabled device extension %s is not present at device level", e);
+            }
         }
-    }
 
-    device_create_info.enabledExtensionCount   = static_cast<uint32_t>(device_extensions.size());
-    device_create_info.ppEnabledExtensionNames = device_extensions.data();
+        device_create_info.enabledExtensionCount   = static_cast<uint32_t>(m_Context.enabled_physical_device_extensions.size());
+        device_create_info.ppEnabledExtensionNames = m_Context.enabled_physical_device_extensions.data();
+    }
 
     VkDevice device{};
     VK_CHECK_RESULT(vkCreateDevice(m_PhysicalDevice, &device_create_info, nullptr, &device));
     m_Device.attach(device);
+
+    volkLoadDevice(device);
 
     // === SETUP CONTEXT ===
     m_Context.device = m_Device;

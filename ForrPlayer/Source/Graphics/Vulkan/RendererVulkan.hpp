@@ -57,7 +57,6 @@ namespace fe {
 
     private: // Vulkan step-by-step initialization functions and helper functions
         void VKCreateInstance();
-        void VKCreateInstance2(); // temp. This is gonna replace VKCreateInstance()
         void VKChoosePhysicalDevice();
         void VKSetupQueueFamilyProperties();
         void VKSetupSupportedExtensions();

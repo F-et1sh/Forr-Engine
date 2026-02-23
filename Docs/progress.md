@@ -31,6 +31,8 @@
     VKCreateCommandPool() done
     getQueueFamilyIndex() now static
     VKCreateInstance2() created
+    VKCreateInstance() replaced
+    little fixes provided
 
 ### Problem
     -
