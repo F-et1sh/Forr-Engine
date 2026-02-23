@@ -26,6 +26,7 @@
     <ClInclude Include="Source\Graphics\Vulkan\VulkanDevice.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanContext.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VKTools.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanSwapchain.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />

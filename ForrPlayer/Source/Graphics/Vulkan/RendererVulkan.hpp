@@ -23,6 +23,7 @@
 #include "VKTypes.hpp"
 
 #include "VulkanContext.hpp"
+#include "VulkanSwapchain.hpp"
 #include "VKTools.hpp"
 
 namespace fe {
@@ -51,23 +52,28 @@ namespace fe {
         // - features
         // - logical device
         // - command pool
+        // - queues
         void InitializeDevice();
 
-        // Create Vulkan
+        // Create Vulkan Swapchain :
+        // - create surface
+        // - create swapchain
+        void InitializeSwapchain();
 
-    private: // Vulkan step-by-step initialization functions and helper functions
+    private: // Vulkan step-by-step initialization functions
         void VKCreateInstance();
         void VKChoosePhysicalDevice();
         void VKSetupQueueFamilyProperties();
         void VKSetupSupportedExtensions();
-
-        // this is not a part of initialization queue
-        // get queue family infos for logical device creation and setup m_Context.queue_family_indices
-        std::vector<VkDeviceQueueCreateInfo> VKGetQueueFamilyInfos(bool use_swapchain = true, VkQueueFlags requested_queue_types = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
-
         void VKCreateDevice(bool use_swapchain = true, VkQueueFlags requested_queue_types = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
         void VKCreateCommandPool(VkCommandPoolCreateFlags create_flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
         void VKSetupQueues();
+        void VKCreateSurface();
+        void VKCreateSwapchain();
+
+    private: // Vulkan helper functions
+        // get queue family infos for logical device creation and setup m_Context.queue_family_indices
+        std::vector<VkDeviceQueueCreateInfo> VKGetQueueFamilyInfos(bool use_swapchain = true, VkQueueFlags requested_queue_types = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
 
     private: // static functions
         static VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
@@ -88,6 +94,10 @@ namespace fe {
 
         fe::vk::CommandPool m_CommandPool{};
 
+        fe::vk::Swapchain m_Swapchain{};
+
         VulkanContext m_Context{};
+
+        VulkanSwapchain m_Swapchain{ m_Context };
     };
 } // namespace fe
