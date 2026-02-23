@@ -66,11 +66,9 @@ void fe::RendererVulkan::InitializeDevice() {
 }
 
 void fe::RendererVulkan::VKCreateInstance() {
-    m_Context.enabled_instance_extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+    std::vector<const char*> surface_extensions = this->m_PlatformSystem.getSurfaceRequiredExtensions();
 
-    auto surface_extensions = this->m_PlatformSystem.getSurfaceRequiredExtensions();
-
-    for (auto e : surface_extensions)
+    for (const char* e : surface_extensions)
         m_Context.enabled_instance_extensions.push_back(e);
 
     uint32_t extension_properties_count = 0;
@@ -80,22 +78,31 @@ void fe::RendererVulkan::VKCreateInstance() {
 
         std::vector<VkExtensionProperties> extension_properties(extension_properties_count);
 
-        VkResult result = vkEnumerateInstanceExtensionProperties(nullptr, &extension_properties_count, &extension_properties.front());
+        VkResult result = vkEnumerateInstanceExtensionProperties(nullptr, &extension_properties_count, extension_properties.data());
         if (result == VK_SUCCESS) {
-            for (VkExtensionProperties& e : extension_properties) {
+            for (const auto& e : extension_properties) {
                 m_Context.supported_instance_extensions.push_back(e.extensionName);
             }
         }
     }
 
-    if (!m_Context.enabled_instance_extensions.empty()) {
-        for (const char* enabled_extension : m_Context.enabled_instance_extensions) {
-            auto it = std::find(m_Context.supported_instance_extensions.begin(), m_Context.supported_instance_extensions.end(), enabled_extension);
-            if (it == m_Context.supported_instance_extensions.end()) {
-                fe::logging::error("Enabled instance extension %s is not present at instance level", enabled_extension);
-            }
-            m_Context.enabled_instance_extensions.push_back(enabled_extension);
-        }
+    auto                enabled_instance_extensions_copy = m_Context.enabled_instance_extensions; // copy
+    std::vector<size_t> extensions_to_remove{};
+
+    for (size_t i = 0; i < enabled_instance_extensions_copy.size(); i++) {
+        const auto& e = enabled_instance_extensions_copy[i];
+
+        auto it = std::find(m_Context.supported_instance_extensions.begin(),
+                            m_Context.supported_instance_extensions.end(),
+                            e);
+
+        if (it == m_Context.supported_instance_extensions.end())
+            extensions_to_remove.push_back(i);
+    }
+
+    for (auto i : extensions_to_remove) {
+        auto it = m_Context.enabled_instance_extensions.begin() + i;
+        m_Context.enabled_instance_extensions.erase(it);
     }
 
     if constexpr (true /* m_ShaderDir == "slang" */) {
@@ -137,14 +144,22 @@ void fe::RendererVulkan::VKCreateInstance() {
         instance_create_info.pNext              = &debug_utils_messenger_create_info;
     }
 
-    auto it = std::find(m_Context.supported_instance_extensions.begin(), m_Context.supported_instance_extensions.end(), VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    auto it = std::find(m_Context.supported_instance_extensions.begin(),
+                        m_Context.supported_instance_extensions.end(),
+                        VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
     if (m_Description.validation_enabled || it != m_Context.supported_instance_extensions.end()) {
         m_Context.enabled_instance_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 
+    // must be in this scope
+    std::vector<const char*> enabled_instance_extensions_cstr{};
+    for (const auto& e : m_Context.enabled_instance_extensions)
+        enabled_instance_extensions_cstr.push_back(e.c_str());
+
     if (!m_Context.enabled_instance_extensions.empty()) {
-        instance_create_info.enabledExtensionCount   = (uint32_t) m_Context.enabled_instance_extensions.size();
-        instance_create_info.ppEnabledExtensionNames = m_Context.enabled_instance_extensions.data();
+        instance_create_info.enabledExtensionCount   = static_cast<uint32_t>(enabled_instance_extensions_cstr.size());
+        instance_create_info.ppEnabledExtensionNames = enabled_instance_extensions_cstr.data();
     }
 
     const char* validation_layer_name = "VK_LAYER_KHRONOS_validation";
@@ -342,9 +357,14 @@ void fe::RendererVulkan::VKCreateDevice(bool use_swapchain, VkQueueFlags request
         device_create_info.pNext            = &physical_device_features2;
     }
 
-    if (!m_Context.enabled_physical_device_extensions.empty()) {
+    // must be in this scope
+    std::vector<const char*> enabled_physical_device_extensions_cstr{};
+    for (const auto& e : m_Context.enabled_physical_device_extensions)
+        enabled_physical_device_extensions_cstr.push_back(e.c_str());
 
-        for (const char* e : m_Context.enabled_physical_device_extensions) {
+    if (!enabled_physical_device_extensions_cstr.empty()) {
+
+        for (auto& e : m_Context.enabled_physical_device_extensions) {
 
             auto is_extension_supported = [&](const std::string& extension) -> bool {
                 return (std::find(m_Context.supported_device_extensions.begin(), m_Context.supported_device_extensions.end(), extension) != m_Context.supported_device_extensions.end());
@@ -355,8 +375,8 @@ void fe::RendererVulkan::VKCreateDevice(bool use_swapchain, VkQueueFlags request
             }
         }
 
-        device_create_info.enabledExtensionCount   = static_cast<uint32_t>(m_Context.enabled_physical_device_extensions.size());
-        device_create_info.ppEnabledExtensionNames = m_Context.enabled_physical_device_extensions.data();
+        device_create_info.enabledExtensionCount   = static_cast<uint32_t>(enabled_physical_device_extensions_cstr.size());
+        device_create_info.ppEnabledExtensionNames = enabled_physical_device_extensions_cstr.data();
     }
 
     VkDevice device{};
