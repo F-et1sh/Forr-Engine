@@ -33,6 +33,7 @@
     VKCreateInstance2() created
     VKCreateInstance() replaced
     little fixes provided
+    bug fixed
 
 ### Problem
     -

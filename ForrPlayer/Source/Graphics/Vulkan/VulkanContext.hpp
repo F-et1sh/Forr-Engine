@@ -13,6 +13,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include "Volk/volk.h"
 
 namespace fe {
@@ -36,12 +37,12 @@ namespace fe {
 
         VkDevice device{};
 
-        std::vector<const char*> supported_instance_extensions{};
-        std::vector<const char*> supported_device_extensions{};
+        std::vector<std::string> supported_instance_extensions{};
+        std::vector<std::string> supported_device_extensions{};
 
         VkPhysicalDeviceFeatures enabled_physical_device_features{};
-        std::vector<const char*> enabled_physical_device_extensions{};
-        std::vector<const char*> enabled_instance_extensions{};
+        std::vector<std::string> enabled_physical_device_extensions{};
+        std::vector<std::string> enabled_instance_extensions{};
 
         std::vector<VkLayerSettingEXT> enabled_layer_settings{};
 
