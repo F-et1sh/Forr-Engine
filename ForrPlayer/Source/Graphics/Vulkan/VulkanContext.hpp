@@ -36,7 +36,8 @@ namespace fe {
 
         VkDevice device{};
 
-        std::vector<const char*> supported_extensions{};
+        std::vector<const char*> supported_instance_extensions;
+        std::vector<const char*> supported_device_extensions{};
 
         VkPhysicalDeviceFeatures enabled_device_features{};
         std::vector<const char*> enabled_device_extensions{};

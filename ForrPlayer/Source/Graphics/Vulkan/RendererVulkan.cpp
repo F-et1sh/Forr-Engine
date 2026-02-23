@@ -98,6 +98,9 @@ void fe::RendererVulkan::VKCreateInstance() {
     m_Context.enabled_instance_extensions = extensions; // enabled instance extensions
 }
 
+void fe::RendererVulkan::VKCreateInstance2() {
+}
+
 void fe::RendererVulkan::VKChoosePhysicalDevice() {
     uint32_t gpu_count = 0;
     VK_CHECK_RESULT(vkEnumeratePhysicalDevices(m_Instance, &gpu_count, nullptr));
@@ -143,7 +146,7 @@ void fe::RendererVulkan::VKSetupSupportedExtensions() {
     VkResult result = vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extension_count, &extension_properties.front());
     if (result == VK_SUCCESS) {
         for (auto& e : extension_properties) {
-            m_Context.supported_extensions.push_back(e.extensionName); // supported extensions
+            m_Context.supported_device_extensions.push_back(e.extensionName); // supported extensions
         }
     }
 }
@@ -254,7 +257,7 @@ void fe::RendererVulkan::VKCreateDevice(bool use_swapchain, VkQueueFlags request
     for (const char* e : device_extensions) {
 
         auto is_extension_supported = [&](const std::string& extension) -> bool {
-            return (std::find(m_Context.supported_extensions.begin(), m_Context.supported_extensions.end(), extension) != m_Context.supported_extensions.end());
+            return (std::find(m_Context.supported_device_extensions.begin(), m_Context.supported_device_extensions.end(), extension) != m_Context.supported_device_extensions.end());
         };
 
         if (!is_extension_supported(e)) {
