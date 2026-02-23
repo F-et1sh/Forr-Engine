@@ -26,6 +26,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
       m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index)) {
 
     this->InitializeVulkan();
+    this->InitializeDevice();
 }
 
 fe::RendererVulkan::~RendererVulkan() {
@@ -81,7 +82,7 @@ void fe::RendererVulkan::VKCreateInstance() {
     VkInstanceCreateInfo instance_create_info{};
     instance_create_info.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instance_create_info.pApplicationInfo        = &app_info;
-    instance_create_info.enabledExtensionCount   = extensions.size();
+    instance_create_info.enabledExtensionCount   = static_cast<uint32_t>(extensions.size());
     instance_create_info.ppEnabledExtensionNames = extensions.data();
     instance_create_info.pNext                   = &debug_utils_messenger_create_info;
 
@@ -261,7 +262,7 @@ void fe::RendererVulkan::VKCreateDevice(bool use_swapchain, VkQueueFlags request
         }
     }
 
-    device_create_info.enabledExtensionCount   = (uint32_t) device_extensions.size();
+    device_create_info.enabledExtensionCount   = static_cast<uint32_t>(device_extensions.size());
     device_create_info.ppEnabledExtensionNames = device_extensions.data();
 
     VkDevice device{};
