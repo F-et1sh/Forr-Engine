@@ -23,7 +23,7 @@ std::unique_ptr<fe::IPlatformSystem> fe::IPlatformSystem::Create(const PlatformS
             result = std::make_unique<PlatformSystemGLFW>(desc);
             break;
         default:
-            fe::logging::warning("The selected platform backend %i was not found. Using the default one", desc.platform_backend);
+            fe::logging::warning("The selected platform backend %i was not found. Using the default one - GLFW", desc.platform_backend);
 
             result = std::make_unique<PlatformSystemGLFW>(desc);
             break;

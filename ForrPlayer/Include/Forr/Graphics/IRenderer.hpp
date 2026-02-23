@@ -17,6 +17,7 @@
 namespace fe {
     struct FORR_API RendererDesc {
         std::string     application_name{};
+        PlatformBackend platform_backend{};
         GraphicsBackend graphics_backend{};
 
         bool validation_enabled = true;

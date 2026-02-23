@@ -5,8 +5,8 @@ fe::Application::Application(const ApplicationDesc& desc) {
     PATH.init(desc.args[0], true);
 
     PlatformSystemDesc platform_desc{};
-    platform_desc.graphics_backend = desc.graphics_backend;
     platform_desc.platform_backend = desc.platform_backend;
+    platform_desc.graphics_backend = desc.graphics_backend;
 
     m_PlatformSystem = IPlatformSystem::Create(platform_desc);
 
@@ -15,6 +15,7 @@ fe::Application::Application(const ApplicationDesc& desc) {
     m_PrimaryWindow   = &m_PlatformSystem->getWindow(m_PrimaryWindowID);
 
     RendererDesc renderer_desc{};
+    renderer_desc.platform_backend = desc.platform_backend;
     renderer_desc.graphics_backend = desc.graphics_backend;
     renderer_desc.application_name = desc.application_name;
 

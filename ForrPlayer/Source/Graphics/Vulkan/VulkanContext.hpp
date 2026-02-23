@@ -51,6 +51,10 @@ namespace fe {
         VkSwapchainKHR swapchain{};
         VkSurfaceKHR   surface{};
 
+        uint32_t        queue_node_index{}; // for swapchain
+        VkFormat        color_format{};     // for swapchain
+        VkColorSpaceKHR color_space{};      // for swapchain
+
         std::vector<VkQueueFamilyProperties> queue_family_properties{};
 
         VkQueue queue_graphics{};
