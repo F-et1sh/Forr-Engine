@@ -69,6 +69,8 @@ namespace fe {
         void VKCreateCommandPool(VkCommandPoolCreateFlags create_flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
         void VKSetupQueues();
         void VKCreateSurface();
+        void VKSetupSurfaceColorFormat();
+        void VKSetupQueueNodeIndex();
         void VKCreateSwapchain();
 
     private: // Vulkan helper functions
@@ -95,9 +97,8 @@ namespace fe {
         fe::vk::CommandPool m_CommandPool{};
 
         fe::vk::Swapchain m_Swapchain{};
+        fe::vk::Surface   m_Surface{};
 
         VulkanContext m_Context{};
-
-        VulkanSwapchain m_Swapchain{ m_Context };
     };
 } // namespace fe

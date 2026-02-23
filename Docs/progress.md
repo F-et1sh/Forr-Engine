@@ -36,6 +36,10 @@
     bug fixed
     VKSetupQueues() done
     VulkanSwapchain created ( but is it really needed ? )
+    VKCreateSurface() done
+    VKSetupSurfaceColorFormat() done
+    VKSetupQueueNodeIndex() done
+    VKCreateSwapchain() created
 
 ### Problem
     -
