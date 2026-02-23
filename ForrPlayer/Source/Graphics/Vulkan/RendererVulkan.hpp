@@ -23,6 +23,7 @@
 #include "VKTypes.hpp"
 
 #include "VulkanContext.hpp"
+#include "VKTools.hpp"
 
 namespace fe {
     class RendererVulkan : public IRenderer {
@@ -36,25 +37,36 @@ namespace fe {
         void                                    Draw(MeshID index) override;
         FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return 0; }; // temp
 
-    private:
+    private: // Vulkan initialization queue
         // Create Vulkan base :
-        // - Initialize volk
-        // - Initialize fe::vk::Instance m_Instance
-        // - Initialize debug messanger
-        // - Initialize VkPhysicalDevice m_PhysicalDevice
+        // - volk
+        // - vulkan instance
+        // - debug messanger
+        // - vulkan physical device
         void InitializeVulkan();
-        // Create Vulkan logical device
+
+        // Create Vulkan logical device :
+        // - queue families
+        // - extensions
+        // - features
+        // - logical device
+        // - command pool
         void InitializeDevice();
 
-    private:
+    private: // Vulkan step-by-step initialization functions and helper functions
         void VKCreateInstance();
         void VKChoosePhysicalDevice();
-        void VKGetQueueFamilyProperties();
-        void VKGetSupportedExtensions();
-        void VKCreateDevice();
-        void VKCreateCommandPool();
+        void VKSetupQueueFamilyProperties();
+        void VKSetupSupportedExtensions();
 
-    private:
+        // this is not a part of initialization queue
+        // get queue family infos for logical device creation and setup m_Context.queue_family_indices
+        std::vector<VkDeviceQueueCreateInfo> VKGetQueueFamilyInfos(bool use_swapchain = true, VkQueueFlags requested_queue_types = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
+
+        void VKCreateDevice(bool use_swapchain = true, VkQueueFlags requested_queue_types = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
+        void VKCreateCommandPool(VkCommandPoolCreateFlags create_flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+
+    private: // static functions
         static VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
                                                                         VkDebugUtilsMessageTypeFlagsEXT             message_type,
                                                                         const VkDebugUtilsMessengerCallbackDataEXT* callback_data,

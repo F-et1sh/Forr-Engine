@@ -47,6 +47,19 @@ void fe::RendererVulkan::InitializeVulkan() {
     this->VKChoosePhysicalDevice();
 }
 
+void fe::RendererVulkan::InitializeDevice() {
+
+    // TODO : Add enabled features adding
+
+    this->VKSetupQueueFamilyProperties();
+    this->VKSetupSupportedExtensions();
+
+    // TODO : Add enabled extensions adding
+
+    this->VKCreateDevice();
+    this->VKCreateCommandPool();
+}
+
 void fe::RendererVulkan::VKCreateInstance() {
     VkApplicationInfo app_info{};
     app_info.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -104,15 +117,21 @@ void fe::RendererVulkan::VKChoosePhysicalDevice() {
     vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_Context.device_memory_properties); // device memory properties
 }
 
-void fe::RendererVulkan::VKGetQueueFamilyProperties() {
+void fe::RendererVulkan::VKSetupQueueFamilyProperties() {
+
+    // === SETUP CONTEXT ===
+
     uint32_t queue_family_count{};
     vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queue_family_count, nullptr);
     assert(queue_family_count > 0);
     m_Context.queue_family_properties.resize(queue_family_count);
-    vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queue_family_count, m_Context.queue_family_properties.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queue_family_count, m_Context.queue_family_properties.data()); // queue family properties
 }
 
-void fe::RendererVulkan::VKGetSupportedExtensions() {
+void fe::RendererVulkan::VKSetupSupportedExtensions() {
+
+    // === SETUP CONTEXT ===
+
     uint32_t extension_count{};
     vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extension_count, nullptr);
 
@@ -123,15 +142,148 @@ void fe::RendererVulkan::VKGetSupportedExtensions() {
     VkResult result = vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extension_count, &extension_properties.front());
     if (result == VK_SUCCESS) {
         for (auto& e : extension_properties) {
-            m_Context.supported_extensions.push_back(e.extensionName);
+            m_Context.supported_extensions.push_back(e.extensionName); // supported extensions
         }
     }
 }
 
-void fe::RendererVulkan::VKCreateDevice() {
+std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::VKGetQueueFamilyInfos(bool use_swapchain, VkQueueFlags requested_queue_types) {
+    std::vector<VkDeviceQueueCreateInfo> queue_create_infos{};
+
+    const float default_queue_priority{};
+
+    if (requested_queue_types & VK_QUEUE_GRAPHICS_BIT) {
+        // === SETUP CONTEXT ===
+        m_Context.queue_family_indices.graphics = getQueueFamilyIndex(m_Context, VK_QUEUE_GRAPHICS_BIT);
+        // ===
+        VkDeviceQueueCreateInfo queue_info{
+            .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+            .queueFamilyIndex = m_Context.queue_family_indices.graphics,
+            .queueCount       = 1,
+            .pQueuePriorities = &default_queue_priority
+        };
+        queue_create_infos.push_back(queue_info);
+    }
+    else {
+        // === SETUP CONTEXT ===
+        m_Context.queue_family_indices.graphics = 0;
+        // ===
+    }
+
+    if (requested_queue_types & VK_QUEUE_COMPUTE_BIT) {
+        // === SETUP CONTEXT ===
+        m_Context.queue_family_indices.compute = getQueueFamilyIndex(m_Context, VK_QUEUE_COMPUTE_BIT);
+        // ===
+
+        auto result = m_Context.queue_family_indices.compute != m_Context.queue_family_indices.graphics;
+
+        if (result) {
+            VkDeviceQueueCreateInfo queue_info{
+                .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+                .queueFamilyIndex = m_Context.queue_family_indices.compute,
+                .queueCount       = 1,
+                .pQueuePriorities = &default_queue_priority,
+            };
+            queue_create_infos.push_back(queue_info);
+        }
+    }
+    else {
+        // === SETUP CONTEXT ===
+        m_Context.queue_family_indices.compute = m_Context.queue_family_indices.graphics;
+        // ===
+    }
+
+    if (requested_queue_types & VK_QUEUE_TRANSFER_BIT) {
+        // === SETUP CONTEXT ===
+        m_Context.queue_family_indices.transfer = getQueueFamilyIndex(m_Context, VK_QUEUE_TRANSFER_BIT);
+        // ===
+
+        auto result = (m_Context.queue_family_indices.transfer != m_Context.queue_family_indices.graphics) &&
+                      (m_Context.queue_family_indices.transfer != m_Context.queue_family_indices.compute);
+
+        if (result) {
+            VkDeviceQueueCreateInfo queue_info{
+                .sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+                .queueFamilyIndex = m_Context.queue_family_indices.transfer,
+                .queueCount       = 1,
+                .pQueuePriorities = &default_queue_priority
+            };
+            queue_create_infos.push_back(queue_info);
+        }
+    }
+    else {
+        // === SETUP CONTEXT ===
+        m_Context.queue_family_indices.transfer = m_Context.queue_family_indices.graphics;
+        // ===
+    }
+
+    return queue_create_infos;
 }
 
-void fe::RendererVulkan::VKCreateCommandPool() {
+void fe::RendererVulkan::VKCreateDevice(bool use_swapchain, VkQueueFlags requested_queue_types) {
+    std::vector<const char*> device_extensions(m_Context.enabled_device_extensions);
+    if (use_swapchain) {
+        // === SETUP CONTEXT ===
+        m_Context.enabled_device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+        // ===
+    }
+
+    // === SETUP CONTEXT ===
+    std::vector<VkDeviceQueueCreateInfo> queue_create_infos = this->VKGetQueueFamilyInfos(use_swapchain, requested_queue_types);
+    // ===
+
+    VkDeviceCreateInfo device_create_info{
+        .sType                = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        .queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size()),
+        .pQueueCreateInfos    = queue_create_infos.data(),
+        .pEnabledFeatures     = &m_Context.enabled_device_features
+    };
+
+    VkPhysicalDeviceFeatures2 physical_device_features2{};
+    if (m_Context.device_create_next_chain) {
+        physical_device_features2.sType     = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        physical_device_features2.features  = m_Context.enabled_device_features;
+        physical_device_features2.pNext     = m_Context.device_create_next_chain;
+        device_create_info.pEnabledFeatures = nullptr;
+        device_create_info.pNext            = &physical_device_features2;
+    }
+
+    if (device_extensions.empty()) return;
+
+    for (const char* e : device_extensions) {
+
+        auto is_extension_supported = [&](const std::string& extension) -> bool {
+            return (std::find(m_Context.supported_extensions.begin(), m_Context.supported_extensions.end(), extension) != m_Context.supported_extensions.end());
+        };
+
+        if (!is_extension_supported(e)) {
+            fe::logging::error("Enabled device extension %s is not present at device level", e);
+        }
+    }
+
+    device_create_info.enabledExtensionCount   = (uint32_t) device_extensions.size();
+    device_create_info.ppEnabledExtensionNames = device_extensions.data();
+
+    VkDevice device{};
+    VK_CHECK_RESULT(vkCreateDevice(m_PhysicalDevice, &device_create_info, nullptr, &device));
+    m_Device.attach(device);
+
+    // === SETUP CONTEXT ===
+    m_Context.device = m_Device;
+}
+
+void fe::RendererVulkan::VKCreateCommandPool(VkCommandPoolCreateFlags create_flags) {
+    VkCommandPoolCreateInfo command_pool_info{
+        .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .flags            = create_flags,
+        .queueFamilyIndex = m_Context.queue_family_indices.graphics // graphics queue family index from m_Context
+    };
+    VkCommandPool command_pool{};
+    VK_CHECK_RESULT(vkCreateCommandPool(m_Device, &command_pool_info, nullptr, &command_pool));
+    m_CommandPool.attach(m_Device, command_pool);
+
+    // === SETUP CONTEXT ===
+    m_Context.command_pool = m_CommandPool;
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL fe::RendererVulkan::debugUtilsMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
