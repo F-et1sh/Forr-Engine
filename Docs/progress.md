@@ -8,6 +8,12 @@
     Draw a triangle
     Create Vulkan GPUResourceManager like in OpenGL
 
+    13:04 - next step :
+    - get queues
+    - create VulkanSwapchain
+    - create surface
+    - ...
+
 ### Done
     argv -> args in vk::ApplicationDesc
     VulkanContext updated
