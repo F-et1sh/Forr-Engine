@@ -19,7 +19,7 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
     : m_PlatformSystem(platform_system),
       m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index)) {
 
-    m_GLFWwindow = (GLFWwindow*)m_PrimaryWindow.getNativeHandle();
+    m_GLFWwindow = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
 
     glfwMakeContextCurrent(m_GLFWwindow);
 
@@ -53,7 +53,7 @@ void fe::RendererOpenGL::Draw(MeshID index) {
     m_Shader.bind();
 
     auto& mesh = m_GPUResourceManager.getMesh(index);
-    
+
     mesh.vao.bind();
     glDrawElements(GL_TRIANGLES, mesh.index_count, GL_UNSIGNED_BYTE, 0);
     mesh.vao.unbind();

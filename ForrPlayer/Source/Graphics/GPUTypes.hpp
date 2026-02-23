@@ -16,7 +16,7 @@
 namespace fe {
 #pragma pack(push, 1)
     struct Vertex {
-        glm::vec3    position;
+        glm::vec3 position;
         //glm::vec3    normal;
         //glm::vec2    texture_coord;
         //glm::u16vec4 joints;

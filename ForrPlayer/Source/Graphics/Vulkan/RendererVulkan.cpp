@@ -348,19 +348,19 @@ void fe::RendererVulkan::VKSetupQueues() {
 }
 
 void fe::RendererVulkan::VKCreateSurface() {
+    // needed to call in default case
+    auto create_glfw_surface = [&]() {
+        VkSurfaceKHR surface{};
+        VK_CHECK_RESULT(glfwCreateWindowSurface(m_Instance, static_cast<GLFWwindow*>(m_PrimaryWindow.getNativeHandle()), nullptr, &surface))
+        m_Surface.attach(m_Instance, surface);
+
+        // === SETUP CONTEXT ===
+        m_Context.surface = m_Surface;
+        // ===
+    };
+
     switch (m_Description.platform_backend) {
         case PlatformBackend::GLFW:
-
-            // needed to call in default case
-            auto create_glfw_surface = [&]() {
-                VkSurfaceKHR surface{};
-                VK_CHECK_RESULT(glfwCreateWindowSurface(m_Instance, static_cast<GLFWwindow*>(m_PrimaryWindow.getNativeHandle()), nullptr, &surface))
-                m_Surface.attach(m_Instance, surface);
-
-                // === SETUP CONTEXT ===
-                m_Context.surface = m_Surface;
-                // ===
-            };
 
             create_glfw_surface();
 
@@ -451,6 +451,7 @@ void fe::RendererVulkan::VKSetupQueueNodeIndex() {
 }
 
 void fe::RendererVulkan::VKCreateSwapchain() {
+    // TODO : work here. All done for it
 }
 
 std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::VKGetQueueFamilyInfos(bool use_swapchain, VkQueueFlags requested_queue_types) {

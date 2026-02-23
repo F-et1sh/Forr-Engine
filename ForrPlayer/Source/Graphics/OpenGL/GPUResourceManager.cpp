@@ -16,8 +16,8 @@
 fe::MeshID fe::GPUResourceManager::CreateTriangle() {
     std::vector<Vertex> triangle_vertices{
         Vertex{ glm::vec3{ -0.5f, -0.5f, 0.0f } },
-        Vertex{ glm::vec3{  0.0f,  0.5f, 0.0f } },
-        Vertex{ glm::vec3{  0.5f, -0.5f, 0.0f } }
+        Vertex{ glm::vec3{ 0.0f, 0.5f, 0.0f } },
+        Vertex{ glm::vec3{ 0.5f, -0.5f, 0.0f } }
     };
 
     std::vector<uint8_t> triangle_indices{
