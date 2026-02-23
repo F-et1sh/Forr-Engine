@@ -14,8 +14,15 @@
     Added : 
     - VKGetQueueFamilyProperties()
     - VKGetSupportedExtensions()
+    - VKSetupQueueFamilies();
     - VKCreateDevice() ( in progress )
     - VKCreateCommandPool() ( in progress )
+    VKTools.hpp added
+    VKGetQueueFamilyProperties() -> VKSetupQueueFamilyProperties()
+    VKGetSupportedExtensions() -> VKSetupSupportedExtensions()
+    VKSetupQueueFamilies() -> VKGetQueueFamilyInfos()
+    VKCreateDevice() done
+    VKCreateCommandPool() done
 
 ### Problem
     -

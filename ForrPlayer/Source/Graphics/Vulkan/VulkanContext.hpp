@@ -16,6 +16,16 @@
 #include "Volk/volk.h"
 
 namespace fe {
+    // TODO : Think about adding present
+    struct QueueFamilyIndices {
+        uint32_t graphics{};
+        uint32_t compute{};
+        uint32_t transfer{};
+
+        QueueFamilyIndices()  = default;
+        ~QueueFamilyIndices() = default;
+    };
+
     struct VulkanContext {
         VkInstance       instance{};
         VkPhysicalDevice physical_device{};
@@ -40,12 +50,11 @@ namespace fe {
 
         std::vector<VkQueueFamilyProperties> queue_family_properties{};
 
-        // TODO : think about adding more queues like transfer and compute
-        VkQueue graphics_queue{};
-        VkQueue present_queue{};
+        VkQueue queue_graphics{};
+        VkQueue queue_compute{};
+        VkQueue queue_transfer{};
 
-        uint32_t graphics_queue_family{};
-        uint32_t present_queue_family{};
+        QueueFamilyIndices queue_family_indices{};
 
         VkCommandPool command_pool{};
 
