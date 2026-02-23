@@ -31,7 +31,7 @@ void fe::Application::Run() {
         m_Renderer->Draw(m_Triangle);
 
         m_Renderer->SwapBuffers();
-        
+
         m_PrimaryWindow->PollEvents();
     }
 }

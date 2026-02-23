@@ -84,7 +84,7 @@ namespace fe {
                                                                         void*                                       user_data);
 
     private:
-        RendererDesc m_Description;
+        RendererDesc m_Description{};
 
         IPlatformSystem& m_PlatformSystem;
         IWindow&         m_PrimaryWindow;

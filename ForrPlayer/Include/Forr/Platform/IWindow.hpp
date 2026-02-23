@@ -16,11 +16,14 @@
 
 namespace fe {
     struct FORR_API WindowDesc {
-        uint32_t    width{};
-        uint32_t    height{};
+        int         width{ ~0 };
+        int         height{ ~0 };
         std::string name{};
+        int         monitor_index{ ~0 };
+        int         vsync{};
+        bool        is_fullscreen{};
 
-        WindowDesc() = default;
+        WindowDesc()  = default;
         ~WindowDesc() = default;
     };
 
@@ -37,8 +40,11 @@ namespace fe {
         virtual void                PollEvents() = 0;
 
         FORR_NODISCARD virtual void*       getNativeHandle() = 0;
-        FORR_NODISCARD virtual uint32_t    getWidth()        = 0;
-        FORR_NODISCARD virtual uint32_t    getHeight()       = 0;
+        FORR_NODISCARD virtual int         getWidth()        = 0;
+        FORR_NODISCARD virtual int         getHeight()       = 0;
         FORR_NODISCARD virtual std::string getName()         = 0;
+        FORR_NODISCARD virtual int         getMonitorIndex() = 0;
+        FORR_NODISCARD virtual int         getVSync()        = 0;
+        FORR_NODISCARD virtual bool        getIsFullscreen() = 0;
     };
 } // namespace fe

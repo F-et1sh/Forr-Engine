@@ -30,7 +30,7 @@ namespace fe {
         std::vector<fe::vk::Image>     m_Images{};
         std::vector<fe::vk::ImageView> m_ImageViews{};
 
-        uint32_t m_QueueNodeIndex{ ~0 };
+        int      m_QueueNodeIndex{ ~0 };
         uint32_t m_ImageCount{};
     };
 } // namespace fe

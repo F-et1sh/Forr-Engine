@@ -1,12 +1,29 @@
 # Forr-Engine Devlog
 
+## 24.02.2026
+### Goal
+    Create Swaphchain
+    Create Pipeline
+    Create ...
+
+    Draw a triangle
+    Create Vulkan GPUResourceManager like in RendererOpenGL
+
+### Done
+    -
+
+### Problem
+    -
+
+---
+
 ## 23.02.2026
 ### Goal
     Create VulkanSwapchain
     Create VulkanDevice
 
     Draw a triangle
-    Create Vulkan GPUResourceManager like in OpenGL
+    Create Vulkan GPUResourceManager like in RendererOpenGL
 
     13:04 - next step :
     - get queues
@@ -40,6 +57,9 @@
     VKSetupSurfaceColorFormat() done
     VKSetupQueueNodeIndex() done
     VKCreateSwapchain() created
+    GLFW window monitors resolved ( added new logic )
+    Fullscreen mode added
+    VSync added
 
 ### Problem
     -
