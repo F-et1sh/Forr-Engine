@@ -111,7 +111,6 @@
     <ClInclude Include="Source\Graphics\Vulkan\VKTools.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VKTypes.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanContext.hpp" />
-    <ClInclude Include="Source\Graphics\Vulkan\VulkanDevice.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanSwapchain.hpp" />
     <ClInclude Include="Source\Platform\GLFW\PlatformSystemGLFW.hpp" />
     <ClInclude Include="Source\Platform\GLFW\WindowGLFW.hpp" />
@@ -129,7 +128,6 @@
     <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\VertexBuffers.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
-    <ClCompile Include="Source\Graphics\Vulkan\VulkanDevice.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="Source\Layer.cpp" />
     <ClCompile Include="Source\logging.cpp" />
