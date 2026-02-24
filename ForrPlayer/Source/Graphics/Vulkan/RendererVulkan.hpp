@@ -11,6 +11,7 @@
 ===============================================*/
 
 #pragma once
+#include <array>
 #include "Graphics/IRenderer.hpp"
 
 #define VK_NO_PROTOTYPES
@@ -90,11 +91,15 @@ namespace fe {
         IWindow&         m_PrimaryWindow;
 
         fe::vk::Instance m_Instance{};
-        VkPhysicalDevice m_PhysicalDevice{}; // doesn't need to be destroyed
+        VkPhysicalDevice m_PhysicalDevice{}; // not RAII. doesn't need to be destroyed
 
         fe::vk::Device m_Device{};
 
         fe::vk::CommandPool m_CommandPool{};
+
+        // VkCommandBuffer is not RAII because its memory is going to be freed by command pool, 
+        // which has RAII wrapper
+        std::array<VkCommandBuffer, VulkanContext::MAX_CONCURRENT_FRAMES> m_CommandBuffers;
 
         VulkanContext m_Context{};
 

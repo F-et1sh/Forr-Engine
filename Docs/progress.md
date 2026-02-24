@@ -1,5 +1,32 @@
 # Forr-Engine Devlog
 
+## 25.02.2026
+### Goal
+    Work with Swaphchain
+    Create Pipeline
+    Create ...
+
+    Draw a triangle
+    Create Vulkan GPUResourceManager like in RendererOpenGL
+
+    Example of VertexBuffer :
+    ```cpp
+    struct VertexBuffer {
+        fe::vk::Buffer buffer;
+        fe::vk::DeviceMemory memory;
+        VkDeviceSize size{};
+        void* mapped{};
+    };
+    ```
+
+### Done
+    -
+
+### Problem
+    -
+
+---
+
 ## 24.02.2026
 ### Goal
     Create Swaphchain
@@ -22,6 +49,7 @@
 ### Done
     VulkanSwapchain created
     VulkanSwapchain lifecycle done, all that's left is logic
+    CommandBuffers in progress ( added )
 
 ### Problem
     -
