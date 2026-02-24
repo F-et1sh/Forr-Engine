@@ -9,8 +9,19 @@
     Draw a triangle
     Create Vulkan GPUResourceManager like in RendererOpenGL
 
+    Example of VertexBuffer :
+    ```cpp
+    struct VertexBuffer {
+        fe::vk::Buffer buffer;
+        fe::vk::DeviceMemory memory;
+        VkDeviceSize size{};
+        void* mapped{};
+    };
+    ```
+
 ### Done
-    -
+    VulkanSwapchain created
+    VulkanSwapchain lifecycle done, all that's left is logic
 
 ### Problem
     -

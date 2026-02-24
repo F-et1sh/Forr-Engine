@@ -35,7 +35,13 @@ namespace fe {
         VkPhysicalDeviceFeatures         physical_device_features{};
         VkPhysicalDeviceMemoryProperties physical_device_memory_properties{};
 
-        VkDevice device{};
+        VkDevice       device{};
+        VkSurfaceKHR   surface{};
+        VkSwapchainKHR swapchain{};
+
+        VkExtent2D swapchain_extent{};
+        VkFormat   swapchain_format{};
+        uint32_t   swapchain_image_count{};
 
         std::vector<std::string> supported_instance_extensions{};
         std::vector<std::string> supported_device_extensions{};
@@ -47,13 +53,6 @@ namespace fe {
         std::vector<VkLayerSettingEXT> enabled_layer_settings{};
 
         void* physical_device_create_next_chain{}; // TODO : this is unused for now. Add adding extra features in the future
-
-        VkSwapchainKHR swapchain{};
-        VkSurfaceKHR   surface{};
-
-        uint32_t        queue_node_index{}; // for swapchain
-        VkFormat        color_format{};     // for swapchain
-        VkColorSpaceKHR color_space{};      // for swapchain
 
         std::vector<VkQueueFamilyProperties> queue_family_properties{};
 

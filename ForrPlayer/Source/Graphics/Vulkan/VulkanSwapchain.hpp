@@ -3,7 +3,8 @@
     Forr Engine
 
     File : VulkanSwapchain.hpp
-    Role : temp
+    Role : Separating some objects from main logic.
+        This class can edit main VulkanContext
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -12,25 +13,45 @@
 
 #pragma once
 
+#define VK_NO_PROTOTYPES
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
+#include "Platform/IWindow.hpp"
 #include "VKTypes.hpp"
 #include "VulkanContext.hpp"
+#include "Graphics/IRenderer.hpp"
 
 namespace fe {
     class VulkanSwapchain {
     public:
-        VulkanSwapchain(VulkanContext& context) : m_Context(context) {}
+        VulkanSwapchain(const RendererDesc& renderer_description, VulkanContext& context, IWindow& primary_window)
+            : m_RendererDescription(renderer_description), m_Context(context), m_PrimaryWindow(primary_window) {}
         ~VulkanSwapchain() = default;
 
+        void CreateSurface();
+        void SetupSurfaceColorFormat();
+        void SetupQueueNodeIndex();
+        void CreateSwapchain();
+
     private:
-        VulkanContext& m_Context;
+        const RendererDesc& m_RendererDescription;
+        VulkanContext&      m_Context;
+        IWindow&            m_PrimaryWindow;
+
+        fe::vk::Surface   m_Surface{};
+        fe::vk::Swapchain m_Swapchain{};
 
         VkFormat        m_ColorFormat{};
         VkColorSpaceKHR m_ColorSpace{};
 
-        std::vector<fe::vk::Image>     m_Images{};
+        VkExtent2D m_Extent{};
+
+        // not RAII, because swapchain images are destroyed by driver itself
+        std::vector<VkImage>           m_Images{};
         std::vector<fe::vk::ImageView> m_ImageViews{};
 
-        int      m_QueueNodeIndex{ ~0 };
+        uint32_t m_QueueNodeIndex{ UINT32_MAX };
         uint32_t m_ImageCount{};
     };
 } // namespace fe
