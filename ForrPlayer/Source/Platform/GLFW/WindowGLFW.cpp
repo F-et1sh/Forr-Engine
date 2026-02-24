@@ -60,6 +60,13 @@ void fe::WindowGLFW::PollEvents() {
     glfwPollEvents();
 }
 
+void fe::WindowGLFW::setResolution(int width, int height) {
+    glfwSetWindowSize(m_GLFWwindow, width, height);
+
+    m_Description.width = width;
+    m_Description.height = height;
+}
+
 void fe::WindowGLFW::centralizeWindow() const {
     assert(m_GLFWwindow);
     assert(m_GLFWmonitor);

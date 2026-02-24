@@ -130,6 +130,7 @@
     <ClCompile Include="Source\Graphics\OpenGL\VertexBuffers.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanDevice.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="Source\Layer.cpp" />
     <ClCompile Include="Source\logging.cpp" />
     <ClCompile Include="Source\path.cpp" />

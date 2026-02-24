@@ -96,9 +96,8 @@ namespace fe {
 
         fe::vk::CommandPool m_CommandPool{};
 
-        fe::vk::Swapchain m_Swapchain{};
-        fe::vk::Surface   m_Surface{};
-
         VulkanContext m_Context{};
+
+        VulkanSwapchain m_Swapchain{ m_Description, m_Context, m_PrimaryWindow };
     };
 } // namespace fe

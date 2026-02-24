@@ -46,5 +46,7 @@ namespace fe {
         FORR_NODISCARD virtual int         getMonitorIndex() = 0;
         FORR_NODISCARD virtual int         getVSync()        = 0;
         FORR_NODISCARD virtual bool        getIsFullscreen() = 0;
+
+        virtual void setResolution(int width, int height) = 0;
     };
 } // namespace fe

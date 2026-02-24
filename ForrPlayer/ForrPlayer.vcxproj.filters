@@ -45,5 +45,6 @@
     <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanDevice.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
   </ItemGroup>
 </Project>

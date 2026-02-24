@@ -34,6 +34,8 @@ namespace fe {
         FORR_NODISCARD int         getVSync() override { return m_Description.vsync; }
         FORR_NODISCARD bool        getIsFullscreen() override { return m_Description.is_fullscreen; }
 
+        void setResolution(int width, int height) override;
+
     private:
         void centralizeWindow() const;
 

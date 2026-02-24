@@ -348,110 +348,19 @@ void fe::RendererVulkan::VKSetupQueues() {
 }
 
 void fe::RendererVulkan::VKCreateSurface() {
-    // needed to call in default case
-    auto create_glfw_surface = [&]() {
-        VkSurfaceKHR surface{};
-        VK_CHECK_RESULT(glfwCreateWindowSurface(m_Instance, static_cast<GLFWwindow*>(m_PrimaryWindow.getNativeHandle()), nullptr, &surface))
-        m_Surface.attach(m_Instance, surface);
-
-        // === SETUP CONTEXT ===
-        m_Context.surface = m_Surface;
-        // ===
-    };
-
-    switch (m_Description.platform_backend) {
-        case PlatformBackend::GLFW:
-
-            create_glfw_surface();
-
-            break;
-        default:
-            fe::logging::error("Failed to create vulkan surface. Unknown platform backend %i. Using the default one - GLFW", m_Description.platform_backend);
-
-            create_glfw_surface();
-            break;
-    }
+    m_Swapchain.CreateSurface();
 }
 
 void fe::RendererVulkan::VKSetupSurfaceColorFormat() {
-    uint32_t format_count{};
-    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(m_PhysicalDevice, m_Surface, &format_count, nullptr));
-    assert(format_count > 0);
-    std::vector<VkSurfaceFormatKHR> surface_formats(format_count);
-    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(m_PhysicalDevice, m_Surface, &format_count, surface_formats.data()));
-
-    VkSurfaceFormatKHR    selected_format         = surface_formats[0];
-    std::vector<VkFormat> preferred_image_formats = {
-        VK_FORMAT_B8G8R8A8_UNORM,
-        VK_FORMAT_R8G8B8A8_UNORM,
-        VK_FORMAT_A8B8G8R8_UNORM_PACK32
-    };
-    for (auto& available_format : surface_formats) {
-        if (std::find(preferred_image_formats.begin(), preferred_image_formats.end(), available_format.format) != preferred_image_formats.end()) {
-            selected_format = available_format;
-            break;
-        }
-    }
-
-    // === SETUP CONTEXT ===
-    m_Context.color_format = selected_format.format;
-    m_Context.color_space  = selected_format.colorSpace;
+    m_Swapchain.SetupSurfaceColorFormat();
 }
 
 void fe::RendererVulkan::VKSetupQueueNodeIndex() {
-    size_t                queue_count = m_Context.queue_family_properties.size();
-    std::vector<VkBool32> supports_present(queue_count);
-
-    for (uint32_t i = 0; i < queue_count; i++) {
-        vkGetPhysicalDeviceSurfaceSupportKHR(m_PhysicalDevice, i, m_Surface, &supports_present[i]);
-    }
-
-    uint32_t graphics_queue_node_index = ~0;
-    uint32_t present_queue_node_index  = ~0;
-
-    for (uint32_t i = 0; i < queue_count; i++) {
-        auto result = m_Context.queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT;
-        if (result != 0) {
-
-            if (graphics_queue_node_index == ~0) {
-                graphics_queue_node_index = i;
-            }
-
-            if (supports_present[i]) {
-                graphics_queue_node_index = i;
-                present_queue_node_index  = i;
-                break;
-            }
-        }
-    }
-
-    if (present_queue_node_index == ~0) {
-        for (uint32_t i = 0; i < queue_count; i++) {
-
-            if (supports_present[i]) {
-                present_queue_node_index = i;
-                break;
-            }
-        }
-    }
-
-    if (graphics_queue_node_index == ~0 ||
-        present_queue_node_index == ~0) {
-
-        fe::logging::fatal("Failed to find a graphics and/or presenting queue");
-    }
-    if (graphics_queue_node_index != present_queue_node_index) {
-
-        // TODO : Support separate graphics and presenting queues
-        fe::logging::fatal("Separate graphics and presenting queues are not supported yet");
-    }
-
-    // === SETUP CONTEXT ===
-    m_Context.queue_node_index = graphics_queue_node_index;
+    m_Swapchain.SetupQueueNodeIndex();
 }
 
 void fe::RendererVulkan::VKCreateSwapchain() {
-    // TODO : work here. All done for it
+    m_Swapchain.CreateSwapchain();
 }
 
 std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::VKGetQueueFamilyInfos(bool use_swapchain, VkQueueFlags requested_queue_types) {
@@ -543,10 +452,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL fe::RendererVulkan::debugUtilsMessageCallback(VkD
 
     switch (message_severity) {
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-            fe::logging::info(message.c_str());
+            //fe::logging::info(message.c_str()); --- Turned off
             break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-            fe::logging::info(message.c_str());
+            //fe::logging::info(message.c_str()); --- Turned off
             break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
             fe::logging::warning(message.c_str());
