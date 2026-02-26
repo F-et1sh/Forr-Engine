@@ -49,6 +49,7 @@ void fe::RendererVulkan::InitializeVulkan() {
 
     this->VKCreateInstance();
     this->VKChoosePhysicalDevice();
+    this->VKSetupDepthStencilFormat();
 
     // TODO : After VKChoosePhysicalDevice() you getting
     // m_Context::physical_device_features - they are not enabled.
@@ -131,7 +132,7 @@ void fe::RendererVulkan::InitializeSynchronizationPrimitives() {
 
         auto& semaphore = render_complete_semaphores_raw[i];
         VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphore_create_info, nullptr, &semaphore));
-        
+
         m_RenderCompleteSemaphores[i].attach(m_Device, semaphore);
     }
 }
@@ -296,6 +297,58 @@ void fe::RendererVulkan::VKChoosePhysicalDevice() {
     vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_Context.physical_device_properties);              // physical device properties
     vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &m_Context.physical_device_features);                  // physical device features
     vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_Context.physical_device_memory_properties); // physical device memory properties
+}
+
+void fe::RendererVulkan::VKSetupDepthStencilFormat() {
+
+    // === SETUP CONTEXT ===
+
+    VkBool32 found{ false };
+
+    if (m_Context.m_RequiresStencil) {
+        std::vector<VkFormat> format_list = {
+            VK_FORMAT_D32_SFLOAT_S8_UINT,
+            VK_FORMAT_D24_UNORM_S8_UINT,
+            VK_FORMAT_D16_UNORM_S8_UINT,
+        };
+
+        for (auto& format : format_list) {
+            VkFormatProperties format_properties{};
+            vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice, format, &format_properties);
+
+            if (format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+
+                m_Context.m_DepthFormat = format; // depth/stencil format
+                found                   = true;
+            }
+        }
+
+        if (!found)
+            fe::logging::error("Failed to find suitable depth/stencil format");
+    }
+    else {
+        std::vector<VkFormat> format_list = {
+            VK_FORMAT_D32_SFLOAT_S8_UINT,
+            VK_FORMAT_D32_SFLOAT,
+            VK_FORMAT_D24_UNORM_S8_UINT,
+            VK_FORMAT_D16_UNORM_S8_UINT,
+            VK_FORMAT_D16_UNORM
+        };
+
+        for (auto& format : format_list) {
+            VkFormatProperties format_properties{};
+            vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice, format, &format_properties);
+
+            if (format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+
+                m_Context.m_DepthFormat = format; // depth format
+                found                   = true;
+            }
+        }
+
+        if (!found)
+            fe::logging::error("Failed to find suitable depth format");
+    }
 }
 
 void fe::RendererVulkan::VKSetupQueueFamilyProperties() {

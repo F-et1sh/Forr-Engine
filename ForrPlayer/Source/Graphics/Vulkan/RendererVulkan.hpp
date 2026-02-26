@@ -45,6 +45,7 @@ namespace fe {
         // - vulkan instance
         // - debug messanger
         // - vulkan physical device
+        // - setup supported depth/stencil format
         void InitializeVulkan();
 
         // Create Vulkan logical device :
@@ -74,6 +75,7 @@ namespace fe {
     private: // Vulkan step-by-step initialization functions
         void VKCreateInstance();
         void VKChoosePhysicalDevice();
+        void VKSetupDepthStencilFormat();
         void VKSetupQueueFamilyProperties();
         void VKSetupSupportedExtensions();
         void VKCreateDevice(bool use_swapchain = true, VkQueueFlags requested_queue_types = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);

@@ -21,10 +21,12 @@
 
     Provide command buffers creation
     Create synchronization primitives
+    Setup depth/stencil format
 
 ### Done
     Command buffers created
     Synchronization primitives created
+    depth/stencil setting up done
 
 ### Problem
     -
