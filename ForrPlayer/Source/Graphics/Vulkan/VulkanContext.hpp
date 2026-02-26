@@ -67,6 +67,10 @@ namespace fe {
         constexpr inline static uint32_t api_version           = VK_API_VERSION_1_3; // hardcoded for now
         constexpr inline static size_t   MAX_CONCURRENT_FRAMES = 2;                  // hardcoded for now
 
+        VkFormat m_DepthFormat{ VK_FORMAT_UNDEFINED };
+
+        bool m_RequiresStencil{ false }; // hardcoded for now
+
         VulkanContext()  = default;
         ~VulkanContext() = default;
     };
