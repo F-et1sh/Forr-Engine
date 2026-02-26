@@ -20,9 +20,11 @@
     ```
 
     Provide command buffers creation
+    Create synchronization primitives
 
 ### Done
     Command buffers created
+    Synchronization primitives created
 
 ### Problem
     -
