@@ -30,6 +30,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     this->InitializeSwapchain();
     this->InitializeCommandBuffers();
     this->InitializeSynchronizationPrimitives();
+    this->InitializeDepthStencil();
 }
 
 fe::RendererVulkan::~RendererVulkan() {
@@ -135,6 +136,58 @@ void fe::RendererVulkan::InitializeSynchronizationPrimitives() {
 
         m_RenderCompleteSemaphores[i].attach(m_Device, semaphore);
     }
+}
+
+void fe::RendererVulkan::InitializeDepthStencil() {
+    VkImageCreateInfo image_create_info{};
+    image_create_info.sType       = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    image_create_info.imageType   = VK_IMAGE_TYPE_2D;
+    image_create_info.format      = m_Context.depth_format;
+    image_create_info.extent      = { m_Context.swapchain_extent.width, m_Context.swapchain_extent.height, 1 };
+    image_create_info.mipLevels   = 1;
+    image_create_info.arrayLayers = 1;
+    image_create_info.samples     = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling      = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.usage       = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+    VkImage depth_stencil_image_raw{};
+    VK_CHECK_RESULT(vkCreateImage(m_Device, &image_create_info, nullptr, &depth_stencil_image_raw));
+    m_DepthStencil.image.attach(m_Device, depth_stencil_image_raw);
+
+    VkMemoryRequirements memory_requirements{};
+    vkGetImageMemoryRequirements(m_Device, m_DepthStencil.image, &memory_requirements);
+
+    VkMemoryAllocateInfo memory_alllocate_info{};
+    memory_alllocate_info.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    memory_alllocate_info.allocationSize  = memory_requirements.size;
+    memory_alllocate_info.memoryTypeIndex = fe::getMemoryType(m_Context, memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    VkDeviceMemory depth_stencil_memory_raw{};
+    VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memory_alllocate_info, nullptr, &depth_stencil_memory_raw));
+    m_DepthStencil.memory.attach(m_Device, depth_stencil_memory_raw);
+
+    VK_CHECK_RESULT(vkBindImageMemory(m_Device, m_DepthStencil.image, m_DepthStencil.memory, 0));
+
+    VkImageViewCreateInfo image_view_create_info{};
+    image_view_create_info.sType            = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    image_view_create_info.image            = m_DepthStencil.image;
+    image_view_create_info.viewType         = VK_IMAGE_VIEW_TYPE_2D;
+    image_view_create_info.format           = m_Context.depth_format;
+    image_view_create_info.subresourceRange = {
+        .aspectMask     = VK_IMAGE_ASPECT_DEPTH_BIT,
+        .baseMipLevel   = 0,
+        .levelCount     = 1,
+        .baseArrayLayer = 0,
+        .layerCount     = 1,
+    };
+
+    if (m_Context.depth_format >= VK_FORMAT_D16_UNORM_S8_UINT) {
+        image_view_create_info.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+    }
+
+    VkImageView depth_stencil_image_view_raw{};
+    VK_CHECK_RESULT(vkCreateImageView(m_Device, &image_view_create_info, nullptr, &depth_stencil_image_view_raw));
+    m_DepthStencil.image_view.attach(m_Device, depth_stencil_image_view_raw);
 }
 
 void fe::RendererVulkan::VKCreateInstance() {
@@ -305,7 +358,7 @@ void fe::RendererVulkan::VKSetupDepthStencilFormat() {
 
     VkBool32 found{ false };
 
-    if (m_Context.m_RequiresStencil) {
+    if (m_Context.requires_stencil) {
         std::vector<VkFormat> format_list = {
             VK_FORMAT_D32_SFLOAT_S8_UINT,
             VK_FORMAT_D24_UNORM_S8_UINT,
@@ -318,8 +371,8 @@ void fe::RendererVulkan::VKSetupDepthStencilFormat() {
 
             if (format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 
-                m_Context.m_DepthFormat = format; // depth/stencil format
-                found                   = true;
+                m_Context.depth_format = format; // depth/stencil format
+                found                  = true;
             }
         }
 
@@ -341,8 +394,8 @@ void fe::RendererVulkan::VKSetupDepthStencilFormat() {
 
             if (format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 
-                m_Context.m_DepthFormat = format; // depth format
-                found                   = true;
+                m_Context.depth_format = format; // depth format
+                found                  = true;
             }
         }
 

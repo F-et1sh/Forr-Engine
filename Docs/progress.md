@@ -27,6 +27,10 @@
     Command buffers created
     Synchronization primitives created
     depth/stencil setting up done
+    name cases fixed
+    VKStructures.hpp added
+    getMemoryType() added
+    InitializeDepthStencil() done
 
 ### Problem
     -

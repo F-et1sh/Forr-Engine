@@ -26,6 +26,7 @@
 #include "VulkanContext.hpp"
 #include "VulkanSwapchain.hpp"
 #include "VKTools.hpp"
+#include "VKStructures.hpp"
 
 namespace fe {
     class RendererVulkan : public IRenderer {
@@ -71,6 +72,12 @@ namespace fe {
         // - create present complete semaphores
         // - create render complete semaphores
         void InitializeSynchronizationPrimitives();
+
+        // Create Vulkan depth/stencil :
+        // - create image
+        // - create device memory
+        // - create image view
+        void InitializeDepthStencil();
 
     private: // Vulkan step-by-step initialization functions
         void VKCreateInstance();
@@ -123,5 +130,7 @@ namespace fe {
         std::array<fe::vk::Fence, VulkanContext::MAX_CONCURRENT_FRAMES>     m_WaitFences{};
         std::array<fe::vk::Semaphore, VulkanContext::MAX_CONCURRENT_FRAMES> m_PresentCompleteSemaphores{};
         std::vector<fe::vk::Semaphore>                                      m_RenderCompleteSemaphores{};
+
+        Image m_DepthStencil{}; // temp
     };
 } // namespace fe

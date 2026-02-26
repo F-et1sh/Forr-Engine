@@ -42,4 +42,27 @@ namespace fe {
 
         return 0;
     }
+
+    static uint32_t getMemoryType(const VulkanContext& context, uint32_t type_bits, VkMemoryPropertyFlags properties, VkBool32* memory_type_found = nullptr) {
+        for (uint32_t i = 0; i < context.physical_device_memory_properties.memoryTypeCount; i++) {
+            if (type_bits & 1) {
+                if ((context.physical_device_memory_properties.memoryTypes[i].propertyFlags & properties) == properties) {
+                    if (memory_type_found) {
+                        *memory_type_found = true;
+                    }
+                    return i;
+                }
+            }
+            type_bits >>= 1;
+        }
+
+        if (memory_type_found) {
+            *memory_type_found = false;
+            return 0;
+        }
+        
+        fe::logging::fatal("Could not find a matching memory type");
+
+        return 0;
+    }
 } // namespace fe
