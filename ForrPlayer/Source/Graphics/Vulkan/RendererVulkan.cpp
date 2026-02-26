@@ -29,6 +29,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     this->InitializeDevice();
     this->InitializeSwapchain();
     this->InitializeCommandBuffers();
+    this->InitializeSynchronizationPrimitives();
 }
 
 fe::RendererVulkan::~RendererVulkan() {
@@ -87,6 +88,52 @@ void fe::RendererVulkan::InitializeCommandBuffers() {
     command_buffer_allocate_info.commandBufferCount = static_cast<uint32_t>(m_CommandBuffers.size());
 
     VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Device, &command_buffer_allocate_info, m_CommandBuffers.data()));
+}
+
+void fe::RendererVulkan::InitializeSynchronizationPrimitives() {
+    std::array<VkFence, VulkanContext::MAX_CONCURRENT_FRAMES>     wait_fences_raw{};
+    std::array<VkSemaphore, VulkanContext::MAX_CONCURRENT_FRAMES> present_complete_semaphores_raw{};
+    std::vector<VkSemaphore>                                      render_complete_semaphores_raw{};
+
+    ///
+
+    for (size_t i = 0; i < wait_fences_raw.size(); i++) {
+        VkFenceCreateInfo fence_create_info{};
+        fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+        auto& fence = wait_fences_raw[i];
+        VK_CHECK_RESULT(vkCreateFence(m_Device, &fence_create_info, nullptr, &fence));
+
+        m_WaitFences[i].attach(m_Device, fence);
+    }
+
+    ///
+
+    for (size_t i = 0; i < present_complete_semaphores_raw.size(); i++) {
+        VkSemaphoreCreateInfo semaphore_create_info{};
+        semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        auto& semaphore = present_complete_semaphores_raw[i];
+        VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphore_create_info, nullptr, &semaphore));
+
+        m_PresentCompleteSemaphores[i].attach(m_Device, semaphore);
+    }
+
+    ///
+
+    render_complete_semaphores_raw.resize(m_Context.swapchain_image_count);
+    m_RenderCompleteSemaphores.resize(m_Context.swapchain_image_count);
+
+    for (size_t i = 0; i < render_complete_semaphores_raw.size(); i++) {
+        VkSemaphoreCreateInfo semaphore_create_info{};
+        semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        auto& semaphore = render_complete_semaphores_raw[i];
+        VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphore_create_info, nullptr, &semaphore));
+        
+        m_RenderCompleteSemaphores[i].attach(m_Device, semaphore);
+    }
 }
 
 void fe::RendererVulkan::VKCreateInstance() {

@@ -62,8 +62,14 @@ namespace fe {
         void InitializeSwapchain();
 
         // Create Vulkan Command Buffers :
-        // - command buffers
+        // - create command buffers
         void InitializeCommandBuffers();
+
+        // Create Vulkan Synchronization primitives :
+        // - create fences
+        // - create present complete semaphores
+        // - create render complete semaphores
+        void InitializeSynchronizationPrimitives();
 
     private: // Vulkan step-by-step initialization functions
         void VKCreateInstance();
@@ -108,5 +114,12 @@ namespace fe {
         VulkanContext m_Context{};
 
         VulkanSwapchain m_Swapchain{ m_Description, m_Context, m_PrimaryWindow };
+
+        uint32_t m_CurrentImageIndex{};
+        uint32_t m_CurrentBuffer{};
+
+        std::array<fe::vk::Fence, VulkanContext::MAX_CONCURRENT_FRAMES>     m_WaitFences{};
+        std::array<fe::vk::Semaphore, VulkanContext::MAX_CONCURRENT_FRAMES> m_PresentCompleteSemaphores{};
+        std::vector<fe::vk::Semaphore>                                      m_RenderCompleteSemaphores{};
     };
 } // namespace fe
