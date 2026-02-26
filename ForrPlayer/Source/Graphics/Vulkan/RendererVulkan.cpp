@@ -28,6 +28,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     this->InitializeVulkan();
     this->InitializeDevice();
     this->InitializeSwapchain();
+    this->InitializeCommandBuffers();
 }
 
 fe::RendererVulkan::~RendererVulkan() {
@@ -73,6 +74,19 @@ void fe::RendererVulkan::InitializeSwapchain() {
     this->VKSetupSurfaceColorFormat();
     this->VKSetupQueueNodeIndex();
     this->VKCreateSwapchain();
+}
+
+void fe::RendererVulkan::InitializeCommandBuffers() {
+    assert(m_CommandPool);
+
+    VkCommandBufferAllocateInfo command_buffer_allocate_info{};
+
+    command_buffer_allocate_info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    command_buffer_allocate_info.commandPool        = m_CommandPool;
+    command_buffer_allocate_info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    command_buffer_allocate_info.commandBufferCount = static_cast<uint32_t>(m_CommandBuffers.size());
+
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Device, &command_buffer_allocate_info, m_CommandBuffers.data()));
 }
 
 void fe::RendererVulkan::VKCreateInstance() {
