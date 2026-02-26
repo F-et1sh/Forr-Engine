@@ -61,6 +61,10 @@ namespace fe {
         // - create swapchain
         void InitializeSwapchain();
 
+        // Create Vulkan Command Buffers :
+        // - command buffers
+        void InitializeCommandBuffers();
+
     private: // Vulkan step-by-step initialization functions
         void VKCreateInstance();
         void VKChoosePhysicalDevice();
@@ -97,9 +101,9 @@ namespace fe {
 
         fe::vk::CommandPool m_CommandPool{};
 
-        // VkCommandBuffer is not RAII because its memory is going to be freed by command pool, 
+        // VkCommandBuffer is not RAII because its memory is going to be freed by command pool,
         // which has RAII wrapper
-        std::array<VkCommandBuffer, VulkanContext::MAX_CONCURRENT_FRAMES> m_CommandBuffers;
+        std::array<VkCommandBuffer, VulkanContext::MAX_CONCURRENT_FRAMES> m_CommandBuffers{};
 
         VulkanContext m_Context{};
 
