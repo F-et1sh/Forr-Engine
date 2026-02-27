@@ -30,6 +30,16 @@
     render pass done
     little fix
     unnecessary methods for swapchain creation removed
+    pipeline cache done
+
+    Remaining :
+    - FrameBuffers
+    - VertexBuffer
+	- UniformBuffers
+	- DescriptorSetLayout
+	- DescriptorPool
+	- DescriptorSets
+	- Pipeline
 
 ### Problem
     -

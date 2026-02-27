@@ -278,6 +278,12 @@ namespace fe::vk {
         }
     };
 
+    struct PipelineCacheDestroy {
+        void operator()(VkDevice device, VkPipelineCache handle) const noexcept {
+            vkDestroyPipelineCache(device, handle, nullptr);
+        }
+    };
+
     struct PipelineLayoutDestroy {
         void operator()(VkDevice device, VkPipelineLayout handle) const noexcept {
             vkDestroyPipelineLayout(device, handle, nullptr);
@@ -342,6 +348,7 @@ namespace fe::vk {
     using RenderPass          = DeviceHandle<VkRenderPass, RenderPassDestroy>;
     using Framebuffer         = DeviceHandle<VkFramebuffer, FramebufferDestroy>;
     using Pipeline            = DeviceHandle<VkPipeline, PipelineDestroy>;
+    using PipelineCache       = DeviceHandle<VkPipelineCache, PipelineCacheDestroy>;
     using PipelineLayout      = DeviceHandle<VkPipelineLayout, PipelineLayoutDestroy>;
     using DescriptorSetLayout = DeviceHandle<VkDescriptorSetLayout, DescriptorSetLayoutDestroy>;
     using DescriptorPool      = DeviceHandle<VkDescriptorPool, DescriptorPoolDestroy>;

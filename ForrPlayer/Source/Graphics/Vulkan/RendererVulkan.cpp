@@ -264,7 +264,15 @@ void fe::RendererVulkan::InitializeRenderPass() {
 }
 
 void fe::RendererVulkan::InitializePipelineCache() {
+    VkPipelineCacheCreateInfo pipeline_cache_create_info{};
+    pipeline_cache_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 
+    VkPipelineCache pipeline_cache{};
+    VK_CHECK_RESULT(vkCreatePipelineCache(m_Device, &pipeline_cache_create_info, nullptr, &pipeline_cache));
+    m_PipelineCache.attach(m_Device, pipeline_cache);
+
+    // === SETUP CONTEXT ===
+    m_Context.pipeline_cache = pipeline_cache; // pipeline cache
 }
 
 void fe::RendererVulkan::VKCreateInstance() {
