@@ -18,7 +18,8 @@ namespace fe {
     static uint32_t getQueueFamilyIndex(const VulkanContext& context, VkQueueFlags queue_flags) {
         if ((queue_flags & VK_QUEUE_COMPUTE_BIT) == queue_flags) {
             for (uint32_t i = 0; i < static_cast<uint32_t>(context.queue_family_properties.size()); i++) {
-                if ((context.queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) && ((context.queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0)) {
+                if ((context.queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) &&
+                    ((context.queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0)) {
                     return i;
                 }
             }
@@ -26,7 +27,9 @@ namespace fe {
 
         if ((queue_flags & VK_QUEUE_TRANSFER_BIT) == queue_flags) {
             for (uint32_t i = 0; i < static_cast<uint32_t>(context.queue_family_properties.size()); i++) {
-                if ((context.queue_family_properties[i].queueFlags & VK_QUEUE_TRANSFER_BIT) && ((context.queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0) && ((context.queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) == 0)) {
+                if ((context.queue_family_properties[i].queueFlags & VK_QUEUE_TRANSFER_BIT) &&
+                    ((context.queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0) &&
+                    ((context.queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) == 0)) {
                     return i;
                 }
             }
@@ -44,9 +47,11 @@ namespace fe {
     }
 
     static uint32_t getMemoryType(const VulkanContext& context, uint32_t type_bits, VkMemoryPropertyFlags properties, VkBool32* memory_type_found = nullptr) {
-        for (uint32_t i = 0; i < context.physical_device_memory_properties.memoryTypeCount; i++) {
+        const auto& device_properties = context.physical_device_memory_properties;
+
+        for (uint32_t i = 0; i < device_properties.memoryTypeCount; i++) {
             if (type_bits & 1) {
-                if ((context.physical_device_memory_properties.memoryTypes[i].propertyFlags & properties) == properties) {
+                if ((device_properties.memoryTypes[i].propertyFlags & properties) == properties) {
                     if (memory_type_found) {
                         *memory_type_found = true;
                     }
@@ -60,9 +65,24 @@ namespace fe {
             *memory_type_found = false;
             return 0;
         }
-        
+
         fe::logging::fatal("Could not find a matching memory type");
 
         return 0;
+    }
+
+    static uint32_t getMemoryTypeIndex(const VulkanContext& context, uint32_t type_bits, VkMemoryPropertyFlags properties) {
+        const auto& device_properties = context.physical_device_memory_properties;
+
+        for (uint32_t i = 0; i < device_properties.memoryTypeCount; i++) {
+            if (type_bits & 1) {
+                if ((device_properties.memoryTypes[i].propertyFlags & properties) == properties) {
+                    return i;
+                }
+            }
+            type_bits >>= 1;
+        }
+
+        fe::logging::fatal("Could not find a matching memory type");
     }
 } // namespace fe

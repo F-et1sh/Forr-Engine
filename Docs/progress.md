@@ -32,9 +32,10 @@
     unnecessary methods for swapchain creation removed
     pipeline cache done
     framebuffers done
+    vertex buffer ( index buffer remaining )
 
     Remaining :
-    - VertexBuffer
+    - VertexBuffer ( 1/2 )
 	- UniformBuffers
 	- DescriptorSetLayout
 	- DescriptorPool
