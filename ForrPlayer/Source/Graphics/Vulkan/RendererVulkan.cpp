@@ -73,11 +73,10 @@ void fe::RendererVulkan::InitializeDevice() {
 }
 
 void fe::RendererVulkan::InitializeSwapchain() {
-
-    this->VKCreateSurface();
-    this->VKSetupSurfaceColorFormat();
-    this->VKSetupQueueNodeIndex();
-    this->VKCreateSwapchain();
+    m_Swapchain.CreateSurface();
+    m_Swapchain.SetupSurfaceColorFormat();
+    m_Swapchain.SetupQueueNodeIndex();
+    m_Swapchain.CreateSwapchain();
 }
 
 void fe::RendererVulkan::InitializeCommandBuffers() {
@@ -262,6 +261,10 @@ void fe::RendererVulkan::InitializeRenderPass() {
 
     // === SETUP CONTEXT ===
     m_Context.render_pass = render_pass; // render pass
+}
+
+void fe::RendererVulkan::InitializePipelineCache() {
+
 }
 
 void fe::RendererVulkan::VKCreateInstance() {
@@ -586,22 +589,6 @@ void fe::RendererVulkan::VKSetupQueues() {
     vkGetDeviceQueue(m_Device, m_Context.queue_family_indices.graphics, queue_index, &m_Context.queue_graphics);
     vkGetDeviceQueue(m_Device, m_Context.queue_family_indices.compute, queue_index, &m_Context.queue_compute);
     vkGetDeviceQueue(m_Device, m_Context.queue_family_indices.transfer, queue_index, &m_Context.queue_transfer);
-}
-
-void fe::RendererVulkan::VKCreateSurface() {
-    m_Swapchain.CreateSurface();
-}
-
-void fe::RendererVulkan::VKSetupSurfaceColorFormat() {
-    m_Swapchain.SetupSurfaceColorFormat();
-}
-
-void fe::RendererVulkan::VKSetupQueueNodeIndex() {
-    m_Swapchain.SetupQueueNodeIndex();
-}
-
-void fe::RendererVulkan::VKCreateSwapchain() {
-    m_Swapchain.CreateSwapchain();
 }
 
 std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::VKGetQueueFamilyInfos(bool use_swapchain, VkQueueFlags requested_queue_types) {
