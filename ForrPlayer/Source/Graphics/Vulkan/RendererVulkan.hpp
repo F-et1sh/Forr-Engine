@@ -88,6 +88,11 @@ namespace fe {
         // - create pipeline cache
         void InitializePipelineCache();
 
+        // Create Vulkan framebuffers :
+        // - do nothing if dynamic renderer enabled ( VulkanContext::use_dynamic_rendering )
+        // - create framebuffers
+        void InitializeFramebuffers();
+
     private: // Vulkan step-by-step initialization functions
         void VKCreateInstance();
         void VKChoosePhysicalDevice();
@@ -136,10 +141,12 @@ namespace fe {
         std::array<fe::vk::Semaphore, VulkanContext::MAX_CONCURRENT_FRAMES> m_PresentCompleteSemaphores{};
         std::vector<fe::vk::Semaphore>                                      m_RenderCompleteSemaphores{};
 
-        VulkanImage m_DepthStencil{}; // temp
+        VulkanImage m_DepthStencil{};
 
         fe::vk::RenderPass m_RenderPass{};
 
         fe::vk::PipelineCache m_PipelineCache{};
+
+        std::vector<fe::vk::Framebuffer> m_Framebuffers{};
     };
 } // namespace fe

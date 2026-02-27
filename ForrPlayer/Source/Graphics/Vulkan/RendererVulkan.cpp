@@ -32,6 +32,8 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     this->InitializeSynchronizationPrimitives();
     this->InitializeDepthStencil();
     this->InitializeRenderPass();
+    this->InitializePipelineCache();
+    this->InitializeFramebuffers();
 }
 
 fe::RendererVulkan::~RendererVulkan() {
@@ -273,6 +275,36 @@ void fe::RendererVulkan::InitializePipelineCache() {
 
     // === SETUP CONTEXT ===
     m_Context.pipeline_cache = pipeline_cache; // pipeline cache
+}
+
+void fe::RendererVulkan::InitializeFramebuffers() {
+    // if dynamic rendering enabled there is no need in render pass
+    if (m_Context.use_dynamic_rendering) return;
+
+    m_Framebuffers.resize(m_Context.swapchain_image_count);
+    m_Context.framebuffers.resize(m_Context.swapchain_image_count);
+
+    for (size_t i = 0; i < m_Framebuffers.size(); i++) {
+        const auto& swapchain_image_views = m_Swapchain.getImageViews();
+
+        const VkImageView attachments[2] = { swapchain_image_views[i], m_DepthStencil.image_view };
+
+        VkFramebufferCreateInfo framebuffer_create_info{};
+        framebuffer_create_info.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebuffer_create_info.renderPass      = m_RenderPass;
+        framebuffer_create_info.attachmentCount = 2;
+        framebuffer_create_info.pAttachments    = attachments;
+        framebuffer_create_info.width           = m_Context.swapchain_extent.width;
+        framebuffer_create_info.height          = m_Context.swapchain_extent.height;
+        framebuffer_create_info.layers          = 1;
+
+        VkFramebuffer framebuffer{};
+        VK_CHECK_RESULT(vkCreateFramebuffer(m_Device, &framebuffer_create_info, nullptr, &framebuffer));
+        m_Framebuffers[i].attach(m_Device, framebuffer);
+
+        // === SETUP CONTEXT ===
+        m_Context.framebuffers[i] = framebuffer; // framebuffer
+    }
 }
 
 void fe::RendererVulkan::VKCreateInstance() {
