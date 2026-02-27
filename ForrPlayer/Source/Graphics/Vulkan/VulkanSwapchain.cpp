@@ -67,7 +67,7 @@ void fe::VulkanSwapchain::SetupSurfaceColorFormat() {
     m_ColorSpace  = selected_format.colorSpace;
 
     // === SETUP CONTEXT ===
-    m_Context.swapchain_format = m_ColorFormat;
+    m_Context.swapchain_color_format = m_ColorFormat;
 }
 
 void fe::VulkanSwapchain::SetupQueueNodeIndex() {

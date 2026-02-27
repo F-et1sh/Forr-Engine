@@ -35,12 +35,15 @@ namespace fe {
         VkPhysicalDeviceFeatures         physical_device_features{};
         VkPhysicalDeviceMemoryProperties physical_device_memory_properties{};
 
-        VkDevice       device{};
+        VkDevice device{};
+
         VkSurfaceKHR   surface{};
         VkSwapchainKHR swapchain{};
 
+        VkRenderPass render_pass{};
+
         VkExtent2D swapchain_extent{};
-        VkFormat   swapchain_format{};
+        VkFormat   swapchain_color_format{};
         uint32_t   swapchain_image_count{};
 
         std::vector<std::string> supported_instance_extensions{};
@@ -68,6 +71,12 @@ namespace fe {
         constexpr inline static size_t            MAX_CONCURRENT_FRAMES = 2;                                  // hardcoded for now
         constexpr inline static bool              requires_stencil{ false };                                  // hardcoded for now
         constexpr inline static VkClearColorValue default_clear_color = { { 0.025f, 0.025f, 0.025f, 1.0f } }; // hardcoded for now
+        bool                                      use_dynamic_rendering{ false };                             // hardcoded for now
+
+        VkPhysicalDeviceDynamicRenderingFeatures base_dynamic_rendering_features{
+            .sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
+            .dynamicRendering = VK_TRUE
+        };
 
         VkFormat depth_format{ VK_FORMAT_UNDEFINED };
 

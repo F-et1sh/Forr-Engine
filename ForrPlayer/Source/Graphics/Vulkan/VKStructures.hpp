@@ -15,12 +15,12 @@
 #include "VKTypes.hpp"
 
 namespace fe {
-    struct Image { // temp
+    struct VulkanImage {
         fe::vk::Image        image;
         fe::vk::DeviceMemory memory;
         fe::vk::ImageView    image_view;
 
-        Image()  = default;
-        ~Image() = default;
+        VulkanImage()  = default;
+        ~VulkanImage() = default;
     };
 } // namespace fe

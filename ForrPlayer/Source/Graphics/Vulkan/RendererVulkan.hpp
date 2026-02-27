@@ -79,6 +79,9 @@ namespace fe {
         // - create image view
         void InitializeDepthStencil();
 
+        //
+        void InitializeRenderPass();
+
     private: // Vulkan step-by-step initialization functions
         void VKCreateInstance();
         void VKChoosePhysicalDevice();
@@ -109,6 +112,8 @@ namespace fe {
         IPlatformSystem& m_PlatformSystem;
         IWindow&         m_PrimaryWindow;
 
+        VulkanContext m_Context{};
+
         fe::vk::Instance m_Instance{};
         VkPhysicalDevice m_PhysicalDevice{}; // not RAII. doesn't need to be destroyed
 
@@ -120,8 +125,6 @@ namespace fe {
         // which has RAII wrapper
         std::array<VkCommandBuffer, VulkanContext::MAX_CONCURRENT_FRAMES> m_CommandBuffers{};
 
-        VulkanContext m_Context{};
-
         VulkanSwapchain m_Swapchain{ m_Description, m_Context, m_PrimaryWindow };
 
         uint32_t m_CurrentImageIndex{};
@@ -131,6 +134,8 @@ namespace fe {
         std::array<fe::vk::Semaphore, VulkanContext::MAX_CONCURRENT_FRAMES> m_PresentCompleteSemaphores{};
         std::vector<fe::vk::Semaphore>                                      m_RenderCompleteSemaphores{};
 
-        Image m_DepthStencil{}; // temp
+        VulkanImage m_DepthStencil{}; // temp
+
+        fe::vk::RenderPass m_RenderPass;
     };
 } // namespace fe
