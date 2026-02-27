@@ -5,12 +5,12 @@
     Create RenderPass
 	Create PipelineCache
 	Create FrameBuffers
-    Create VertexBuffer();
-	Create UniformBuffers();
-	Create DescriptorSetLayout();
-	Create DescriptorPool();
-	Create DescriptorSets();
-	Create Pipelines();
+    Create VertexBuffer
+	Create UniformBuffers
+	Create DescriptorSetLayout
+	Create DescriptorPool
+	Create DescriptorSets
+	Create Pipeline
     ...
     Draw a triangle
     Create Vulkan GPUResourceManager like in RendererOpenGL
