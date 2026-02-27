@@ -93,6 +93,10 @@ namespace fe {
         // - create framebuffers
         void InitializeFramebuffers();
 
+        // Create Vulkan vertex buffer :
+        // - create vertex buffer
+        void InitializeVertexBuffer();
+
     private: // Vulkan step-by-step initialization functions
         void VKCreateInstance();
         void VKChoosePhysicalDevice();
@@ -148,5 +152,8 @@ namespace fe {
         fe::vk::PipelineCache m_PipelineCache{};
 
         std::vector<fe::vk::Framebuffer> m_Framebuffers{};
+
+        VulkanVertexBuffer m_VertexBuffer{};
+        VulkanIndexBuffer  m_IndexBuffer{};
     };
 } // namespace fe
