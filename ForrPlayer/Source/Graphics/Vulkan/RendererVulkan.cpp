@@ -190,6 +190,79 @@ void fe::RendererVulkan::InitializeDepthStencil() {
     m_DepthStencil.image_view.attach(m_Device, depth_stencil_image_view_raw);
 }
 
+void fe::RendererVulkan::InitializeRenderPass() {
+    // if dynamic rendering enabled there is no need in render pass
+    if (m_Context.use_dynamic_rendering) return;
+
+    std::array<VkAttachmentDescription, 2> attachments{
+        // color attachment
+        VkAttachmentDescription{
+            .format         = m_Context.swapchain_color_format,
+            .samples        = VK_SAMPLE_COUNT_1_BIT,
+            .loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR,
+            .storeOp        = VK_ATTACHMENT_STORE_OP_STORE,
+            .stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            .initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED,
+            .finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR },
+
+        // depth attachment
+        VkAttachmentDescription{
+            .format         = m_Context.depth_format,
+            .samples        = VK_SAMPLE_COUNT_1_BIT,
+            .loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR,
+            .storeOp        = VK_ATTACHMENT_STORE_OP_STORE,
+            .stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
+            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            .initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED,
+            .finalLayout    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL }
+    };
+
+    VkAttachmentReference color_reference{ .attachment = 0, .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+    VkAttachmentReference depth_reference{ .attachment = 1, .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+
+    VkSubpassDescription subpass_description{};
+    subpass_description.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass_description.colorAttachmentCount    = 1;
+    subpass_description.pColorAttachments       = &color_reference;
+    subpass_description.pDepthStencilAttachment = &depth_reference;
+
+    std::array<VkSubpassDependency, 2> dependencies{
+        VkSubpassDependency{
+            .srcSubpass    = VK_SUBPASS_EXTERNAL,
+            .dstSubpass    = 0,
+            .srcStageMask  = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+            .dstStageMask  = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+            .srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+            .dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
+        },
+        VkSubpassDependency{
+            .srcSubpass    = VK_SUBPASS_EXTERNAL,
+            .dstSubpass    = 0,
+            .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            .dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            .srcAccessMask = 0,
+            .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
+        }
+    };
+
+    VkRenderPassCreateInfo render_pass_info{};
+    render_pass_info.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    render_pass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
+    render_pass_info.pAttachments    = attachments.data();
+    render_pass_info.subpassCount    = 1;
+    render_pass_info.pSubpasses      = &subpass_description;
+    render_pass_info.dependencyCount = static_cast<uint32_t>(dependencies.size());
+    render_pass_info.pDependencies   = dependencies.data();
+
+    VkRenderPass render_pass{};
+    VK_CHECK_RESULT(vkCreateRenderPass(m_Device, &render_pass_info, nullptr, &render_pass));
+    m_RenderPass.attach(m_Device, render_pass);
+
+    // === SETUP CONTEXT ===
+    m_Context.render_pass = render_pass; // render pass
+}
+
 void fe::RendererVulkan::VKCreateInstance() {
     std::vector<const char*> surface_extensions = this->m_PlatformSystem.getSurfaceRequiredExtensions();
 
