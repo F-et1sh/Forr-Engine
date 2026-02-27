@@ -1,5 +1,38 @@
 # Forr-Engine Devlog
 
+## 27.02.2026
+### Goal
+    Create RenderPass
+	Create PipelineCache
+	Create FrameBuffers
+    Create VertexBuffer();
+	Create UniformBuffers();
+	Create DescriptorSetLayout();
+	Create DescriptorPool();
+	Create DescriptorSets();
+	Create Pipelines();
+    ...
+    Draw a triangle
+    Create Vulkan GPUResourceManager like in RendererOpenGL
+
+    Example of VertexBuffer :
+    ```cpp
+    struct VertexBuffer {
+        fe::vk::Buffer buffer;
+        fe::vk::DeviceMemory memory;
+        VkDeviceSize size{};
+        void* mapped{};
+    };
+    ```
+
+### Done
+    -
+
+### Problem
+    -
+
+---
+
 ## 26.02.2026
 ### Goal
     Work with Swaphchain
