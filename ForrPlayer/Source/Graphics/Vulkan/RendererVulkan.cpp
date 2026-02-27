@@ -31,6 +31,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     this->InitializeCommandBuffers();
     this->InitializeSynchronizationPrimitives();
     this->InitializeDepthStencil();
+    this->InitializeRenderPass();
 }
 
 fe::RendererVulkan::~RendererVulkan() {

@@ -58,16 +58,16 @@ namespace fe {
         // - queues
         void InitializeDevice();
 
-        // Create Vulkan Swapchain :
+        // Create Vulkan swapchain :
         // - create surface
         // - create swapchain
         void InitializeSwapchain();
 
-        // Create Vulkan Command Buffers :
+        // Create Vulkan command buffers :
         // - create command buffers
         void InitializeCommandBuffers();
 
-        // Create Vulkan Synchronization primitives :
+        // Create Vulkan synchronization primitives :
         // - create fences
         // - create present complete semaphores
         // - create render complete semaphores
@@ -79,7 +79,9 @@ namespace fe {
         // - create image view
         void InitializeDepthStencil();
 
-        //
+        // Create Vulkan render pass :
+        // - do nothing if dynamic renderer enabled ( VulkanContext::use_dynamic_rendering )
+        // - create render pass
         void InitializeRenderPass();
 
     private: // Vulkan step-by-step initialization functions
