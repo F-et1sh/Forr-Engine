@@ -34,6 +34,8 @@ namespace fe {
         void SetupQueueNodeIndex();
         void CreateSwapchain();
 
+        FORR_NODISCARD const std::vector<fe::vk::ImageView>& getImageViews() const { return m_ImageViews; }
+
     private:
         const RendererDesc& m_RendererDescription;
         VulkanContext&      m_Context;
@@ -47,11 +49,10 @@ namespace fe {
 
         VkExtent2D m_Extent{};
 
-        // not RAII, because swapchain images are destroyed by driver itself
-        std::vector<VkImage>           m_Images{};
+        std::vector<VkImage>           m_Images{}; // not RAII, because swapchain images are destroyed by driver itself
         std::vector<fe::vk::ImageView> m_ImageViews{};
 
-        uint32_t m_QueueNodeIndex{ UINT32_MAX };
+        uint32_t m_QueueNodeIndex{ UINT32_MAX }; // same as ~0
         uint32_t m_ImageCount{};
     };
 } // namespace fe

@@ -82,6 +82,8 @@ namespace fe {
 
         VkPipelineCache pipeline_cache{};
 
+        std::vector<VkFramebuffer> framebuffers{}; // can be removed
+
         VulkanContext()  = default;
         ~VulkanContext() = default;
     };

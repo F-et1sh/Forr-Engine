@@ -31,9 +31,9 @@
     little fix
     unnecessary methods for swapchain creation removed
     pipeline cache done
+    framebuffers done
 
     Remaining :
-    - FrameBuffers
     - VertexBuffer
 	- UniformBuffers
 	- DescriptorSetLayout
