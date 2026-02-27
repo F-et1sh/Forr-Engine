@@ -84,6 +84,9 @@ namespace fe {
         // - create render pass
         void InitializeRenderPass();
 
+        // Create Vulkan pipeline cache :
+        void InitializePipelineCache();
+
     private: // Vulkan step-by-step initialization functions
         void VKCreateInstance();
         void VKChoosePhysicalDevice();
@@ -93,10 +96,6 @@ namespace fe {
         void VKCreateDevice(bool use_swapchain = true, VkQueueFlags requested_queue_types = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
         void VKCreateCommandPool(VkCommandPoolCreateFlags create_flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
         void VKSetupQueues();
-        void VKCreateSurface();
-        void VKSetupSurfaceColorFormat();
-        void VKSetupQueueNodeIndex();
-        void VKCreateSwapchain();
 
     private: // Vulkan helper functions
         // get queue family infos for logical device creation and setup m_Context.queue_family_indices

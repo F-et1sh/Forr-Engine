@@ -29,6 +29,7 @@
     fe::Image -> fe::VulkanImage
     render pass done
     little fix
+    unnecessary methods for swapchain creation removed
 
 ### Problem
     -
