@@ -80,6 +80,8 @@ namespace fe {
 
         VkFormat depth_format{ VK_FORMAT_UNDEFINED };
 
+        VkPipelineCache pipeline_cache{};
+
         VulkanContext()  = default;
         ~VulkanContext() = default;
     };

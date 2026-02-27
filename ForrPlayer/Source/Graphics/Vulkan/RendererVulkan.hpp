@@ -85,6 +85,7 @@ namespace fe {
         void InitializeRenderPass();
 
         // Create Vulkan pipeline cache :
+        // - create pipeline cache
         void InitializePipelineCache();
 
     private: // Vulkan step-by-step initialization functions
@@ -137,6 +138,8 @@ namespace fe {
 
         VulkanImage m_DepthStencil{}; // temp
 
-        fe::vk::RenderPass m_RenderPass;
+        fe::vk::RenderPass m_RenderPass{};
+
+        fe::vk::PipelineCache m_PipelineCache{};
     };
 } // namespace fe
