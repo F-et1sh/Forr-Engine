@@ -19,12 +19,12 @@ namespace fe {
         VBO vbo;
         EBO ebo;
 
-        size_t index_count = 0; // temp
+        uint32_t index_count = 0; // temp
 
-        Mesh(const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices) : vbo(vertices), ebo(indices), index_count(indices.size()) {}
+        Mesh(const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices) : vbo(vertices), ebo(indices), index_count(static_cast<uint32_t>(indices.size())) {}
         Mesh(const std::vector<Vertex>& vertices, const Indices& indices_variant) : vbo(vertices), ebo(indices_variant) {
             std::visit([&](const auto& indices) {
-                index_count = indices.size();
+                index_count = static_cast<uint32_t>(indices.size());
             },
                        indices_variant);
         }

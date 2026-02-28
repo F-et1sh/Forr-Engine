@@ -333,7 +333,7 @@ namespace fe::vk {
     };
 
     struct CommandBufferDestroy {
-        void operator()(VkDevice device, VkCommandPool command_pool, size_t count, VkCommandBuffer handle) const noexcept {
+        void operator()(VkDevice device, VkCommandPool command_pool, uint32_t count, VkCommandBuffer handle) const noexcept {
             vkFreeCommandBuffers(device, command_pool, count, &handle);
         }
     };
