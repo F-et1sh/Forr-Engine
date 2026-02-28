@@ -36,7 +36,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     this->InitializeFramebuffers();
     this->InitializeVertexBuffer();
     this->InitializeUniformBuffer();
-    this->InitializeDescriptorSetLayout();
+    this->InitializeDescriptors();
 }
 
 fe::RendererVulkan::~RendererVulkan() {
@@ -519,6 +519,7 @@ void fe::RendererVulkan::InitializeUniformBuffer() {
 void fe::RendererVulkan::InitializeDescriptors() {
     this->VKSetupDescriptorSetLayout();
     this->VKSetupDescriptorPool();
+    this->VKSetupDescriptorSets();
 }
 
 void fe::RendererVulkan::VKCreateInstance() {
@@ -863,18 +864,46 @@ void fe::RendererVulkan::VKSetupDescriptorSetLayout() {
 
 void fe::RendererVulkan::VKSetupDescriptorPool() {
     VkDescriptorPoolSize descriptor_pool_size[1];
-    descriptor_pool_size[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_pool_size[0].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptor_pool_size[0].descriptorCount = VulkanContext::max_concurrent_frames;
 
     VkDescriptorPoolCreateInfo descriptor_pool_create_info{};
     descriptor_pool_create_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     descriptor_pool_create_info.poolSizeCount = 1;
     descriptor_pool_create_info.pPoolSizes    = descriptor_pool_size;
-    descriptor_pool_create_info.maxSets = VulkanContext::max_concurrent_frames;
+    descriptor_pool_create_info.maxSets       = VulkanContext::max_concurrent_frames;
 
     VkDescriptorPool descriptor_pool_raw{};
     VK_CHECK_RESULT(vkCreateDescriptorPool(m_Device, &descriptor_pool_create_info, nullptr, &descriptor_pool_raw));
     m_DescriptorPool.attach(m_Device, descriptor_pool_raw);
+}
+
+void fe::RendererVulkan::VKSetupDescriptorSets() {
+    for (size_t i = 0; i < VulkanContext::max_concurrent_frames; i++) {
+        VkDescriptorSetLayout descriptor_set_layout_raw = m_DescriptorSetLayout;
+
+        VkDescriptorSetAllocateInfo descriptor_set_allocate_info{};
+        descriptor_set_allocate_info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        descriptor_set_allocate_info.descriptorPool     = m_DescriptorPool;
+        descriptor_set_allocate_info.descriptorSetCount = 1;
+        descriptor_set_allocate_info.pSetLayouts        = &descriptor_set_layout_raw;
+
+        VK_CHECK_RESULT(vkAllocateDescriptorSets(m_Device, &descriptor_set_allocate_info, &m_UniformBuffers[i].descriptor_set));
+
+        VkDescriptorBufferInfo descriptor_buffer_info{};
+        descriptor_buffer_info.buffer = m_UniformBuffers[i].buffer;
+        descriptor_buffer_info.range  = sizeof(ShaderData);
+
+        VkWriteDescriptorSet write_descriptor_set{};
+        write_descriptor_set.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write_descriptor_set.dstSet          = m_UniformBuffers[i].descriptor_set;
+        write_descriptor_set.descriptorCount = 1;
+        write_descriptor_set.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        write_descriptor_set.pBufferInfo     = &descriptor_buffer_info;
+        write_descriptor_set.dstBinding      = 0;
+
+        vkUpdateDescriptorSets(m_Device, 1, &write_descriptor_set, 0, nullptr);
+    }
 }
 
 std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::VKGetQueueFamilyInfos(bool use_swapchain, VkQueueFlags requested_queue_types) {
