@@ -28,9 +28,9 @@
     queue submiting added ( was forgotten )
     ShaderData added to GPUTypes.hpp
     uniform buffers done
+	descriptor set layout done
 
     Remaining :
-	- DescriptorSetLayout
 	- DescriptorPool
 	- DescriptorSets
 	- Pipeline
