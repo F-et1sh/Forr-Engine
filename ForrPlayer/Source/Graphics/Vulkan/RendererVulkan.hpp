@@ -120,6 +120,7 @@ namespace fe {
         void VKSetupQueues();
         void VKSetupDescriptorSetLayout();
         void VKSetupDescriptorPool();
+        void VKSetupDescriptorSets();
 
     private: // Vulkan helper functions
         // get queue family infos for logical device creation and setup m_Context.queue_family_indices

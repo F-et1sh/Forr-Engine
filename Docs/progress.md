@@ -30,9 +30,9 @@
     uniform buffers done
 	descriptor set layout done
 	descriptor pool done
+	descriptor sets done
 
     Remaining :
-	- DescriptorSets
 	- Pipeline
 
 ### Problem
