@@ -37,15 +37,18 @@ namespace fe {
         FORR_NODISCARD float getNearClip() const noexcept { return m_ZNear; }
         FORR_NODISCARD float getFarClip() const noexcept { return m_ZFar; }
 
-        void setType(Type type)noexcept {
+        FORR_NODISCARD glm::mat4 getPerspectiveMatrix() const noexcept { return m_PerspectiveMatrix; }
+        FORR_NODISCARD glm::mat4 getViewMatrix() const noexcept { return m_ViewMatrix; }
+
+        void setType(Type type) noexcept {
             this->m_Type = type;
         }
 
-        void setRotationSpeed(float rotation_speed)noexcept {
+        void setRotationSpeed(float rotation_speed) noexcept {
             this->m_RotationSpeed = rotation_speed;
         }
 
-        void setMovementSpeed(float movement_speed)noexcept {
+        void setMovementSpeed(float movement_speed) noexcept {
             this->m_MovementSpeed = movement_speed;
         }
 
