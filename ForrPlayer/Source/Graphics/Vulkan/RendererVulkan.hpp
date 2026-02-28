@@ -103,6 +103,10 @@ namespace fe {
         // - create uniform buffer
         void InitializeUniformBuffer();
 
+        // Create Vulkan descriptor set layout
+        // - create descriptor set layout
+        void InitializeDescriptorSetLayout();
+
     private: // Vulkan step-by-step initialization functions
         void VKCreateInstance();
         void VKChoosePhysicalDevice();
@@ -163,5 +167,7 @@ namespace fe {
         VulkanIndexBuffer  m_IndexBuffer{};
 
         std::array<VulkanUniformBuffer, VulkanContext::max_concurrent_frames> m_UniformBuffers{};
+
+        fe::vk::DescriptorSetLayout m_DescriptorSetLayout{};
     };
 } // namespace fe

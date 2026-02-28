@@ -36,6 +36,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     this->InitializeFramebuffers();
     this->InitializeVertexBuffer();
     this->InitializeUniformBuffer();
+    this->InitializeDescriptorSetLayout();
 }
 
 fe::RendererVulkan::~RendererVulkan() {
@@ -513,6 +514,22 @@ void fe::RendererVulkan::InitializeUniformBuffer() {
         VK_CHECK_RESULT(vkBindBufferMemory(m_Device, buffer_raw, memory_raw, offset));
         VK_CHECK_RESULT(vkMapMemory(m_Device, memory_raw, offset, sizeof(ShaderData), flags, (void**) &m_UniformBuffers[i].mapped));
     }
+}
+
+void fe::RendererVulkan::InitializeDescriptorSetLayout() {
+    VkDescriptorSetLayoutBinding layout_binding{};
+    layout_binding.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    layout_binding.descriptorCount = 1;
+    layout_binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
+
+    VkDescriptorSetLayoutCreateInfo descriptor_layout_create_info{};
+    descriptor_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    descriptor_layout_create_info.bindingCount = 1;
+    descriptor_layout_create_info.pBindings    = &layout_binding;
+
+    VkDescriptorSetLayout descriptor_set_layout_raw{};
+    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptor_layout_create_info, nullptr, &descriptor_set_layout_raw));
+    m_DescriptorSetLayout.attach(m_Device, descriptor_set_layout_raw);
 }
 
 void fe::RendererVulkan::VKCreateInstance() {
