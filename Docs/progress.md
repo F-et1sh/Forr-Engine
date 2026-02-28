@@ -25,6 +25,7 @@
 ### Done
     vertex buffer ( index buffer ) done
     warning fixes
+    queue submiting added ( was forgotten )
 
     Remaining :
 	- UniformBuffers

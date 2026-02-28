@@ -68,10 +68,11 @@ namespace fe {
         VkCommandPool command_pool{};
 
         constexpr inline static uint32_t          api_version           = VK_API_VERSION_1_3;                 // hardcoded for now
-        constexpr inline static size_t            MAX_CONCURRENT_FRAMES = 2;                                  // hardcoded for now
+        constexpr inline static size_t            max_concurrent_frames = 2;                                  // hardcoded for now
         constexpr inline static bool              requires_stencil{ false };                                  // hardcoded for now
         constexpr inline static VkClearColorValue default_clear_color = { { 0.025f, 0.025f, 0.025f, 1.0f } }; // hardcoded for now
-        bool                                      use_dynamic_rendering{ false };                             // hardcoded for now
+        constexpr inline static bool              use_dynamic_rendering{ false };                             // hardcoded for now
+        constexpr inline static size_t            default_fence_timeout = 100000000000;                       // hardcoded for now ( nanoseconds )
 
         VkPhysicalDeviceDynamicRenderingFeatures base_dynamic_rendering_features{
             .sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
