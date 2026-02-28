@@ -25,6 +25,8 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
       m_PlatformSystem(platform_system),
       m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index)) {
 
+    this->InitializeCamera();
+
     this->InitializeVulkan();
     this->InitializeDevice();
     this->InitializeSwapchain();
@@ -50,6 +52,18 @@ void fe::RendererVulkan::SwapBuffers() {
 }
 
 void fe::RendererVulkan::Draw(MeshID index) {
+}
+
+void fe::RendererVulkan::InitializeCamera() {
+    m_Camera.setType(Camera::Type::LOOKAT);
+    m_Camera.setPosition(glm::vec3(0.0f, 0.0f, -2.5f));
+    m_Camera.setRotation(glm::vec3(0.0f));
+
+    float fov    = 60.0f;
+    float aspect = (float) m_PrimaryWindow.getWidth() / (float) m_PrimaryWindow.getHeight();
+    float znear  = 1.0f;
+    float zfar   = 1000.0f;
+    m_Camera.setPerspective(fov, aspect, znear, zfar);
 }
 
 void fe::RendererVulkan::InitializeVulkan() {

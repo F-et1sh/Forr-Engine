@@ -23,22 +23,31 @@
 namespace fe {
     class Camera {
     public:
-        enum Type { lookat,
-                    firstperson };
+        enum Type { LOOKAT,
+                    FIRSTPERSON };
 
     public:
         void setPerspective(float fov, float aspect, float znear, float zfar);
         void updateAspectRatio(float aspect);
 
-        void update(float delta_time);
+        void                update(float delta_time);
         FORR_NODISCARD bool updatePad(glm::vec2 axis_left, glm::vec2 axis_right, float delta_time);
 
         FORR_NODISCARD bool  isMoving() const noexcept { return m_Keys.left || m_Keys.right || m_Keys.up || m_Keys.down; }
         FORR_NODISCARD float getNearClip() const noexcept { return m_ZNear; }
         FORR_NODISCARD float getFarClip() const noexcept { return m_ZFar; }
 
-        void setRotationSpeed(float rotation_speed) { this->m_RotationSpeed = rotation_speed; }
-        void setMovementSpeed(float movement_speed) { this->m_MovementSpeed = movement_speed; }
+        void setType(Type type)noexcept {
+            this->m_Type = type;
+        }
+
+        void setRotationSpeed(float rotation_speed)noexcept {
+            this->m_RotationSpeed = rotation_speed;
+        }
+
+        void setMovementSpeed(float movement_speed)noexcept {
+            this->m_MovementSpeed = movement_speed;
+        }
 
         void setPosition(glm::vec3 position) {
             this->m_Position = position;
@@ -73,7 +82,7 @@ namespace fe {
         float m_ZNear{};
         float m_ZFar{};
 
-        Type m_Type = Type::lookat;
+        Type m_Type = Type::LOOKAT;
 
         glm::vec3 m_Position     = glm::vec3();
         glm::vec3 m_Rotation     = glm::vec3();

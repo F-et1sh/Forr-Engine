@@ -28,6 +28,8 @@
 #include "VKTools.hpp"
 #include "VKStructures.hpp"
 
+#include "Graphics/Camera/Camera.hpp"
+
 namespace fe {
     class RendererVulkan : public IRenderer {
     public:
@@ -39,6 +41,9 @@ namespace fe {
 
         void                                    Draw(MeshID index) override;
         FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return 0; }; // temp
+
+    private: // Others
+        void InitializeCamera();
 
     private: // Vulkan initialization queue
         // Create Vulkan base :
@@ -184,5 +189,7 @@ namespace fe {
 
         fe::vk::PipelineLayout m_PipelineLayout{};
         fe::vk::Pipeline       m_Pipeline{};
+
+        Camera m_Camera{}; // temp
     };
 } // namespace fe
