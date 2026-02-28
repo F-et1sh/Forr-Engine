@@ -24,6 +24,7 @@
 
 ### Done
     vertex buffer ( index buffer ) done
+    warning fixes
 
     Remaining :
 	- UniformBuffers

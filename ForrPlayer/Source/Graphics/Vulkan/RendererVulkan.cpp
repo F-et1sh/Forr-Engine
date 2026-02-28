@@ -454,8 +454,8 @@ void fe::RendererVulkan::VKCreateInstance() {
         }
     }
 
-    auto                enabled_instance_extensions_copy = m_Context.enabled_instance_extensions; // copy
-    std::vector<size_t> extensions_to_remove{};
+    std::vector<std::string> enabled_instance_extensions_copy = m_Context.enabled_instance_extensions; // copy
+    std::vector<size_t>      extensions_to_remove{};
 
     for (size_t i = 0; i < enabled_instance_extensions_copy.size(); i++) {
         const auto& e = enabled_instance_extensions_copy[i];

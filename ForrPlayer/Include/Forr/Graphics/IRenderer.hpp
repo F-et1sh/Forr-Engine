@@ -11,6 +11,7 @@
 ===============================================*/
 
 #pragma once
+#include <string>
 #include "Platform/IPlatformSystem.hpp"
 #include "Core/types.hpp"
 
