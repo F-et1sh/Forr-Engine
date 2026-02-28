@@ -25,9 +25,9 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
       m_PlatformSystem(platform_system),
       m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index)) {
 
-    this->InitializeCamera();
+    this->configureCamera();
 
-    this->InitializeVulkan();
+    this->InitializeBase();
     this->InitializeDevice();
     this->InitializeSwapchain();
     this->InitializeCommandBuffers();
@@ -54,7 +54,7 @@ void fe::RendererVulkan::SwapBuffers() {
 void fe::RendererVulkan::Draw(MeshID index) {
 }
 
-void fe::RendererVulkan::InitializeCamera() {
+void fe::RendererVulkan::configureCamera() {
     m_Camera.setType(Camera::Type::LOOKAT);
     m_Camera.setPosition(glm::vec3(0.0f, 0.0f, -2.5f));
     m_Camera.setRotation(glm::vec3(0.0f));
@@ -66,7 +66,30 @@ void fe::RendererVulkan::InitializeCamera() {
     m_Camera.setPerspective(fov, aspect, znear, zfar);
 }
 
-void fe::RendererVulkan::InitializeVulkan() {
+void fe::RendererVulkan::resizeWindow() {
+    m_IsWindowResized = true;
+
+    vkDeviceWaitIdle(m_Device);
+
+    m_Swapchain.CreateSwapchain();
+
+    this->InitializeDepthStencil();
+
+    this->InitializeFramebuffers();
+
+    this->InitializeSynchronizationPrimitives();
+
+    vkDeviceWaitIdle(m_Device);
+
+    int width  = m_PrimaryWindow.getWidth();
+    int height = m_PrimaryWindow.getHeight();
+
+    if ((width > 0.0f) && (height > 0.0f)) {
+        m_Camera.updateAspectRatio((float) width / (float) height);
+    }
+}
+
+void fe::RendererVulkan::InitializeBase() {
     VK_CHECK_RESULT(volkInitialize());
 
     this->VKCreateInstance();

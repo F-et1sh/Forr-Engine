@@ -43,7 +43,8 @@ namespace fe {
         FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return 0; }; // temp
 
     private: // Others
-        void InitializeCamera();
+        void configureCamera();
+        void resizeWindow();
 
     private: // Vulkan initialization queue
         // Create Vulkan base :
@@ -52,7 +53,7 @@ namespace fe {
         // - debug messanger
         // - vulkan physical device
         // - setup supported depth/stencil format
-        void InitializeVulkan();
+        void InitializeBase();
 
         // Create Vulkan logical device :
         // - queue families
@@ -191,5 +192,7 @@ namespace fe {
         fe::vk::Pipeline       m_Pipeline{};
 
         Camera m_Camera{}; // temp
+
+        bool m_IsWindowResized{};
     };
 } // namespace fe

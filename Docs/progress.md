@@ -39,6 +39,9 @@
     pipeline done
     Camera done
     InitializeCamera() added
+    InitializeVulkan() -> InitializeBase()
+    InitializeCamera() -> configureCamera()
+    RendererVulkan::resizeWindow() added
 
 ### Problem
     -
