@@ -1,5 +1,23 @@
 # Forr-Engine Devlog
 
+## 29.02.2026
+### Goal
+    Create Vulkan GPUResourceManager like in RendererOpenGL
+    Load a gLTF module
+    
+    Not now, but :
+    - provide event system for platform
+    - remove errors when quit the application
+    - remove errors when minimize the window
+
+### Done
+    -
+
+### Problem
+    -
+
+---
+
 ## 28.02.2026
 ### Goal
     Create VertexBuffer ( 1/2 )
@@ -14,16 +32,6 @@
     ...
     Draw a triangle
     Create Vulkan GPUResourceManager like in RendererOpenGL
-
-    Example of VertexBuffer :
-    ```cpp
-    struct VertexBuffer {
-        fe::vk::Buffer buffer;
-        fe::vk::DeviceMemory memory;
-        VkDeviceSize size{};
-        void* mapped{};
-    };
-    ```
 
 ### Done
     vertex buffer ( index buffer ) done

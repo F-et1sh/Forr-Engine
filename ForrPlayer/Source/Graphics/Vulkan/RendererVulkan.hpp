@@ -187,15 +187,15 @@ namespace fe {
 
         std::array<VulkanUniformBuffer, VulkanContext::max_concurrent_frames> m_UniformBuffers{};
 
-        fe::vk::DescriptorSetLayout m_DescriptorSetLayout{};
         fe::vk::DescriptorPool      m_DescriptorPool{};
+        fe::vk::DescriptorSetLayout m_DescriptorSetLayout{};
 
         fe::vk::PipelineLayout m_PipelineLayout{};
         fe::vk::Pipeline       m_Pipeline{};
 
         Camera m_Camera{}; // temp
 
-        bool m_IsWindowResized{};
+        bool m_IsWindowResized{}; // temp
 
         uint32_t m_CurrentFrame{};
     };
