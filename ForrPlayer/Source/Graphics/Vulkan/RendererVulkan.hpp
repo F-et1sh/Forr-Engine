@@ -42,10 +42,6 @@ namespace fe {
         void                                    Draw(MeshID index) override;
         FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return 0; }; // temp
 
-    private: // Others
-        void configureCamera();
-        void resizeWindow();
-
     private: // Vulkan initialization queue
         // Create Vulkan base :
         // - volk
@@ -143,6 +139,10 @@ namespace fe {
                                                                         VkDebugUtilsMessageTypeFlagsEXT             message_type,
                                                                         const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
                                                                         void*                                       user_data);
+
+    private: // Others
+        void configureCamera();
+        void resizeWindow();
 
     private:
         RendererDesc m_Description{};
