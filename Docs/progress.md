@@ -38,6 +38,7 @@
     createShaderModule() created
     pipeline done
     Camera done
+    InitializeCamera() added
 
 ### Problem
     -

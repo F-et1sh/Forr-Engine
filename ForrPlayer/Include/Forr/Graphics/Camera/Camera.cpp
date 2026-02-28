@@ -47,7 +47,7 @@ void fe::Camera::updateAspectRatio(float aspect) {
 void fe::Camera::update(float delta_time) {
     m_IsUpdated = false;
 
-    if (m_Type == Type::firstperson) {
+    if (m_Type == Type::FIRSTPERSON) {
         if (isMoving()) {
             glm::vec3 camera_front{};
             camera_front.x = -cos(glm::radians(m_Rotation.x)) * sin(glm::radians(m_Rotation.y));
@@ -70,7 +70,7 @@ void fe::Camera::update(float delta_time) {
 bool fe::Camera::updatePad(glm::vec2 axis_left, glm::vec2 axis_right, float delta_time) {
     bool result = false;
 
-    if (m_Type == Type::firstperson) {
+    if (m_Type == Type::FIRSTPERSON) {
         const float dead_zone = 0.0015f;
         const float range     = 1.0f - dead_zone;
 
@@ -132,7 +132,7 @@ void fe::Camera::updateViewMatrix() {
     }
     transform_matrix = glm::translate(glm::mat4(1.0f), translation);
 
-    if (m_Type == Type::firstperson) {
+    if (m_Type == Type::FIRSTPERSON) {
         m_ViewMatrix = rotate_matrix * transform_matrix;
     }
     else {
