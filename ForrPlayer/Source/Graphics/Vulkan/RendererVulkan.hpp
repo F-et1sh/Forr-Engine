@@ -103,11 +103,15 @@ namespace fe {
         // - create uniform buffer
         void InitializeUniformBuffer();
 
-        // Create Vulkan descriptor set layout
+        // Create Vulkan descriptor objects
         // - create descriptor set layout
         // - create descriptor pool
         // - create descriptor sets
         void InitializeDescriptors();
+
+        // Create Vulkan pipeline
+        // - create pipeline
+        void InitializePipeline();
 
     private: // Vulkan step-by-step initialization functions
         void VKCreateInstance();
@@ -121,10 +125,12 @@ namespace fe {
         void VKSetupDescriptorSetLayout();
         void VKSetupDescriptorPool();
         void VKSetupDescriptorSets();
+        void VKSetupPipelineLayout();
 
     private: // Vulkan helper functions
         // get queue family infos for logical device creation and setup m_Context.queue_family_indices
-        std::vector<VkDeviceQueueCreateInfo> VKGetQueueFamilyInfos(bool use_swapchain = true, VkQueueFlags requested_queue_types = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
+        std::vector<VkDeviceQueueCreateInfo> getQueueFamilyInfos(bool use_swapchain = true, VkQueueFlags requested_queue_types = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
+        fe::vk::ShaderModule                 createShaderModule(const std::filesystem::path& path);
 
     private: // static functions
         static VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
@@ -175,5 +181,8 @@ namespace fe {
 
         fe::vk::DescriptorSetLayout m_DescriptorSetLayout{};
         fe::vk::DescriptorPool      m_DescriptorPool{};
+
+        fe::vk::PipelineLayout m_PipelineLayout{};
+        fe::vk::Pipeline       m_Pipeline{};
     };
 } // namespace fe

@@ -37,6 +37,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     this->InitializeVertexBuffer();
     this->InitializeUniformBuffer();
     this->InitializeDescriptors();
+    this->InitializePipeline();
 }
 
 fe::RendererVulkan::~RendererVulkan() {
@@ -522,6 +523,124 @@ void fe::RendererVulkan::InitializeDescriptors() {
     this->VKSetupDescriptorSets();
 }
 
+void fe::RendererVulkan::InitializePipeline() {
+    this->VKSetupPipelineLayout();
+
+    VkGraphicsPipelineCreateInfo graphics_pipeline_create_info{};
+    graphics_pipeline_create_info.sType      = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    graphics_pipeline_create_info.layout     = m_PipelineLayout;
+    graphics_pipeline_create_info.renderPass = m_RenderPass;
+
+    VkPipelineInputAssemblyStateCreateInfo input_assembly_state_create_info{};
+    input_assembly_state_create_info.sType    = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    input_assembly_state_create_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+    VkPipelineRasterizationStateCreateInfo rasterization_state_create_info{};
+    rasterization_state_create_info.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    rasterization_state_create_info.polygonMode             = VK_POLYGON_MODE_FILL;
+    rasterization_state_create_info.cullMode                = VK_CULL_MODE_NONE;
+    rasterization_state_create_info.frontFace               = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    rasterization_state_create_info.depthClampEnable        = VK_FALSE;
+    rasterization_state_create_info.rasterizerDiscardEnable = VK_FALSE;
+    rasterization_state_create_info.depthBiasEnable         = VK_FALSE;
+    rasterization_state_create_info.lineWidth               = 1.0f;
+
+    VkPipelineColorBlendAttachmentState color_blend_attachment_state{};
+    color_blend_attachment_state.colorWriteMask = 0xf;
+    color_blend_attachment_state.blendEnable    = VK_FALSE;
+
+    VkPipelineColorBlendStateCreateInfo color_blend_state_create_info{};
+    color_blend_state_create_info.sType           = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    color_blend_state_create_info.attachmentCount = 1;
+    color_blend_state_create_info.pAttachments    = &color_blend_attachment_state;
+
+    VkPipelineViewportStateCreateInfo viewport_state_create_info{};
+    viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewport_state_create_info.viewportCount = 1;
+    viewport_state_create_info.scissorCount  = 1;
+
+    std::vector<VkDynamicState> dynamic_state_enables{};
+    dynamic_state_enables.push_back(VK_DYNAMIC_STATE_VIEWPORT);
+    dynamic_state_enables.push_back(VK_DYNAMIC_STATE_SCISSOR);
+
+    VkPipelineDynamicStateCreateInfo dynamic_state_create_info{};
+    dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamic_state_create_info.pDynamicStates    = dynamic_state_enables.data();
+    dynamic_state_create_info.dynamicStateCount = static_cast<uint32_t>(dynamic_state_enables.size());
+
+    VkPipelineDepthStencilStateCreateInfo depth_stencil_state_create_info{};
+    depth_stencil_state_create_info.sType                 = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depth_stencil_state_create_info.depthTestEnable       = VK_TRUE;
+    depth_stencil_state_create_info.depthWriteEnable      = VK_TRUE;
+    depth_stencil_state_create_info.depthCompareOp        = VK_COMPARE_OP_LESS_OR_EQUAL;
+    depth_stencil_state_create_info.depthBoundsTestEnable = VK_FALSE;
+    depth_stencil_state_create_info.back.failOp           = VK_STENCIL_OP_KEEP;
+    depth_stencil_state_create_info.back.passOp           = VK_STENCIL_OP_KEEP;
+    depth_stencil_state_create_info.back.compareOp        = VK_COMPARE_OP_ALWAYS;
+    depth_stencil_state_create_info.stencilTestEnable     = VK_FALSE;
+    depth_stencil_state_create_info.front                 = depth_stencil_state_create_info.back;
+
+    VkPipelineMultisampleStateCreateInfo multisample_state_create_info{};
+    multisample_state_create_info.sType                = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    multisample_state_create_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+    VkVertexInputBindingDescription vertex_input_binding_description{};
+    vertex_input_binding_description.binding   = 0;
+    vertex_input_binding_description.stride    = sizeof(Vertex);
+    vertex_input_binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    std::array<VkVertexInputAttributeDescription, 1> vertex_input_attributs{};
+    vertex_input_attributs[0].binding  = 0;
+    vertex_input_attributs[0].location = 0;
+    vertex_input_attributs[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
+    vertex_input_attributs[0].offset   = offsetof(Vertex, position);
+
+    VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info{};
+    vertex_input_state_create_info.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertex_input_state_create_info.vertexBindingDescriptionCount   = 1;
+    vertex_input_state_create_info.pVertexBindingDescriptions      = &vertex_input_binding_description;
+    vertex_input_state_create_info.vertexAttributeDescriptionCount = 1;
+    vertex_input_state_create_info.pVertexAttributeDescriptions    = vertex_input_attributs.data();
+
+    std::array<VkPipelineShaderStageCreateInfo, 2> shader_stages_create_info{};
+
+    // vertex shader
+    fe::vk::ShaderModule vertex_shader_module = this->createShaderModule(PATH.getShadersPath() / "default.vert.spv");
+
+    shader_stages_create_info[0].sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shader_stages_create_info[0].stage  = VK_SHADER_STAGE_VERTEX_BIT;
+    shader_stages_create_info[0].module = vertex_shader_module;
+    shader_stages_create_info[0].pName  = "main";
+
+    assert(shader_stages_create_info[0].module != VK_NULL_HANDLE);
+
+    // fragment shader
+    fe::vk::ShaderModule fragment_shader_module = this->createShaderModule(PATH.getShadersPath() / "default.frag.spv");
+
+    shader_stages_create_info[1].sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shader_stages_create_info[1].stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
+    shader_stages_create_info[1].module = fragment_shader_module;
+    shader_stages_create_info[1].pName  = "main";
+
+    assert(shader_stages_create_info[1].module != VK_NULL_HANDLE);
+
+    graphics_pipeline_create_info.stageCount = static_cast<uint32_t>(shader_stages_create_info.size());
+    graphics_pipeline_create_info.pStages    = shader_stages_create_info.data();
+
+    graphics_pipeline_create_info.pVertexInputState   = &vertex_input_state_create_info;
+    graphics_pipeline_create_info.pInputAssemblyState = &input_assembly_state_create_info;
+    graphics_pipeline_create_info.pRasterizationState = &rasterization_state_create_info;
+    graphics_pipeline_create_info.pColorBlendState    = &color_blend_state_create_info;
+    graphics_pipeline_create_info.pMultisampleState   = &multisample_state_create_info;
+    graphics_pipeline_create_info.pViewportState      = &viewport_state_create_info;
+    graphics_pipeline_create_info.pDepthStencilState  = &depth_stencil_state_create_info;
+    graphics_pipeline_create_info.pDynamicState       = &dynamic_state_create_info;
+
+    VkPipeline pipeline_raw{};
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_Device, m_PipelineCache, 1, &graphics_pipeline_create_info, nullptr, &pipeline_raw));
+    m_Pipeline.attach(m_Device, pipeline_raw); // pipeline
+}
+
 void fe::RendererVulkan::VKCreateInstance() {
     std::vector<const char*> surface_extensions = this->m_PlatformSystem.getSurfaceRequiredExtensions();
 
@@ -774,7 +893,7 @@ void fe::RendererVulkan::VKCreateDevice(bool use_swapchain, VkQueueFlags request
     }
 
     // === SETUP CONTEXT ===
-    std::vector<VkDeviceQueueCreateInfo> queue_create_infos = this->VKGetQueueFamilyInfos(use_swapchain, requested_queue_types);
+    std::vector<VkDeviceQueueCreateInfo> queue_create_infos = this->getQueueFamilyInfos(use_swapchain, requested_queue_types);
     // ===
 
     VkDeviceCreateInfo device_create_info{
@@ -906,7 +1025,20 @@ void fe::RendererVulkan::VKSetupDescriptorSets() {
     }
 }
 
-std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::VKGetQueueFamilyInfos(bool use_swapchain, VkQueueFlags requested_queue_types) {
+void fe::RendererVulkan::VKSetupPipelineLayout() {
+    VkDescriptorSetLayout descriptor_set_layout_raw = m_DescriptorSetLayout;
+
+    VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
+    pipeline_layout_create_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipeline_layout_create_info.setLayoutCount = 1;
+    pipeline_layout_create_info.pSetLayouts    = &descriptor_set_layout_raw;
+
+    VkPipelineLayout pipeline_layout_raw{};
+    VK_CHECK_RESULT(vkCreatePipelineLayout(m_Device, &pipeline_layout_create_info, nullptr, &pipeline_layout_raw));
+    m_PipelineLayout.attach(m_Device, pipeline_layout_raw);
+}
+
+std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::getQueueFamilyInfos(bool use_swapchain, VkQueueFlags requested_queue_types) {
     std::vector<VkDeviceQueueCreateInfo> queue_create_infos{};
 
     constexpr static float default_queue_priority = 1.0f;
@@ -977,6 +1109,42 @@ std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::VKGetQueueFamilyInfos(b
     }
 
     return queue_create_infos;
+}
+
+fe::vk::ShaderModule fe::RendererVulkan::createShaderModule(const std::filesystem::path& path) {
+    size_t shader_size{};
+    char*  shader_code{};
+
+    std::ifstream is(path, std::ios::binary | std::ios::in | std::ios::ate);
+
+    if (is.is_open()) {
+        shader_size = is.tellg();
+        is.seekg(0, std::ios::beg);
+        shader_code = new char[shader_size];
+        is.read(shader_code, shader_size);
+        is.close();
+        assert(shader_size > 0);
+    }
+    if (shader_code) {
+        VkShaderModuleCreateInfo shader_module_create_info{};
+        shader_module_create_info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        shader_module_create_info.codeSize = shader_size;
+        shader_module_create_info.pCode    = (uint32_t*) shader_code;
+
+        fe::vk::ShaderModule shader_module{};
+
+        VkShaderModule shader_module_raw{};
+        VK_CHECK_RESULT(vkCreateShaderModule(m_Device, &shader_module_create_info, nullptr, &shader_module_raw));
+        shader_module.attach(m_Device, shader_module_raw);
+
+        delete[] shader_code;
+
+        return std::move(shader_module);
+    }
+
+    fe::logging::error("Failed to open shader file. Path : %s", path.string().c_str());
+
+    return fe::vk::ShaderModule{ m_Device, VK_NULL_HANDLE };
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL fe::RendererVulkan::debugUtilsMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
