@@ -68,6 +68,10 @@ void fe::RendererVulkan::configureCamera() {
 }
 
 void fe::RendererVulkan::resizeWindow() {
+    //if (m_PrimaryWindow.getWidth() == 0 || m_PrimaryWindow.getHeight() == 0) { // window minimized 
+    //    return;
+    //}
+
     m_IsWindowResized = true;
 
     vkDeviceWaitIdle(m_Device);
@@ -1106,7 +1110,7 @@ void fe::RendererVulkan::VKRender() {
     command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
     VkClearValue clear_values[2]{};
-    clear_values[0].color        = { { 0.0f, 0.0f, 0.2f, 1.0f } };
+    clear_values[0].color        = { { 0.1f, 0.1f, 0.1f, 1.0f } };
     clear_values[1].depthStencil = { 1.0f, 0 };
 
     VkRenderPassBeginInfo render_pass_begin_info{};
