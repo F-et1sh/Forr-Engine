@@ -516,20 +516,9 @@ void fe::RendererVulkan::InitializeUniformBuffer() {
     }
 }
 
-void fe::RendererVulkan::InitializeDescriptorSetLayout() {
-    VkDescriptorSetLayoutBinding layout_binding{};
-    layout_binding.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    layout_binding.descriptorCount = 1;
-    layout_binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
-
-    VkDescriptorSetLayoutCreateInfo descriptor_layout_create_info{};
-    descriptor_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    descriptor_layout_create_info.bindingCount = 1;
-    descriptor_layout_create_info.pBindings    = &layout_binding;
-
-    VkDescriptorSetLayout descriptor_set_layout_raw{};
-    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptor_layout_create_info, nullptr, &descriptor_set_layout_raw));
-    m_DescriptorSetLayout.attach(m_Device, descriptor_set_layout_raw);
+void fe::RendererVulkan::InitializeDescriptors() {
+    this->VKSetupDescriptorSetLayout();
+    this->VKSetupDescriptorPool();
 }
 
 void fe::RendererVulkan::VKCreateInstance() {
@@ -854,6 +843,38 @@ void fe::RendererVulkan::VKSetupQueues() {
     vkGetDeviceQueue(m_Device, m_Context.queue_family_indices.graphics, queue_index, &m_Context.queue_graphics);
     vkGetDeviceQueue(m_Device, m_Context.queue_family_indices.compute, queue_index, &m_Context.queue_compute);
     vkGetDeviceQueue(m_Device, m_Context.queue_family_indices.transfer, queue_index, &m_Context.queue_transfer);
+}
+
+void fe::RendererVulkan::VKSetupDescriptorSetLayout() {
+    VkDescriptorSetLayoutBinding layout_binding{};
+    layout_binding.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    layout_binding.descriptorCount = 1;
+    layout_binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
+
+    VkDescriptorSetLayoutCreateInfo descriptor_layout_create_info{};
+    descriptor_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    descriptor_layout_create_info.bindingCount = 1;
+    descriptor_layout_create_info.pBindings    = &layout_binding;
+
+    VkDescriptorSetLayout descriptor_set_layout_raw{};
+    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptor_layout_create_info, nullptr, &descriptor_set_layout_raw));
+    m_DescriptorSetLayout.attach(m_Device, descriptor_set_layout_raw);
+}
+
+void fe::RendererVulkan::VKSetupDescriptorPool() {
+    VkDescriptorPoolSize descriptor_pool_size[1];
+    descriptor_pool_size[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_pool_size[0].descriptorCount = VulkanContext::max_concurrent_frames;
+
+    VkDescriptorPoolCreateInfo descriptor_pool_create_info{};
+    descriptor_pool_create_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    descriptor_pool_create_info.poolSizeCount = 1;
+    descriptor_pool_create_info.pPoolSizes    = descriptor_pool_size;
+    descriptor_pool_create_info.maxSets = VulkanContext::max_concurrent_frames;
+
+    VkDescriptorPool descriptor_pool_raw{};
+    VK_CHECK_RESULT(vkCreateDescriptorPool(m_Device, &descriptor_pool_create_info, nullptr, &descriptor_pool_raw));
+    m_DescriptorPool.attach(m_Device, descriptor_pool_raw);
 }
 
 std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::VKGetQueueFamilyInfos(bool use_swapchain, VkQueueFlags requested_queue_types) {

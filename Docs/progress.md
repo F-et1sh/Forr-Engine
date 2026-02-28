@@ -29,9 +29,9 @@
     ShaderData added to GPUTypes.hpp
     uniform buffers done
 	descriptor set layout done
+	descriptor pool done
 
     Remaining :
-	- DescriptorPool
 	- DescriptorSets
 	- Pipeline
 
