@@ -49,6 +49,10 @@ void fe::WindowGLFW::Initialize(const WindowDesc& desc) {
 
     glfwSwapInterval(m_Description.vsync); // set VSync
 
+    glfwSetWindowUserPointer(m_GLFWwindow, this);
+
+    glfwSetWindowSizeCallback(m_GLFWwindow, windowSizeCallback);
+
     this->centralizeWindow();
 }
 
@@ -83,6 +87,14 @@ void fe::WindowGLFW::centralizeWindow() const {
     glfwSetWindowPos(m_GLFWwindow,
                      x + (videomode->width / 2) - (m_Description.width / 2),
                      y + (videomode->height / 2) - (m_Description.height / 2));
+}
+
+void fe::WindowGLFW::windowSizeCallback(GLFWwindow* window_glfw, int width, int height) {
+    if (!window_glfw) return;
+    
+    WindowGLFW* window = static_cast<WindowGLFW*>(glfwGetWindowUserPointer(window_glfw));
+    window->m_Description.width = width;
+    window->m_Description.height = height;
 }
 
 fe::WindowGLFW::~WindowGLFW() {

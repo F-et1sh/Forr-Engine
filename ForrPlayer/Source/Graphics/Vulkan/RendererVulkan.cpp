@@ -1088,7 +1088,7 @@ void fe::RendererVulkan::VKRender() {
         this->resizeWindow();
         return;
     }
-    else if ((result != VK_SUCCESS) && (result != VK_SUBOPTIMAL_KHR)) {
+    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         fe::logging::error("Failed to acquire the next swapchain image");
         return;
     }
@@ -1184,7 +1184,7 @@ void fe::RendererVulkan::VKRender() {
 
     result = vkQueuePresentKHR(m_Context.queue_graphics, &present_info);
 
-    if ((result == VK_ERROR_OUT_OF_DATE_KHR) || (result == VK_SUBOPTIMAL_KHR)) {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
         this->resizeWindow();
     }
     else if (result != VK_SUCCESS) {

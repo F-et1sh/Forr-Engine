@@ -40,6 +40,9 @@ namespace fe {
         void centralizeWindow() const;
 
     private:
+        static void windowSizeCallback(GLFWwindow* window_glfw, int width, int height);
+
+    private:
         WindowDesc m_Description{};
 
         GLFWwindow*  m_GLFWwindow{};
