@@ -105,7 +105,9 @@ namespace fe {
 
         // Create Vulkan descriptor set layout
         // - create descriptor set layout
-        void InitializeDescriptorSetLayout();
+        // - create descriptor pool
+        // - create descriptor sets
+        void InitializeDescriptors();
 
     private: // Vulkan step-by-step initialization functions
         void VKCreateInstance();
@@ -116,6 +118,8 @@ namespace fe {
         void VKCreateDevice(bool use_swapchain = true, VkQueueFlags requested_queue_types = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
         void VKCreateCommandPool(VkCommandPoolCreateFlags create_flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
         void VKSetupQueues();
+        void VKSetupDescriptorSetLayout();
+        void VKSetupDescriptorPool();
 
     private: // Vulkan helper functions
         // get queue family infos for logical device creation and setup m_Context.queue_family_indices
@@ -169,5 +173,6 @@ namespace fe {
         std::array<VulkanUniformBuffer, VulkanContext::max_concurrent_frames> m_UniformBuffers{};
 
         fe::vk::DescriptorSetLayout m_DescriptorSetLayout{};
+        fe::vk::DescriptorPool      m_DescriptorPool{};
     };
 } // namespace fe
