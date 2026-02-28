@@ -8,6 +8,9 @@
 	Create DescriptorPool
 	Create DescriptorSets
 	Create Pipeline
+    Create Camera
+    Create RendererVulkan::windowResize()
+    Create
     ...
     Draw a triangle
     Create Vulkan GPUResourceManager like in RendererOpenGL
@@ -34,6 +37,7 @@
     VKGetQueueFamilyInfos() -> getQueueFamilyInfos()
     createShaderModule() created
     pipeline done
+    Camera done
 
 ### Problem
     -
