@@ -35,6 +35,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     this->InitializePipelineCache();
     this->InitializeFramebuffers();
     this->InitializeVertexBuffer();
+    this->InitializeUniformBuffer();
 }
 
 fe::RendererVulkan::~RendererVulkan() {
@@ -442,11 +443,11 @@ void fe::RendererVulkan::InitializeVertexBuffer() {
     VK_CHECK_RESULT(vkBeginCommandBuffer(copy_command_buffer, &command_buffer_begin_info));
 
     VkBufferCopy copy_region{};
-    
+
     // Vertex buffer
     copy_region.size = vertex_buffer_size;
     vkCmdCopyBuffer(copy_command_buffer, staging_buffers.vertices.buffer, m_VertexBuffer.buffer, 1, &copy_region);
-    
+
     // Index buffer
     copy_region.size = index_buffer_size;
     vkCmdCopyBuffer(copy_command_buffer, staging_buffers.indices.buffer, m_IndexBuffer.buffer, 1, &copy_region);
@@ -461,10 +462,10 @@ void fe::RendererVulkan::InitializeVertexBuffer() {
     VkFenceCreateInfo fence_create_info{};
     fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fence_create_info.flags = 0;
-    
+
     fe::vk::Fence fence{}; // for RAII
 
-    VkFence       fence_raw{};
+    VkFence fence_raw{};
     VK_CHECK_RESULT(vkCreateFence(m_Device, &fence_create_info, nullptr, &fence_raw));
     fence.attach(m_Device, fence_raw);
 
@@ -480,6 +481,38 @@ void fe::RendererVulkan::InitializeVertexBuffer() {
 
     vkDestroyBuffer(m_Device, staging_buffers.indices.buffer, nullptr);
     vkFreeMemory(m_Device, staging_buffers.indices.memory, nullptr);
+}
+
+void fe::RendererVulkan::InitializeUniformBuffer() {
+    VkBufferCreateInfo buffer_create_info{};
+    buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buffer_create_info.size  = sizeof(ShaderData);
+    buffer_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+    for (size_t i = 0; i < VulkanContext::max_concurrent_frames; i++) {
+
+        VkBuffer buffer_raw{};
+        VK_CHECK_RESULT(vkCreateBuffer(m_Device, &buffer_create_info, nullptr, &buffer_raw));
+        m_UniformBuffers[i].buffer.attach(m_Device, buffer_raw);
+
+        VkMemoryRequirements memory_requirements{};
+        vkGetBufferMemoryRequirements(m_Device, buffer_raw, &memory_requirements);
+
+        VkMemoryAllocateInfo memory_allocate_info{};
+        memory_allocate_info.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        memory_allocate_info.allocationSize  = memory_requirements.size;
+        memory_allocate_info.memoryTypeIndex = getMemoryTypeIndex(m_Context, memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+        VkDeviceMemory memory_raw{};
+        VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memory_allocate_info, nullptr, &memory_raw));
+        m_UniformBuffers[i].memory.attach(m_Device, memory_raw);
+
+        constexpr static VkDeviceSize     offset = 0;
+        constexpr static VkMemoryMapFlags flags  = 0;
+
+        VK_CHECK_RESULT(vkBindBufferMemory(m_Device, buffer_raw, memory_raw, offset));
+        VK_CHECK_RESULT(vkMapMemory(m_Device, memory_raw, offset, sizeof(ShaderData), flags, (void**) &m_UniformBuffers[i].mapped));
+    }
 }
 
 void fe::RendererVulkan::VKCreateInstance() {
