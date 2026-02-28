@@ -43,6 +43,7 @@
     InitializeCamera() -> configureCamera()
     RendererVulkan::resizeWindow() added
     RendererVulkan::VKRender() added
+    bug fixed
 
 ### Problem
     -
