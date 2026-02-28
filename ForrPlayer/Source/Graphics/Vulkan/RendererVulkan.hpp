@@ -99,6 +99,10 @@ namespace fe {
         // - submit them
         void InitializeVertexBuffer();
 
+        // Create Vulkan uniform buffer :
+        // - create uniform buffer
+        void InitializeUniformBuffer();
+
     private: // Vulkan step-by-step initialization functions
         void VKCreateInstance();
         void VKChoosePhysicalDevice();
@@ -157,5 +161,7 @@ namespace fe {
 
         VulkanVertexBuffer m_VertexBuffer{};
         VulkanIndexBuffer  m_IndexBuffer{};
+
+        std::array<VulkanUniformBuffer, VulkanContext::max_concurrent_frames> m_UniformBuffers{};
     };
 } // namespace fe

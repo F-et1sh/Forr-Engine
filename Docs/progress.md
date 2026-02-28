@@ -26,9 +26,10 @@
     vertex buffer ( index buffer ) done
     warning fixes
     queue submiting added ( was forgotten )
+    ShaderData added to GPUTypes.hpp
+    uniform buffers done
 
     Remaining :
-	- UniformBuffers
 	- DescriptorSetLayout
 	- DescriptorPool
 	- DescriptorSets

@@ -40,4 +40,15 @@ namespace fe {
         VulkanIndexBuffer()  = default;
         ~VulkanIndexBuffer() = default;
     };
+
+    struct VulkanUniformBuffer {
+        fe::vk::DeviceMemory memory{};
+        fe::vk::Buffer       buffer{};
+
+        VkDescriptorSet descriptor_set{ VK_NULL_HANDLE };
+        uint8_t*        mapped{};
+
+        VulkanUniformBuffer()  = default;
+        ~VulkanUniformBuffer() = default;
+    };
 } // namespace fe
