@@ -1,5 +1,41 @@
 # Forr-Engine Devlog
 
+## 28.02.2026
+### Goal
+    Create VertexBuffer ( 1/2 )
+	Create UniformBuffers
+	Create DescriptorSetLayout
+	Create DescriptorPool
+	Create DescriptorSets
+	Create Pipeline
+    ...
+    Draw a triangle
+    Create Vulkan GPUResourceManager like in RendererOpenGL
+
+    Example of VertexBuffer :
+    ```cpp
+    struct VertexBuffer {
+        fe::vk::Buffer buffer;
+        fe::vk::DeviceMemory memory;
+        VkDeviceSize size{};
+        void* mapped{};
+    };
+    ```
+
+### Done
+    Remaining :
+    - VertexBuffer ( 1/2 )
+	- UniformBuffers
+	- DescriptorSetLayout
+	- DescriptorPool
+	- DescriptorSets
+	- Pipeline
+
+### Problem
+    -
+
+---
+
 ## 27.02.2026
 ### Goal
     Create RenderPass
