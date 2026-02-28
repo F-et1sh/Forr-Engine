@@ -84,5 +84,7 @@ namespace fe {
         }
 
         fe::logging::fatal("Could not find a matching memory type");
+
+        return 0;
     }
 } // namespace fe
