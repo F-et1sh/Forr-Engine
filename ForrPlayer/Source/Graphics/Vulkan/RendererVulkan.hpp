@@ -96,6 +96,7 @@ namespace fe {
         // Create Vulkan vertex buffer :
         // - create vertex buffer
         // - create index buffer
+        // - submit them
         void InitializeVertexBuffer();
 
     private: // Vulkan step-by-step initialization functions
@@ -135,15 +136,15 @@ namespace fe {
 
         // VkCommandBuffer is not RAII because its memory is going to be freed by command pool,
         // which has RAII wrapper
-        std::array<VkCommandBuffer, VulkanContext::MAX_CONCURRENT_FRAMES> m_CommandBuffers{};
+        std::array<VkCommandBuffer, VulkanContext::max_concurrent_frames> m_CommandBuffers{};
 
         VulkanSwapchain m_Swapchain{ m_Description, m_Context, m_PrimaryWindow };
 
         uint32_t m_CurrentImageIndex{};
         uint32_t m_CurrentBuffer{};
 
-        std::array<fe::vk::Fence, VulkanContext::MAX_CONCURRENT_FRAMES>     m_WaitFences{};
-        std::array<fe::vk::Semaphore, VulkanContext::MAX_CONCURRENT_FRAMES> m_PresentCompleteSemaphores{};
+        std::array<fe::vk::Fence, VulkanContext::max_concurrent_frames>     m_WaitFences{};
+        std::array<fe::vk::Semaphore, VulkanContext::max_concurrent_frames> m_PresentCompleteSemaphores{};
         std::vector<fe::vk::Semaphore>                                      m_RenderCompleteSemaphores{};
 
         VulkanImage m_DepthStencil{};

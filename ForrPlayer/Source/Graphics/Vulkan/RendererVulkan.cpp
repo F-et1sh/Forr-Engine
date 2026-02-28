@@ -96,8 +96,8 @@ void fe::RendererVulkan::InitializeCommandBuffers() {
 }
 
 void fe::RendererVulkan::InitializeSynchronizationPrimitives() {
-    std::array<VkFence, VulkanContext::MAX_CONCURRENT_FRAMES>     wait_fences_raw{};
-    std::array<VkSemaphore, VulkanContext::MAX_CONCURRENT_FRAMES> present_complete_semaphores_raw{};
+    std::array<VkFence, VulkanContext::max_concurrent_frames>     wait_fences_raw{};
+    std::array<VkSemaphore, VulkanContext::max_concurrent_frames> present_complete_semaphores_raw{};
     std::vector<VkSemaphore>                                      render_complete_semaphores_raw{};
 
     ///
@@ -400,11 +400,11 @@ void fe::RendererVulkan::InitializeVertexBuffer() {
     memory_allocate_info.memoryTypeIndex = getMemoryTypeIndex(m_Context, memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
     VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memory_allocate_info, nullptr, &staging_buffers.indices.memory));
-    VK_CHECK_RESULT(vkMapMemory(m_Device, staging_buffers.indices.memory, 0, index_buffer_size, 0, &data));
+    VK_CHECK_RESULT(vkMapMemory(m_Device, staging_buffers.indices.memory, offset, index_buffer_size, flags, &data));
 
     memcpy(data, index_buffer.data(), index_buffer_size);
     vkUnmapMemory(m_Device, staging_buffers.indices.memory);
-    VK_CHECK_RESULT(vkBindBufferMemory(m_Device, staging_buffers.indices.buffer, staging_buffers.indices.memory, 0));
+    VK_CHECK_RESULT(vkBindBufferMemory(m_Device, staging_buffers.indices.buffer, staging_buffers.indices.memory, offset));
 
     indexbuffer_create_info.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
@@ -422,7 +422,56 @@ void fe::RendererVulkan::InitializeVertexBuffer() {
     VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memory_allocate_info, nullptr, &index_memory_raw));
     m_IndexBuffer.memory.attach(m_Device, index_memory_raw);
 
-    VK_CHECK_RESULT(vkBindBufferMemory(m_Device, index_buffer_raw, index_memory_raw, 0));
+    VK_CHECK_RESULT(vkBindBufferMemory(m_Device, index_buffer_raw, index_memory_raw, offset));
+
+    /// submit
+
+    // there is no RAII because it is going to be freed by freeing m_CommandPool
+    VkCommandBuffer copy_command_buffer{};
+
+    VkCommandBufferAllocateInfo command_buffer_allocate_info{};
+    command_buffer_allocate_info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    command_buffer_allocate_info.commandPool        = m_CommandPool;
+    command_buffer_allocate_info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    command_buffer_allocate_info.commandBufferCount = 1;
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Device, &command_buffer_allocate_info, &copy_command_buffer));
+
+    VkCommandBufferBeginInfo command_buffer_begin_info{};
+    command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    VK_CHECK_RESULT(vkBeginCommandBuffer(copy_command_buffer, &command_buffer_begin_info));
+
+    VkBufferCopy copy_region{};
+    
+    // Vertex buffer
+    copy_region.size = vertex_buffer_size;
+    vkCmdCopyBuffer(copy_command_buffer, staging_buffers.vertices.buffer, m_VertexBuffer.buffer, 1, &copy_region);
+    
+    // Index buffer
+    copy_region.size = index_buffer_size;
+    vkCmdCopyBuffer(copy_command_buffer, staging_buffers.indices.buffer, m_IndexBuffer.buffer, 1, &copy_region);
+
+    VK_CHECK_RESULT(vkEndCommandBuffer(copy_command_buffer));
+
+    VkSubmitInfo submit_info{};
+    submit_info.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers    = &copy_command_buffer;
+
+    VkFenceCreateInfo fence_create_info{};
+    fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fence_create_info.flags = 0;
+    
+    fe::vk::Fence fence{}; // for RAII
+
+    VkFence       fence_raw{};
+    VK_CHECK_RESULT(vkCreateFence(m_Device, &fence_create_info, nullptr, &fence_raw));
+    fence.attach(m_Device, fence_raw);
+
+    VK_CHECK_RESULT(vkQueueSubmit(m_Context.queue_transfer, 1, &submit_info, fence_raw));
+    VK_CHECK_RESULT(vkWaitForFences(m_Device, 1, &fence_raw, VK_TRUE, m_Context.default_fence_timeout));
+
+    vkFreeCommandBuffers(m_Device, m_CommandPool, 1, &copy_command_buffer);
 
     ///
 
