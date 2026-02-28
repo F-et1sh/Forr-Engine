@@ -31,9 +31,9 @@
 	descriptor set layout done
 	descriptor pool done
 	descriptor sets done
-
-    Remaining :
-	- Pipeline
+    VKGetQueueFamilyInfos() -> getQueueFamilyInfos()
+    createShaderModule() created
+    pipeline done
 
 ### Problem
     -
