@@ -10,7 +10,7 @@
 	Create Pipeline
     Create Camera
     Create RendererVulkan::windowResize()
-    Create
+    Create RendererVulkan::VKRender()
     ...
     Draw a triangle
     Create Vulkan GPUResourceManager like in RendererOpenGL
@@ -42,6 +42,7 @@
     InitializeVulkan() -> InitializeBase()
     InitializeCamera() -> configureCamera()
     RendererVulkan::resizeWindow() added
+    RendererVulkan::VKRender() added
 
 ### Problem
     -

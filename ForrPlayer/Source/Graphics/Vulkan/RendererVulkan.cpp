@@ -52,6 +52,7 @@ void fe::RendererVulkan::SwapBuffers() {
 }
 
 void fe::RendererVulkan::Draw(MeshID index) {
+    this->VKRender();
 }
 
 void fe::RendererVulkan::configureCamera() {
@@ -1073,6 +1074,125 @@ void fe::RendererVulkan::VKSetupPipelineLayout() {
     VkPipelineLayout pipeline_layout_raw{};
     VK_CHECK_RESULT(vkCreatePipelineLayout(m_Device, &pipeline_layout_create_info, nullptr, &pipeline_layout_raw));
     m_PipelineLayout.attach(m_Device, pipeline_layout_raw);
+}
+
+void fe::RendererVulkan::VKRender() {
+    std::array<VkFence, 1> fences{ m_WaitFences[m_CurrentFrame] };
+
+    vkWaitForFences(m_Device, fences.size(), fences.data(), VK_TRUE, UINT64_MAX);
+    VK_CHECK_RESULT(vkResetFences(m_Device, fences.size(), fences.data()));
+
+    uint32_t image_index{};
+    VkResult result = vkAcquireNextImageKHR(m_Device, m_Context.swapchain, UINT64_MAX, m_PresentCompleteSemaphores[m_CurrentFrame], VK_NULL_HANDLE, &image_index);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        this->resizeWindow();
+        return;
+    }
+    else if ((result != VK_SUCCESS) && (result != VK_SUBOPTIMAL_KHR)) {
+        fe::logging::error("Failed to acquire the next swapchain image");
+        return;
+    }
+
+    ShaderData shader_data{};
+    shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
+    shader_data.view_matrix       = m_Camera.getViewMatrix();
+    shader_data.model_matrix      = glm::mat4(1.0f);
+
+    memcpy(m_UniformBuffers[m_CurrentFrame].mapped, &shader_data, sizeof(ShaderData));
+
+    vkResetCommandBuffer(m_CommandBuffers[m_CurrentFrame], 0);
+
+    VkCommandBufferBeginInfo command_buffer_begin_info{};
+    command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    VkClearValue clear_values[2]{};
+    clear_values[0].color        = { { 0.0f, 0.0f, 0.2f, 1.0f } };
+    clear_values[1].depthStencil = { 1.0f, 0 };
+
+    VkRenderPassBeginInfo render_pass_begin_info{};
+    render_pass_begin_info.sType                    = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    render_pass_begin_info.renderPass               = m_RenderPass;
+    render_pass_begin_info.renderArea.offset.x      = 0;
+    render_pass_begin_info.renderArea.offset.y      = 0;
+    render_pass_begin_info.renderArea.extent.width  = m_Context.swapchain_extent.width;
+    render_pass_begin_info.renderArea.extent.height = m_Context.swapchain_extent.height;
+    render_pass_begin_info.clearValueCount          = 2;
+    render_pass_begin_info.pClearValues             = clear_values;
+    render_pass_begin_info.framebuffer              = m_Framebuffers[image_index];
+
+    const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
+    VK_CHECK_RESULT(vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info));
+
+    vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+
+    VkViewport viewport{};
+    viewport.width    = (float) m_Context.swapchain_extent.width;
+    viewport.height   = (float) m_Context.swapchain_extent.height;
+    viewport.minDepth = (float) 0.0f;
+    viewport.maxDepth = (float) 1.0f;
+    vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.extent.width  = m_Context.swapchain_extent.width;
+    scissor.extent.height = m_Context.swapchain_extent.height;
+    scissor.offset.x      = 0;
+    scissor.offset.y      = 0;
+    vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+
+    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_UniformBuffers[m_CurrentFrame].descriptor_set, 0, nullptr);
+
+    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline);
+    VkDeviceSize offsets[1]{ 0 };
+
+    VkBuffer vertex_buffer_raw = m_VertexBuffer.buffer;
+    vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
+
+    VkBuffer index_buffer_raw = m_IndexBuffer.buffer;
+    vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
+
+    vkCmdDrawIndexed(command_buffer, m_IndexBuffer.count, 1, 0, 0, 0);
+    vkCmdEndRenderPass(command_buffer);
+
+    VK_CHECK_RESULT(vkEndCommandBuffer(command_buffer));
+
+    VkPipelineStageFlags wait_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+    std::array<VkSemaphore, 1> wait_semaphores{ m_PresentCompleteSemaphores[m_CurrentFrame] };
+    std::array<VkSemaphore, 1> signal_semaphores{ m_RenderCompleteSemaphores[image_index] };
+
+    VkSubmitInfo submit_info{};
+    submit_info.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.pWaitDstStageMask  = &wait_stage_mask;
+    submit_info.pCommandBuffers    = &command_buffer;
+    submit_info.commandBufferCount = 1;
+
+    submit_info.pWaitSemaphores    = wait_semaphores.data();
+    submit_info.waitSemaphoreCount = wait_semaphores.size();
+
+    submit_info.pSignalSemaphores    = signal_semaphores.data();
+    submit_info.signalSemaphoreCount = signal_semaphores.size();
+
+    VK_CHECK_RESULT(vkQueueSubmit(m_Context.queue_graphics, 1, &submit_info, m_WaitFences[m_CurrentFrame]));
+
+    VkPresentInfoKHR present_info{};
+    present_info.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    present_info.waitSemaphoreCount = 1;
+    present_info.pWaitSemaphores    = signal_semaphores.data();
+    present_info.swapchainCount     = 1;
+    present_info.pSwapchains        = &m_Context.swapchain;
+    present_info.pImageIndices      = &image_index;
+
+    result = vkQueuePresentKHR(m_Context.queue_graphics, &present_info);
+
+    if ((result == VK_ERROR_OUT_OF_DATE_KHR) || (result == VK_SUBOPTIMAL_KHR)) {
+        this->resizeWindow();
+    }
+    else if (result != VK_SUCCESS) {
+        fe::logging::error("Failed to present the image to the swapchain");
+        return;
+    }
+
+    m_CurrentFrame = (m_CurrentFrame + 1) % m_Context.max_concurrent_frames;
 }
 
 std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::getQueueFamilyInfos(bool use_swapchain, VkQueueFlags requested_queue_types) {

@@ -99,7 +99,7 @@ namespace fe {
         // - create vertex buffer
         // - create index buffer
         // - submit them
-        void InitializeVertexBuffer();
+        void InitializeVertexBuffer(); // temp
 
         // Create Vulkan uniform buffer :
         // - create uniform buffer
@@ -128,6 +128,8 @@ namespace fe {
         void VKSetupDescriptorPool();
         void VKSetupDescriptorSets();
         void VKSetupPipelineLayout();
+
+        void VKRender(); // temp
 
     private: // Vulkan helper functions
         // get queue family infos for logical device creation and setup m_Context.queue_family_indices
@@ -194,5 +196,7 @@ namespace fe {
         Camera m_Camera{}; // temp
 
         bool m_IsWindowResized{};
+
+        uint32_t m_CurrentFrame{};
     };
 } // namespace fe
