@@ -95,6 +95,7 @@ namespace fe {
 
         // Create Vulkan vertex buffer :
         // - create vertex buffer
+        // - create index buffer
         void InitializeVertexBuffer();
 
     private: // Vulkan step-by-step initialization functions

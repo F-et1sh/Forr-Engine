@@ -23,8 +23,9 @@
     ```
 
 ### Done
+    vertex buffer ( index buffer ) done
+
     Remaining :
-    - VertexBuffer ( 1/2 )
 	- UniformBuffers
 	- DescriptorSetLayout
 	- DescriptorPool

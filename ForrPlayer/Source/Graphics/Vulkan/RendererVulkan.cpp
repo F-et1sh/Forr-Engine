@@ -310,61 +310,62 @@ void fe::RendererVulkan::InitializeFramebuffers() {
 
 void fe::RendererVulkan::InitializeVertexBuffer() {
 
+    constexpr static VkDeviceSize     offset = 0;
+    constexpr static VkMemoryMapFlags flags  = 0;
+
+    struct StagingBuffer {
+        VkDeviceMemory memory{};
+        VkBuffer       buffer{};
+    };
+
+    struct {
+        StagingBuffer vertices;
+        StagingBuffer indices;
+    } staging_buffers{};
+
+    void* data{};
+
+    /// vertex buffer
+
     std::vector<Vertex> vertex_buffer{
         { { 1.0f, 1.0f, 0.0f } },
         { { -1.0f, 1.0f, 0.0f } },
         { { 0.0f, -1.0f, 0.0f } }
     };
 
-    std::vector<size_t> index_buffer{ 0, 1, 2 };
-
-    m_IndexBuffer.count = index_buffer.size();
-
     size_t vertex_buffer_size = vertex_buffer.size() * sizeof(Vertex);
-    size_t index_buffer_size  = m_IndexBuffer.count * sizeof(uint32_t);
+
+    VkBufferCreateInfo vertex_buffer_create_info{};
+    vertex_buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    vertex_buffer_create_info.size  = vertex_buffer_size;
+    vertex_buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+    VK_CHECK_RESULT(vkCreateBuffer(m_Device, &vertex_buffer_create_info, nullptr, &staging_buffers.vertices.buffer));
 
     VkMemoryRequirements memory_requirements{};
-
-    struct StagingBuffer {
-        VkDeviceMemory memory{};
-        VkBuffer       buffer{};
-    } staging_buffer{};
-
-    void* data{};
-
-    constexpr static VkDeviceSize     offset = 0;
-    constexpr static VkMemoryMapFlags flags  = 0;
-
-    VkBufferCreateInfo buffer_create_info{};
-    buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    buffer_create_info.size  = vertex_buffer_size;
-    buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-
-    VK_CHECK_RESULT(vkCreateBuffer(m_Device, &buffer_create_info, nullptr, &staging_buffer.buffer));
-
-    vkGetBufferMemoryRequirements(m_Device, staging_buffer.buffer, &memory_requirements);
+    vkGetBufferMemoryRequirements(m_Device, staging_buffers.vertices.buffer, &memory_requirements);
 
     VkMemoryAllocateInfo memory_allocate_info{};
     memory_allocate_info.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     memory_allocate_info.allocationSize  = memory_requirements.size;
     memory_allocate_info.memoryTypeIndex = fe::getMemoryTypeIndex(m_Context, memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memory_allocate_info, nullptr, &staging_buffer.memory));
+    VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memory_allocate_info, nullptr, &staging_buffers.vertices.memory));
 
-    VK_CHECK_RESULT(vkMapMemory(m_Device, staging_buffer.memory, offset, memory_allocate_info.allocationSize, flags, &data));
+    VK_CHECK_RESULT(vkMapMemory(m_Device, staging_buffers.vertices.memory, offset, memory_allocate_info.allocationSize, flags, &data));
     memcpy(data, vertex_buffer.data(), vertex_buffer_size);
-    vkUnmapMemory(m_Device, staging_buffer.memory);
+    vkUnmapMemory(m_Device, staging_buffers.vertices.memory);
 
-    VK_CHECK_RESULT(vkBindBufferMemory(m_Device, staging_buffer.buffer, staging_buffer.memory, offset));
+    VK_CHECK_RESULT(vkBindBufferMemory(m_Device, staging_buffers.vertices.buffer, staging_buffers.vertices.memory, offset));
 
     ///
 
     // reusing buffer create info
-    buffer_create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    vertex_buffer_create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
-    VkBuffer buffer{};
-    VK_CHECK_RESULT(vkCreateBuffer(m_Device, &buffer_create_info, nullptr, &buffer));
-    m_VertexBuffer.buffer.attach(m_Device, buffer); // vertex buffer
+    VkBuffer vertex_buffer_raw{};
+    VK_CHECK_RESULT(vkCreateBuffer(m_Device, &vertex_buffer_create_info, nullptr, &vertex_buffer_raw));
+    m_VertexBuffer.buffer.attach(m_Device, vertex_buffer_raw); // vertex buffer
 
     vkGetBufferMemoryRequirements(m_Device, m_VertexBuffer.buffer, &memory_requirements); // reusing memory requirements
 
@@ -372,14 +373,64 @@ void fe::RendererVulkan::InitializeVertexBuffer() {
     memory_allocate_info.allocationSize  = memory_requirements.size;
     memory_allocate_info.memoryTypeIndex = fe::getMemoryTypeIndex(m_Context, memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    VkDeviceMemory memory{};
-    VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memory_allocate_info, nullptr, &memory));
-    m_VertexBuffer.memory.attach(m_Device, memory);
+    VkDeviceMemory vertex_memory_raw{};
+    VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memory_allocate_info, nullptr, &vertex_memory_raw));
+    m_VertexBuffer.memory.attach(m_Device, vertex_memory_raw);
 
-    VK_CHECK_RESULT(vkBindBufferMemory(m_Device, buffer, memory, offset));
+    VK_CHECK_RESULT(vkBindBufferMemory(m_Device, vertex_buffer_raw, vertex_memory_raw, offset));
 
-    vkDestroyBuffer(m_Device, staging_buffer.buffer, nullptr);
-    vkFreeMemory(m_Device, staging_buffer.memory, nullptr);
+    /// index buffer
+
+    std::vector<uint32_t> index_buffer{ 0, 1, 2 };
+
+    m_IndexBuffer.count      = index_buffer.size();
+    size_t index_buffer_size = m_IndexBuffer.count * sizeof(uint32_t);
+
+    VkBufferCreateInfo indexbuffer_create_info{};
+    indexbuffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    indexbuffer_create_info.size  = index_buffer_size;
+    indexbuffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+    VK_CHECK_RESULT(vkCreateBuffer(m_Device, &indexbuffer_create_info, nullptr, &staging_buffers.indices.buffer));
+
+    vkGetBufferMemoryRequirements(m_Device, staging_buffers.indices.buffer, &memory_requirements);
+
+    // reusing memory allocate info
+    memory_allocate_info.allocationSize  = memory_requirements.size;
+    memory_allocate_info.memoryTypeIndex = getMemoryTypeIndex(m_Context, memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memory_allocate_info, nullptr, &staging_buffers.indices.memory));
+    VK_CHECK_RESULT(vkMapMemory(m_Device, staging_buffers.indices.memory, 0, index_buffer_size, 0, &data));
+
+    memcpy(data, index_buffer.data(), index_buffer_size);
+    vkUnmapMemory(m_Device, staging_buffers.indices.memory);
+    VK_CHECK_RESULT(vkBindBufferMemory(m_Device, staging_buffers.indices.buffer, staging_buffers.indices.memory, 0));
+
+    indexbuffer_create_info.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+    VkBuffer index_buffer_raw{};
+    VK_CHECK_RESULT(vkCreateBuffer(m_Device, &indexbuffer_create_info, nullptr, &index_buffer_raw));
+    m_IndexBuffer.buffer.attach(m_Device, index_buffer_raw);
+
+    vkGetBufferMemoryRequirements(m_Device, m_IndexBuffer.buffer, &memory_requirements);
+
+    // reusing memory allocate info
+    memory_allocate_info.allocationSize  = memory_requirements.size;
+    memory_allocate_info.memoryTypeIndex = getMemoryTypeIndex(m_Context, memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    VkDeviceMemory index_memory_raw{};
+    VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memory_allocate_info, nullptr, &index_memory_raw));
+    m_IndexBuffer.memory.attach(m_Device, index_memory_raw);
+
+    VK_CHECK_RESULT(vkBindBufferMemory(m_Device, index_buffer_raw, index_memory_raw, 0));
+
+    ///
+
+    vkDestroyBuffer(m_Device, staging_buffers.vertices.buffer, nullptr);
+    vkFreeMemory(m_Device, staging_buffers.vertices.memory, nullptr);
+
+    vkDestroyBuffer(m_Device, staging_buffers.indices.buffer, nullptr);
+    vkFreeMemory(m_Device, staging_buffers.indices.memory, nullptr);
 }
 
 void fe::RendererVulkan::VKCreateInstance() {
