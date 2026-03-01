@@ -21,6 +21,7 @@
     glFinish() calling added
     Shaders updated
     importing RenderMode and RenderIndexType
+    Camera.hpp/Camera.cpp paths fixed
 
 ### Problem
     -
