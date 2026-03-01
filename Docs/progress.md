@@ -24,6 +24,7 @@
     Camera.hpp/Camera.cpp paths fixed
     Camera.hpp/Camera.cpp paths fixed ( again )
     GPUTypes.hpp now in Include/Forr/Graphics
+    model dependencies imported except of Texture and Material
 
 ### Problem
     -
