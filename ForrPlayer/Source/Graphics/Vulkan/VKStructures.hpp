@@ -22,6 +22,9 @@ namespace fe {
 
         VulkanImage()  = default;
         ~VulkanImage() = default;
+
+        FORR_CLASS_NONCOPYABLE(VulkanImage)
+        FORR_CLASS_MOVABLE(VulkanImage)
     };
 
     struct VulkanVertexBuffer {
@@ -30,6 +33,9 @@ namespace fe {
 
         VulkanVertexBuffer()  = default;
         ~VulkanVertexBuffer() = default;
+
+        FORR_CLASS_NONCOPYABLE(VulkanVertexBuffer)
+        FORR_CLASS_MOVABLE(VulkanVertexBuffer)
     };
 
     struct VulkanIndexBuffer {
@@ -39,16 +45,33 @@ namespace fe {
 
         VulkanIndexBuffer()  = default;
         ~VulkanIndexBuffer() = default;
+
+        FORR_CLASS_NONCOPYABLE(VulkanIndexBuffer)
+        FORR_CLASS_MOVABLE(VulkanIndexBuffer)
+    };
+
+    struct VulkanMesh {
+        VulkanVertexBuffer vertex_buffer{};
+        VulkanIndexBuffer  index_buffer{};
+
+        VulkanMesh()  = default;
+        ~VulkanMesh() = default;
+
+        FORR_CLASS_NONCOPYABLE(VulkanMesh)
+        FORR_CLASS_MOVABLE(VulkanMesh)
     };
 
     struct VulkanUniformBuffer {
         fe::vk::DeviceMemory memory{};
         fe::vk::Buffer       buffer{};
 
-        VkDescriptorSet descriptor_set{ VK_NULL_HANDLE };
+        VkDescriptorSet descriptor_set{};
         uint8_t*        mapped{};
 
         VulkanUniformBuffer()  = default;
         ~VulkanUniformBuffer() = default;
+
+        FORR_CLASS_NONCOPYABLE(VulkanUniformBuffer)
+        FORR_CLASS_MOVABLE(VulkanUniformBuffer)
     };
 } // namespace fe

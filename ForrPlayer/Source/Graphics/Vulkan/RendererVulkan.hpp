@@ -29,6 +29,7 @@
 #include "VKStructures.hpp"
 
 #include "Graphics/Camera/Camera.hpp"
+#include "VulkanResourceManager.hpp"
 
 namespace fe {
     class RendererVulkan : public IRenderer {
@@ -40,7 +41,7 @@ namespace fe {
         void SwapBuffers() override;
 
         void                                    Draw(MeshID index) override;
-        FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return 0; }; // temp
+        FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return m_VulkanResourceManager.CreateTriangle(); };
 
     private: // Vulkan initialization queue
         // Create Vulkan base :
@@ -95,12 +96,6 @@ namespace fe {
         // - create framebuffers
         void InitializeFramebuffers();
 
-        // Create Vulkan vertex buffer :
-        // - create vertex buffer
-        // - create index buffer
-        // - submit them
-        void InitializeVertexBuffer(); // temp
-
         // Create Vulkan uniform buffer :
         // - create uniform buffer
         void InitializeUniformBuffer();
@@ -129,7 +124,7 @@ namespace fe {
         void VKSetupDescriptorSets();
         void VKSetupPipelineLayout();
 
-        void VKRender(); // temp
+        void VKDraw(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer); // temp
 
     private: // Vulkan helper functions
         // get queue family infos for logical device creation and setup m_Context.queue_family_indices
@@ -159,8 +154,6 @@ namespace fe {
 
         fe::vk::Device m_Device{};
 
-        fe::vk::CommandPool m_CommandPool{};
-
         // VkCommandBuffer is not RAII because its memory is going to be freed by command pool,
         // which has RAII wrapper
         std::array<VkCommandBuffer, VulkanContext::max_concurrent_frames> m_CommandBuffers{};
@@ -182,9 +175,6 @@ namespace fe {
 
         std::vector<fe::vk::Framebuffer> m_Framebuffers{};
 
-        VulkanVertexBuffer m_VertexBuffer{};
-        VulkanIndexBuffer  m_IndexBuffer{};
-
         std::array<VulkanUniformBuffer, VulkanContext::max_concurrent_frames> m_UniformBuffers{};
 
         fe::vk::DescriptorPool      m_DescriptorPool{};
@@ -198,5 +188,9 @@ namespace fe {
         bool m_IsWindowResized{}; // temp
 
         uint32_t m_CurrentFrame{};
+
+        VulkanResourceManager m_VulkanResourceManager{ m_Context };
+
+        fe::vk::CommandPool m_CommandPool{};
     };
 } // namespace fe

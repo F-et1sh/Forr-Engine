@@ -4,14 +4,20 @@
 ### Goal
     Create Vulkan GPUResourceManager like in RendererOpenGL
     Load a gLTF module
+    Make camera movable
     
     Not now, but :
     - provide event system for platform
     - remove errors when quit the application
-    - remove errors when minimize the window
+    - remove errors when minimize the window ( will be done when provide platform system )
 
 ### Done
-    -
+    VulkanResourceManager created
+    RendererVulkan::VKRender() -> RendererVulkan::VKDraw()
+    RendererVulkan::InitializeVertexBuffer() removed
+    Triangle drawn
+    VulkanResourceManager done
+    erros when quit the application removed
 
 ### Problem
     -

@@ -3,7 +3,7 @@
     Forr Engine
 
     File : GPUTypes.hpp
-    Role : GPU Types for OpenGL
+    Role : Unified GPU types for every renderer
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.

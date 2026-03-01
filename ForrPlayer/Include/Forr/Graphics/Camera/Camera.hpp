@@ -62,6 +62,11 @@ namespace fe {
             updateViewMatrix();
         }
 
+        void setFlipY(bool is_flipped_y) {
+            this->m_FlipY = is_flipped_y;
+            updateViewMatrix();
+        }
+
         void rotate(glm::vec3 delta) {
             this->m_Rotation += delta;
             updateViewMatrix();
