@@ -9,5 +9,8 @@ layout (binding = 0) uniform UBO {
 } ubo;
 
 void main() {
-	gl_Position = ubo.projection_matrix * ubo.view_matrix * ubo.model_matrix * vec4(aPosition.xyz, 1.0f);
+	if (ubo.projection_matrix != mat4(0.0f))
+		gl_Position = ubo.projection_matrix * ubo.view_matrix * ubo.model_matrix * vec4(aPosition.xyz, 1.0f);
+	else
+		gl_Position = vec4(aPosition.xyz, 1.0f);
 }

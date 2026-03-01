@@ -38,6 +38,7 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
 }
 
 fe::RendererOpenGL::~RendererOpenGL() {
+    glFinish();
 }
 
 void fe::RendererOpenGL::ClearScreen(float red, float green, float blue, float alpha) {

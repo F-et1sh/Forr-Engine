@@ -18,6 +18,8 @@
     Triangle drawn
     VulkanResourceManager done
     erros when quit the application removed
+    glFinish() calling added
+    Shaders updated
 
 ### Problem
     -
