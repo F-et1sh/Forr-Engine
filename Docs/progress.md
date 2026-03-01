@@ -20,6 +20,7 @@
     erros when quit the application removed
     glFinish() calling added
     Shaders updated
+    importing RenderMode and RenderIndexType
 
 ### Problem
     -
