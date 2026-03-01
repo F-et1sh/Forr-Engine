@@ -22,6 +22,8 @@
     Shaders updated
     importing RenderMode and RenderIndexType
     Camera.hpp/Camera.cpp paths fixed
+    Camera.hpp/Camera.cpp paths fixed ( again )
+    GPUTypes.hpp now in Include/Forr/Graphics
 
 ### Problem
     -
