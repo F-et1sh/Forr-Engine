@@ -11,7 +11,7 @@
 ===============================================*/
 
 #include "pch.hpp"
-#include "Camera.hpp"
+#include "Graphics/Camera.hpp"
 
 void fe::Camera::setPerspective(float fov, float aspect, float znear, float zfar) {
     glm::mat4 currentMatrix = m_PerspectiveMatrix;
