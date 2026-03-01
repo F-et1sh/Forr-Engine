@@ -28,7 +28,7 @@
 #include "VKTools.hpp"
 #include "VKStructures.hpp"
 
-#include "Graphics/Camera/Camera.hpp"
+#include "Graphics/Camera.hpp"
 #include "VulkanResourceManager.hpp"
 
 namespace fe {

@@ -31,20 +31,4 @@ namespace fe {
 
         constexpr operator size_t() const noexcept { return id; }
     };
-
-    enum class RenderMode {
-        POINTS,
-        LINES,
-        LINE_LOOP,
-        LINE_STRIP,
-        TRIANGLES,
-        TRIANGLE_STRIP,
-        TRIANGLE_FAN,
-    };
-
-    enum class RenderIndexType {
-        UNSIGNED_BYTE,
-        UNSIGNED_SHORT,
-        UNSIGNED_INT,
-    };
 } // namespace fe

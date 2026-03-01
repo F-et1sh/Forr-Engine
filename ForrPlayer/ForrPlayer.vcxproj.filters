@@ -27,7 +27,7 @@
     <ClInclude Include="Source\Graphics\Vulkan\VKTools.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanSwapchain.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VKStructures.hpp" />
-    <ClInclude Include="Include\Forr\Graphics\Camera\Camera.hpp" />
+    <ClInclude Include="Include\Forr\Graphics\Camera.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceManager.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -47,7 +47,7 @@
     <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
-    <ClCompile Include="Include\Forr\Graphics\Camera\Camera.cpp" />
+    <ClCompile Include="Source\Graphics\Camera.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManager.cpp" />
   </ItemGroup>
 </Project>
