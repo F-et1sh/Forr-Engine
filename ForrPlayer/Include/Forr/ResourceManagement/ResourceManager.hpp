@@ -11,7 +11,9 @@
 ===============================================*/
 
 #pragma once
+#include <filesystem>
 #include "Core/pointer.hpp"
+#include "ResourceImporter.hpp"
 
 namespace fe {
     class ResourceManager {
@@ -19,7 +21,11 @@ namespace fe {
         ResourceManager()  = default;
         ~ResourceManager() = default;
 
+        void SetupSceneResources(const std::vector<std::filesystem::path>& resource_paths);
+
     private:
+        ResourceImporter m_Importer{};
+
         //typed_pointer_storage<Mesh> m_StorageMesh{};
     };
 } // namespace fe
