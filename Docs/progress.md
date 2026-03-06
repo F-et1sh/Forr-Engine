@@ -15,6 +15,8 @@
 ### Done
     mutex removed from fe::typed_pointer_storage for now
     ResourceManager created
+    fe::resource:: provided
+    fe::resource::Texture and fe::resource::TextureMeta provided
 
 ### Problem
     School, lack of sleep

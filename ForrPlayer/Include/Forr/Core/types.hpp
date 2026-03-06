@@ -32,4 +32,8 @@ namespace fe {
 
         constexpr operator size_t() const noexcept { return id; }
     };
+
+    enum class TextureFormat {
+        RGB, // temp
+    };
 } // namespace fe
