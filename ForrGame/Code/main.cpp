@@ -1,3 +1,15 @@
+/*===============================================
+
+    Forr Engine
+
+    File : main.hpp
+    Role : Application entry point
+
+    Copyright (C) 2026 Farrakh
+    All Rights Reserved.
+
+===============================================*/
+
 #include "Forr/Application.hpp"
 #include "Forr/Core/path.hpp"
 
