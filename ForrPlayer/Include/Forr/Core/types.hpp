@@ -16,6 +16,7 @@
 #include "Core/attributes.hpp"
 
 namespace fe {
+    // this is going to be removed soon
     struct FORR_NODISCARD MeshID { // like "using MeshID = size_t;"
     private:
         size_t id{};

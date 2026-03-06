@@ -13,6 +13,7 @@
 #pragma once
 #include <string>
 #include <variant>
+#include "Core/pointer.hpp"
 #include "GPUTypes.hpp"
 
 namespace fe {
@@ -40,16 +41,16 @@ namespace fe {
     };
 
     using Vertices = std::vector<Vertex>;
-    using Indices  = std::variant<
-         std::vector<uint8_t>,
-         std::vector<uint16_t>,
-         std::vector<uint32_t>>;
+    using Indices  = std::variant<std::vector<uint8_t>,
+                                  std::vector<uint16_t>,
+                                  std::vector<uint32_t>>;
 
     struct Primitive {
         Vertices vertices{};
         Indices  indices{};
 
-        int             material{ -1 };
+        //int             material{ -1 };
+        //pointer<Material> material{};
         RenderMode      mode{ RenderMode::TRIANGLES }; // triangles by default
         RenderIndexType index_type{};
         size_t          index_count{};

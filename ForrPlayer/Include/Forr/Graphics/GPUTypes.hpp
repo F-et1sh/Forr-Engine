@@ -40,8 +40,8 @@ namespace fe {
         glm::mat4 model_matrix{};
         glm::mat4 view_matrix{};
 
-        ShaderData() = default;
+        ShaderData()  = default;
         ~ShaderData() = default;
-	};
+    };
 #pragma pack(pop)
 } // namespace fe

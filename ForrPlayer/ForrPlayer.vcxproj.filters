@@ -30,6 +30,7 @@
     <ClInclude Include="Include\Forr\Graphics\Camera.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceManager.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Model.hpp" />
+    <ClInclude Include="Include\Forr\ResourceManagement\ResourceManager.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
