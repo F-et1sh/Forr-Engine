@@ -12,7 +12,7 @@
 
 #pragma once
 #include <filesystem>
-#include "Core/pointer.hpp"
+#include "ResourceStorage.hpp"
 #include "ResourceImporter.hpp"
 
 namespace fe {
@@ -24,8 +24,7 @@ namespace fe {
         void SetupSceneResources(const std::vector<std::filesystem::path>& resource_paths);
 
     private:
-        ResourceImporter m_Importer{};
-
-        //typed_pointer_storage<Mesh> m_StorageMesh{};
+        ResourceStorage  m_Storage{};
+        ResourceImporter m_Importer{ m_Storage };
     };
 } // namespace fe

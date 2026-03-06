@@ -11,15 +11,15 @@
 ===============================================*/
 
 #pragma once
+#include "ResourceStorage.hpp"
 
 namespace fe {
     class ResourceImporter {
     public:
-        ResourceImporter()  = default;
+        ResourceImporter(ResourceStorage& storage) : m_Storage(storage) {}
         ~ResourceImporter() = default;
 
-        
-
     private:
+        ResourceStorage& m_Storage;
     };
 } // namespace fe
