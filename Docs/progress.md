@@ -13,7 +13,7 @@
     Provide DOD Resource Management System
 
 ### Done
-    -
+    mutex removed from fe::typed_pointer_storage for now
 
 ### Problem
     School, lack of sleep

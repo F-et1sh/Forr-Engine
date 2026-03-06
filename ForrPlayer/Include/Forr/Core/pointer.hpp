@@ -66,7 +66,7 @@ namespace fe {
         ~typed_pointer_storage() = default;
 
         pointer_t create(_Ty value) {
-            std::unique_lock lock(m_mutex);
+            //std::unique_lock lock(m_mutex);
 
             handle_t index{};
             if (!m_free_list.empty()) {
@@ -92,7 +92,7 @@ namespace fe {
         }
 
         void destroy(pointer_t handle) {
-            std::unique_lock lock(m_mutex);
+            //std::unique_lock lock(m_mutex);
             if (!is_valid_locked(handle)) return;
 
             m_slots[handle.m_index].object.~_Ty();
@@ -102,24 +102,24 @@ namespace fe {
         }
 
         _Ty* get(pointer_t handle) noexcept {
-            std::shared_lock lock(m_mutex);
+            //std::shared_lock lock(m_mutex);
             if (!is_valid_locked(handle)) return nullptr;
             return std::addressof(m_slots[handle.m_index].object);
         }
 
         const _Ty* get(pointer_t handle) const noexcept {
-            std::shared_lock lock(m_mutex);
+            //std::shared_lock lock(m_mutex);
             if (!is_valid_locked(handle)) return nullptr;
             return std::addressof(m_slots[handle.m_index].object);
         }
 
         bool is_valid(pointer_t handle) const noexcept {
-            std::shared_lock lock(m_mutex);
+            //std::shared_lock lock(m_mutex);
             return is_valid_locked(handle);
         }
 
         size_t live_count() const noexcept {
-            std::shared_lock lock(m_mutex);
+            //std::shared_lock lock(m_mutex);
             return m_slots.size() - m_free_list.size();
         }
 
@@ -145,7 +145,7 @@ namespace fe {
         std::vector<_MySlot>  m_slots;
         std::vector<handle_t> m_free_list;
 
-        mutable std::shared_mutex m_mutex;
+        //mutable std::shared_mutex m_mutex; // this is removed for now
     };
 
     struct base_storage {
