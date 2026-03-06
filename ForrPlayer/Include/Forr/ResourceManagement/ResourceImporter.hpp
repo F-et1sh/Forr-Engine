@@ -19,6 +19,12 @@ namespace fe {
         ResourceImporter(ResourceStorage& storage) : m_Storage(storage) {}
         ~ResourceImporter() = default;
 
+        // upload resource to the storage
+        void UploadResource(const std::filesystem::path& resource_relative_path);
+
+    private:
+        void UploadTexture(const std::filesystem::path& resource_full_path);
+
     private:
         ResourceStorage& m_Storage;
     };

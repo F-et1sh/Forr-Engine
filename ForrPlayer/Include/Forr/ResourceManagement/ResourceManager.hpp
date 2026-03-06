@@ -21,7 +21,7 @@ namespace fe {
         ResourceManager()  = default;
         ~ResourceManager() = default;
 
-        void SetupSceneResources(const std::vector<std::filesystem::path>& resource_paths);
+        void SetupSceneResources(const std::vector<std::filesystem::path>& resource_relative_paths);
 
     private:
         ResourceStorage  m_Storage{};

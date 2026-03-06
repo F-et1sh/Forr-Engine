@@ -1,8 +1,28 @@
 # Forr-Engine Devlog
 
+## 07.03.2026
+### Goal
+    Add STB Image
+    Load a texture with ResourceImporter
+    UploadResource() -> StoreResource()
+    ...
+    Load a gLTF module
+    Make camera movable
+
+    Not now, but :
+    - provide event system for platform
+    - remove errors when minimize the window ( will be done when provide platform system )
+
+### Done
+    -
+
+### Problem
+    -
+
+---
+
 ## 06.03.2026
 ### Goal
-    Create Vulkan GPUResourceManager like in RendererOpenGL
     Load a gLTF module
     Make camera movable
     
@@ -19,6 +39,7 @@
     fe::resource::Texture and fe::resource::TextureMeta provided
     ResourceImporter created
     ResourceStorage created
+    FORR_NODISCARDs added in pointer.hpp
 
 ### Problem
     School, lack of sleep

@@ -33,7 +33,7 @@ namespace fe {
         (!std::is_array_v<_Ty>);
 
     template <typename _Ty>
-    class pointer {
+    class FORR_NODISCARD pointer {
     public:
         constexpr pointer(handle_t index, handle_t generation) noexcept
             : m_index(index), m_generation(generation) {}
@@ -65,7 +65,7 @@ namespace fe {
         typed_pointer_storage()  = default;
         ~typed_pointer_storage() = default;
 
-        pointer_t create(_Ty value) {
+        FORR_NODISCARD pointer_t create(_Ty value) {
             //std::unique_lock lock(m_mutex);
 
             handle_t index{};
@@ -85,7 +85,7 @@ namespace fe {
             return pointer_t(index, m_slots[index].generation);
         }
 
-        pointer_t create()
+        FORR_NODISCARD pointer_t create()
             requires std::default_initializable<_Ty>
         {
             return create(_Ty{});
@@ -101,30 +101,30 @@ namespace fe {
             m_free_list.push_back(handle.m_index);
         }
 
-        _Ty* get(pointer_t handle) noexcept {
+        FORR_NODISCARD _Ty* get(pointer_t handle) noexcept {
             //std::shared_lock lock(m_mutex);
             if (!is_valid_locked(handle)) return nullptr;
             return std::addressof(m_slots[handle.m_index].object);
         }
 
-        const _Ty* get(pointer_t handle) const noexcept {
+        FORR_NODISCARD const _Ty* get(pointer_t handle) const noexcept {
             //std::shared_lock lock(m_mutex);
             if (!is_valid_locked(handle)) return nullptr;
             return std::addressof(m_slots[handle.m_index].object);
         }
 
-        bool is_valid(pointer_t handle) const noexcept {
+        FORR_NODISCARD bool is_valid(pointer_t handle) const noexcept {
             //std::shared_lock lock(m_mutex);
             return is_valid_locked(handle);
         }
 
-        size_t live_count() const noexcept {
+        FORR_NODISCARD size_t live_count() const noexcept {
             //std::shared_lock lock(m_mutex);
             return m_slots.size() - m_free_list.size();
         }
 
     private:
-        bool is_valid_locked(pointer_t handle) const noexcept {
+        FORR_NODISCARD bool is_valid_locked(pointer_t handle) const noexcept { // this needed for mutex's work
             if (handle.m_index >= m_slots.size()) return false;
             if (!m_slots[handle.m_index].alive) return false;
             return m_slots[handle.m_index].generation == handle.m_generation;
@@ -163,7 +163,7 @@ namespace fe {
         ~pointer_storage() = default;
 
         template <storable_t _Ty>
-        typed_pointer_storage<_Ty>& get_storage() {
+        FORR_NODISCARD typed_pointer_storage<_Ty>& get_storage() {
             std::unique_lock lock(m_registry_mutex);
 
             std::type_index id = std::type_index(typeid(_Ty));

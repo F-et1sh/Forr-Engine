@@ -55,5 +55,9 @@
     <ClCompile Include="Source\Graphics\Camera.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManager.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceManager.cpp" />
+    <ClCompile Include="Source\ResourceManagement\ResourceImporter.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\ResourceManagement\Importers\readme.md" />
   </ItemGroup>
 </Project>
