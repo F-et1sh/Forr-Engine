@@ -18,6 +18,7 @@
     fe::resource:: provided
     fe::resource::Texture and fe::resource::TextureMeta provided
     ResourceImporter created
+    ResourceStorage created
 
 ### Problem
     School, lack of sleep
