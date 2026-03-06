@@ -1,5 +1,25 @@
 # Forr-Engine Devlog
 
+## 06.03.2026
+### Goal
+    Create Vulkan GPUResourceManager like in RendererOpenGL
+    Load a gLTF module
+    Make camera movable
+    
+    Not now, but :
+    - provide event system for platform
+    - remove errors when minimize the window ( will be done when provide platform system )
+
+    Provide DOD Resource Management System
+
+### Done
+    -
+
+### Problem
+    School, lack of sleep
+
+---
+
 ## 29.02.2026
 ### Goal
     Create Vulkan GPUResourceManager like in RendererOpenGL
