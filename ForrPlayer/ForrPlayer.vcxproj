@@ -104,6 +104,7 @@
     <ClInclude Include="Include\Forr\PCH\pch.hpp" />
     <ClInclude Include="Include\Forr\Platform\IPlatformSystem.hpp" />
     <ClInclude Include="Include\Forr\Platform\IWindow.hpp" />
+    <ClInclude Include="Include\Forr\ResourceManagement\ResourceImporter.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceManager.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\Resources.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\GPUResourceManager.hpp" />
@@ -147,6 +148,7 @@
     <ClCompile Include="Source\Platform\IPlatformSystem.cpp" />
     <ClCompile Include="Source\Platform\GLFW\PlatformSystemGLFW.cpp" />
     <ClCompile Include="Source\Platform\GLFW\WindowGLFW.cpp" />
+    <ClCompile Include="Source\ResourceManagement\ResourceManager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

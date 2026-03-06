@@ -32,6 +32,7 @@
     <ClInclude Include="Include\Forr\Graphics\Model.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceManager.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\Resources.hpp" />
+    <ClInclude Include="Include\Forr\ResourceManagement\ResourceImporter.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -52,5 +53,6 @@
     <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="Source\Graphics\Camera.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManager.cpp" />
+    <ClCompile Include="Source\ResourceManagement\ResourceManager.cpp" />
   </ItemGroup>
 </Project>
