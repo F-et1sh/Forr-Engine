@@ -14,6 +14,7 @@
 
 ### Done
     mutex removed from fe::typed_pointer_storage for now
+    ResourceManager created
 
 ### Problem
     School, lack of sleep

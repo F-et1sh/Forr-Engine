@@ -14,4 +14,6 @@ int main(int argc, char* argv[]) {
 
     fe::Application app{ desc };
     app.Run();
+
+    return 0;
 }
