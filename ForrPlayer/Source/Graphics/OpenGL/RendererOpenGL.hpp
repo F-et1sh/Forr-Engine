@@ -21,7 +21,7 @@
 namespace fe {
     class RendererOpenGL : public IRenderer {
     public:
-        RendererOpenGL(const RendererDesc& desc, IPlatformSystem& platform_system, size_t primary_window_index);
+        RendererOpenGL(const RendererDesc& desc, IPlatformSystem& platform_system, size_t primary_window_index, ResourceManager& resource_manager);
         ~RendererOpenGL();
 
         void ClearScreen(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
@@ -31,6 +31,8 @@ namespace fe {
         FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return m_GPUResourceManager.CreateTriangle(); }
 
     private:
+        ResourceManager& m_ResourceManager;
+
         Shader             m_Shader;
         GPUResourceManager m_GPUResourceManager;
 

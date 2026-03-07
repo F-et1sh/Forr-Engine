@@ -18,3 +18,5 @@
 #include "Core/pointer.hpp"
 #include "Core/types.hpp"
 #include "Core/path.hpp"
+
+#include "ResourceManagement/Resources.hpp"

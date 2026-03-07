@@ -16,6 +16,7 @@
 
 #include "Platform/IPlatformSystem.hpp"
 #include "Graphics/IRenderer.hpp"
+#include "ResourceManagement/ResourceManager.hpp"
 
 namespace fe {
     struct FORR_API ApplicationDesc {
@@ -47,5 +48,7 @@ namespace fe {
         IWindow* m_PrimaryWindow   = nullptr;
 
         MeshID m_Triangle = 0; // temp
+
+        ResourceManager m_ResourceManager{};
     };
 } // namespace fe
