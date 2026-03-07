@@ -15,6 +15,6 @@
 
 void fe::ResourceManager::SetupSceneResources(const std::vector<std::filesystem::path>& resource_relative_paths) {
     for (const auto& path : resource_relative_paths) {
-        this->m_Importer.UploadResource(path); // uploads resource to storage
+        this->m_Importer.StoreResource(path); // uploads resource to storage
     }
 }

@@ -56,6 +56,7 @@
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManager.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceManager.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceImporter.cpp" />
+    <ClCompile Include="..\ThirdParty\stb\src\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\ResourceManagement\Importers\readme.md" />

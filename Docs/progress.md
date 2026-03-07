@@ -14,6 +14,7 @@
 
 ### Done
     UploadResource() -> StoreResource()
+    STB Image added
 
 ### Problem
     -
