@@ -70,7 +70,7 @@ void fe::RendererVulkan::configureCamera() {
 }
 
 void fe::RendererVulkan::resizeWindow() {
-    //if (m_PrimaryWindow.getWidth() == 0 || m_PrimaryWindow.getHeight() == 0) { // window minimized 
+    //if (m_PrimaryWindow.getWidth() == 0 || m_PrimaryWindow.getHeight() == 0) { // window minimized
     //    return;
     //}
 

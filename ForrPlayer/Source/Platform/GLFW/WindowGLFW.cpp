@@ -29,7 +29,7 @@ void fe::WindowGLFW::Initialize(const WindowDesc& desc) {
     }
     else {
         fe::logging::warning("Monitor index %i is out of range. Total monitor count is %i. Using primary ( default ) monitor", m_Description.monitor_index, monitor_count);
-        
+
         m_GLFWmonitor = glfwGetPrimaryMonitor();
     }
 
@@ -67,7 +67,7 @@ void fe::WindowGLFW::PollEvents() {
 void fe::WindowGLFW::setResolution(int width, int height) {
     glfwSetWindowSize(m_GLFWwindow, width, height);
 
-    m_Description.width = width;
+    m_Description.width  = width;
     m_Description.height = height;
 }
 
@@ -91,9 +91,9 @@ void fe::WindowGLFW::centralizeWindow() const {
 
 void fe::WindowGLFW::windowSizeCallback(GLFWwindow* window_glfw, int width, int height) {
     if (!window_glfw) return;
-    
-    WindowGLFW* window = static_cast<WindowGLFW*>(glfwGetWindowUserPointer(window_glfw));
-    window->m_Description.width = width;
+
+    WindowGLFW* window           = static_cast<WindowGLFW*>(glfwGetWindowUserPointer(window_glfw));
+    window->m_Description.width  = width;
     window->m_Description.height = height;
 }
 
