@@ -51,7 +51,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(SolutionDir)ThirdParty\glfw\include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\glm\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(SolutionDir)ThirdParty\glfw\include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\glm\include;$(SolutionDir)ThirdParty\stb\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
     </ClCompile>
@@ -75,7 +75,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(SolutionDir)ThirdParty\glfw\include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\glm\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(SolutionDir)ThirdParty\glfw\include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\glm\include;$(SolutionDir)ThirdParty\stb\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
     </ClCompile>
@@ -126,6 +126,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ThirdParty\glad\src\gl.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\ThirdParty\stb\src\stb_image.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>

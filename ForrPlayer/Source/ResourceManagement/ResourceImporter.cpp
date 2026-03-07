@@ -13,6 +13,8 @@
 #include "pch.hpp"
 #include "ResourceManagement/ResourceImporter.hpp"
 
+#include "stb_image.h" // temp
+
 void fe::ResourceImporter::StoreResource(const std::filesystem::path& resource_relative_path) {
     std::filesystem::path resource_full_path = PATH.getResourcesPath() / resource_relative_path;
     std::filesystem::path extension          = resource_full_path.extension();
@@ -25,4 +27,5 @@ void fe::ResourceImporter::StoreResource(const std::filesystem::path& resource_r
 void fe::ResourceImporter::StoreTexture(const std::filesystem::path& resource_full_path) {
     std::filesystem::path metadata_full_path = resource_full_path.wstring() + L".fs"; // TODO : write this to some desc
 
+    stbi_load(nullptr, nullptr, nullptr, nullptr, 0); // temp
 }
