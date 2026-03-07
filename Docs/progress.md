@@ -11,7 +11,6 @@
 
     Not now, but :
     - provide event system for platform
-    - remove errors when minimize the window ( will be done when provide platform system )
 
 ### Done
     -
@@ -28,7 +27,6 @@
     
     Not now, but :
     - provide event system for platform
-    - remove errors when minimize the window ( will be done when provide platform system )
 
     Provide DOD Resource Management System
 
