@@ -19,6 +19,12 @@
     GetResource() added
     Texture adding added
 
+    Found right now. You can do this :
+    ```hpp
+    template <template <typename> class C>
+    struct Wrapper {};
+    ```
+
 ### Problem
     -
 

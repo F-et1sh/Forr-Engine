@@ -42,3 +42,7 @@ fe::MeshID fe::GPUResourceManager::CreateTriangle() {
 
     return m_Meshes.size() - 1;
 }
+
+void fe::GPUResourceManager::CreateTexture(const resource::Texture& texture) {
+    
+}

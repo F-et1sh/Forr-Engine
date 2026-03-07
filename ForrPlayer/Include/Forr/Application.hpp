@@ -41,14 +41,19 @@ namespace fe {
         void Run();
 
     private:
-        std::unique_ptr<IPlatformSystem> m_PlatformSystem;
-        std::unique_ptr<IRenderer>       m_Renderer;
+        void InitializePlatformSystem(const ApplicationDesc& desc);
+        void InitializeResourceManager(const ApplicationDesc& desc);
+        void InitializePrimaryWindow(const ApplicationDesc& desc);
+        void InitializeRenderer(const ApplicationDesc& desc);
 
-        size_t   m_PrimaryWindowID = 0;
-        IWindow* m_PrimaryWindow   = nullptr;
+    private:
+        std::unique_ptr<IPlatformSystem> m_PlatformSystem{};
+        std::unique_ptr<IRenderer>       m_Renderer{};
+        std::unique_ptr<ResourceManager> m_ResourceManager{};
 
-        MeshID m_Triangle = 0; // temp
+        size_t   m_PrimaryWindowID{};
+        IWindow* m_PrimaryWindow{};
 
-        ResourceManager m_ResourceManager{};
+        MeshID m_Triangle{}; // temp
     };
 } // namespace fe

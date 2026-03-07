@@ -20,10 +20,9 @@
 //  DOD structure, not a high level resource
 namespace fe::resource {
     struct Texture {
-        unsigned int                     width{};
-        unsigned int                     height{};
-        unsigned int                     components{};
-        std::unique_ptr<unsigned char[]> bytes{};
+        unsigned int width{};
+        unsigned int height{};
+        unsigned int components{};
 
         TextureMinFilter min_filter{ TextureMinFilter::LINEAR_MIPMAP_LINEAR };
         TextureMagFilter mag_filter{ TextureMagFilter::LINEAR };
@@ -32,6 +31,8 @@ namespace fe::resource {
 
         TextureInternalFormat internal_format{};
         TextureDataFormat     data_format{};
+
+        std::unique_ptr<unsigned char[]> bytes{};
 
         Texture()  = default;
         ~Texture() = default;

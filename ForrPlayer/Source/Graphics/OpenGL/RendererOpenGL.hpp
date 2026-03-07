@@ -30,6 +30,8 @@ namespace fe {
         void                                    Draw(MeshID index) override;
         FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return m_GPUResourceManager.CreateTriangle(); }
 
+        void SetupGPUResources() override;
+
     private:
         ResourceManager& m_ResourceManager;
 

@@ -63,3 +63,7 @@ void fe::RendererOpenGL::Draw(MeshID index) {
 
     m_Shader.unbind();
 }
+
+void fe::RendererOpenGL::SetupGPUResources() {
+    
+}

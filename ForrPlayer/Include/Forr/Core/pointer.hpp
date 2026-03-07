@@ -22,7 +22,7 @@
 #include <type_traits>
 
 namespace fe {
-    using handle_t = uint64_t; // can be replaced by uint32_t
+    using handle_t = uint32_t; // can be replaced by uint64_t
 
     template <typename _Ty>
     concept storable_t =
@@ -73,16 +73,16 @@ namespace fe {
                 index = m_free_list.back();
                 m_free_list.pop_back();
 
-                m_slots[index].object = std::move(value);
-                m_slots[index].alive  = true;
-                m_slots[index].generation++;
+                m_slots_object[index] = std::move(value);
+                m_slots_alive[index]  = true;
+                m_slots_generation[index]++;
             }
             else {
-                index = static_cast<handle_t>(m_slots.size());
+                index = static_cast<handle_t>(m_slots_generation.size());
 
-                m_slots.emplace_back(_MySlot{ std::move(value) });
+                m_slots_object.emplace_back(std::move(value));
             }
-            return pointer_t(index, m_slots[index].generation);
+            return pointer_t(index, m_slots_generation[index]);
         }
 
         FORR_NODISCARD pointer_t create()
@@ -95,8 +95,8 @@ namespace fe {
             //std::unique_lock lock(m_mutex);
             if (!is_valid_locked(handle)) return;
 
-            m_slots[handle.m_index].object.~_Ty();
-            m_slots[handle.m_index].alive = false;
+            m_slots_object[handle.m_index].~_Ty();
+            m_slots_alive[handle.m_index] = false;
 
             m_free_list.push_back(handle.m_index);
         }
@@ -104,13 +104,13 @@ namespace fe {
         FORR_NODISCARD _Ty* get(pointer_t handle) noexcept {
             //std::shared_lock lock(m_mutex);
             if (!is_valid_locked(handle)) return nullptr;
-            return std::addressof(m_slots[handle.m_index].object);
+            return std::addressof(m_slots_object[handle.m_index]);
         }
 
         FORR_NODISCARD const _Ty* get(pointer_t handle) const noexcept {
             //std::shared_lock lock(m_mutex);
             if (!is_valid_locked(handle)) return nullptr;
-            return std::addressof(m_slots[handle.m_index].object);
+            return std::addressof(m_slots_object[handle.m_index]);
         }
 
         FORR_NODISCARD bool is_valid(pointer_t handle) const noexcept {
@@ -120,29 +120,28 @@ namespace fe {
 
         FORR_NODISCARD size_t live_count() const noexcept {
             //std::shared_lock lock(m_mutex);
-            return m_slots.size() - m_free_list.size();
+            return m_slots_alive.size() - m_free_list.size();
+        }
+
+        template<typename T, typename Func>
+        void for_each(Func&& func) {
+            for (size_t i = 0; i < m_slots_object.size(); i++) {
+                if (!m_slots_alive[i].alive) continue;
+                func(m_slots_object[i]);
+            }
         }
 
     private:
         FORR_NODISCARD bool is_valid_locked(pointer_t handle) const noexcept { // this needed for mutex's work
-            if (handle.m_index >= m_slots.size()) return false;
-            if (!m_slots[handle.m_index].alive) return false;
-            return m_slots[handle.m_index].generation == handle.m_generation;
+            if (handle.m_index >= m_slots_alive.size()) return false;
+            if (!m_slots_alive[handle.m_index]) return false;
+            return m_slots_generation[handle.m_index] == handle.m_generation;
         }
 
-        struct _MySlot {
-            _Ty      object;
-            handle_t generation;
-            bool     alive;
+        std::vector<_Ty>      m_slots_object;
+        std::vector<handle_t> m_slots_generation;
+        std::vector<bool>     m_slots_alive;
 
-            _MySlot(_Ty&& value, handle_t generation = 0, bool alive = true)
-                : object(std::move(value)), generation(generation), alive(alive) {}
-
-            _MySlot(const _Ty& value, handle_t generation = 0, bool alive = true)
-                : object(value), generation(generation), alive(alive) {}
-        };
-
-        std::vector<_MySlot>  m_slots;
         std::vector<handle_t> m_free_list;
 
         //mutable std::shared_mutex m_mutex; // this is removed for now
@@ -157,6 +156,7 @@ namespace fe {
         typed_pointer_storage<_Ty> storage;
     };
 
+    // this class might be slow. better - do not use it
     class pointer_storage {
     public:
         pointer_storage()  = default;
