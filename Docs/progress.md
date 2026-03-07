@@ -16,6 +16,8 @@
     UploadResource() -> StoreResource()
     STB Image added
     .clang-format-ignore added
+    GetResource() added
+    Texture adding added
 
 ### Problem
     -

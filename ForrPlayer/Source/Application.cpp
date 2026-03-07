@@ -19,16 +19,21 @@ fe::Application::Application(const ApplicationDesc& desc) {
     renderer_desc.graphics_backend = desc.graphics_backend;
     renderer_desc.application_name = desc.application_name;
 
-    m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID);
+    m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, m_ResourceManager);
 
     m_Triangle = m_Renderer->CreateTriangle();
+
+    std::vector<std::filesystem::path> paths{};
+    paths.emplace_back("Tatarstan-Flag.png");
+
+    m_ResourceManager.SetupSceneResources(paths);
 }
 
 void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
         m_Renderer->ClearScreen(0.5f, 0.5f, 0.5f, 1.0f);
 
-        m_Renderer->Draw(m_Triangle);
+        m_Renderer->Draw(m_Triangle); // temp
 
         m_Renderer->SwapBuffers();
 

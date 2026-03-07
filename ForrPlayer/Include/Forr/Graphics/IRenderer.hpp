@@ -15,6 +15,8 @@
 #include "Platform/IPlatformSystem.hpp"
 #include "Core/types.hpp"
 
+#include "ResourceManagement/ResourceManager.hpp"
+
 namespace fe {
     struct FORR_API RendererDesc {
         std::string     application_name{};
@@ -27,11 +29,16 @@ namespace fe {
         ~RendererDesc() = default;
     };
 
+    // if you want to add some variable here, use static method IRenderer::Create()
+    // the member should be assigned to the devired class, not here
     class FORR_API IRenderer {
     public:
         virtual ~IRenderer() = default;
 
-        static std::unique_ptr<IRenderer> Create(const RendererDesc& desc, IPlatformSystem& platform_system, size_t primary_window_index);
+        static std::unique_ptr<IRenderer> Create(const RendererDesc& desc,
+                                                 IPlatformSystem&    platform_system,
+                                                 size_t              primary_window_index,
+                                                 ResourceManager&    resource_manager);
 
         virtual void ClearScreen(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) = 0;
         virtual void SwapBuffers()                                                                            = 0;

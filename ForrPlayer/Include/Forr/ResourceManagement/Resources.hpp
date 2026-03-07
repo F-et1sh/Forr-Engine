@@ -20,22 +20,23 @@
 //  DOD structure, not a high level resource
 namespace fe::resource {
     struct Texture {
-        uint32_t             width{};
-        uint32_t             height{};
-        TextureFormat        format{};
-        std::vector<uint8_t> pixels{};
+        unsigned int                     width{};
+        unsigned int                     height{};
+        unsigned int                     components{};
+        std::unique_ptr<unsigned char[]> bytes{};
+
+        TextureMinFilter min_filter{ TextureMinFilter::LINEAR_MIPMAP_LINEAR };
+        TextureMagFilter mag_filter{ TextureMagFilter::LINEAR };
+        TextureWrap      wrap_s{ TextureWrap::REPEAT };
+        TextureWrap      wrap_t{ TextureWrap::REPEAT };
+
+        TextureInternalFormat internal_format{};
+        TextureDataFormat     data_format{};
 
         Texture()  = default;
         ~Texture() = default;
-    };
 
-    struct TextureMeta {
-        uint32_t      width{};
-        uint32_t      height{};
-        TextureFormat format{};
-        bool          generate_mips{};
-
-        TextureMeta()  = default;
-        ~TextureMeta() = default;
+        FORR_CLASS_NONCOPYABLE(Texture);
+        FORR_CLASS_MOVABLE(Texture)
     };
 } // namespace fe::resource

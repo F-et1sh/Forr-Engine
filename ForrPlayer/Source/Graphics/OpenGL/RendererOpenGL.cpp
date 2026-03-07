@@ -15,9 +15,11 @@
 
 fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
                                    IPlatformSystem&    platform_system,
-                                   size_t              primary_window_index)
+                                   size_t              primary_window_index,
+                                   ResourceManager&    resource_manager)
     : m_PlatformSystem(platform_system),
-      m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index)) {
+      m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index)),
+      m_ResourceManager(resource_manager) {
 
     m_GLFWwindow = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
 
