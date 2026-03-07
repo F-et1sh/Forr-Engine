@@ -88,7 +88,7 @@ void fe::VulkanSwapchain::CreateSwapchain() {
     if (surface_capabilities.currentExtent.width == ~0 &&
         surface_capabilities.currentExtent.height == ~0) {
 
-        swapchain_extent.width = std::clamp(swapchain_extent.width, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width);
+        swapchain_extent.width  = std::clamp(swapchain_extent.width, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width);
         swapchain_extent.height = std::clamp(swapchain_extent.height, surface_capabilities.minImageExtent.height, surface_capabilities.maxImageExtent.height);
 
         m_PrimaryWindow.setResolution(swapchain_extent.width, swapchain_extent.height);
@@ -108,7 +108,7 @@ void fe::VulkanSwapchain::CreateSwapchain() {
     }
 
     m_Extent = swapchain_extent; // set swapchain extent
-    
+
     // === SETUP CONTEXT ===
     m_Context.swapchain_extent = m_Extent;
     // ===
