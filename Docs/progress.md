@@ -13,7 +13,7 @@
     - provide event system for platform
 
 ### Done
-    -
+    UploadResource() -> StoreResource()
 
 ### Problem
     -

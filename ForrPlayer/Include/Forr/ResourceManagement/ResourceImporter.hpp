@@ -20,10 +20,10 @@ namespace fe {
         ~ResourceImporter() = default;
 
         // upload resource to the storage
-        void UploadResource(const std::filesystem::path& resource_relative_path);
+        void StoreResource(const std::filesystem::path& resource_relative_path);
 
     private:
-        void UploadTexture(const std::filesystem::path& resource_full_path);
+        void StoreTexture(const std::filesystem::path& resource_full_path);
 
     private:
         ResourceStorage& m_Storage;
