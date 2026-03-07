@@ -18,6 +18,7 @@
     .clang-format-ignore added
     GetResource() added
     Texture adding added
+    SetupGPUResources() -> CreateGPUResources()
 
     Found right now. You can do this :
     ```hpp

@@ -46,6 +46,6 @@ namespace fe {
         virtual void   Draw(MeshID index) = 0;
         virtual MeshID CreateTriangle()   = 0;
 
-        virtual void SetupGPUResources() = 0;
+        virtual void CreateGPUResources() = 0;
     };
 } // namespace fe
