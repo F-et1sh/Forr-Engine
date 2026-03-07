@@ -112,6 +112,7 @@
     <ClInclude Include="Include\Forr\Graphics\GPUTypes.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\Shader.hpp" />
+    <ClInclude Include="Source\Graphics\OpenGL\Texture.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\VertexBuffers.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VKStructures.hpp" />

@@ -23,17 +23,23 @@ namespace fe {
         ~ResourceStorage() = default;
 
         template <typename T>
-        fe::pointer<T> GetResourcePointer(size_t index) { return m_TexturePointers[index]; }
+        T* GetResource(fe::pointer<T> ptr) {
+            auto& storage = this->get_storage<T>();
+            assert(storage.is_valid(ptr));
+            return storage.get(ptr);
+        }
 
+    private:
         template <typename T>
-        FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) {
-            assert(m_Textures.is_valid(ptr));
-            return m_Textures.get(ptr);
+        auto& get_storage() {
+             if constexpr (std::is_same_v<T, fe::resource::Texture>)
+                return m_Textures;
+            /*else if constexpr (std::is_same_v<T, fe::resource::Mesh>) // TODO : add this
+                return m_Meshes;*/
         }
 
     private:
         fe::typed_pointer_storage<fe::resource::Texture> m_Textures{};
-        std::vector<fe::pointer<fe::resource::Texture>>  m_TexturePointers{}; // temp
 
         friend class ResourceImporter;
     };

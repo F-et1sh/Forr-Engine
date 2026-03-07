@@ -24,9 +24,6 @@ namespace fe {
         void SetupSceneResources(const std::vector<std::filesystem::path>& resource_relative_paths);
 
         template <typename T>
-        fe::pointer<T> GetResourcePointer(size_t index) { return m_Storage.GetResourcePointer<T>(index); }
-
-        template <typename T>
         FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) { return m_Storage.GetResource(ptr); }
 
     private:

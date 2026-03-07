@@ -39,6 +39,8 @@ namespace fe {
         MeshID                                 CreateTriangle();
         FORR_FORCE_INLINE FORR_NODISCARD Mesh& getMesh(MeshID index) { return m_Meshes[index]; }
 
+        void CreateTexture(const resource::Texture& texture);
+
     private:
         std::vector<Mesh> m_Meshes;
     };

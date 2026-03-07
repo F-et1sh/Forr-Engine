@@ -4,29 +4,12 @@
 fe::Application::Application(const ApplicationDesc& desc) {
     PATH.init(desc.args[0], true);
 
-    PlatformSystemDesc platform_desc{};
-    platform_desc.platform_backend = desc.platform_backend;
-    platform_desc.graphics_backend = desc.graphics_backend;
-
-    m_PlatformSystem = IPlatformSystem::Create(platform_desc);
-
-    // create primary window
-    m_PrimaryWindowID = m_PlatformSystem->CreateWindow(desc.primary_window_desc);
-    m_PrimaryWindow   = &m_PlatformSystem->getWindow(m_PrimaryWindowID);
-
-    RendererDesc renderer_desc{};
-    renderer_desc.platform_backend = desc.platform_backend;
-    renderer_desc.graphics_backend = desc.graphics_backend;
-    renderer_desc.application_name = desc.application_name;
-
-    m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, m_ResourceManager);
+    this->InitializePlatformSystem(desc);
+    this->InitializeResourceManager(desc);
+    this->InitializePrimaryWindow(desc);
+    this->InitializeRenderer(desc);
 
     m_Triangle = m_Renderer->CreateTriangle();
-
-    std::vector<std::filesystem::path> paths{};
-    paths.emplace_back("Tatarstan-Flag.png");
-
-    m_ResourceManager.SetupSceneResources(paths);
 }
 
 void fe::Application::Run() {
@@ -39,4 +22,35 @@ void fe::Application::Run() {
 
         m_PrimaryWindow->PollEvents();
     }
+}
+
+void fe::Application::InitializePlatformSystem(const ApplicationDesc& desc) {
+    PlatformSystemDesc platform_desc{};
+    platform_desc.platform_backend = desc.platform_backend;
+    platform_desc.graphics_backend = desc.graphics_backend;
+
+    m_PlatformSystem = IPlatformSystem::Create(platform_desc);
+}
+
+void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
+    std::vector<std::filesystem::path> paths{}; // temp
+    paths.emplace_back("Tatarstan-Flag.png");
+
+    m_ResourceManager = std::make_unique<ResourceManager>();
+    m_ResourceManager->SetupSceneResources(paths);
+}
+
+void fe::Application::InitializePrimaryWindow(const ApplicationDesc& desc) {
+    m_PrimaryWindowID = m_PlatformSystem->CreateWindow(desc.primary_window_desc);
+    m_PrimaryWindow   = &m_PlatformSystem->getWindow(m_PrimaryWindowID);
+}
+
+void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
+    RendererDesc renderer_desc{};
+    renderer_desc.platform_backend = desc.platform_backend;
+    renderer_desc.graphics_backend = desc.graphics_backend;
+    renderer_desc.application_name = desc.application_name;
+
+    m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, *m_ResourceManager);
+    m_Renderer->SetupGPUResources();
 }

@@ -43,6 +43,8 @@ namespace fe {
         void                                    Draw(MeshID index) override;
         FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return m_VulkanResourceManager.CreateTriangle(); };
 
+        void SetupGPUResources() override {} // temp
+
     private: // Vulkan initialization queue
         // Create Vulkan base :
         // - volk

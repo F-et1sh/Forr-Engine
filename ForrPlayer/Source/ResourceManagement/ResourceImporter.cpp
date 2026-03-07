@@ -19,7 +19,9 @@ void fe::ResourceImporter::StoreResource(const std::filesystem::path& resource_r
     std::filesystem::path resource_full_path = PATH.getResourcesPath() / resource_relative_path;
     std::filesystem::path extension          = resource_full_path.extension();
 
-    if (extension == ".png") {
+    // TODO : Add TextureImporter, MeshImporter, etc...
+
+    if (extension == ".png") { // temp
         this->StoreTexture(resource_full_path);
     }
 }
@@ -69,6 +71,5 @@ void fe::ResourceImporter::StoreTexture(const std::filesystem::path& resource_fu
     // bytes are already checked that it is not nullptr
     std::copy(bytes, bytes + buffer_size, texture.bytes.get());
 
-    auto ptr = m_Storage.m_Textures.create(std::move(texture));
-    m_Storage.m_TexturePointers.emplace_back(ptr);
+    auto ptr = m_Storage.m_Textures.create(std::move(texture)); // does not need to store this fe::pointer
 }

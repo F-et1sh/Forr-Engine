@@ -34,6 +34,7 @@
     <ClInclude Include="Include\Forr\ResourceManagement\Resources.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceImporter.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceStorage.hpp" />
+    <ClInclude Include="Source\Graphics\OpenGL\Texture.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
