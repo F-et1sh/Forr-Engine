@@ -36,10 +36,10 @@ namespace fe {
         GPUResourceManager()  = default;
         ~GPUResourceManager() = default;
 
-        MeshID                                 CreateTriangle();
-        FORR_FORCE_INLINE FORR_NODISCARD Mesh& getMesh(MeshID index) { return m_Meshes[index]; }
+        MeshID CreateTriangle(); // TODO : this mustn't return MeshID
+        void   CreateTexture(const resource::Texture& texture);
 
-        void CreateTexture(const resource::Texture& texture);
+        FORR_FORCE_INLINE FORR_NODISCARD Mesh& getMesh(MeshID index) { return m_Meshes[index]; }
 
     private:
         std::vector<Mesh> m_Meshes;
