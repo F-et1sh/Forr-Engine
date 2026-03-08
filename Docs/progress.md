@@ -1,5 +1,23 @@
 # Forr-Engine Devlog
 
+## 09.03.2026
+### Goal
+    Create CPU primitive
+    Create GPU primitive
+    ...
+    Make camera movable
+
+    Not now, but :
+    - provide event system for platform
+
+### Done
+    -
+
+### Problem
+    -
+
+---
+
 ## 08.03.2026
 ### Goal
     ...
