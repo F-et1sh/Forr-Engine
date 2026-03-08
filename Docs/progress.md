@@ -14,6 +14,8 @@
     Material added. Including problem - that's almost only thing I hate in C++
     Model added
     some fixes
+    I have to include GLM to ForrGame
+    it worked
 
 ### Problem
     -
