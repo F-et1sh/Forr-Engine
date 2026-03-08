@@ -14,6 +14,7 @@
 @echo off
 
 xcopy /y /i /s "..\\..\\External\\stb\\stb_image.h" "..\\..\\ThirdParty\\stb\\include\\" >nul
+xcopy /y /i /s "..\\..\\External\\stb\\stb_image_write.h" "..\\..\\ThirdParty\\stb\\include\\" >nul
 copy "..\\..\\External\\stb\\LICENSE" "..\\..\\ThirdParty\\stb\\STB_LICENSE_MIT.txt" >nul
 
 mkdir "..\\..\\ThirdParty\\stb\\src\\"
@@ -22,3 +23,9 @@ mkdir "..\\..\\ThirdParty\\stb\\src\\"
 echo #define STB_IMAGE_IMPLEMENTATION
 echo #include "stb_image.h"
 ) > "..\\..\\ThirdParty\\stb\\src\\stb_image.cpp"
+
+(
+echo #define _CRT_SECURE_NO_WARNINGS
+echo #define STB_IMAGE_WRITE_IMPLEMENTATION
+echo #include "stb_image_write.h"
+) > "..\\..\\ThirdParty\\stb\\src\\stb_image_write.cpp"
