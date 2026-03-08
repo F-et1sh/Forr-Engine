@@ -93,14 +93,14 @@ void fe::RendererOpenGL::Draw(MeshID index) {
         glNamedBufferSubData(ubo, 0, sizeof(shader_data), &shader_data);
     }
 
-    for (size_t i = 0; i < 8; i++) {
+    /*for (size_t i = 0; i < 8; i++) {
         auto& mesh = m_GPUResourceManager.getMesh(i);
         for (const auto& primitive : mesh.primitives) {
             primitive.vao.Bind();
             glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, 0);
             primitive.vao.Unbind();
         }
-    }
+    }*/
 
     m_Shader.unbind();
 }
