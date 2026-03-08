@@ -64,11 +64,11 @@ void fe::EBO::Create(Indices& indices_variant) {
     glGenBuffers(1, &m_index);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index);
 
-    std::visit([&](const auto& indices) {
+    /*std::visit([&](const auto& indices) {
         using T = std::ranges::range_value_t<std::decay_t<decltype(indices)>>;
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(T), indices.data(), GL_STATIC_DRAW);
     },
-               indices_variant);
+               indices_variant);*/
 }
 
 void fe::EBO::Bind() const {

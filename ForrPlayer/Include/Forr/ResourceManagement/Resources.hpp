@@ -54,8 +54,8 @@ namespace fe::resource {
             fe::pointer<Texture> texture_id{};
             int                  texture_coord{ 0 }; // TEXCOORD_0 by default
 
-            TextureInfo()  = default;
-            ~TextureInfo() = default;
+            TextureInfo()          = default;
+            virtual ~TextureInfo() = default;
         };
 
         struct NormalTextureInfo : public TextureInfo {
@@ -74,7 +74,7 @@ namespace fe::resource {
 
         struct PbrMetallicRoughness {
             glm::vec4   base_color_factor{ 1.0f, 1.0f, 1.0f, 1.0f }; // default [1,1,1,1]
-            TextureInfo base_color_texture;
+            TextureInfo base_color_texture{};
             float       metallic_factor{ 1.0f };  // default 1
             float       roughness_factor{ 1.0f }; // default 1
             TextureInfo metallic_roughness_texture{};
@@ -104,6 +104,20 @@ namespace fe::resource {
         FORR_CLASS_MOVABLE(Material)
     };
 
-    // TODO : add gLTF model
+    struct Model {
+        std::vector<Node>      nodes{};
+        std::vector<int>       scene_roots{};
+        std::vector<Skin>      skins{};
+        std::vector<Mesh>      meshes{};
+        std::vector<Material>  materials{};
+        std::vector<Texture>   textures{};
+        std::vector<Animation> animations{};
+
+        Model()  = default;
+        ~Model() = default;
+
+        FORR_CLASS_NONCOPYABLE(Model)
+        FORR_CLASS_MOVABLE(Model)
+    };
 
 } // namespace fe::resource

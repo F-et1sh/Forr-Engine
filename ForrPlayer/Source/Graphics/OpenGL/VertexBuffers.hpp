@@ -19,12 +19,6 @@
 #include <glad/gl.h>
 
 namespace fe {
-    using Vertices = std::vector<Vertex>;
-    using Indices  = std::variant<
-         std::vector<uint8_t>,
-         std::vector<uint16_t>,
-         std::vector<uint32_t>>;
-
     class VBO {
     public:
         VBO() = default;
