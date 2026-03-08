@@ -18,6 +18,9 @@ xcopy /y /i /s "..\\..\\External\\tinygltf\\tiny_gltf.h" "..\\..\\ThirdParty\\ti
 
 copy "..\\..\\External\\tinygltf\\LICENSE" "..\\..\\ThirdParty\\tinygltf\\TINYGLTF_LICENSE.txt" >nul
 
+:: there was a bug
+rmdir /s /q "..\\..\\ThirdParty\\tinygltf\\include\\examples"
+
 mkdir "..\\..\\ThirdParty\\tinygltf\\src\\"
 
 (
