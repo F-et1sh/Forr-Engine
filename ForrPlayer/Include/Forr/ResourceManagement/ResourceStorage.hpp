@@ -29,6 +29,12 @@ namespace fe {
             return storage.get(ptr);
         }
 
+        template <typename T, typename Func>
+        void RunForEach(Func&& func) {
+            auto& storage = this->get_storage<T>();
+            storage.for_each(func);
+        }
+
     private:
         // unsafe helper function
         template <typename T>

@@ -129,12 +129,10 @@ namespace fe {
         void for_each(_Func&& func) {
             //std::shared_lock lock(m_mutex);
             for (size_t i = 0; i < m_slots_object.size(); i++) {
-                if (!m_slots_alive[i].alive) continue;
+                if (!m_slots_alive[i]) continue;
                 func(m_slots_object[i]);
             }
         }
-
-        FORR_NODISCARD const std::vector<_Ty>& get_storage() const noexcept { return m_slots_object; }
 
     private:
         FORR_NODISCARD bool is_valid_locked(pointer_t handle) const noexcept { // this needed for mutex's work
@@ -143,9 +141,11 @@ namespace fe {
             return m_slots_generation[handle.m_index] == handle.m_generation;
         }
 
+        // devided to be more cache friendly
         std::vector<_Ty>      m_slots_object;
         std::vector<handle_t> m_slots_generation;
         std::vector<bool>     m_slots_alive;
+        //
 
         std::vector<handle_t> m_free_list;
 

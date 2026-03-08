@@ -62,6 +62,10 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
     shader_data.model_matrix      = glm::mat4(1.0f);
 
     glNamedBufferData(ubo, sizeof(shader_data), &shader_data, GL_DYNAMIC_DRAW);
+
+    m_ResourceManager.RunForEach<resource::Texture>([](const resource::Texture& texture) {
+        fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
+    });
 }
 
 fe::RendererOpenGL::~RendererOpenGL() {
