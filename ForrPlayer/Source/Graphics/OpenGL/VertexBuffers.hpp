@@ -27,46 +27,48 @@ namespace fe {
 
     class VBO {
     public:
-        VBO(const std::vector<Vertex>& vertices);
+        VBO() = default;
         ~VBO();
 
-        void bind() const;
-        void unbind();
+        void Create(std::vector<Vertex>& vertices);
 
-        FORR_FORCE_INLINE FORR_NODISCARD unsigned int index() const noexcept { return m_Index; }
+        void        Bind() const;
+        static void Unbind();
 
     private:
-        GLuint m_Index;
+        GLuint m_index;
     };
 
     class VAO {
     public:
-        VAO();
+        VAO() = default;
         ~VAO();
 
-        void LinkAttrib(VBO& vbo, GLuint layout, GLuint num_components, GLenum type, GLsizeiptr stride, void* offset);
+        void Create();
 
-        void bind() const;
-        void unbind();
+        static void LinkAttrib(VBO& vbo, GLuint layout, GLuint num_components, GLenum type, GLsizeiptr stride, void* offset);
 
-        FORR_FORCE_INLINE FORR_NODISCARD unsigned int index() const noexcept { return m_Index; }
+        void        Bind() const;
+        static void Unbind();
 
     private:
-        GLuint m_Index;
+        GLuint m_index;
     };
 
     class EBO {
     public:
-        EBO(const std::vector<GLuint>& indices);
-        EBO(const Indices& indices_variant);
+        EBO() = default;
         ~EBO();
 
-        void bind() const;
-        void unbind();
+        void Create(std::vector<GLuint>& indices);
+        void Create(Indices& indices_variant);
 
-        FORR_FORCE_INLINE FORR_NODISCARD unsigned int index() const noexcept { return m_Index; }
+        void        Bind() const;
+        static void Unbind();
+
+        [[nodiscard]] unsigned int index() const noexcept { return m_index; }
 
     private:
-        GLuint m_Index;
+        GLuint m_index;
     };
 } // namespace fe

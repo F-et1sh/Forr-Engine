@@ -14,55 +14,55 @@
 #include "VertexBuffers.hpp"
 
 fe::VBO::~VBO() {
-    glDeleteBuffers(1, &m_Index);
+    glDeleteBuffers(1, &m_index);
 }
 
-fe::VBO::VBO(const std::vector<Vertex>& vertices) {
-    glGenBuffers(1, &m_Index);
-    glBindBuffer(GL_ARRAY_BUFFER, m_Index);
+void fe::VBO::Create(std::vector<Vertex>& vertices) {
+    glGenBuffers(1, &m_index);
+    glBindBuffer(GL_ARRAY_BUFFER, m_index);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
 }
 
-void fe::VBO::bind() const {
-    glBindBuffer(GL_ARRAY_BUFFER, m_Index);
+void fe::VBO::Bind() const {
+    glBindBuffer(GL_ARRAY_BUFFER, m_index);
 }
 
-void fe::VBO::unbind() {
+void fe::VBO::Unbind() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-fe::VAO::VAO() {
-    glGenVertexArrays(1, &m_Index);
+void fe::VAO::Create() {
+    glGenVertexArrays(1, &m_index);
 }
 
 void fe::VAO::LinkAttrib(VBO& vbo, GLuint layout, GLuint num_components, GLenum type, GLsizeiptr stride, void* offset) {
-    vbo.bind();
+    vbo.Bind();
     glVertexAttribPointer(layout, num_components, type, GL_FALSE, stride, offset);
     glEnableVertexAttribArray(layout);
-    vbo.unbind();
+    VBO::Unbind();
 }
 
-void fe::VAO::bind() const {
-    glBindVertexArray(m_Index);
+void fe::VAO::Bind() const {
+    glBindVertexArray(m_index);
 }
 
-void fe::VAO::unbind() {
+void fe::VAO::Unbind() {
     glBindVertexArray(0);
 }
 
 fe::VAO::~VAO() {
-    glDeleteVertexArrays(1, &m_Index);
+    glDeleteVertexArrays(1, &m_index);
 }
 
-fe::EBO::EBO(const std::vector<GLuint>& indices) {
-    glGenBuffers(1, &m_Index);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Index);
+void fe::EBO::Create(std::vector<GLuint>& indices) {
+    glGenBuffers(1, &m_index);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 }
 
-fe::EBO::EBO(const Indices& indices_variant) {
-    glGenBuffers(1, &m_Index);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Index);
+void fe::EBO::Create(Indices& indices_variant) {
+    glGenBuffers(1, &m_index);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index);
 
     std::visit([&](const auto& indices) {
         using T = std::ranges::range_value_t<std::decay_t<decltype(indices)>>;
@@ -71,14 +71,14 @@ fe::EBO::EBO(const Indices& indices_variant) {
                indices_variant);
 }
 
-void fe::EBO::bind() const {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Index);
+void fe::EBO::Bind() const {
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_index);
 }
 
-void fe::EBO::unbind() {
+void fe::EBO::Unbind() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 fe::EBO::~EBO() {
-    glDeleteBuffers(1, &m_Index);
+    glDeleteBuffers(1, &m_index);
 }

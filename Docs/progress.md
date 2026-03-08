@@ -15,6 +15,7 @@
     Prepared for model drawing
     tinygltf added
     bug fixed
+    model drawn
 
     Found right now. You can do this :
     ```hpp

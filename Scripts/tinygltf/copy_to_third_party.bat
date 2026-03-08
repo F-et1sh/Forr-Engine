@@ -26,8 +26,8 @@ mkdir "..\\..\\ThirdParty\\tinygltf\\src\\"
 (
 echo #define TINYGLTF_IMPLEMENTATION
 
-echo #define TINYGLTF_NO_STB_IMAGE
-echo #define TINYGLTF_NO_STB_IMAGE_WRITE
+echo // #define TINYGLTF_NO_STB_IMAGE
+echo // #define TINYGLTF_NO_STB_IMAGE_WRITE
 
 echo // #define TINYGLTF_NOEXCEPTION // optional. disable exception handling.
 
