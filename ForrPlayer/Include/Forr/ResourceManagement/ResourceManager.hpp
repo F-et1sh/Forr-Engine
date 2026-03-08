@@ -26,6 +26,12 @@ namespace fe {
         template <typename T>
         FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) { return m_Storage.GetResource(ptr); }
 
+        template<typename T>
+        FORR_NODISCARD const std::vector<T>& GetStorage() const noexcept { return m_Storage.GetStorage<T>(); }
+
+    private:
+
+
     private:
         ResourceStorage  m_Storage{};
         ResourceImporter m_Importer{ m_Storage };

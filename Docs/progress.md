@@ -1,5 +1,29 @@
 # Forr-Engine Devlog
 
+## 08.03.2026
+### Goal
+    ...
+    Load a gLTF module
+    Make camera movable
+
+    Not now, but :
+    - provide event system for platform
+
+### Done
+    Happy Women's Day
+
+
+    Found right now. You can do this :
+    ```hpp
+    template <template <typename> class C>
+    struct Wrapper {};
+    ```
+
+### Problem
+    -
+
+---
+
 ## 07.03.2026
 ### Goal
     Add STB Image

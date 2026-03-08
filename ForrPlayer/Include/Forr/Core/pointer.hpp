@@ -123,13 +123,16 @@ namespace fe {
             return m_slots_alive.size() - m_free_list.size();
         }
 
-        template<typename T, typename Func>
+        template <typename T, typename Func>
         void for_each(Func&& func) {
+            //std::shared_lock lock(m_mutex);
             for (size_t i = 0; i < m_slots_object.size(); i++) {
                 if (!m_slots_alive[i].alive) continue;
                 func(m_slots_object[i]);
             }
         }
+
+        FORR_NODISCARD const std::vector<_Ty>& get_storage() const noexcept { return m_slots_object; }
 
     private:
         FORR_NODISCARD bool is_valid_locked(pointer_t handle) const noexcept { // this needed for mutex's work
