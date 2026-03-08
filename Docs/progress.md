@@ -14,6 +14,7 @@
     Bug fixed. Start point configured
     Prepared for model drawing
     tinygltf added
+    bug fixed
 
     Found right now. You can do this :
     ```hpp
