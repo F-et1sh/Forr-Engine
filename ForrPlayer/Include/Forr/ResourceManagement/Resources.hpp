@@ -39,8 +39,8 @@ namespace fe::resource {
         TextureInternalFormat internal_format{};
         TextureDataFormat     data_format{};
 
-        //std::unique_ptr<unsigned char[]> bytes{};
-        fe::ArenaMarker offset{}; // try to use
+        std::unique_ptr<unsigned char[]> bytes{};
+        //fe::ArenaMarker offset{}; // TODO : think about using this instead of std::unique_ptr<>
 
         Texture()  = default;
         ~Texture() = default;

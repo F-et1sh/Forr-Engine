@@ -125,8 +125,8 @@ namespace fe {
             return m_slots_alive.size() - m_free_list.size();
         }
 
-        template <typename T, typename Func>
-        void for_each(Func&& func) {
+        template <typename _Func>
+        void for_each(_Func&& func) {
             //std::shared_lock lock(m_mutex);
             for (size_t i = 0; i < m_slots_object.size(); i++) {
                 if (!m_slots_alive[i].alive) continue;
