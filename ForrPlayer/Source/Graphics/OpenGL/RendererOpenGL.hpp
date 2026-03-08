@@ -12,6 +12,7 @@
 
 #pragma once
 #include "Graphics/IRenderer.hpp"
+#include "Graphics/Camera.hpp"
 
 #include "GPUResourceManager.hpp"
 
@@ -31,6 +32,9 @@ namespace fe {
         FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return m_GPUResourceManager.CreateTriangle(); }
 
     private:
+
+
+    private:
         ResourceManager& m_ResourceManager;
 
         Shader             m_Shader;
@@ -40,5 +44,7 @@ namespace fe {
         IWindow&         m_PrimaryWindow;
 
         GLFWwindow* m_GLFWwindow;
+
+        Camera m_Camera{}; // temp
     };
 } // namespace fe
