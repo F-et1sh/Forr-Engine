@@ -15,7 +15,7 @@
     Model added
     some fixes
     I have to include GLM to ForrGame
-    it worked
+    it worked. Now there is a way to create GPU resources
 
 ### Problem
     -
