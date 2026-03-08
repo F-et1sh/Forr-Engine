@@ -58,6 +58,8 @@
     <ClCompile Include="Source\ResourceManagement\ResourceManager.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceImporter.cpp" />
     <ClCompile Include="..\ThirdParty\stb\src\stb_image.cpp" />
+    <ClCompile Include="..\ThirdParty\tinygltf\src\tiny_gltf.cpp" />
+    <ClCompile Include="..\ThirdParty\stb\src\stb_image_write.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\ResourceManagement\Importers\readme.md" />

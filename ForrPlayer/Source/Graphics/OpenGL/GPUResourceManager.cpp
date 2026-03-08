@@ -13,6 +13,8 @@
 #include "pch.hpp"
 #include "GPUResourceManager.hpp"
 
+#include "tiny_gltf.h" // temp
+
 fe::MeshID fe::GPUResourceManager::CreateTriangle() {
     std::vector<Vertex> triangle_vertices{
         Vertex{ glm::vec3{ -0.5f, -0.5f, 0.0f } },
@@ -41,6 +43,8 @@ fe::MeshID fe::GPUResourceManager::CreateTriangle() {
     mesh.ebo.unbind();
 
     return m_Meshes.size() - 1;
+    
+    tinygltf::Model model{}; // temp
 }
 
 void fe::GPUResourceManager::CreateTexture(const resource::Texture& texture) {
