@@ -12,6 +12,7 @@
 ### Done
     Happy Women's Day
     Bug fixed. Start point configured
+    Prepared for model drawing
 
     Found right now. You can do this :
     ```hpp
