@@ -5,7 +5,12 @@
     File : Resources.hpp
     Role : Contain all resource structures.
         Resource Management system uses data-oriented design.
-        namespace fe::resource:: means that the class is a DOD structure
+        namespace fe::resource:: means that the class is a DOD structure.
+        Resource structure - means that the structure has its own extension, like .png or .gltf.
+        If the resource has a metadata file near, a part of the structure will be filled from it.
+        For example, if .png ( example.png ) has to data about "what min filter it is supposed to use". So, the member
+            fe::resource::Texture::min_filter will be set to default but if the resource manager will find
+            a metadata file near ( example.png.fs ) it will fill the structure from it.
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -16,13 +21,15 @@
 #include <vector>
 #include "Core/types.hpp"
 
+#include "Graphics/GPUTypes.hpp"
+
 // namespace fe::resource:: means that the class is a
 //  DOD structure, not a high level resource
 namespace fe::resource {
     struct Texture {
+        uint8_t      components{};
         unsigned int width{};
         unsigned int height{};
-        unsigned int components{};
 
         TextureMinFilter min_filter{ TextureMinFilter::LINEAR_MIPMAP_LINEAR };
         TextureMagFilter mag_filter{ TextureMagFilter::LINEAR };
@@ -32,12 +39,71 @@ namespace fe::resource {
         TextureInternalFormat internal_format{};
         TextureDataFormat     data_format{};
 
-        std::unique_ptr<unsigned char[]> bytes{};
+        //std::unique_ptr<unsigned char[]> bytes{};
+        fe::ArenaMarker offset{}; // try to use
 
         Texture()  = default;
         ~Texture() = default;
 
-        FORR_CLASS_NONCOPYABLE(Texture);
+        FORR_CLASS_NONCOPYABLE(Texture)
         FORR_CLASS_MOVABLE(Texture)
     };
+
+    struct Material {
+        struct TextureInfo {
+            fe::pointer<Texture> texture_id{};
+            int                  texture_coord{ 0 }; // TEXCOORD_0 by default
+
+            TextureInfo()  = default;
+            ~TextureInfo() = default;
+        };
+
+        struct NormalTextureInfo : public TextureInfo {
+            float scale{ 1.0f };
+
+            NormalTextureInfo()  = default;
+            ~NormalTextureInfo() = default;
+        };
+
+        struct OcclusionTextureInfo : public TextureInfo {
+            float strength{ 1.0f };
+
+            OcclusionTextureInfo()  = default;
+            ~OcclusionTextureInfo() = default;
+        };
+
+        struct PbrMetallicRoughness {
+            glm::vec4   base_color_factor{ 1.0f, 1.0f, 1.0f, 1.0f }; // default [1,1,1,1]
+            TextureInfo base_color_texture;
+            float       metallic_factor{ 1.0f };  // default 1
+            float       roughness_factor{ 1.0f }; // default 1
+            TextureInfo metallic_roughness_texture{};
+
+            PbrMetallicRoughness()  = default;
+            ~PbrMetallicRoughness() = default;
+        };
+
+        std::string name{};
+
+        glm::vec3        emissive_factor{ 0.0f, 0.0f, 0.0f }; // default [0,0,0]
+        AlphaMode        alpha_mode{ AlphaMode::OPAQUE };     // default - OPAQUE
+        float            alpha_cutoff{ 0.5f };                // default 0.5f
+        bool             float_sided{ false };                // default false
+        std::vector<int> lods{};                              // level of detail materials ( MSFT_lod )
+
+        PbrMetallicRoughness pbr_metallic_roughness{};
+
+        NormalTextureInfo    normal_texture{};
+        OcclusionTextureInfo occlusion_texture{};
+        TextureInfo          emissive_texture{};
+
+        Material()  = default;
+        ~Material() = default;
+
+        FORR_CLASS_NONCOPYABLE(Material)
+        FORR_CLASS_MOVABLE(Material)
+    };
+
+    // TODO : add gLTF model
+
 } // namespace fe::resource
