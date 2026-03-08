@@ -11,7 +11,7 @@
     - provide event system for platform
 
 ### Done
-    -
+    Material added. Including problem - that's almost only thing I hate in C++
 
 ### Problem
     -
