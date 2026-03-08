@@ -33,12 +33,16 @@ namespace fe {
             return m_AssetsPath;
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getShadersPath() const {
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getShadersPath() const noexcept {
             return this->getAssetsPath() / L"Shaders";
         }
 
         FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getResourcesPath() const noexcept {
             return m_AssetsPath / L"Resources";
+        }
+
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getModelsPath() const noexcept {
+            return m_AssetsPath / L"Models";
         }
 
     private:
