@@ -9,7 +9,7 @@ fe::Application::Application(const ApplicationDesc& desc) {
     this->InitializePrimaryWindow(desc);
     this->InitializeRenderer(desc);
 
-    m_Triangle = m_Renderer->CreateTriangle();
+    m_Triangle = m_Renderer->CreateTriangle(); // temp
 }
 
 void fe::Application::Run() {
@@ -37,7 +37,7 @@ void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
     paths.emplace_back("Tatarstan-Flag.png");
 
     m_ResourceManager = std::make_unique<ResourceManager>();
-    m_ResourceManager->SetupSceneResources(paths);
+    m_ResourceManager->SetupSceneResources(paths); // TODO : Rewrite this
 }
 
 void fe::Application::InitializePrimaryWindow(const ApplicationDesc& desc) {
@@ -52,5 +52,4 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
     renderer_desc.application_name = desc.application_name;
 
     m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, *m_ResourceManager);
-    m_Renderer->CreateGPUResources();
 }

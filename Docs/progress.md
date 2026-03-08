@@ -11,7 +11,7 @@
 
 ### Done
     Happy Women's Day
-
+    Bug fixed. Start point configured
 
     Found right now. You can do this :
     ```hpp

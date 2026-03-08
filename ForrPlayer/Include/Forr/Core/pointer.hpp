@@ -81,6 +81,8 @@ namespace fe {
                 index = static_cast<handle_t>(m_slots_generation.size());
 
                 m_slots_object.emplace_back(std::move(value));
+                m_slots_generation.emplace_back(0);
+                m_slots_alive.emplace_back(true);
             }
             return pointer_t(index, m_slots_generation[index]);
         }

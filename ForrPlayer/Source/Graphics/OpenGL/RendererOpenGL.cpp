@@ -63,10 +63,3 @@ void fe::RendererOpenGL::Draw(MeshID index) {
 
     m_Shader.unbind();
 }
-
-void fe::RendererOpenGL::CreateGPUResources() {
-    const auto& texture_storage = m_ResourceManager.GetStorage<resource::Texture>();
-    for (const auto& texture : texture_storage) {
-        this->m_GPUResourceManager.CreateTexture(texture);
-    }
-}
