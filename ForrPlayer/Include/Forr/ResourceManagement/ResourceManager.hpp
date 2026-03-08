@@ -21,13 +21,12 @@ namespace fe {
         ResourceManager()  = default;
         ~ResourceManager() = default;
 
+        void LoadResource(const std::filesystem::path& resource_relative_path); // temp
+
         void SetupSceneResources(const std::vector<std::filesystem::path>& resource_relative_paths);
 
         template <typename T>
         FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) { return m_Storage.GetResource(ptr); }
-
-        template<typename T>
-        FORR_NODISCARD const std::vector<T>& GetStorage() const noexcept { return m_Storage.GetStorage<T>(); }
 
     private:
 
