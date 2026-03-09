@@ -23,7 +23,8 @@ namespace fe {
         void StoreResource(const std::filesystem::path& resource_relative_path);
 
     private:
-        void StoreTexture(const std::filesystem::path& resource_full_path);
+        void storeTexture(const std::filesystem::path& resource_full_path);
+        void storeModel(const std::filesystem::path& resource_full_path);
 
     private:
         ResourceStorage& m_Storage;
