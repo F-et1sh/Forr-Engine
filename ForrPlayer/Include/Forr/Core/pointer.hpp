@@ -67,7 +67,29 @@ namespace fe {
         typed_pointer_storage()  = default;
         ~typed_pointer_storage() = default;
 
-        FORR_NODISCARD pointer_t create(_Ty value) {
+        FORR_NODISCARD pointer_t create(const _Ty& value) {
+            //std::unique_lock lock(m_mutex);
+
+            handle_t index{};
+            if (!m_free_list.empty()) {
+                index = m_free_list.back();
+                m_free_list.pop_back();
+
+                m_slots_object[index] = value;
+                m_slots_alive[index]  = true;
+                m_slots_generation[index]++;
+            }
+            else {
+                index = static_cast<handle_t>(m_slots_generation.size());
+
+                m_slots_object.emplace_back(value);
+                m_slots_generation.emplace_back(0);
+                m_slots_alive.emplace_back(true);
+            }
+            return pointer_t(index, m_slots_generation[index]);
+        }
+
+        FORR_NODISCARD pointer_t create(_Ty&& value) {
             //std::unique_lock lock(m_mutex);
 
             handle_t index{};

@@ -374,8 +374,10 @@ void fe::GLTFImporter::loadTextures(const tinygltf::Model& model, resource::Mode
     this_model.textures.resize(model.textures.size());
     for (size_t i = 0; i < model.textures.size(); i++) {
         const tinygltf::Texture& texture = model.textures[i];
-        const tinygltf::Image&   image   = model.images[texture.source];
-        tinygltf::Sampler        sampler{};
+
+        const tinygltf::Image& image = model.images[texture.source];
+        tinygltf::Sampler      sampler{};
+        TextureColorSpace      texture_color_space = TextureColorSpace::LINEAR;
 
         if (texture.sampler >= 0) {
             sampler = model.samplers[texture.sampler];
@@ -387,27 +389,25 @@ void fe::GLTFImporter::loadTextures(const tinygltf::Model& model, resource::Mode
             sampler.wrapT     = TINYGLTF_TEXTURE_WRAP_REPEAT;
         }
 
-        int               gltf_texture_index  = static_cast<int>(i);
-        TextureColorSpace texture_color_space = TextureColorSpace::LINEAR;
+        int gltf_texture_index = static_cast<int>(i);
 
         for (auto& material_ptr : this_model.materials) {
             //resource::Material material = material_ptr; // TODO : this must be invoked with ResourceStorage&
-            if (material.pbr_metallic_roughness.base_color_texture.index == gltf_texture_index ||
-                material.emissive_texture.index == gltf_texture_index) {
-
-                texture_color_space = TextureColorSpace::SRGB;
-            }
+            //if (material.pbr_metallic_roughness.base_color_texture.index == gltf_texture_index ||
+            //    material.emissive_texture.index == gltf_texture_index) {
+            //
+            //    texture_color_space = TextureColorSpace::SRGB;
+            //}
         }
 
         auto& this_texture = this_model.textures[i];
-        this_texture = storage.CreateResource<resource::Texture>();
-        this_texture.Create(image, sampler, texture_color_space);
+        this_texture       = GLTFImporter::createTexture(image, sampler, texture_color_space, storage);
     }
 }
 
 void fe::GLTFImporter::loadMaterials(const tinygltf::Model& model, resource::Model& this_model) {
     this_model.materials.resize(model.materials.size());
-    for (size_t i = 0; i < model.materials.size(); i++) {
+    /*for (size_t i = 0; i < model.materials.size(); i++) {
         const tinygltf::Material& material      = model.materials[i];
         auto&                     this_material = this_model.materials[i];
 
@@ -447,7 +447,7 @@ void fe::GLTFImporter::loadMaterials(const tinygltf::Model& model, resource::Mod
 
         this_material.emissive_texture.index         = material.emissiveTexture.index;
         this_material.emissive_texture.texture_coord = material.emissiveTexture.texCoord;
-    }
+    }*/
 }
 
 void fe::GLTFImporter::loadAnimations(const tinygltf::Model& model, resource::Model& this_model) {
@@ -499,6 +499,16 @@ void fe::GLTFImporter::loadAnimations(const tinygltf::Model& model, resource::Mo
             }
         }
     }
+}
+
+fe::pointer<fe::resource::Texture> fe::GLTFImporter::createTexture(const tinygltf::Image&   image,
+                                                                   const tinygltf::Sampler& sampler,
+                                                                   TextureColorSpace        texture_color_space,
+                                                                   ResourceStorage&         storage) {
+    fe::resource::Texture texture{};
+    //texture
+    auto ptr = storage.CreateResource<fe::resource::Texture>(std::move(texture));
+    return ptr;
 }
 
 void fe::GLTFImporter::readVector(glm::vec2& dst, const std::vector<double>& src) {

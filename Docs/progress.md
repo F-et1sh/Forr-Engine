@@ -31,6 +31,7 @@
     StoreResource() -> ImportResource()
     GLTFImpoter added ( in progress )
     ResourceStorage::CreateResource() added
+    typed_pointer_storage::create() improved
 
 ### Problem
     -
