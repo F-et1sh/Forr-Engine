@@ -24,6 +24,12 @@ void fe::ResourceImporter::StoreResource(const std::filesystem::path& resource_r
     if (extension == ".png") { // temp
         this->StoreTexture(resource_full_path);
     }
+    else if (extension == ".gltf") { // temp
+        //this->StoreTexture(resource_full_path);
+    }
+    else if (extension == ".glb") { // temp
+        //this->StoreTexture(resource_full_path);
+    }
 }
 
 void fe::ResourceImporter::StoreTexture(const std::filesystem::path& resource_full_path) {

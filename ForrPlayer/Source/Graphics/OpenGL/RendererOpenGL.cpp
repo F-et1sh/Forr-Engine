@@ -82,26 +82,8 @@ void fe::RendererOpenGL::SwapBuffers() {
 void fe::RendererOpenGL::Draw(fe::pointer<resource::Model> ptr) {
     m_Shader.bind();
 
-    {
-        m_Camera.translate(glm::vec3(0, 0, -0.025));
-        m_Camera.rotate(glm::vec3(0, 1, 0));
-
-        ShaderData shader_data{};
-        shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
-        shader_data.view_matrix       = m_Camera.getViewMatrix();
-        shader_data.model_matrix      = glm::mat4(1.0f);
-
-        glNamedBufferSubData(ubo, 0, sizeof(shader_data), &shader_data);
-    }
-
-    /*for (size_t i = 0; i < 8; i++) {
-        auto& mesh = m_OpenGLResourceManager.getMesh(i);
-        for (const auto& primitive : mesh.primitives) {
-            primitive.vao.Bind();
-            glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, 0);
-            primitive.vao.Unbind();
-        }
-    }*/
+    auto model = m_ResourceManager.GetResource(ptr);
+    m_OpenGLResourceManager.CreateModel(*model);
 
     m_Shader.unbind();
 }
@@ -113,7 +95,7 @@ void fe::RendererOpenGL::InitializeGPUResources() {
         fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
     });
 
-    m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material& material) {
+    m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material& material) { // TODO : provide material
         //m_OpenGLResourceManager.CreateMaterial(material);
 
         //fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);

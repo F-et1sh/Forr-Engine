@@ -18,7 +18,7 @@ void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
         m_Renderer->ClearScreen(0.5f, 0.5f, 0.5f, 1.0f);
 
-        //m_Renderer->Draw(); // temp
+        m_Renderer->Draw(m_Model); // temp
 
         m_Renderer->SwapBuffers();
 
@@ -39,7 +39,7 @@ void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
     paths.emplace_back("Tatarstan-Flag.png");
 
     m_ResourceManager = std::make_unique<ResourceManager>();
-    m_ResourceManager->SetupSceneResources(paths); // TODO : Rewrite this
+    m_ResourceManager->SetupSceneResources(paths); // TODO : rewrite this
 }
 
 void fe::Application::InitializePrimaryWindow(const ApplicationDesc& desc) {
