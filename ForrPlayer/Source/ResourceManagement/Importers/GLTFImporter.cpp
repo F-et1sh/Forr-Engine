@@ -13,6 +13,59 @@
 #include "pch.hpp"
 #include "GLTFImporter.hpp"
 
+struct MikkUserData {
+    std::vector<glm::vec3>* positions;
+    std::vector<glm::vec3>* normals;
+    std::vector<glm::vec2>* texture_coords;
+    std::vector<glm::vec4>* tangents; // output
+    std::vector<uint32_t>*  indices;
+};
+
+int getNumberFaces(const SMikkTSpaceContext* p_context) {
+    auto* data = (MikkUserData*) p_context->m_pUserData;
+    return data->indices->size() / 3;
+}
+
+int getNumberVerticesOfFace(const SMikkTSpaceContext* /*unused*/, int /*unused*/) {
+    return 3;
+}
+
+void getPosition(const SMikkTSpaceContext* p_context, float position[3], int face, int vertex) {
+    auto*    data  = (MikkUserData*) p_context->m_pUserData;
+    uint32_t index = (*data->indices)[(face * 3) + vertex];
+    auto&    p     = (*data->positions)[index];
+    position[0]    = p.x;
+    position[1]    = p.y;
+    position[2]    = p.z;
+}
+
+void getNormal(const SMikkTSpaceContext* p_context, float normal[3], int face, int vertex) {
+    auto*    data  = (MikkUserData*) p_context->m_pUserData;
+    uint32_t index = (*data->indices)[(face * 3) + vertex];
+    auto&    p     = (*data->normals)[index];
+    normal[0]      = p.x;
+    normal[1]      = p.y;
+    normal[2]      = p.z;
+}
+
+void getTextureCoord(const SMikkTSpaceContext* p_context, float texture_coord[2], int face, int vertex) {
+    auto*    data    = (MikkUserData*) p_context->m_pUserData;
+    uint32_t index   = (*data->indices)[(face * 3) + vertex];
+    auto&    p       = (*data->texture_coords)[index];
+    texture_coord[0] = p.x;
+    texture_coord[1] = p.y;
+}
+
+void setTSpaceBasic(const SMikkTSpaceContext* p_context,
+                    const float               tangent[3],
+                    const float               sign,
+                    const int                 face,
+                    const int                 vertex) {
+    auto*    data            = (MikkUserData*) p_context->m_pUserData;
+    uint32_t index           = (*data->indices)[(face * 3) + vertex];
+    (*data->tangents)[index] = glm::vec4(tangent[0], tangent[1], tangent[2], sign);
+}
+
 void fe::GLTFImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
     tinygltf::Model    model{};
     tinygltf::TinyGLTF loader{};
@@ -53,10 +106,10 @@ void fe::GLTFImporter::Import(ResourceStorage& storage, const std::filesystem::p
 }
 
 void fe::GLTFImporter::loadNodes(const tinygltf::Model& model, resource::Model& this_model) {
-    m_nodes.resize(model.nodes.size());
+    this_model.nodes.resize(model.nodes.size());
     for (size_t i = 0; i < model.nodes.size(); i++) {
         const tinygltf::Node& node      = model.nodes[i];
-        auto&                 this_node = m_nodes[i];
+        auto&                 this_node = this_model.nodes[i];
 
         this_node.camera   = node.camera;
         this_node.name     = node.name;
@@ -78,7 +131,7 @@ void fe::GLTFImporter::loadNodes(const tinygltf::Model& model, resource::Model& 
         else {
             this_node.local_matrix = glm::translate(glm::mat4(1.0f), this_node.translation) * glm::mat4_cast(this_node.rotation) * glm::scale(glm::mat4(1.0f), this_node.scale);
         }
-        this_node.weights = node.weights;
+        this_node.weights.assign_range(node.weights);
     }
 }
 
@@ -89,20 +142,20 @@ void fe::GLTFImporter::loadSceneRoots(const tinygltf::Model& model, resource::Mo
         scene_index = 0;
     }
     if (scene_index >= 0) {
-        m_sceneRoots = model.scenes[scene_index].nodes;
+        this_model.scene_roots = model.scenes[scene_index].nodes;
     }
 }
 
 void fe::GLTFImporter::loadSkins(const tinygltf::Model& model, resource::Model& this_model) {
-    m_skins.resize(model.skins.size());
+    this_model.skins.resize(model.skins.size());
     for (size_t i = 0; i < model.skins.size(); i++) {
         const tinygltf::Skin& skin      = model.skins[i];
-        auto&                 this_skin = m_skins[i];
+        auto&                 this_skin = this_model.skins[i];
 
         this_skin.name = skin.name;
 
         size_t accessor_index = skin.inverseBindMatrices;
-        this->readAttribute(model, accessor_index, this_skin.inverse_bind_matrices);
+        GLTFImporter::readAttribute(model, accessor_index, this_skin.inverse_bind_matrices);
 
         this_skin.skeleton = skin.skeleton;
         this_skin.joints   = skin.joints;
@@ -111,14 +164,14 @@ void fe::GLTFImporter::loadSkins(const tinygltf::Model& model, resource::Model& 
 }
 
 void fe::GLTFImporter::loadMeshes(const tinygltf::Model& model, resource::Model& this_model) {
-    m_meshes.resize(model.meshes.size());
+    this_model.meshes.resize(model.meshes.size());
     for (size_t i = 0; i < model.meshes.size(); i++) {
         const tinygltf::Mesh& mesh      = model.meshes[i];
-        auto&                 this_mesh = m_meshes[i];
+        auto&                 this_mesh = this_model.meshes[i];
 
         this_mesh.name = mesh.name;
-        this->loadPrimitives(model, this_mesh.primitives, mesh.primitives);
-        this_mesh.weights = mesh.weights;
+        GLTFImporter::loadPrimitives(model, this_model, this_mesh.primitives, mesh.primitives);
+        this_mesh.weights.assign_range(mesh.weights);
     }
 }
 
@@ -128,36 +181,25 @@ void fe::GLTFImporter::loadPrimitives(const tinygltf::Model& model, resource::Mo
         const tinygltf::Primitive& primitive      = primitives[i];
         auto&                      this_primitive = this_primitives[i];
 
-        loadIndices(model, this_primitive, this_primitive.indices, primitive); // indices go first
-        loadVertices(model, this_primitive.vertices, this_primitive.indices, primitive);
-        this_primitive.material = primitive.material;
+        GLTFImporter::loadIndices(model, this_model, this_primitive, this_primitive.indices, primitive); // indices go first
+        GLTFImporter::loadVertices(model, this_model, this_primitive.vertices, this_primitive.indices, primitive);
 
+        // TODO : support materials
+        //this_primitive.material = primitive.material;
+
+        // clang-format off
         switch (primitive.mode) {
-            case TINYGLTF_MODE_POINTS:
-                this_primitive.mode = RenderMode::POINTS;
-                break;
-            case TINYGLTF_MODE_LINE:
-                this_primitive.mode = RenderMode::LINES;
-                break;
-            case TINYGLTF_MODE_LINE_LOOP:
-                this_primitive.mode = RenderMode::LINE_LOOP;
-                break;
-            case TINYGLTF_MODE_LINE_STRIP:
-                this_primitive.mode = RenderMode::LINE_STRIP;
-                break;
-            case TINYGLTF_MODE_TRIANGLES:
-                this_primitive.mode = RenderMode::TRIANGLES;
-                break;
-            case TINYGLTF_MODE_TRIANGLE_STRIP:
-                this_primitive.mode = RenderMode::TRIANGLE_STRIP;
-                break;
-            case TINYGLTF_MODE_TRIANGLE_FAN:
-                this_primitive.mode = RenderMode::TRIANGLE_FAN;
-                break;
+            case TINYGLTF_MODE_POINTS        : this_primitive.render_mode = RenderMode::POINTS        ; break;
+            case TINYGLTF_MODE_LINE          : this_primitive.render_mode = RenderMode::LINES         ; break;
+            case TINYGLTF_MODE_LINE_LOOP     : this_primitive.render_mode = RenderMode::LINE_LOOP     ; break;
+            case TINYGLTF_MODE_LINE_STRIP    : this_primitive.render_mode = RenderMode::LINE_STRIP    ; break;
+            case TINYGLTF_MODE_TRIANGLES     : this_primitive.render_mode = RenderMode::TRIANGLES     ; break;
+            case TINYGLTF_MODE_TRIANGLE_STRIP: this_primitive.render_mode = RenderMode::TRIANGLE_STRIP; break;
+            case TINYGLTF_MODE_TRIANGLE_FAN  : this_primitive.render_mode = RenderMode::TRIANGLE_FAN  ; break;
             default:
-                assert(false);
-                break;
+                fe::logging::warning("Unsupported render mode %i. Using TRIANGLES as default", primitive.mode);
         }
+        // clang-format on
     }
 }
 
@@ -169,7 +211,7 @@ void fe::GLTFImporter::loadVertices(const tinygltf::Model& model, resource::Mode
             data.clear();
             return;
         }
-        this->readAttribute(model, it->second, data);
+        GLTFImporter::readAttribute(model, it->second, data);
     };
 
     std::vector<glm::vec3> positions{};
@@ -230,46 +272,50 @@ void fe::GLTFImporter::loadVertices(const tinygltf::Model& model, resource::Mode
                 .indices        = &indices_u32
             };
 
-            SMikkTSpaceInterface iface   = {};
-            iface.m_getNumFaces          = getNumberFaces;
-            iface.m_getNumVerticesOfFace = getNumberVerticesOfFace;
-            iface.m_getPosition          = getPosition;
-            iface.m_getNormal            = getNormal;
-            iface.m_getTexCoord          = getTextureCoord;
-            iface.m_setTSpaceBasic       = setTSpaceBasic;
+            SMikkTSpaceInterface iface            = {};
+            iface.this_model.getNumFaces          = getNumberFaces;
+            iface.this_model.getNumVerticesOfFace = getNumberVerticesOfFace;
+            iface.this_model.getPosition          = getPosition;
+            iface.this_model.getNormal            = getNormal;
+            iface.this_model.getTexCoord          = getTextureCoord;
+            iface.this_model.setTSpaceBasic       = setTSpaceBasic;
 
-            SMikkTSpaceContext context = {};
-            context.m_pInterface       = &iface;
-            context.m_pUserData        = &userdata;
+            SMikkTSpaceContext context    = {};
+            context.this_model.pInterface = &iface;
+            context.this_model.pUserData  = &userdata;
 
             genTangSpaceDefault(&context);
         }
     }
 
     for (size_t i = 0; i < vertices_count; i++) {
-        auto& v    = this_vertices[i];
-        v.position = positions[i];
-        if (i < normals.size()) {
-            v.normal = normals[i];
-        }
-        if (i < tangents.size()) {
-            v.tangent = tangents[i];
-        }
-        if (i < texture_coords.size()) {
-            v.texture_coord = texture_coords[i];
-        }
-        if (i < joints.size()) {
-            v.joints = joints[i];
-        }
-        if (i < weights.size()) {
-            v.weights = weights[i];
-        }
+        auto& vertex    = this_vertices[i];
+        vertex.position = positions[i];
+
+        // TODO : support this
+
+        //if (i < normals.size()) {
+        //    v.normal = normals[i];
+        //}
+        //if (i < tangents.size()) {
+        //    v.tangent = tangents[i];
+        //}
+        //if (i < texture_coords.size()) {
+        //    v.texture_coord = texture_coords[i];
+        //}
+        //if (i < joints.size()) {
+        //    v.joints = joints[i];
+        //}
+        //if (i < weights.size()) {
+        //    v.weights = weights[i];
+        //}
     }
 }
 
 void fe::GLTFImporter::loadIndices(const tinygltf::Model& model, resource::Model& this_model, Primitive& this_primitive, Indices& this_indices, const tinygltf::Primitive& primitive) {
     if (primitive.indices < 0) {
-        throw std::runtime_error("Primitive has no indices");
+        fe::logging::error("Primitive has no indices");
+        return;
     }
 
     const tinygltf::Accessor&   accessor    = model.accessors[primitive.indices];
@@ -279,20 +325,20 @@ void fe::GLTFImporter::loadIndices(const tinygltf::Model& model, resource::Model
 
     switch (accessor.componentType) {
         case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE: {
-            this_indices = std::vector<uint8_t>{};
-            auto& vec    = std::get<std::vector<uint8_t>>(this_indices);
+            std::vector<uint8_t> vec{};
             vec.resize(accessor.count);
             memcpy(vec.data(), data_ptr, accessor.count * sizeof(uint8_t));
 
-            this_primitive.index_type   = RenderIndexType::UNSIGNED_BYTE;
+            this_indices.assign_range(vec); // TODO : check is this work or no
+
+            this_primitive.index_type   = RenderIndexType::UNSIGNED_INT;
             this_primitive.index_count  = accessor.count;
             this_primitive.index_offset = 0;
 
             break;
         }
         case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: {
-            this_indices = std::vector<uint16_t>{};
-            auto& vec    = std::get<std::vector<uint16_t>>(this_indices);
+            std::vector<uint16_t> vec{};
             vec.resize(accessor.count);
             if (buffer_view.byteStride == 0 || buffer_view.byteStride == sizeof(uint16_t)) { // tightly packed
                 memcpy(vec.data(), data_ptr, accessor.count * sizeof(uint16_t));
@@ -303,22 +349,22 @@ void fe::GLTFImporter::loadIndices(const tinygltf::Model& model, resource::Model
                 }
             }
 
-            this_primitive.index_type   = RenderIndexType::UNSIGNED_SHORT;
+            this_indices.assign_range(vec); // TODO : check is this work or no
+
+            this_primitive.index_type   = RenderIndexType::UNSIGNED_INT;
             this_primitive.index_count  = accessor.count;
             this_primitive.index_offset = 0;
 
             break;
         }
         case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT: {
-            this_indices = std::vector<uint32_t>{};
-            auto& vec    = std::get<std::vector<uint32_t>>(this_indices);
-            vec.resize(accessor.count);
+            this_indices.resize(accessor.count);
             if (buffer_view.byteStride == 0 || buffer_view.byteStride == sizeof(uint32_t)) { // tightly packed
-                memcpy(vec.data(), data_ptr, accessor.count * sizeof(uint32_t));
+                memcpy(this_indices.data(), data_ptr, accessor.count * sizeof(uint32_t));
             }
             else {
                 for (size_t i = 0; i < accessor.count; i++) {
-                    vec[i] = *reinterpret_cast<const uint32_t*>(data_ptr + (i * buffer_view.byteStride));
+                    this_indices[i] = *reinterpret_cast<const uint32_t*>(data_ptr + (i * buffer_view.byteStride));
                 }
             }
 
@@ -329,13 +375,12 @@ void fe::GLTFImporter::loadIndices(const tinygltf::Model& model, resource::Model
             break;
         }
         default:
-            throw std::runtime_error("Unsupported index component type");
-            break;
+            fe::logging::error("Unsupported index accessor's component type %i", accessor.componentType);
     }
 }
 
 void fe::GLTFImporter::loadTextures(const tinygltf::Model& model, resource::Model& this_model) {
-    m_textures.resize(model.textures.size());
+    this_model.textures.resize(model.textures.size());
     for (size_t i = 0; i < model.textures.size(); i++) {
         const tinygltf::Texture& texture = model.textures[i];
         const tinygltf::Image&   image   = model.images[texture.source];
@@ -351,27 +396,28 @@ void fe::GLTFImporter::loadTextures(const tinygltf::Model& model, resource::Mode
             sampler.wrapT     = TINYGLTF_TEXTURE_WRAP_REPEAT;
         }
 
-        int                        gltf_texture_index  = static_cast<int>(i);
-        Texture::TextureColorSpace texture_color_space = Texture::TextureColorSpace::LINEAR;
+        int               gltf_texture_index  = static_cast<int>(i);
+        TextureColorSpace texture_color_space = TextureColorSpace::LINEAR;
 
-        for (auto& material : m_materials) {
+        for (auto& material_ptr : this_model.materials) {
+            //resource::Material material = material_ptr; // TODO : this must be invoked with ResourceStorage&
             if (material.pbr_metallic_roughness.base_color_texture.index == gltf_texture_index ||
                 material.emissive_texture.index == gltf_texture_index) {
 
-                texture_color_space = Texture::TextureColorSpace::SRGB;
+                texture_color_space = TextureColorSpace::SRGB;
             }
         }
 
-        auto& this_texture = m_textures[i];
+        auto& this_texture = this_model.textures[i];
         this_texture.Create(image, sampler, texture_color_space);
     }
 }
 
 void fe::GLTFImporter::loadMaterials(const tinygltf::Model& model, resource::Model& this_model) {
-    m_materials.resize(model.materials.size());
+    this_model.materials.resize(model.materials.size());
     for (size_t i = 0; i < model.materials.size(); i++) {
         const tinygltf::Material& material      = model.materials[i];
-        auto&                     this_material = m_materials[i];
+        auto&                     this_material = this_model.materials[i];
 
         this_material.name = material.name;
         fe::GLTFImporter::readVector(this_material.emissive_factor, material.emissiveFactor);
@@ -413,10 +459,10 @@ void fe::GLTFImporter::loadMaterials(const tinygltf::Model& model, resource::Mod
 }
 
 void fe::GLTFImporter::loadAnimations(const tinygltf::Model& model, resource::Model& this_model) {
-    m_animations.resize(model.animations.size());
+    this_model.animations.resize(model.animations.size());
     for (size_t i = 0; i < model.animations.size(); i++) {
         const tinygltf::Animation& animation      = model.animations[i];
-        auto&                      this_animation = m_animations[i];
+        auto&                      this_animation = this_model.animations[i];
 
         this_animation.channels.resize(animation.channels.size());
 
@@ -426,7 +472,19 @@ void fe::GLTFImporter::loadAnimations(const tinygltf::Model& model, resource::Mo
 
             this_channel.sampler     = channel.sampler;
             this_channel.target_node = channel.target_node;
-            this_channel.target_path = channel.target_path;
+
+            if (channel.target_path == "translation") {
+                this_channel.target_path = AnimationChannel::TargetPath::TRANSLATION;
+            }
+            else if (channel.target_path == "rotation") {
+                this_channel.target_path = AnimationChannel::TargetPath::ROTATION;
+            }
+            else if (channel.target_path == "scale") {
+                this_channel.target_path = AnimationChannel::TargetPath::SCALE;
+            }
+            else if (channel.target_path == "weights") {
+                this_channel.target_path = AnimationChannel::TargetPath::WEIGHTS;
+            }
         }
 
         this_animation.samplers.resize(animation.samplers.size());
@@ -499,7 +557,7 @@ FORR_NODISCARD float fe::GLTFImporter::readComponentAsFloat(const uint8_t* data,
     }
 }
 
-void fe::GLTFImporter::readAccessorVec4(const tinygltf::Model& model, resource::Model& this_model, int accessor_index, std::vector<glm::vec4>& out) {
+void fe::GLTFImporter::readAccessorVec4(const tinygltf::Model& model, int accessor_index, std::vector<glm::vec4>& out) {
     const auto& accessor    = model.accessors[accessor_index];
     const auto& buffer_view = model.bufferViews[accessor.bufferView];
     const auto& buffer      = model.buffers[buffer_view.buffer];
@@ -557,7 +615,7 @@ void fe::GLTFImporter::readAccessorVec4(const tinygltf::Model& model, resource::
     }
 }
 
-void fe::GLTFImporter::readAccessorFloat(const tinygltf::Model& model, resource::Model& this_model, int accessor_index, std::vector<float>& out) {
+void fe::GLTFImporter::readAccessorFloat(const tinygltf::Model& model, int accessor_index, std::vector<float>& out) {
     std::vector<glm::vec4> temp{};
     readAccessorVec4(model, accessor_index, temp);
 
