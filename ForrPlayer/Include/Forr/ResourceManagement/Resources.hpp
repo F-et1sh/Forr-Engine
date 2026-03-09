@@ -47,6 +47,7 @@ namespace fe::resource {
         Texture()  = default;
         ~Texture() = default;
 
+        // is this really should be movable only ?
         FORR_CLASS_NONCOPYABLE(Texture)
         FORR_CLASS_MOVABLE(Texture)
     };
@@ -107,13 +108,13 @@ namespace fe::resource {
     };
 
     struct Model {
-        std::vector<Node>      nodes{};
-        std::vector<int>       scene_roots{};
-        std::vector<Skin>      skins{};
-        std::vector<Mesh>      meshes{};
-        std::vector<Material>  materials{};
-        std::vector<Texture>   textures{};
-        std::vector<Animation> animations{};
+        //std::vector<Node>      nodes{};
+        //std::vector<int>       scene_roots{};
+        //std::vector<Skin>      skins{};
+        std::vector<Mesh>                  meshes{};
+        //std::vector<fe::pointer<Material>> materials{};
+        std::vector<fe::pointer<Texture>>  textures{};
+        //std::vector<Animation> animations{};
 
         Model()  = default;
         ~Model() = default;
