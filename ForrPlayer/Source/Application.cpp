@@ -8,15 +8,13 @@ fe::Application::Application(const ApplicationDesc& desc) {
     this->InitializeResourceManager(desc);
     this->InitializePrimaryWindow(desc);
     this->InitializeRenderer(desc);
-
-    m_Triangle = m_Renderer->CreateTriangle(); // temp
 }
 
 void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
         m_Renderer->ClearScreen(0.5f, 0.5f, 0.5f, 1.0f);
 
-        m_Renderer->Draw(m_Triangle); // temp
+        //m_Renderer->Draw(m_Triangle); // temp
 
         m_Renderer->SwapBuffers();
 

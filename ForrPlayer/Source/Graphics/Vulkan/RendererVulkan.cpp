@@ -53,9 +53,9 @@ void fe::RendererVulkan::ClearScreen(float red, float green, float blue, float a
 void fe::RendererVulkan::SwapBuffers() {
 }
 
-void fe::RendererVulkan::Draw(MeshID index) {
-    auto& mesh = this->m_VulkanResourceManager.getMesh(index);
-    this->VKDraw(mesh.vertex_buffer, mesh.index_buffer);
+void fe::RendererVulkan::Draw(fe::pointer<resource::Model> ptr) {
+    //auto& mesh = this->m_VulkanResourceManager.getMesh(ptr);
+    //this->VKDraw(mesh.vertex_buffer, mesh.index_buffer);
 }
 
 void fe::RendererVulkan::configureCamera() {

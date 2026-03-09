@@ -13,39 +13,6 @@
 #include "pch.hpp"
 #include "OpenGLResourceManager.hpp"
 
-fe::MeshID fe::OpenGLResourceManager::CreateTriangle() {
-    std::filesystem::path path = PATH.getModelsPath() / "StatueOfLiberty" / "statue_of_liberty.glb";
-    /*std::vector<Vertex>   triangle_vertices{
-        Vertex{ glm::vec3{ -0.5f, -0.5f, 0.0f } },
-        Vertex{ glm::vec3{ 0.0f, 0.5f, 0.0f } },
-        Vertex{ glm::vec3{ 0.5f, -0.5f, 0.0f } }
-    };
-
-    std::vector<uint8_t> triangle_indices{
-        0, 1, 2
-    };
-
-    auto& mesh = m_Meshes.emplace_back(triangle_vertices, triangle_indices);
-
-    mesh.vao.bind();
-
-    mesh.vbo.bind();
-
-    constexpr GLsizei stride = sizeof(Vertex);
-
-    mesh.vao.LinkAttrib(mesh.vbo, 0, 3, GL_FLOAT, stride, (void*) offsetof(Vertex, position));
-
-    mesh.ebo.bind();
-
-    mesh.vbo.unbind();
-    mesh.vao.unbind();
-    mesh.ebo.unbind();
-
-    return m_Meshes.size() - 1;*/
-
-    return 0;
-}
-
 void fe::OpenGLResourceManager::CreateTexture(const resource::Texture& texture) {
     OpenGLTexture opengl_texture{};
 

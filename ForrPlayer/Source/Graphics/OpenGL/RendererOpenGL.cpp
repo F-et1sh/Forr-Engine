@@ -79,7 +79,7 @@ void fe::RendererOpenGL::SwapBuffers() {
     glfwSwapBuffers(m_GLFWwindow);
 }
 
-void fe::RendererOpenGL::Draw(MeshID index) {
+void fe::RendererOpenGL::Draw(fe::pointer<resource::Model> ptr) {
     m_Shader.bind();
 
     {

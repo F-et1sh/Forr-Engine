@@ -43,8 +43,7 @@ namespace fe {
         virtual void ClearScreen(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) = 0;
         virtual void SwapBuffers()                                                                            = 0;
 
-        virtual void   Draw(MeshID index) = 0;
-        virtual MeshID CreateTriangle()   = 0; // TODO : remove this
+        virtual void Draw(fe::pointer<resource::Model> ptr) = 0;
 
         virtual void InitializeGPUResources() = 0;
     };

@@ -21,9 +21,6 @@ namespace fe {
         VulkanResourceManager(VulkanContext& context) : m_Context(context) {}
         ~VulkanResourceManager() = default;
 
-        MeshID                                       CreateTriangle();
-        FORR_FORCE_INLINE FORR_NODISCARD VulkanMesh& getMesh(MeshID index) { return m_Meshes[index]; }
-
     private:
         VulkanContext& m_Context;
 
