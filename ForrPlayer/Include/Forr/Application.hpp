@@ -53,7 +53,5 @@ namespace fe {
 
         size_t   m_PrimaryWindowID{};
         IWindow* m_PrimaryWindow{};
-
-        MeshID m_Triangle{}; // temp
     };
 } // namespace fe

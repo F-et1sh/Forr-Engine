@@ -28,8 +28,7 @@ namespace fe {
         void ClearScreen(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
         void SwapBuffers() override;
 
-        void                                    Draw(MeshID index) override;
-        FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return m_OpenGLResourceManager.CreateTriangle(); }
+        void Draw(fe::pointer<resource::Model> ptr) override;
 
         void InitializeGPUResources() override;
 

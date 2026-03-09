@@ -42,9 +42,8 @@ namespace fe {
         OpenGLResourceManager(ResourceManager& resource_manager) : m_ResourceManager(resource_manager) {}
         ~OpenGLResourceManager() = default;
 
-        MeshID CreateTriangle(); // TODO : this mustn't return MeshID
-        void   CreateTexture(const resource::Texture& texture);
-        void   CreateModel(const resource::Model& model);
+        void CreateTexture(const resource::Texture& texture);
+        void CreateModel(const resource::Model& model);
 
     private: // helper functions
         void createMesh(const Mesh& mesh);
