@@ -24,21 +24,20 @@ namespace fe {
 
         template <typename T>
         FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) {
-            auto& storage = this->get_storage<T>();
+            auto& storage = this->GetStorage<T>();
             assert(storage.is_valid(ptr)); // TODO : Add fallbacks somehow
             return storage.get(ptr);
         }
 
         template <typename T, typename Func>
         void RunForEach(Func&& func) {
-            auto& storage = this->get_storage<T>();
+            auto& storage = this->GetStorage<T>();
             storage.for_each(func);
         }
 
-    private:
         // unsafe helper function
         template <typename T>
-        fe::typed_pointer_storage<T>& get_storage() {
+        fe::typed_pointer_storage<T>& GetStorage() {
             if constexpr (std::is_same_v<T, fe::resource::Texture>)
                 return m_Textures;
             else if constexpr (std::is_same_v<T, fe::resource::Material>)

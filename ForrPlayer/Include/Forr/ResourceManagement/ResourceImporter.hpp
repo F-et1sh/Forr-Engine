@@ -3,7 +3,11 @@
     Forr Engine
 
     File : ResourceImporter.hpp
-    Role : imports resources and their metadata
+    Role : imports resources and their metadata.
+            Importer per library rule.
+            - GLTFImporter    -> .gltf, .glb
+            - TextureImporter -> .png, .jpg, .jpeg, etc
+            - SoundImporter   -> .wav, .ogg, etc
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -20,11 +24,7 @@ namespace fe {
         ~ResourceImporter() = default;
 
         // upload resource to the storage
-        void StoreResource(const std::filesystem::path& resource_relative_path);
-
-    private:
-        void storeTexture(const std::filesystem::path& resource_full_path);
-        void storeModel(const std::filesystem::path& resource_full_path);
+        void ImportResource(const std::filesystem::path& resource_relative_path);
 
     private:
         ResourceStorage& m_Storage;
