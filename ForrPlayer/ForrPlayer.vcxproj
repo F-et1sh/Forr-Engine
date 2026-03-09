@@ -123,6 +123,7 @@
     <ClInclude Include="Source\Graphics\Vulkan\VulkanSwapchain.hpp" />
     <ClInclude Include="Source\Platform\GLFW\PlatformSystemGLFW.hpp" />
     <ClInclude Include="Source\Platform\GLFW\WindowGLFW.hpp" />
+    <ClInclude Include="Source\ResourceManagement\Importers\TextureImporter.hpp" />
     <ClInclude Include="Source\Tools.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -161,11 +162,9 @@
     <ClCompile Include="Source\Platform\IPlatformSystem.cpp" />
     <ClCompile Include="Source\Platform\GLFW\PlatformSystemGLFW.cpp" />
     <ClCompile Include="Source\Platform\GLFW\WindowGLFW.cpp" />
+    <ClCompile Include="Source\ResourceManagement\Importers\TextureImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceManager.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Source\ResourceManagement\Importers\readme.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

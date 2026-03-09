@@ -35,6 +35,7 @@
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceStorage.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\Texture.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLTypes.hpp" />
+    <ClInclude Include="Source\ResourceManagement\Importers\TextureImporter.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -59,8 +60,6 @@
     <ClCompile Include="..\ThirdParty\stb\src\stb_image.cpp" />
     <ClCompile Include="..\ThirdParty\tinygltf\src\tiny_gltf.cpp" />
     <ClCompile Include="..\ThirdParty\stb\src\stb_image_write.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Source\ResourceManagement\Importers\readme.md" />
+    <ClCompile Include="Source\ResourceManagement\Importers\TextureImporter.cpp" />
   </ItemGroup>
 </Project>

@@ -27,6 +27,8 @@
     VertexBuffers.hpp/cpp are removed
     Model loading from CPU to GPU done I guess
     "TODO : Create MeshImporter" added
+    TextureImporter added
+    StoreResource() -> ImportResource()
 
 ### Problem
     -
