@@ -2,7 +2,7 @@
 
     Forr Engine
 
-    File : GPUResourceManager.cpp
+    File : OpenGLResourceManager.cpp
     Role : GPU Resource Manager ( for OpenGL )
 
     Copyright (C) 2026 Farrakh
@@ -11,7 +11,7 @@
 ===============================================*/
 
 #include "pch.hpp"
-#include "GPUResourceManager.hpp"
+#include "OpenGLResourceManager.hpp"
 
 fe::MeshID fe::GPUResourceManager::CreateTriangle() {
     std::filesystem::path path = PATH.getModelsPath() / "StatueOfLiberty" / "statue_of_liberty.glb";

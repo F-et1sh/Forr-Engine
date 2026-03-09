@@ -3,7 +3,8 @@
     Forr Engine
 
     File : VertexBuffers.hpp
-    Role : Vertex buffers OpenGL. VAO, VBO, EBO
+    Role : Vertex buffers OpenGL. VAO, VBO, EBO.
+        This is going to be removed
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.

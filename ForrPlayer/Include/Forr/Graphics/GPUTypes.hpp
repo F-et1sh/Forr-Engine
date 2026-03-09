@@ -140,7 +140,7 @@ namespace fe {
     };
 
     struct Node {
-        // TODO : I think there shouldn't be just int
+        // TODO : I think this shouldn't be just int
         int camera{ -1 };
         int skin{ -1 };
         int mesh{ -1 };

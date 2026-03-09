@@ -2,7 +2,7 @@
 
     Forr Engine
 
-    File : GPUResourceManager.hpp
+    File : OpenGLResourceManager.hpp
     Role : GPU Resource Manager ( for OpenGL )
 
     Copyright (C) 2026 Farrakh
@@ -119,5 +119,6 @@ namespace fe {
 
     private:
         std::vector<Mesh> m_Meshes;
+        //fe::typed_pointer_storage<Texture>
     };
 } // namespace fe

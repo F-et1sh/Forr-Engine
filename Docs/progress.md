@@ -3,7 +3,7 @@
 ## 09.03.2026
 ### Goal
     Create CPU primitive
-    Create GPU primitive
+    Create GPU primitive ( OpenGL )
     ...
     Make camera movable
 
@@ -16,6 +16,9 @@
     some fixes
     I have to include GLM to ForrGame
     it worked. Now there is a way to create GPU resources
+    GPUResourceManager -> OpenGLResourceManager
+    If the name in front of the word ( "OpenGL"ResourceManager ), when there is no interface ( no IResourceManager ),
+        otherwise, if the name in back of the word ( Renderer"OpenGL" ), when there is an interface ( IRenderer )
 
 ### Problem
     -
