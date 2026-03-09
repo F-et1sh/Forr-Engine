@@ -32,45 +32,4 @@ namespace fe {
 
     //    constexpr operator size_t() const noexcept { return id; }
     //};
-
-    enum class TextureColorSpace {
-        LINEAR,
-        SRGB
-    };
-
-    enum class TextureInternalFormat {
-        RGBA8,
-        RGB8,
-        RG8,
-        R8,
-        SRGB8_ALPHA8,
-        SRGB8
-    };
-
-    enum class TextureDataFormat {
-        RGBA,
-        RGB,
-        RG,
-        RED
-    };
-
-    enum class TextureMinFilter {
-        NEAREST,
-        LINEAR,
-        NEAREST_MIPMAP_NEAREST,
-        LINEAR_MIPMAP_NEAREST,
-        NEAREST_MIPMAP_LINEAR,
-        LINEAR_MIPMAP_LINEAR
-    };
-
-    enum class TextureMagFilter {
-        NEAREST,
-        LINEAR,
-    };
-
-    enum class TextureWrap {
-        CLAMP_TO_EDGE,
-        MIRRORED_REPEAT,
-        REPEAT
-    };
 } // namespace fe

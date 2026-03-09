@@ -34,7 +34,7 @@ void fe::OpenGLResourceManager::CreateTexture(const resource::Texture& texture) 
         case TextureMinFilter::NEAREST_MIPMAP_LINEAR: min_filter = GL_NEAREST_MIPMAP_LINEAR; break;
         case TextureMinFilter::LINEAR_MIPMAP_LINEAR: min_filter = GL_LINEAR_MIPMAP_LINEAR; break;
         default:
-            fe::logging::warning("Unknown min filter %i", texture.min_filter);
+            fe::logging::warning("Unified -> OpenGL. Unsupported min filter %i", texture.min_filter);
             break;
     }
 
@@ -42,7 +42,7 @@ void fe::OpenGLResourceManager::CreateTexture(const resource::Texture& texture) 
         case TextureMagFilter::NEAREST: mag_filter = GL_NEAREST; break;
         case TextureMagFilter::LINEAR: mag_filter = GL_LINEAR; break;
         default:
-            fe::logging::warning("Unknown mag filter %i", texture.mag_filter);
+            fe::logging::warning("Unified -> OpenGL. Unsupported mag filter %i", texture.mag_filter);
             break;
     }
 
@@ -51,7 +51,7 @@ void fe::OpenGLResourceManager::CreateTexture(const resource::Texture& texture) 
         case TextureWrap::MIRRORED_REPEAT: wrap_s = GL_MIRRORED_REPEAT; break;
         case TextureWrap::REPEAT: wrap_s = GL_REPEAT; break;
         default:
-            fe::logging::warning("Unknown wrap s %i", texture.wrap_s);
+            fe::logging::warning("Unified -> OpenGL. Unsupported wrap s %i", texture.wrap_s);
             break;
     }
 
@@ -60,7 +60,7 @@ void fe::OpenGLResourceManager::CreateTexture(const resource::Texture& texture) 
         case TextureWrap::MIRRORED_REPEAT: wrap_t = GL_MIRRORED_REPEAT; break;
         case TextureWrap::REPEAT: wrap_t = GL_REPEAT; break;
         default:
-            fe::logging::warning("Unknown wrap t %i", texture.wrap_t);
+            fe::logging::warning("Unified -> OpenGL. Unsupported wrap t %i", texture.wrap_t);
             break;
     }
 
@@ -72,7 +72,7 @@ void fe::OpenGLResourceManager::CreateTexture(const resource::Texture& texture) 
         case TextureInternalFormat::SRGB8_ALPHA8: internal_format = GL_SRGB8_ALPHA8; break;
         case TextureInternalFormat::SRGB8: internal_format = GL_SRGB8; break;
         default:
-            fe::logging::warning("Unknown internal format %i", texture.internal_format);
+            fe::logging::warning("Unified -> OpenGL. Unsupported internal format %i", texture.internal_format);
             break;
     }
 
@@ -82,7 +82,7 @@ void fe::OpenGLResourceManager::CreateTexture(const resource::Texture& texture) 
         case TextureDataFormat::RG: data_format = GL_RG; break;
         case TextureDataFormat::RED: data_format = GL_RED; break;
         default:
-            fe::logging::warning("Unknown data format %i", texture.data_format);
+            fe::logging::warning("Unified -> OpenGL. Unsupported data format %i", texture.data_format);
             break;
     }
     // clang-format on
@@ -169,7 +169,7 @@ void fe::OpenGLResourceManager::createPrimitive(const Primitive& primitive, Open
         case RenderMode::TRIANGLE_STRIP: opengl_primitive.render_mode = GL_TRIANGLE_STRIP; break;
         case RenderMode::TRIANGLE_FAN: opengl_primitive.render_mode = GL_TRIANGLE_FAN; break;
         default:
-            fe::logging::warning("Unknown render mode %i. Using GL_TRIANGLES as default", primitive.render_mode);
+            fe::logging::warning("Unified -> OpenGL. Unsupported render mode %i. Using GL_TRIANGLES as default", primitive.render_mode);
             opengl_primitive.render_mode = GL_TRIANGLES;
             break;
     }

@@ -199,7 +199,7 @@ void fe::GLTFImporter::loadPrimitives(const tinygltf::Model& model, resource::Mo
             case TINYGLTF_MODE_TRIANGLE_STRIP: this_primitive.render_mode = RenderMode::TRIANGLE_STRIP; break;
             case TINYGLTF_MODE_TRIANGLE_FAN  : this_primitive.render_mode = RenderMode::TRIANGLE_FAN  ; break;
             default:
-                fe::logging::warning("Unsupported render mode %i. Using TRIANGLES as default", primitive.mode);
+                fe::logging::warning("tinygltf -> Unified. Unsupported render mode %i. Using TRIANGLES as default", primitive.mode);
         }
         // clang-format on
     }
@@ -366,7 +366,7 @@ void fe::GLTFImporter::loadIndices(const tinygltf::Model& model, resource::Model
             break;
         }
         default:
-            fe::logging::error("Unsupported index accessor's component type %i", accessor.componentType);
+            fe::logging::error("tinygltf -> Unified. Unsupported index accessor's component type %i", accessor.componentType);
     }
 }
 
@@ -375,9 +375,9 @@ void fe::GLTFImporter::loadTextures(const tinygltf::Model& model, resource::Mode
     for (size_t i = 0; i < model.textures.size(); i++) {
         const tinygltf::Texture& texture = model.textures[i];
 
-        const tinygltf::Image& image = model.images[texture.source];
-        tinygltf::Sampler      sampler{};
-        TextureColorSpace      texture_color_space = TextureColorSpace::LINEAR;
+        const tinygltf::Image&        image = model.images[texture.source];
+        tinygltf::Sampler             sampler{};
+        resource::Texture::ColorSpace texture_color_space = resource::Texture::ColorSpace::LINEAR;
 
         if (texture.sampler >= 0) {
             sampler = model.samplers[texture.sampler];
@@ -501,13 +501,109 @@ void fe::GLTFImporter::loadAnimations(const tinygltf::Model& model, resource::Mo
     }
 }
 
-fe::pointer<fe::resource::Texture> fe::GLTFImporter::createTexture(const tinygltf::Image&   image,
-                                                                   const tinygltf::Sampler& sampler,
-                                                                   TextureColorSpace        texture_color_space,
-                                                                   ResourceStorage&         storage) {
-    fe::resource::Texture texture{};
-    //texture
-    auto ptr = storage.CreateResource<fe::resource::Texture>(std::move(texture));
+using namespace fe::resource;
+
+fe::pointer<Texture> fe::GLTFImporter::createTexture(const tinygltf::Image&   image,
+                                                     const tinygltf::Sampler& sampler,
+                                                     Texture::ColorSpace      texture_color_space,
+                                                     ResourceStorage&         storage) {
+    Texture texture{};
+
+    if (texture_color_space == Texture::ColorSpace::SRGB) {
+        if (image.component == 4) // number of color channels
+            texture.internal_format = Texture::InternalFormat::SRGB8_ALPHA8;
+        else
+            texture.internal_format = Texture::InternalFormat::SRGB8;
+    }
+    else {
+        // clang-format off
+        switch (image.component) { // number of color channels
+            case 4: texture.internal_format = Texture::InternalFormat::RGBA8; break;
+            case 3: texture.internal_format = Texture::InternalFormat::RGB8 ; break;
+            case 2: texture.internal_format = Texture::InternalFormat::RG8  ; break;
+            case 1: texture.internal_format = Texture::InternalFormat::R8   ; break;
+            default:
+                fe::logging::warning("tinygltf -> Unified. Unsupported components ( number of color channels ) %i for internal format. Using RGBA8 as default", image.component);
+                texture.internal_format = Texture::InternalFormat::RGBA8;
+        }
+        // clang-format on
+    }
+
+    // clang-format off
+    switch (image.component) { // number of color channels
+        case 4: texture.data_format = Texture::DataFormat::RGBA; break;
+        case 3: texture.data_format = Texture::DataFormat::RGB ; break;
+        case 2: texture.data_format = Texture::DataFormat::RG  ; break;
+        case 1: texture.data_format = Texture::DataFormat::RED ; break;
+        default:
+            fe::logging::warning("tinygltf -> Unified. Unsupported components ( number of color channels ) %i for data format. Using RGBA as default", image.component);
+            texture.data_format = Texture::DataFormat::RGBA;
+    }
+    // clang-format on
+
+    // clang-format off
+    switch (sampler.minFilter) {
+        case TINYGLTF_TEXTURE_FILTER_NEAREST               : texture.min_filter = Texture::MinFilter::NEAREST               ; break;
+        case TINYGLTF_TEXTURE_FILTER_LINEAR                : texture.min_filter = Texture::MinFilter::LINEAR                ; break;
+        case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST: texture.min_filter = Texture::MinFilter::NEAREST_MIPMAP_NEAREST; break;
+        case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST : texture.min_filter = Texture::MinFilter::LINEAR_MIPMAP_NEAREST ; break;
+        case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR : texture.min_filter = Texture::MinFilter::NEAREST_MIPMAP_LINEAR ; break;
+        case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR  : texture.min_filter = Texture::MinFilter::LINEAR_MIPMAP_LINEAR  ; break;
+        default:
+            texture.min_filter = Texture::MinFilter::LINEAR_MIPMAP_LINEAR;
+            fe::logging::warning("tinygltf -> Unified. Unsupported min filter %i. Using LINEAR_MIPMAP_LINEAR as default", sampler.minFilter);
+    }
+    // clang-format on
+
+    // clang-format off
+    switch (sampler.magFilter) {
+        case TINYGLTF_TEXTURE_FILTER_NEAREST: texture.mag_filter = Texture::MagFilter::NEAREST; break;
+        case TINYGLTF_TEXTURE_FILTER_LINEAR : texture.mag_filter = Texture::MagFilter::LINEAR ; break;
+        default:
+            texture.mag_filter = Texture::MagFilter::LINEAR;
+            fe::logging::warning("tinygltf -> Unified. Unsupported mag filter %i. Using LINEAR as default", sampler.magFilter);
+    }
+    // clang-format on
+
+    // clang-format off
+    switch (sampler.wrapS) {
+        case TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE  : texture.wrap_s = Texture::Wrap::CLAMP_TO_EDGE  ; break;
+        case TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT: texture.wrap_s = Texture::Wrap::MIRRORED_REPEAT; break;
+        case TINYGLTF_TEXTURE_WRAP_REPEAT         : texture.wrap_s = Texture::Wrap::REPEAT         ; break;
+        default:
+            texture.wrap_s = Texture::Wrap::REPEAT;
+            fe::logging::warning("tinygltf -> Unified. Unsupported wrap s %i. Using REPEAT as default", sampler.wrapS);
+    }
+
+    // clang-format off
+    switch (sampler.wrapT) {
+        case TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE  : texture.wrap_t = Texture::Wrap::CLAMP_TO_EDGE  ; break;
+        case TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT: texture.wrap_t = Texture::Wrap::MIRRORED_REPEAT; break;
+        case TINYGLTF_TEXTURE_WRAP_REPEAT         : texture.wrap_t = Texture::Wrap::REPEAT         ; break;
+        default:
+            texture.wrap_t = Texture::Wrap::REPEAT;
+            fe::logging::warning("tinygltf -> Unified. Unsupported wrap t %i. Using REPEAT as default", sampler.wrapT);
+    }
+    // clang-format on
+
+    texture.components = static_cast<uint8_t>(image.component);
+    texture.width      = image.width;
+    texture.height     = image.height;
+    texture.target     = Texture::Target::TEXTURE_2D; // TODO : for what this thing even needed ?
+
+    size_t buffer_size = image.width * image.height * image.component;
+    texture.bytes      = std::make_unique<unsigned char[]>(buffer_size);
+
+    if (!image.image.empty() && buffer_size == image.image.size()) {
+        std::copy(image.image.begin(), image.image.end(), texture.bytes.get());
+    }
+    else {
+        // TODO : change this to "error", when fallbacks will be ready
+        fe::logging::fatal("tinygltf -> Unified. Failed to create a texture\nURI : %s", image.uri.c_str());
+        return {}; // TODO : think about fallbacks
+    }
+
+    auto ptr = storage.CreateResource<Texture>(std::move(texture));
     return ptr;
 }
 
@@ -553,9 +649,8 @@ FORR_NODISCARD float fe::GLTFImporter::readComponentAsFloat(const uint8_t* data,
             return normalized ? glm::clamp((float) v / 127.0f, -1.0f, 1.0f) : (float) v;
         }
         default:
-            fe::logging::error("Unsupported component type %i", component_type);
+            fe::logging::error("tinygltf -> Unified. Unsupported component type %i", component_type);
             return 0.0f;
-            break;
     }
 }
 
@@ -577,7 +672,7 @@ void fe::GLTFImporter::readAccessorVec4(const tinygltf::Model& model, int access
         case TINYGLTF_TYPE_VEC4  : num_components = 4; break;
         default:
             num_components = 0;
-            fe::logging::error("Unsupported accessor type %i", accessor.type);
+            fe::logging::error("tinygltf -> Unified. Unsupported accessor type %i", accessor.type);
             return;
     }
     // clang-format on
@@ -591,7 +686,7 @@ void fe::GLTFImporter::readAccessorVec4(const tinygltf::Model& model, int access
         case TINYGLTF_COMPONENT_TYPE_BYTE          : component_size = 1; break;
         default:
             component_size = 0;
-            fe::logging::error("Unsupported component type %i", accessor.componentType);
+            fe::logging::error("tinygltf -> Unified. Unsupported component type %i", accessor.componentType);
             return;
     }
     // clang-format on

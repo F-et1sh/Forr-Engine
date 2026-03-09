@@ -32,6 +32,7 @@
     GLTFImpoter added ( in progress )
     ResourceStorage::CreateResource() added
     typed_pointer_storage::create() improved
+    tinygltf -> Unified for texture is done
 
 ### Problem
     -

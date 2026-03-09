@@ -27,19 +27,66 @@
 //  DOD structure, not a high level resource
 namespace fe::resource {
     struct Texture {
+        enum class ColorSpace {
+            LINEAR,
+            SRGB
+        };
+
+        enum class InternalFormat {
+            RGBA8,
+            RGB8,
+            RG8,
+            R8,
+            SRGB8_ALPHA8,
+            SRGB8
+        };
+
+        enum class DataFormat {
+            RGBA,
+            RGB,
+            RG,
+            RED
+        };
+
+        enum class MinFilter {
+            NEAREST,
+            LINEAR,
+            NEAREST_MIPMAP_NEAREST,
+            LINEAR_MIPMAP_NEAREST,
+            NEAREST_MIPMAP_LINEAR,
+            LINEAR_MIPMAP_LINEAR
+        };
+
+        enum class MagFilter {
+            NEAREST,
+            LINEAR,
+        };
+
+        enum class Wrap {
+            CLAMP_TO_EDGE,
+            MIRRORED_REPEAT,
+            REPEAT
+        };
+
+        enum class Target {
+            TEXTURE_2D,
+            TEXTURE_3D,
+            // TODO : add more
+        };
+
         uint8_t      components{};
         unsigned int width{};
         unsigned int height{};
 
-        TextureMinFilter min_filter{ TextureMinFilter::LINEAR_MIPMAP_LINEAR };
-        TextureMagFilter mag_filter{ TextureMagFilter::LINEAR };
-        TextureWrap      wrap_s{ TextureWrap::REPEAT };
-        TextureWrap      wrap_t{ TextureWrap::REPEAT };
+        MinFilter min_filter{ MinFilter::LINEAR_MIPMAP_LINEAR };
+        MagFilter mag_filter{ MagFilter::LINEAR };
+        Wrap      wrap_s{ Wrap::REPEAT };
+        Wrap      wrap_t{ Wrap::REPEAT };
 
-        TextureInternalFormat internal_format{};
-        TextureDataFormat     data_format{};
+        InternalFormat internal_format{};
+        DataFormat     data_format{};
 
-        TextureTarget target{ TextureTarget::TEXTURE_2D };
+        Target target{ Target::TEXTURE_2D };
 
         std::unique_ptr<unsigned char[]> bytes{};
         //fe::ArenaMarker offset{}; // TODO : think about using this instead of std::unique_ptr<>
