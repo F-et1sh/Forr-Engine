@@ -10,3 +10,6 @@
 [submodule "External/tinygltf"]
 	path = External/tinygltf
 	url = https://github.com/syoyo/tinygltf.git
+[submodule "External/MikkTSpace"]
+	path = External/MikkTSpace
+	url = https://github.com/mmikk/MikkTSpace.git

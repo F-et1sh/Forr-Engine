@@ -63,5 +63,6 @@
     <ClCompile Include="..\ThirdParty\stb\src\stb_image_write.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\TextureImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\GLTFImporter.cpp" />
+    <ClCompile Include="..\ThirdParty\MikkTSpace\src\mikktspace.c" />
   </ItemGroup>
 </Project>
