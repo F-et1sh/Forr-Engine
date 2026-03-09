@@ -16,7 +16,6 @@
     <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLResourceManager.hpp" />
     <ClInclude Include="Include\Forr\Graphics\GPUTypes.hpp" />
-    <ClInclude Include="Source\Graphics\OpenGL\VertexBuffers.hpp" />
     <ClInclude Include="Include\Forr\Core\types.hpp" />
     <ClInclude Include="Include\Forr\Core\path.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\Shader.hpp" />
@@ -49,7 +48,6 @@
     <ClCompile Include="Source\Graphics\OpenGL\RendererOpenGL.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManager.cpp" />
     <ClCompile Include="..\ThirdParty\glad\src\gl.c" />
-    <ClCompile Include="Source\Graphics\OpenGL\VertexBuffers.cpp" />
     <ClCompile Include="Source\path.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />

@@ -120,15 +120,14 @@ void fe::OpenGLResourceManager::CreateModel(const resource::Model& model) {
 void fe::OpenGLResourceManager::createMesh(const Mesh& mesh) {
     OpenGLMesh opengl_mesh{};
 
-    std::vector<Vertex> vertices{};
-    std::vector<Index> vertices{};
+    Vertices vertices{};
+    Indices  indices{};
 
     glCreateVertexArrays(1, &opengl_mesh.vao);
     glBindVertexArray(opengl_mesh.vao);
 
     glCreateBuffers(1, &opengl_mesh.vbo);
     glBindBuffer(GL_ARRAY_BUFFER, opengl_mesh.vbo);
-    //glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
 
     constexpr GLsizei stride = sizeof(Vertex);
 
@@ -137,24 +136,26 @@ void fe::OpenGLResourceManager::createMesh(const Mesh& mesh) {
 
     glCreateBuffers(1, &opengl_mesh.ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl_mesh.ebo);
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
     for (const auto& primitive : mesh.primitives) {
 
         OpenGLPrimitive opengl_primitive{};
 
-        this->createPrimitive(primitive, opengl_primitive);
+        this->createPrimitive(primitive, opengl_primitive, vertices, indices);
         opengl_mesh.primitives.emplace_back(opengl_primitive);
     }
+
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
 
-void fe::OpenGLResourceManager::createPrimitive(const Primitive& primitive, OpenGLPrimitive& opengl_primitive) {
+void fe::OpenGLResourceManager::createPrimitive(const Primitive& primitive, OpenGLPrimitive& opengl_primitive, Vertices& vertices, Indices& indices) {
     //opengl_primitive.material // TODO : handle materials
-    
+
     opengl_primitive.index_offset = primitive.index_offset;
     opengl_primitive.index_count  = primitive.index_count;
 
@@ -173,4 +174,7 @@ void fe::OpenGLResourceManager::createPrimitive(const Primitive& primitive, Open
             break;
     }
     // clang-format on
+
+    vertices.assign_range(primitive.vertices);
+    indices.assign_range(primitive.indices);
 }
