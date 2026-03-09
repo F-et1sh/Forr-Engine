@@ -15,6 +15,8 @@
 
 #include "stb_image.h"
 
+using namespace fe::resource;
+
 void fe::TextureImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
     int            width{};
     int            height{};
@@ -24,23 +26,25 @@ void fe::TextureImporter::Import(ResourceStorage& storage, const std::filesystem
     bytes = stbi_load(resource_full_path.string().c_str(), &width, &height, &components, 0);
 
     if (!bytes) {
-        fe::logging::error("Failed to load a texture\nPath : %s", components, resource_full_path.string().c_str());
+        fe::logging::error("STBI -> Unified. Failed to load a texture\nPath : %s", components, resource_full_path.string().c_str());
         return;
     }
 
-    TextureInternalFormat internal_format{};
-    TextureDataFormat     data_format{};
+    Texture::InternalFormat internal_format{};
+    Texture::DataFormat     data_format{};
 
     // clang-format off
     switch (components) {
-        case 4: internal_format = TextureInternalFormat::RGBA8; data_format = TextureDataFormat::RGBA; break;
-        case 3: internal_format = TextureInternalFormat::RGB8; data_format = TextureDataFormat::RGB; break;
-        case 2: internal_format = TextureInternalFormat::RG8; data_format = TextureDataFormat::RG; break;
-        case 1: internal_format = TextureInternalFormat::R8; data_format = TextureDataFormat::RED; break;
+        case 4: internal_format = Texture::InternalFormat::RGBA8; data_format = Texture::DataFormat::RGBA; break;
+        case 3: internal_format = Texture::InternalFormat::RGB8 ; data_format = Texture::DataFormat::RGB ; break;
+        case 2: internal_format = Texture::InternalFormat::RG8  ; data_format = Texture::DataFormat::RG  ; break;
+        case 1: internal_format = Texture::InternalFormat::R8   ; data_format = Texture::DataFormat::RED ; break;
         default:
-            fe::logging::error("Failed to load a texture. Wrong number of components : %i\nPath : %s", components, resource_full_path.string().c_str());
-            return;
-            break;
+            fe::logging::error("STBI -> Unified. Failed to load a texture. Unsupported number of components %i. Using RGBA8 for internal format and RGBA for data format as default\nPath : %s", 
+                components, resource_full_path.string().c_str());
+
+            internal_format = Texture::InternalFormat::RGBA8;
+            data_format = Texture::DataFormat::RGBA;
     }
     // clang-format on
 
@@ -60,5 +64,5 @@ void fe::TextureImporter::Import(ResourceStorage& storage, const std::filesystem
     stbi_image_free(bytes); // can be freed after copying
 
     auto& texture_storage = storage.GetStorage<resource::Texture>();
-    auto ptr = texture_storage.create(std::move(texture)); // does not need to store this fe::pointer
+    auto  ptr             = texture_storage.create(std::move(texture)); // does not need to store this fe::pointer
 }
