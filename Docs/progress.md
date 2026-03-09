@@ -1,5 +1,23 @@
 # Forr-Engine Devlog
 
+## 10.03.2026
+### Goal
+    Make a CPU -> GPU model draw ( throw-in ) 
+    ...
+    Make camera movable
+
+    Not now, but :
+    - provide event system for platform
+
+### Done
+    Model loading ( tinygltf -> Unified ) done without textures and materials
+    OpenGL fix
+
+### Problem
+    -
+
+---
+
 ## 09.03.2026
 ### Goal
     Create CPU primitive
@@ -33,7 +51,6 @@
     ResourceStorage::CreateResource() added
     typed_pointer_storage::create() improved
     tinygltf -> Unified for texture is done
-    Model loading ( tinygltf -> Unified ) done without textures and materials
 
 ### Problem
     -

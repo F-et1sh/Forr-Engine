@@ -13,6 +13,8 @@
 #include "pch.hpp"
 #include "OpenGLResourceManager.hpp"
 
+using namespace fe::resource;
+
 void fe::OpenGLResourceManager::CreateTexture(const resource::Texture& texture) {
     OpenGLTexture opengl_texture{};
 
@@ -27,63 +29,72 @@ void fe::OpenGLResourceManager::CreateTexture(const resource::Texture& texture) 
 
     // clang-format off
     switch (texture.min_filter) {
-        case TextureMinFilter::NEAREST: min_filter = GL_NEAREST; break;
-        case TextureMinFilter::LINEAR: min_filter = GL_LINEAR; break;
-        case TextureMinFilter::NEAREST_MIPMAP_NEAREST: min_filter = GL_NEAREST_MIPMAP_NEAREST; break;
-        case TextureMinFilter::LINEAR_MIPMAP_NEAREST: min_filter = GL_LINEAR_MIPMAP_NEAREST; break;
-        case TextureMinFilter::NEAREST_MIPMAP_LINEAR: min_filter = GL_NEAREST_MIPMAP_LINEAR; break;
-        case TextureMinFilter::LINEAR_MIPMAP_LINEAR: min_filter = GL_LINEAR_MIPMAP_LINEAR; break;
+        case Texture::MinFilter::NEAREST               : min_filter = GL_NEAREST               ; break;
+        case Texture::MinFilter::LINEAR                : min_filter = GL_LINEAR                ; break;
+        case Texture::MinFilter::NEAREST_MIPMAP_NEAREST: min_filter = GL_NEAREST_MIPMAP_NEAREST; break;
+        case Texture::MinFilter::LINEAR_MIPMAP_NEAREST : min_filter = GL_LINEAR_MIPMAP_NEAREST ; break;
+        case Texture::MinFilter::NEAREST_MIPMAP_LINEAR : min_filter = GL_NEAREST_MIPMAP_LINEAR ; break;
+        case Texture::MinFilter::LINEAR_MIPMAP_LINEAR  : min_filter = GL_LINEAR_MIPMAP_LINEAR  ; break;
         default:
-            fe::logging::warning("Unified -> OpenGL. Unsupported min filter %i", texture.min_filter);
-            break;
+            fe::logging::warning("Unified -> OpenGL. Unsupported min filter %i. Using GL_LINEAR as default", texture.min_filter);
+            min_filter = GL_LINEAR;
     }
 
+    // clang-format off
     switch (texture.mag_filter) {
-        case TextureMagFilter::NEAREST: mag_filter = GL_NEAREST; break;
-        case TextureMagFilter::LINEAR: mag_filter = GL_LINEAR; break;
+        case Texture::MagFilter::NEAREST: mag_filter = GL_NEAREST; break;
+        case Texture::MagFilter::LINEAR : mag_filter = GL_LINEAR ; break;
         default:
-            fe::logging::warning("Unified -> OpenGL. Unsupported mag filter %i", texture.mag_filter);
-            break;
+            fe::logging::warning("Unified -> OpenGL. Unsupported mag filter %i. Using GL_LINEAR as default", texture.mag_filter);
+            mag_filter = GL_LINEAR;
     }
+    // clang-format on
 
+    // clang-format off
     switch (texture.wrap_s) {
-        case TextureWrap::CLAMP_TO_EDGE: wrap_s = GL_CLAMP_TO_EDGE; break;
-        case TextureWrap::MIRRORED_REPEAT: wrap_s = GL_MIRRORED_REPEAT; break;
-        case TextureWrap::REPEAT: wrap_s = GL_REPEAT; break;
+        case Texture::Wrap::CLAMP_TO_EDGE  : wrap_s = GL_CLAMP_TO_EDGE  ; break;
+        case Texture::Wrap::MIRRORED_REPEAT: wrap_s = GL_MIRRORED_REPEAT; break;
+        case Texture::Wrap::REPEAT         : wrap_s = GL_REPEAT         ; break;
         default:
-            fe::logging::warning("Unified -> OpenGL. Unsupported wrap s %i", texture.wrap_s);
-            break;
+            fe::logging::warning("Unified -> OpenGL. Unsupported wrap s %i. Using GL_REPEAT as default", texture.wrap_s);
+            wrap_s = GL_REPEAT;
     }
+    // clang-format on
 
+    // clang-format off
     switch (texture.wrap_t) {
-        case TextureWrap::CLAMP_TO_EDGE: wrap_t = GL_CLAMP_TO_EDGE; break;
-        case TextureWrap::MIRRORED_REPEAT: wrap_t = GL_MIRRORED_REPEAT; break;
-        case TextureWrap::REPEAT: wrap_t = GL_REPEAT; break;
+        case Texture::Wrap::CLAMP_TO_EDGE  : wrap_t = GL_CLAMP_TO_EDGE  ; break;
+        case Texture::Wrap::MIRRORED_REPEAT: wrap_t = GL_MIRRORED_REPEAT; break;
+        case Texture::Wrap::REPEAT         : wrap_t = GL_REPEAT         ; break;
         default:
-            fe::logging::warning("Unified -> OpenGL. Unsupported wrap t %i", texture.wrap_t);
-            break;
+            fe::logging::warning("Unified -> OpenGL. Unsupported wrap t %i. Using GL_REPEAT as default", texture.wrap_t);
+            wrap_t = GL_REPEAT;
     }
+    // clang-format on
 
+    // clang-format off
     switch (texture.internal_format) {
-        case TextureInternalFormat::RGBA8: internal_format = GL_RGBA8; break;
-        case TextureInternalFormat::RGB8: internal_format = GL_RGB8; break;
-        case TextureInternalFormat::RG8: internal_format = GL_RG8; break;
-        case TextureInternalFormat::R8: internal_format = GL_R8; break;
-        case TextureInternalFormat::SRGB8_ALPHA8: internal_format = GL_SRGB8_ALPHA8; break;
-        case TextureInternalFormat::SRGB8: internal_format = GL_SRGB8; break;
+        case Texture::InternalFormat::RGBA8       : internal_format = GL_RGBA8       ; break;
+        case Texture::InternalFormat::RGB8        : internal_format = GL_RGB8        ; break;
+        case Texture::InternalFormat::RG8         : internal_format = GL_RG8         ; break;
+        case Texture::InternalFormat::R8          : internal_format = GL_R8          ; break;
+        case Texture::InternalFormat::SRGB8_ALPHA8: internal_format = GL_SRGB8_ALPHA8; break;
+        case Texture::InternalFormat::SRGB8       : internal_format = GL_SRGB8       ; break;
         default:
-            fe::logging::warning("Unified -> OpenGL. Unsupported internal format %i", texture.internal_format);
-            break;
+            fe::logging::warning("Unified -> OpenGL. Unsupported internal format %i. Using GL_RGBA8 as default", texture.internal_format);
+            internal_format = GL_RGBA8;
     }
+    // clang-format on
 
+    // clang-format off
     switch (texture.data_format) {
-        case TextureDataFormat::RGBA: data_format = GL_RGBA; break;
-        case TextureDataFormat::RGB: data_format = GL_RGB; break;
-        case TextureDataFormat::RG: data_format = GL_RG; break;
-        case TextureDataFormat::RED: data_format = GL_RED; break;
+        case Texture::DataFormat::RGBA: data_format = GL_RGBA; break;
+        case Texture::DataFormat::RGB : data_format = GL_RGB ; break;
+        case Texture::DataFormat::RG  : data_format = GL_RG  ; break;
+        case Texture::DataFormat::RED : data_format = GL_RED ; break;
         default:
-            fe::logging::warning("Unified -> OpenGL. Unsupported data format %i", texture.data_format);
-            break;
+            fe::logging::warning("Unified -> OpenGL. Unsupported data format %i. Using GL_RGBA as default", texture.data_format);
+            data_format = GL_RGBA;
     }
     // clang-format on
 
@@ -161,17 +172,16 @@ void fe::OpenGLResourceManager::createPrimitive(const Primitive& primitive, Open
 
     // clang-format off
     switch (primitive.render_mode) {
-        case RenderMode::POINTS: opengl_primitive.render_mode = GL_POINTS; break;
-        case RenderMode::LINES: opengl_primitive.render_mode = GL_LINES; break;
-        case RenderMode::LINE_LOOP: opengl_primitive.render_mode = GL_LINE_LOOP; break;
-        case RenderMode::LINE_STRIP: opengl_primitive.render_mode = GL_LINE_STRIP; break;
-        case RenderMode::TRIANGLES: opengl_primitive.render_mode = GL_TRIANGLES; break;
+        case RenderMode::POINTS        : opengl_primitive.render_mode = GL_POINTS        ; break;
+        case RenderMode::LINES         : opengl_primitive.render_mode = GL_LINES         ; break;
+        case RenderMode::LINE_LOOP     : opengl_primitive.render_mode = GL_LINE_LOOP     ; break;
+        case RenderMode::LINE_STRIP    : opengl_primitive.render_mode = GL_LINE_STRIP    ; break;
+        case RenderMode::TRIANGLES     : opengl_primitive.render_mode = GL_TRIANGLES     ; break;
         case RenderMode::TRIANGLE_STRIP: opengl_primitive.render_mode = GL_TRIANGLE_STRIP; break;
-        case RenderMode::TRIANGLE_FAN: opengl_primitive.render_mode = GL_TRIANGLE_FAN; break;
+        case RenderMode::TRIANGLE_FAN  : opengl_primitive.render_mode = GL_TRIANGLE_FAN  ; break;
         default:
             fe::logging::warning("Unified -> OpenGL. Unsupported render mode %i. Using GL_TRIANGLES as default", primitive.render_mode);
             opengl_primitive.render_mode = GL_TRIANGLES;
-            break;
     }
     // clang-format on
 
