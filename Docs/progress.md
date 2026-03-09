@@ -24,6 +24,8 @@
     CPU Primitive created
     MeshID removed
     fe::typed_pointer_storage::for_each became better
+    VertexBuffers.hpp/cpp are removed
+    Model loading from CPU to GPU done I guess
 
 ### Problem
     -

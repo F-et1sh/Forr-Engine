@@ -12,7 +12,6 @@
 
 #pragma once
 #include "ResourceManagement/ResourceManager.hpp"
-#include "VertexBuffers.hpp"
 #include "Graphics/Model.hpp"
 
 #include "tiny_gltf.h" // temp
@@ -47,7 +46,7 @@ namespace fe {
 
     private: // helper functions
         void createMesh(const Mesh& mesh);
-        void createPrimitive(const Primitive& primitive, OpenGLPrimitive& opengl_primitive);
+        void createPrimitive(const Primitive& primitive, OpenGLPrimitive& opengl_primitive, Vertices& vertices, Indices& indices);
 
     private:
         ResourceManager& m_ResourceManager;
