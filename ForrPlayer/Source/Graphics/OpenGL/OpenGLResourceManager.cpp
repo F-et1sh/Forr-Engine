@@ -115,7 +115,11 @@ void fe::OpenGLResourceManager::CreateTexture(const resource::Texture& texture) 
     auto ptr = m_Textures.create(opengl_texture); // does not need to store this pointer
 }
 
-void fe::OpenGLResourceManager::CreateModel(const resource::Model& model) {
+void fe::OpenGLResourceManager::CreateModel(fe::pointer<fe::resource::Model> model_ptr) { // TODO : the texture or model might be already created, handle it
+    OpenGLModel opengl_model{};
+    
+    const auto& model = *m_ResourceManager.GetResource(model_ptr);
+
     // mesh hasn't its own extension, so you get a structure here, not a pointer
     for (const auto& mesh : model.meshes) {
         this->createMesh(mesh);
@@ -124,8 +128,11 @@ void fe::OpenGLResourceManager::CreateModel(const resource::Model& model) {
     // texture has its own extension, so you get a pointer here
     for (const auto& texture_ptr : model.textures) {
         auto texture = m_ResourceManager.GetResource(texture_ptr);
-        this->CreateTexture(*texture); // TODO : the texture might be already created
+        this->CreateTexture(*texture);
     }
+
+    auto gpu_ptr = m_Models.create(opengl_model);
+    m_CPU_GPU_Lookup.insert({ model_ptr, gpu_ptr });
 }
 
 void fe::OpenGLResourceManager::createMesh(const Mesh& mesh) {
@@ -162,6 +169,8 @@ void fe::OpenGLResourceManager::createMesh(const Mesh& mesh) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    auto ptr = m_Meshes.create(std::move(opengl_mesh)); // does not need to store this fe::pointer
 }
 
 void fe::OpenGLResourceManager::createPrimitive(const Primitive& primitive, OpenGLPrimitive& opengl_primitive, Vertices& vertices, Indices& indices) {
