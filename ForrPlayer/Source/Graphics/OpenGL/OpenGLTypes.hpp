@@ -43,10 +43,19 @@ namespace fe {
         GLuint ebo{};
 
         // GLenum index_type{}; uint32_t for all models ( at least for now )
-         
+
         std::vector<OpenGLPrimitive> primitives{};
 
         OpenGLMesh()  = default;
         ~OpenGLMesh() = default;
+    };
+
+    // for 1:1 mapping
+    struct OpenGLModel {
+        std::vector<OpenGLMesh>    meshes{};
+        std::vector<OpenGLTexture> textures{};
+
+        OpenGLModel()  = default;
+        ~OpenGLModel() = default;
     };
 } // namespace fe

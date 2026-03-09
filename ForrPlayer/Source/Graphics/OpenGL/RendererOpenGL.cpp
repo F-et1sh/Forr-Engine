@@ -83,7 +83,9 @@ void fe::RendererOpenGL::Draw(fe::pointer<resource::Model> ptr) {
     m_Shader.bind();
 
     auto model = m_ResourceManager.GetResource(ptr);
-    m_OpenGLResourceManager.CreateModel(*model);
+    for (const auto& mesh : model->meshes) {
+
+    }
 
     m_Shader.unbind();
 }
@@ -95,7 +97,7 @@ void fe::RendererOpenGL::InitializeGPUResources() {
         fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
     });
 
-    m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material& material) { // TODO : provide material
+    m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material& material) { // TODO : provide materials
         //m_OpenGLResourceManager.CreateMaterial(material);
 
         //fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);

@@ -24,7 +24,7 @@
 #include "attributes.hpp"
 
 namespace fe {
-    using handle_t = uint32_t; // can be replaced by uint64_t
+    using handle_t = uint32_t; // can't be replaced by uint64_t
 
     template <typename _Ty>
     concept storable_t =
@@ -37,16 +37,30 @@ namespace fe {
     template <typename _Ty>
     class FORR_NODISCARD pointer {
     public:
-        constexpr pointer(handle_t index, handle_t generation) noexcept
+        constexpr pointer(handle_t index, handle_t generation) noexcept 
             : m_index(index), m_generation(generation) {}
         ~pointer() = default;
 
+        constexpr explicit pointer(uint64_t packed) noexcept { this->unpack(packed); }
+        
         constexpr pointer() noexcept                = default;
         pointer(const pointer&) noexcept            = default;
         pointer& operator=(const pointer&) noexcept = default;
 
         constexpr handle_t index() const noexcept { return m_index; }
         constexpr handle_t generation() const noexcept { return m_generation; }
+
+        constexpr uint64_t packed() const noexcept {
+            return (static_cast<uint64_t>(m_index) << 32) | static_cast<uint64_t>(m_generation);
+        }
+
+        // the pointer is going to be changed after unpacking
+        // it's not just getting you an unpacked pointer<_Ty>
+        constexpr pointer<_Ty> unpack(uint64_t packed) noexcept {
+            m_index = static_cast<uint32_t>(packed >> 32);
+            m_generation = static_cast<uint32_t>(packed & 0xFFFFFFFF);
+            return *this;
+        }
 
         constexpr bool operator==(const pointer&) const noexcept = default;
         constexpr bool operator!=(const pointer&) const noexcept = default;

@@ -19,30 +19,17 @@
 #include "OpenGLTypes.hpp"
 
 namespace fe {
-    //struct Mesh {
-    //    VAO vao;
-    //    VBO vbo;
-    //    EBO ebo;
-
-    //    uint32_t index_count = 0; // temp
-
-    //    Mesh(const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices) : vbo(vertices), ebo(indices), index_count(static_cast<uint32_t>(indices.size())) {}
-    //    Mesh(const std::vector<Vertex>& vertices, const Indices& indices_variant) : vbo(vertices), ebo(indices_variant) {
-    //        std::visit([&](const auto& indices) {
-    //            index_count = static_cast<uint32_t>(indices.size());
-    //        },
-    //                   indices_variant);
-    //    }
-    //    ~Mesh() = default;
-    //};
-
     class OpenGLResourceManager {
+    private:
+        template <template <typename> class C>
+        struct Wrapper {};
+
     public:
         OpenGLResourceManager(ResourceManager& resource_manager) : m_ResourceManager(resource_manager) {}
         ~OpenGLResourceManager() = default;
 
         void CreateTexture(const resource::Texture& texture);
-        void CreateModel(const resource::Model& model);
+        void CreateModel(fe::pointer<fe::resource::Model> model_ptr);
 
     private: // helper functions
         void createMesh(const Mesh& mesh);
@@ -51,6 +38,11 @@ namespace fe {
     private:
         ResourceManager& m_ResourceManager;
 
+        std::unordered_map<fe::pointer<...>,
+                           fe::pointer<...>>
+            m_CPU_GPU_Lookup{};
+
+        fe::typed_pointer_storage<OpenGLModel>   m_Models{};
         fe::typed_pointer_storage<OpenGLTexture> m_Textures{};
         fe::typed_pointer_storage<OpenGLMesh>    m_Meshes{};
     };
