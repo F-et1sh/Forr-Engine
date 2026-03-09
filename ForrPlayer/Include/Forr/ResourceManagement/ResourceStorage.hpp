@@ -23,9 +23,15 @@ namespace fe {
         ~ResourceStorage() = default;
 
         template <typename T>
-        FORR_NODISCARD fe::pointer<T> CreateResource(T value) {
+        FORR_NODISCARD fe::pointer<T> CreateResource(const T& value) {
             auto& storage = this->GetStorage<T>();
             return storage.create(value);
+        }
+
+        template <typename T>
+        FORR_NODISCARD fe::pointer<T> CreateResource(T&& value) {
+            auto& storage = this->GetStorage<T>();
+            return storage.create(std::move(value));
         }
 
         template <typename T>
