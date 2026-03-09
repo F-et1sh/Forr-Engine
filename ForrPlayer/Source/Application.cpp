@@ -8,13 +8,17 @@ fe::Application::Application(const ApplicationDesc& desc) {
     this->InitializeResourceManager(desc);
     this->InitializePrimaryWindow(desc);
     this->InitializeRenderer(desc);
+
+    m_ResourceManager->RunForEach<resource::Model>([&](resource::Model& model) {
+        //m_Model = model;
+        });
 }
 
 void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
         m_Renderer->ClearScreen(0.5f, 0.5f, 0.5f, 1.0f);
 
-        //m_Renderer->Draw(m_Triangle); // temp
+        //m_Renderer->Draw(); // temp
 
         m_Renderer->SwapBuffers();
 
