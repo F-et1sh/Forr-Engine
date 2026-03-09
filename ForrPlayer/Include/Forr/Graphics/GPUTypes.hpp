@@ -70,12 +70,6 @@ namespace fe {
         BLEND
     };
 
-    enum class TextureTarget {
-        TEXTURE_2D,
-        TEXTURE_3D,
-        // TODO : add more
-    };
-
     using Vertices = std::vector<Vertex>;
     using Indices  = std::vector<Index>;
 

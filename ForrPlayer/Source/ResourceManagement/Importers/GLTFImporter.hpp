@@ -39,10 +39,10 @@ namespace fe {
         static void loadAnimations(const tinygltf::Model& model, resource::Model& this_model);
 
     private:
-        static fe::pointer<resource::Texture> createTexture(const tinygltf::Image&   image,
-                                                            const tinygltf::Sampler& sampler,
-                                                            TextureColorSpace        texture_color_space,
-                                                            ResourceStorage&         storage);
+        static fe::pointer<resource::Texture> createTexture(const tinygltf::Image&            image,
+                                                            const tinygltf::Sampler&          sampler,
+                                                            fe::resource::Texture::ColorSpace texture_color_space,
+                                                            ResourceStorage&                  storage);
 
         template <typename T>
             requires(std::is_same_v<T, glm::vec2> ||
