@@ -12,6 +12,7 @@
 ### Done
     Model loading ( tinygltf -> Unified ) done without textures and materials
     OpenGL fix
+    Model loaded correctly
 
 ### Problem
     -
