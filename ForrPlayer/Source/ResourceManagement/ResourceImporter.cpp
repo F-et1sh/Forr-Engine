@@ -14,6 +14,7 @@
 #include "ResourceManagement/ResourceImporter.hpp"
 
 #include "Importers/TextureImporter.hpp"
+#include "Importers/GLTFImporter.hpp"
 
 void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_relative_path) {
     std::filesystem::path resource_full_path = PATH.getResourcesPath() / resource_relative_path;
@@ -24,7 +25,7 @@ void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_
     if (extension == ".png") {
         TextureImporter::Import(m_Storage, resource_full_path);
     }
-    else if (extension == ".gltf" || extension == ".glb") { // temp
-        // ...
+    else if (extension == ".gltf" || extension == ".glb") {
+        GLTFImporter::Import(m_Storage, resource_full_path);
     }
 }

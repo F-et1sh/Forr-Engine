@@ -36,6 +36,7 @@
     <ClInclude Include="Source\Graphics\OpenGL\Texture.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLTypes.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\TextureImporter.hpp" />
+    <ClInclude Include="Source\ResourceManagement\Importers\GLTFImporter.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -61,5 +62,6 @@
     <ClCompile Include="..\ThirdParty\tinygltf\src\tiny_gltf.cpp" />
     <ClCompile Include="..\ThirdParty\stb\src\stb_image_write.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\TextureImporter.cpp" />
+    <ClCompile Include="Source\ResourceManagement\Importers\GLTFImporter.cpp" />
   </ItemGroup>
 </Project>
