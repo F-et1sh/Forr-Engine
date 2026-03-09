@@ -14,7 +14,7 @@
     <ClInclude Include="Source\Platform\GLFW\WindowGLFW.hpp" />
     <ClInclude Include="Include\Forr\Graphics\IRenderer.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
-    <ClInclude Include="Source\Graphics\OpenGL\GPUResourceManager.hpp" />
+    <ClInclude Include="Source\Graphics\OpenGL\OpenGLResourceManager.hpp" />
     <ClInclude Include="Include\Forr\Graphics\GPUTypes.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\VertexBuffers.hpp" />
     <ClInclude Include="Include\Forr\Core\types.hpp" />
@@ -46,7 +46,7 @@
     <ClCompile Include="Source\Platform\GLFW\WindowGLFW.cpp" />
     <ClCompile Include="Source\Graphics\IRenderer.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\RendererOpenGL.cpp" />
-    <ClCompile Include="Source\Graphics\OpenGL\GPUResourceManager.cpp" />
+    <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManager.cpp" />
     <ClCompile Include="..\ThirdParty\glad\src\gl.c" />
     <ClCompile Include="Source\Graphics\OpenGL\VertexBuffers.cpp" />
     <ClCompile Include="Source\path.cpp" />
