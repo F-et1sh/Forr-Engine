@@ -39,6 +39,8 @@ namespace fe::resource {
         TextureInternalFormat internal_format{};
         TextureDataFormat     data_format{};
 
+        TextureTarget target{ TextureTarget::TEXTURE_2D };
+
         std::unique_ptr<unsigned char[]> bytes{};
         //fe::ArenaMarker offset{}; // TODO : think about using this instead of std::unique_ptr<>
 

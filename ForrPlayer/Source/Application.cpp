@@ -52,5 +52,5 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
     renderer_desc.application_name = desc.application_name;
 
     m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, *m_ResourceManager);
-    //m_Renderer->InitializeGPUResources();
+    m_Renderer->InitializeGPUResources();
 }

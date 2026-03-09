@@ -29,16 +29,15 @@ namespace fe {
         void SwapBuffers() override;
 
         void                                    Draw(MeshID index) override;
-        FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return m_GPUResourceManager.CreateTriangle(); }
+        FORR_FORCE_INLINE FORR_NODISCARD MeshID CreateTriangle() override { return m_OpenGLResourceManager.CreateTriangle(); }
 
-    private:
-
+        void InitializeGPUResources() override;
 
     private:
         ResourceManager& m_ResourceManager;
 
-        Shader             m_Shader;
-        GPUResourceManager m_GPUResourceManager;
+        Shader                m_Shader;
+        OpenGLResourceManager m_OpenGLResourceManager;
 
         IPlatformSystem& m_PlatformSystem;
         IWindow&         m_PrimaryWindow;

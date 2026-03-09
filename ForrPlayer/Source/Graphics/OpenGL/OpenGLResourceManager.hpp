@@ -16,6 +16,8 @@
 
 #include "tiny_gltf.h" // temp
 
+#include "OpenGLTypes.hpp"
+
 namespace fe {
     //struct Mesh {
     //    VAO vao;
@@ -34,15 +36,15 @@ namespace fe {
     //    ~Mesh() = default;
     //};
 
-    class GPUResourceManager {
+    class OpenGLResourceManager {
     public:
-        GPUResourceManager()  = default;
-        ~GPUResourceManager() = default;
+        OpenGLResourceManager()  = default;
+        ~OpenGLResourceManager() = default;
 
         MeshID CreateTriangle(); // TODO : this mustn't return MeshID
         void   CreateTexture(const resource::Texture& texture);
 
-        FORR_FORCE_INLINE FORR_NODISCARD Mesh& getMesh(MeshID index) { return m_Meshes[index]; }
+        //FORR_FORCE_INLINE FORR_NODISCARD Mesh& getMesh(MeshID index) { return m_Meshes[index]; }
 
     private:
         void loadMeshes(const tinygltf::Model& model);
@@ -118,7 +120,7 @@ namespace fe {
         }
 
     private:
-        std::vector<Mesh> m_Meshes;
-        //fe::typed_pointer_storage<Texture>
+        fe::typed_pointer_storage<OpenGLTexture> m_Textures{};
+        fe::typed_pointer_storage<OpenGLMesh> m_Meshes{};
     };
 } // namespace fe
