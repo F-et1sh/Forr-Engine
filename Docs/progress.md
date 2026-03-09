@@ -23,6 +23,7 @@
     CPU/GPU Texture created
     CPU Primitive created
     MeshID removed
+    fe::typed_pointer_storage::for_each became better
 
 ### Problem
     -

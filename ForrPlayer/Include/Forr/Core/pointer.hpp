@@ -125,12 +125,66 @@ namespace fe {
             return m_slots_alive.size() - m_free_list.size();
         }
 
+        // this function runs your lambda through all objects of the storage.
+        // it can be invoked by :
+        // [](_Ty&, fe::pointer<_Ty>) -> void {}
+        // [](fe::pointer<_Ty>, _Ty&) -> void {}
+        // [](_Ty&) -> void {}
+        // [](fe::pointer<_Ty>) -> void {}
+        // [](const _Ty&, fe::pointer<_Ty>) -> void {}
+        // [](fe::pointer<_Ty>, const _Ty&) -> void {}
+        // [](const _Ty&) -> void {}
         template <typename _Func>
         void for_each(_Func&& func) {
             //std::shared_lock lock(m_mutex);
             for (size_t i = 0; i < m_slots_object.size(); i++) {
                 if (!m_slots_alive[i]) continue;
-                func(m_slots_object[i]);
+
+                if constexpr (std::is_invocable_v<_Func, _Ty&, pointer_t>) {
+                    func(m_slots_object[i], pointer_t(i, m_slots_generation[i]));
+                }
+                else if constexpr (std::is_invocable_v<_Func, pointer_t, _Ty&>) {
+                    func(pointer_t(i, m_slots_generation[i]), m_slots_object[i]);
+                }
+                else if constexpr (std::is_invocable_v<_Func, _Ty&>) {
+                    func(m_slots_object[i]);
+                }
+                else if constexpr (std::is_invocable_v<_Func, pointer_t>) {
+                    func(pointer_t(i, m_slots_generation[i]));
+                }
+                else {
+                    static_assert(false, "fe::typed_pointer_storage : for_each lambda has invalid signature");
+                }
+            }
+        }
+
+        // this function runs your lambda through all objects of the storage
+        // it can be invoked by :
+        // [](fe::pointer<_Ty>) -> void {}
+        // [](const _Ty&, fe::pointer<_Ty>) -> void {}
+        // [](fe::pointer<_Ty>, const _Ty&) -> void {}
+        // [](const _Ty&) -> void {}
+        template <typename _Func>
+        void for_each(_Func&& func) const {
+            //std::shared_lock lock(m_mutex);
+            for (size_t i = 0; i < m_slots_object.size(); i++) {
+                if (!m_slots_alive[i]) continue;
+
+                if constexpr (std::is_invocable_v<_Func, const _Ty&, pointer_t>) {
+                    func(m_slots_object[i], pointer_t(i, m_slots_generation[i]));
+                }
+                else if constexpr (std::is_invocable_v<_Func, pointer_t, const _Ty&>) {
+                    func(pointer_t(i, m_slots_generation[i]), m_slots_object[i]);
+                }
+                else if constexpr (std::is_invocable_v<_Func, const _Ty&>) {
+                    func(m_slots_object[i]);
+                }
+                else if constexpr (std::is_invocable_v<_Func, pointer_t>) {
+                    func(pointer_t(i, m_slots_generation[i]));
+                }
+                else {
+                    static_assert(false, "fe::typed_pointer_storage : const for_each lambda has invalid signature");
+                }
             }
         }
 
