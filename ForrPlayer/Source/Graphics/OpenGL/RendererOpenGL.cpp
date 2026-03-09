@@ -21,7 +21,8 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
                                    ResourceManager&    resource_manager)
     : m_PlatformSystem(platform_system),
       m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index)),
-      m_ResourceManager(resource_manager) {
+      m_ResourceManager(resource_manager),
+      m_OpenGLResourceManager(resource_manager) {
 
     m_GLFWwindow = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
 
@@ -110,5 +111,17 @@ void fe::RendererOpenGL::InitializeGPUResources() {
         m_OpenGLResourceManager.CreateTexture(texture);
 
         fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
+    });
+
+    m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material& material) {
+        //m_OpenGLResourceManager.CreateMaterial(material);
+
+        //fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
+    });
+
+    m_ResourceManager.RunForEach<resource::Model>([&](const resource::Model& model) {
+        m_OpenGLResourceManager.CreateModel(model);
+
+        fe::logging::info("Loaded model's mesh count %i", model.meshes.size());
     });
 }

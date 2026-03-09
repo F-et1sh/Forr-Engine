@@ -24,13 +24,13 @@ namespace fe {
         ~OpenGLTexture() = default;
     };
 
-    struct OpenGLMesh {
+    struct OpenGLPrimitive {
         GLuint vertex_id{};
         GLuint index_id{};
 
         GLenum index_type{};
 
-        OpenGLMesh()  = default;
-        ~OpenGLMesh() = default;
+        OpenGLPrimitive()  = default;
+        ~OpenGLPrimitive() = default;
     };
 } // namespace fe

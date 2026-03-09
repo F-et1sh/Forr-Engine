@@ -44,7 +44,7 @@ namespace fe {
         virtual void SwapBuffers()                                                                            = 0;
 
         virtual void   Draw(MeshID index) = 0;
-        virtual MeshID CreateTriangle()   = 0;
+        virtual MeshID CreateTriangle()   = 0; // TODO : remove this
 
         virtual void InitializeGPUResources() = 0;
     };
