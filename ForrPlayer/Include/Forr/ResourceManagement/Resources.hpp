@@ -108,13 +108,13 @@ namespace fe::resource {
     };
 
     struct Model {
-        //std::vector<Node>      nodes{};
-        //std::vector<int>       scene_roots{};
-        //std::vector<Skin>      skins{};
+        std::vector<Node>                  nodes{};
+        std::vector<int>                   scene_roots{};
+        std::vector<Skin>                  skins{};
         std::vector<Mesh>                  meshes{};
-        //std::vector<fe::pointer<Material>> materials{};
-        std::vector<fe::pointer<Texture>>  textures{};
-        //std::vector<Animation> animations{};
+        std::vector<fe::pointer<Material>> materials{}; // uses fe::pointer because this type of resource has its own file extension
+        std::vector<fe::pointer<Texture>>  textures{};  // uses fe::pointer because this type of resource has its own file extension
+        std::vector<Animation>             animations{};
 
         Model()  = default;
         ~Model() = default;
