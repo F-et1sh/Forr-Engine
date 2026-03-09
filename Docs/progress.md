@@ -30,6 +30,7 @@
     TextureImporter added
     StoreResource() -> ImportResource()
     GLTFImpoter added ( in progress )
+    ResourceStorage::CreateResource() added
 
 ### Problem
     -

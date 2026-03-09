@@ -103,7 +103,7 @@ void fe::GLTFImporter::Import(ResourceStorage& storage, const std::filesystem::p
     GLTFImporter::loadSkins(model, this_model);
     GLTFImporter::loadMeshes(model, this_model);
     GLTFImporter::loadMaterials(model, this_model);
-    GLTFImporter::loadTextures(model, this_model);
+    GLTFImporter::loadTextures(model, this_model, storage);
     GLTFImporter::loadAnimations(model, this_model);
 }
 
@@ -370,7 +370,7 @@ void fe::GLTFImporter::loadIndices(const tinygltf::Model& model, resource::Model
     }
 }
 
-void fe::GLTFImporter::loadTextures(const tinygltf::Model& model, resource::Model& this_model) {
+void fe::GLTFImporter::loadTextures(const tinygltf::Model& model, resource::Model& this_model, ResourceStorage& storage) {
     this_model.textures.resize(model.textures.size());
     for (size_t i = 0; i < model.textures.size(); i++) {
         const tinygltf::Texture& texture = model.textures[i];
@@ -400,6 +400,7 @@ void fe::GLTFImporter::loadTextures(const tinygltf::Model& model, resource::Mode
         }
 
         auto& this_texture = this_model.textures[i];
+        this_texture = storage.CreateResource<resource::Texture>();
         this_texture.Create(image, sampler, texture_color_space);
     }
 }

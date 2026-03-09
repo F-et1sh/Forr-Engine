@@ -23,6 +23,20 @@ namespace fe {
         ~ResourceStorage() = default;
 
         template <typename T>
+        FORR_NODISCARD fe::pointer<T> CreateResource(T value) {
+            auto& storage = this->GetStorage<T>();
+            return storage.create(value);
+        }
+
+        template <typename T>
+        FORR_NODISCARD fe::pointer<T> CreateResource()
+            requires std::default_initializable<T>
+        {
+            auto& storage = this->GetStorage<T>();
+            return storage.create(T{});
+        }
+
+        template <typename T>
         FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) {
             auto& storage = this->GetStorage<T>();
             assert(storage.is_valid(ptr)); // TODO : Add fallbacks somehow
@@ -50,7 +64,5 @@ namespace fe {
         fe::typed_pointer_storage<fe::resource::Texture>  m_Textures{};
         fe::typed_pointer_storage<fe::resource::Material> m_Materials{};
         fe::typed_pointer_storage<fe::resource::Model>    m_Models{};
-
-        friend class ResourceImporter;
     };
 } // namespace fe

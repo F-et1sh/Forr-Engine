@@ -21,6 +21,8 @@
 #include <shared_mutex>
 #include <type_traits>
 
+#include "attributes.hpp"
+
 namespace fe {
     using handle_t = uint32_t; // can be replaced by uint64_t
 
