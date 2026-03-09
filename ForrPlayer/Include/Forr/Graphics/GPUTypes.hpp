@@ -36,6 +36,8 @@ namespace fe {
         ~Vertex() = default;
     };
 
+    using Index = uint32_t; // convert all to uint32_t ( at least for now )
+
     struct ShaderData {
         glm::mat4 projection_matrix{};
         glm::mat4 model_matrix{};
@@ -82,7 +84,7 @@ namespace fe {
     };
 
     using Vertices = std::vector<Vertex>;
-    using Indices  = void*;
+    using Indices  = std::vector<Index>;
 
     namespace resource {
         struct Material; // forward declaration
@@ -94,7 +96,7 @@ namespace fe {
 
         fe::pointer<fe::resource::Material> material{};
 
-        RenderMode mode{ RenderMode::TRIANGLES }; // triangles by default
+        RenderMode render_mode{ RenderMode::TRIANGLES }; // triangles by default
 
         RenderIndexType index_type{};
         size_t          index_count{};

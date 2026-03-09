@@ -47,13 +47,12 @@ namespace fe {
 
     private: // helper functions
         void createMesh(const Mesh& mesh);
-        void createPrimitive(const Primitive& primitive);
-        void createBuffers(OpenGLPrimitive& new_primitive, const Primitive& primitive);
+        void createPrimitive(const Primitive& primitive, OpenGLPrimitive& opengl_primitive);
 
     private:
         ResourceManager& m_ResourceManager;
 
-        fe::typed_pointer_storage<OpenGLTexture>   m_Textures{};
-        fe::typed_pointer_storage<OpenGLPrimitive> m_Meshes{};
+        fe::typed_pointer_storage<OpenGLTexture> m_Textures{};
+        fe::typed_pointer_storage<OpenGLMesh>    m_Meshes{};
     };
 } // namespace fe

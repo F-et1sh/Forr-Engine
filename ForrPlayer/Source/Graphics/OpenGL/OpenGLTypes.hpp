@@ -13,7 +13,8 @@
 ===============================================*/
 
 #pragma once
-
+#include "Core/pointer.hpp"
+#include "ResourceManagement/Resources.hpp"
 #include <glad/gl.h>
 
 namespace fe {
@@ -25,12 +26,27 @@ namespace fe {
     };
 
     struct OpenGLPrimitive {
-        GLuint vertex_id{};
-        GLuint index_id{};
+        uint32_t index_offset{};
+        uint32_t index_count{};
 
-        GLenum index_type{};
+        GLenum render_mode{ GL_TRIANGLES }; // triangles by default
+
+        fe::pointer<resource::Material> material{};
 
         OpenGLPrimitive()  = default;
         ~OpenGLPrimitive() = default;
+    };
+
+    struct OpenGLMesh {
+        GLuint vao{};
+        GLuint vbo{};
+        GLuint ebo{};
+
+        // GLenum index_type{}; uint32_t for all models ( at least for now )
+         
+        std::vector<OpenGLPrimitive> primitives{};
+
+        OpenGLMesh()  = default;
+        ~OpenGLMesh() = default;
     };
 } // namespace fe
