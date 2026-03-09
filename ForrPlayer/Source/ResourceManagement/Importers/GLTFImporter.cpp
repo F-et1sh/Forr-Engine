@@ -13,6 +13,8 @@
 #include "pch.hpp"
 #include "GLTFImporter.hpp"
 
+#include "mikktspace.h"
+
 struct MikkUserData {
     std::vector<glm::vec3>* positions;
     std::vector<glm::vec3>* normals;
@@ -238,53 +240,42 @@ void fe::GLTFImporter::loadVertices(const tinygltf::Model& model, resource::Mode
     if (tangents.empty()) {
         tangents.resize(vertices_count);
 
-        std::vector<uint32_t> indices_u32{};
-
-        if (!std::holds_alternative<std::vector<uint32_t>>(this_indices)) {
-            std::visit([&](auto const& indices) {
-                indices_u32.reserve(indices.size());
-                for (auto v : indices) {
-                    indices_u32.emplace_back(static_cast<uint32_t>(v));
-                }
-            },
-                       this_indices);
+        if (positions.empty() || normals.empty() || texture_coords.empty() || this_indices.empty()) {
+            fe::logging::warning("Skipping tangent generation. Needed data is missing");
         }
         else {
-            indices_u32 = std::get<std::vector<uint32_t>>(this_indices);
-        }
+            bool good = true;
 
-        if (positions.empty() || normals.empty() || texture_coords.empty() || indices_u32.empty()) {
-            std::cerr << "WARNING : Skip tangent generation : missing data" << '\n';
-        }
-        else {
-            for (uint32_t idx : indices_u32) {
-                if (idx >= positions.size() || idx >= normals.size() || idx >= texture_coords.size()) {
-                    std::cerr << "Bad index " << idx << "\n";
-                    assert(false);
+            for (uint32_t i : this_indices) {
+                if (i >= positions.size() || i >= normals.size() || i >= texture_coords.size()) {
+                    fe::logging::warning("Skipping tangent generation. Bad index : %i", i);
+                    good = false;
                 }
             }
 
-            MikkUserData userdata{
-                .positions      = &positions,
-                .normals        = &normals,
-                .texture_coords = &texture_coords,
-                .tangents       = &tangents,
-                .indices        = &indices_u32
-            };
+            if (good) {
+                MikkUserData user_data{
+                    .positions      = &positions,
+                    .normals        = &normals,
+                    .texture_coords = &texture_coords,
+                    .tangents       = &tangents,
+                    .indices        = &this_indices
+                };
 
-            SMikkTSpaceInterface iface            = {};
-            iface.this_model.getNumFaces          = getNumberFaces;
-            iface.this_model.getNumVerticesOfFace = getNumberVerticesOfFace;
-            iface.this_model.getPosition          = getPosition;
-            iface.this_model.getNormal            = getNormal;
-            iface.this_model.getTexCoord          = getTextureCoord;
-            iface.this_model.setTSpaceBasic       = setTSpaceBasic;
+                SMikkTSpaceInterface interface{};
+                interface.m_getNumFaces          = getNumberFaces;
+                interface.m_getNumVerticesOfFace = getNumberVerticesOfFace;
+                interface.m_getPosition          = getPosition;
+                interface.m_getNormal            = getNormal;
+                interface.m_getTexCoord          = getTextureCoord;
+                interface.m_setTSpaceBasic       = setTSpaceBasic;
 
-            SMikkTSpaceContext context    = {};
-            context.this_model.pInterface = &iface;
-            context.this_model.pUserData  = &userdata;
+                SMikkTSpaceContext context{};
+                context.m_pInterface = &interface;
+                context.m_pUserData  = &user_data;
 
-            genTangSpaceDefault(&context);
+                genTangSpaceDefault(&context);
+            }
         }
     }
 
