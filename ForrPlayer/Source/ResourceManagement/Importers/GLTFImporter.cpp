@@ -13,60 +13,7 @@
 #include "pch.hpp"
 #include "GLTFImporter.hpp"
 
-#include "mikktspace.h"
-
-struct MikkUserData {
-    std::vector<glm::vec3>* positions;
-    std::vector<glm::vec3>* normals;
-    std::vector<glm::vec2>* texture_coords;
-    std::vector<glm::vec4>* tangents; // output
-    std::vector<uint32_t>*  indices;
-};
-
-int getNumberFaces(const SMikkTSpaceContext* p_context) {
-    auto* data = (MikkUserData*) p_context->m_pUserData;
-    return data->indices->size() / 3;
-}
-
-int getNumberVerticesOfFace(const SMikkTSpaceContext* /*unused*/, int /*unused*/) {
-    return 3;
-}
-
-void getPosition(const SMikkTSpaceContext* p_context, float position[3], int face, int vertex) {
-    auto*    data  = (MikkUserData*) p_context->m_pUserData;
-    uint32_t index = (*data->indices)[(face * 3) + vertex];
-    auto&    p     = (*data->positions)[index];
-    position[0]    = p.x;
-    position[1]    = p.y;
-    position[2]    = p.z;
-}
-
-void getNormal(const SMikkTSpaceContext* p_context, float normal[3], int face, int vertex) {
-    auto*    data  = (MikkUserData*) p_context->m_pUserData;
-    uint32_t index = (*data->indices)[(face * 3) + vertex];
-    auto&    p     = (*data->normals)[index];
-    normal[0]      = p.x;
-    normal[1]      = p.y;
-    normal[2]      = p.z;
-}
-
-void getTextureCoord(const SMikkTSpaceContext* p_context, float texture_coord[2], int face, int vertex) {
-    auto*    data    = (MikkUserData*) p_context->m_pUserData;
-    uint32_t index   = (*data->indices)[(face * 3) + vertex];
-    auto&    p       = (*data->texture_coords)[index];
-    texture_coord[0] = p.x;
-    texture_coord[1] = p.y;
-}
-
-void setTSpaceBasic(const SMikkTSpaceContext* p_context,
-                    const float               tangent[3],
-                    const float               sign,
-                    const int                 face,
-                    const int                 vertex) {
-    auto*    data            = (MikkUserData*) p_context->m_pUserData;
-    uint32_t index           = (*data->indices)[(face * 3) + vertex];
-    (*data->tangents)[index] = glm::vec4(tangent[0], tangent[1], tangent[2], sign);
-}
+#include "MikkTSpace.hpp"
 
 void fe::GLTFImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
     tinygltf::Model    model{};
@@ -102,7 +49,7 @@ void fe::GLTFImporter::Import(ResourceStorage& storage, const std::filesystem::p
     GLTFImporter::loadSceneRoots(model, this_model);
     GLTFImporter::loadSkins(model, this_model);
     GLTFImporter::loadMeshes(model, this_model);
-    GLTFImporter::loadMaterials(model, this_model);
+    GLTFImporter::loadMaterials(model, this_model, storage);
     GLTFImporter::loadTextures(model, this_model, storage);
     GLTFImporter::loadAnimations(model, this_model);
 }
@@ -391,12 +338,13 @@ void fe::GLTFImporter::loadTextures(const tinygltf::Model& model, resource::Mode
 
         int gltf_texture_index = static_cast<int>(i);
 
-        for (auto& material_ptr : this_model.materials) {
-            //resource::Material material = material_ptr; // TODO : this must be invoked with ResourceStorage&
-            //if (material.pbr_metallic_roughness.base_color_texture.index == gltf_texture_index ||
-            //    material.emissive_texture.index == gltf_texture_index) {
+        for (auto material_ptr : this_model.materials) {
+            resource::Material* material = storage.GetResource(material_ptr);
+
+            //if (material->pbr_metallic_roughness.base_color_texture.index == gltf_texture_index || // TODO : provide textures
+            //    material->emissive_texture.index == gltf_texture_index) {
             //
-            //    texture_color_space = TextureColorSpace::SRGB;
+            //    texture_color_space = resource::Texture::ColorSpace::SRGB;
             //}
         }
 
@@ -405,49 +353,14 @@ void fe::GLTFImporter::loadTextures(const tinygltf::Model& model, resource::Mode
     }
 }
 
-void fe::GLTFImporter::loadMaterials(const tinygltf::Model& model, resource::Model& this_model) {
+void fe::GLTFImporter::loadMaterials(const tinygltf::Model& model, resource::Model& this_model, ResourceStorage& storage) {
     this_model.materials.resize(model.materials.size());
-    /*for (size_t i = 0; i < model.materials.size(); i++) {
+    for (size_t i = 0; i < model.materials.size(); i++) {
         const tinygltf::Material& material      = model.materials[i];
         auto&                     this_material = this_model.materials[i];
 
-        this_material.name = material.name;
-        fe::GLTFImporter::readVector(this_material.emissive_factor, material.emissiveFactor);
-        if (material.alphaMode == "OPAQUE") {
-            this_material.alpha_mode = Material::AlphaMode::OPAQUE;
-        }
-        else if (material.alphaMode == "MASK") {
-            this_material.alpha_mode = Material::AlphaMode::MASK;
-        }
-        else if (material.alphaMode == "BLEND") {
-            this_material.alpha_mode = Material::AlphaMode::BLEND;
-        }
-        this_material.alpha_cutoff = material.alphaCutoff;
-        this_material.double_sided = material.doubleSided;
-        this_material.lods         = material.lods;
-
-#define THIS_PBR this_material.pbr_metallic_roughness
-#define PBR material.pbrMetallicRoughness
-
-        fe::GLTFImporter::readVector(THIS_PBR.base_color_factor, PBR.baseColorFactor);
-        THIS_PBR.base_color_texture.index                 = PBR.baseColorTexture.index;
-        THIS_PBR.base_color_texture.texture_coord         = PBR.baseColorTexture.texCoord;
-        THIS_PBR.metallic_factor                          = PBR.metallicFactor;
-        THIS_PBR.roughness_factor                         = PBR.roughnessFactor;
-        THIS_PBR.metallic_roughness_texture.index         = PBR.metallicRoughnessTexture.index;
-        THIS_PBR.metallic_roughness_texture.texture_coord = PBR.metallicRoughnessTexture.texCoord;
-
-        this_material.normal_texture.index         = material.normalTexture.index;
-        this_material.normal_texture.texture_coord = material.normalTexture.texCoord;
-        this_material.normal_texture.scale         = material.normalTexture.scale;
-
-        this_material.occlusion_texture.index         = material.occlusionTexture.index;
-        this_material.occlusion_texture.texture_coord = material.occlusionTexture.texCoord;
-        this_material.occlusion_texture.strength      = material.occlusionTexture.strength;
-
-        this_material.emissive_texture.index         = material.emissiveTexture.index;
-        this_material.emissive_texture.texture_coord = material.emissiveTexture.texCoord;
-    }*/
+        this_material = GLTFImporter::createMaterial(material, storage);
+    }
 }
 
 void fe::GLTFImporter::loadAnimations(const tinygltf::Model& model, resource::Model& this_model) {
@@ -507,95 +420,95 @@ fe::pointer<Texture> fe::GLTFImporter::createTexture(const tinygltf::Image&   im
                                                      const tinygltf::Sampler& sampler,
                                                      Texture::ColorSpace      texture_color_space,
                                                      ResourceStorage&         storage) {
-    Texture texture{};
+    Texture this_texture{};
 
     if (texture_color_space == Texture::ColorSpace::SRGB) {
         if (image.component == 4) // number of color channels
-            texture.internal_format = Texture::InternalFormat::SRGB8_ALPHA8;
+            this_texture.internal_format = Texture::InternalFormat::SRGB8_ALPHA8;
         else
-            texture.internal_format = Texture::InternalFormat::SRGB8;
+            this_texture.internal_format = Texture::InternalFormat::SRGB8;
     }
     else {
         // clang-format off
         switch (image.component) { // number of color channels
-            case 4: texture.internal_format = Texture::InternalFormat::RGBA8; break;
-            case 3: texture.internal_format = Texture::InternalFormat::RGB8 ; break;
-            case 2: texture.internal_format = Texture::InternalFormat::RG8  ; break;
-            case 1: texture.internal_format = Texture::InternalFormat::R8   ; break;
+            case 4: this_texture.internal_format = Texture::InternalFormat::RGBA8; break;
+            case 3: this_texture.internal_format = Texture::InternalFormat::RGB8 ; break;
+            case 2: this_texture.internal_format = Texture::InternalFormat::RG8  ; break;
+            case 1: this_texture.internal_format = Texture::InternalFormat::R8   ; break;
             default:
                 fe::logging::warning("tinygltf -> Unified. Unsupported components ( number of color channels ) %i for internal format. Using RGBA8 as default", image.component);
-                texture.internal_format = Texture::InternalFormat::RGBA8;
+                this_texture.internal_format = Texture::InternalFormat::RGBA8;
         }
         // clang-format on
     }
 
     // clang-format off
     switch (image.component) { // number of color channels
-        case 4: texture.data_format = Texture::DataFormat::RGBA; break;
-        case 3: texture.data_format = Texture::DataFormat::RGB ; break;
-        case 2: texture.data_format = Texture::DataFormat::RG  ; break;
-        case 1: texture.data_format = Texture::DataFormat::RED ; break;
+        case 4: this_texture.data_format = Texture::DataFormat::RGBA; break;
+        case 3: this_texture.data_format = Texture::DataFormat::RGB ; break;
+        case 2: this_texture.data_format = Texture::DataFormat::RG  ; break;
+        case 1: this_texture.data_format = Texture::DataFormat::RED ; break;
         default:
             fe::logging::warning("tinygltf -> Unified. Unsupported components ( number of color channels ) %i for data format. Using RGBA as default", image.component);
-            texture.data_format = Texture::DataFormat::RGBA;
+            this_texture.data_format = Texture::DataFormat::RGBA;
     }
     // clang-format on
 
     // clang-format off
     switch (sampler.minFilter) {
-        case TINYGLTF_TEXTURE_FILTER_NEAREST               : texture.min_filter = Texture::MinFilter::NEAREST               ; break;
-        case TINYGLTF_TEXTURE_FILTER_LINEAR                : texture.min_filter = Texture::MinFilter::LINEAR                ; break;
-        case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST: texture.min_filter = Texture::MinFilter::NEAREST_MIPMAP_NEAREST; break;
-        case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST : texture.min_filter = Texture::MinFilter::LINEAR_MIPMAP_NEAREST ; break;
-        case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR : texture.min_filter = Texture::MinFilter::NEAREST_MIPMAP_LINEAR ; break;
-        case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR  : texture.min_filter = Texture::MinFilter::LINEAR_MIPMAP_LINEAR  ; break;
+        case TINYGLTF_TEXTURE_FILTER_NEAREST               : this_texture.min_filter = Texture::MinFilter::NEAREST               ; break;
+        case TINYGLTF_TEXTURE_FILTER_LINEAR                : this_texture.min_filter = Texture::MinFilter::LINEAR                ; break;
+        case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST: this_texture.min_filter = Texture::MinFilter::NEAREST_MIPMAP_NEAREST; break;
+        case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST : this_texture.min_filter = Texture::MinFilter::LINEAR_MIPMAP_NEAREST ; break;
+        case TINYGLTF_TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR : this_texture.min_filter = Texture::MinFilter::NEAREST_MIPMAP_LINEAR ; break;
+        case TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR  : this_texture.min_filter = Texture::MinFilter::LINEAR_MIPMAP_LINEAR  ; break;
         default:
-            texture.min_filter = Texture::MinFilter::LINEAR_MIPMAP_LINEAR;
+            this_texture.min_filter = Texture::MinFilter::LINEAR_MIPMAP_LINEAR;
             fe::logging::warning("tinygltf -> Unified. Unsupported min filter %i. Using LINEAR_MIPMAP_LINEAR as default", sampler.minFilter);
     }
     // clang-format on
 
     // clang-format off
     switch (sampler.magFilter) {
-        case TINYGLTF_TEXTURE_FILTER_NEAREST: texture.mag_filter = Texture::MagFilter::NEAREST; break;
-        case TINYGLTF_TEXTURE_FILTER_LINEAR : texture.mag_filter = Texture::MagFilter::LINEAR ; break;
+        case TINYGLTF_TEXTURE_FILTER_NEAREST: this_texture.mag_filter = Texture::MagFilter::NEAREST; break;
+        case TINYGLTF_TEXTURE_FILTER_LINEAR : this_texture.mag_filter = Texture::MagFilter::LINEAR ; break;
         default:
-            texture.mag_filter = Texture::MagFilter::LINEAR;
+            this_texture.mag_filter = Texture::MagFilter::LINEAR;
             fe::logging::warning("tinygltf -> Unified. Unsupported mag filter %i. Using LINEAR as default", sampler.magFilter);
     }
     // clang-format on
 
     // clang-format off
     switch (sampler.wrapS) {
-        case TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE  : texture.wrap_s = Texture::Wrap::CLAMP_TO_EDGE  ; break;
-        case TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT: texture.wrap_s = Texture::Wrap::MIRRORED_REPEAT; break;
-        case TINYGLTF_TEXTURE_WRAP_REPEAT         : texture.wrap_s = Texture::Wrap::REPEAT         ; break;
+        case TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE  : this_texture.wrap_s = Texture::Wrap::CLAMP_TO_EDGE  ; break;
+        case TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT: this_texture.wrap_s = Texture::Wrap::MIRRORED_REPEAT; break;
+        case TINYGLTF_TEXTURE_WRAP_REPEAT         : this_texture.wrap_s = Texture::Wrap::REPEAT         ; break;
         default:
-            texture.wrap_s = Texture::Wrap::REPEAT;
+            this_texture.wrap_s = Texture::Wrap::REPEAT;
             fe::logging::warning("tinygltf -> Unified. Unsupported wrap s %i. Using REPEAT as default", sampler.wrapS);
     }
 
     // clang-format off
     switch (sampler.wrapT) {
-        case TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE  : texture.wrap_t = Texture::Wrap::CLAMP_TO_EDGE  ; break;
-        case TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT: texture.wrap_t = Texture::Wrap::MIRRORED_REPEAT; break;
-        case TINYGLTF_TEXTURE_WRAP_REPEAT         : texture.wrap_t = Texture::Wrap::REPEAT         ; break;
+        case TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE  : this_texture.wrap_t = Texture::Wrap::CLAMP_TO_EDGE  ; break;
+        case TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT: this_texture.wrap_t = Texture::Wrap::MIRRORED_REPEAT; break;
+        case TINYGLTF_TEXTURE_WRAP_REPEAT         : this_texture.wrap_t = Texture::Wrap::REPEAT         ; break;
         default:
-            texture.wrap_t = Texture::Wrap::REPEAT;
+            this_texture.wrap_t = Texture::Wrap::REPEAT;
             fe::logging::warning("tinygltf -> Unified. Unsupported wrap t %i. Using REPEAT as default", sampler.wrapT);
     }
     // clang-format on
 
-    texture.components = static_cast<uint8_t>(image.component);
-    texture.width      = image.width;
-    texture.height     = image.height;
-    texture.target     = Texture::Target::TEXTURE_2D; // TODO : for what this thing even needed ?
+    this_texture.components = static_cast<uint8_t>(image.component);
+    this_texture.width      = image.width;
+    this_texture.height     = image.height;
+    this_texture.target     = Texture::Target::TEXTURE_2D; // TODO : for what this thing even needed ?
 
     size_t buffer_size = image.width * image.height * image.component;
-    texture.bytes      = std::make_unique<unsigned char[]>(buffer_size);
+    this_texture.bytes = std::make_unique<unsigned char[]>(buffer_size);
 
     if (!image.image.empty() && buffer_size == image.image.size()) {
-        std::copy(image.image.begin(), image.image.end(), texture.bytes.get());
+        std::copy(image.image.begin(), image.image.end(), this_texture.bytes.get());
     }
     else {
         // TODO : change this to "error", when fallbacks will be ready
@@ -603,7 +516,58 @@ fe::pointer<Texture> fe::GLTFImporter::createTexture(const tinygltf::Image&   im
         return {}; // TODO : think about fallbacks
     }
 
-    auto ptr = storage.CreateResource<Texture>(std::move(texture));
+    auto ptr = storage.CreateResource<Texture>(std::move(this_texture));
+    return ptr;
+}
+
+#undef OPAQUE
+
+fe::pointer<Material> fe::GLTFImporter::createMaterial(const tinygltf::Material& material, ResourceStorage& storage) {
+    Material this_material{};
+
+    this_material.name = material.name;
+
+    fe::GLTFImporter::readVector(this_material.emissive_factor, material.emissiveFactor);
+
+    // clang-format off
+    if      (material.alphaMode == "OPAQUE") this_material.alpha_mode = Material::AlphaMode::OPAQUE;
+    else if (material.alphaMode == "MASK"  ) this_material.alpha_mode = Material::AlphaMode::MASK;
+    else if (material.alphaMode == "BLEND" ) this_material.alpha_mode = Material::AlphaMode::BLEND;
+    else {
+        fe::logging::warning("tinygltf -> Unified. Unsupported material alpha mode %s. Using BLEND as default", material.alphaMode.c_str());
+        this_material.alpha_mode = Material::AlphaMode::BLEND;
+    }
+    // clang-format on
+
+    this_material.alpha_cutoff = material.alphaCutoff;
+    this_material.double_sided = material.doubleSided;
+    this_material.lods         = material.lods;
+
+#define THIS_PBR this_material.pbr_metallic_roughness
+#define PBR material.pbrMetallicRoughness
+
+    // TODO : provide textures and materials
+
+    fe::GLTFImporter::readVector(THIS_PBR.base_color_factor, PBR.baseColorFactor);
+    //THIS_PBR.base_color_texture.index                 = PBR.baseColorTexture.index;
+    THIS_PBR.base_color_texture.texture_coord = PBR.baseColorTexture.texCoord;
+    THIS_PBR.metallic_factor                  = PBR.metallicFactor;
+    THIS_PBR.roughness_factor                 = PBR.roughnessFactor;
+    //THIS_PBR.metallic_roughness_texture.index         = PBR.metallicRoughnessTexture.index;
+    THIS_PBR.metallic_roughness_texture.texture_coord = PBR.metallicRoughnessTexture.texCoord;
+
+    //this_material.normal_texture.index         = material.normalTexture.index;
+    this_material.normal_texture.texture_coord = material.normalTexture.texCoord;
+    this_material.normal_texture.scale         = material.normalTexture.scale;
+
+    //this_material.occlusion_texture.index         = material.occlusionTexture.index;
+    this_material.occlusion_texture.texture_coord = material.occlusionTexture.texCoord;
+    this_material.occlusion_texture.strength      = material.occlusionTexture.strength;
+
+    //this_material.emissive_texture.index         = material.emissiveTexture.index;
+    this_material.emissive_texture.texture_coord = material.emissiveTexture.texCoord;
+
+    auto ptr = storage.CreateResource<Material>(std::move(this_material));
     return ptr;
 }
 

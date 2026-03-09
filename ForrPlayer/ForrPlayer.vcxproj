@@ -124,6 +124,7 @@
     <ClInclude Include="Source\Platform\GLFW\PlatformSystemGLFW.hpp" />
     <ClInclude Include="Source\Platform\GLFW\WindowGLFW.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\GLTFImporter.hpp" />
+    <ClInclude Include="Source\ResourceManagement\Importers\MikkTSpace.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\TextureImporter.hpp" />
     <ClInclude Include="Source\Tools.hpp" />
   </ItemGroup>
