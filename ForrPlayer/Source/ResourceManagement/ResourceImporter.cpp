@@ -22,17 +22,17 @@ void fe::ResourceImporter::StoreResource(const std::filesystem::path& resource_r
     // TODO : Add TextureImporter, MeshImporter, etc...
 
     if (extension == ".png") { // temp
-        this->StoreTexture(resource_full_path);
+        this->storeTexture(resource_full_path);
     }
     else if (extension == ".gltf") { // temp
-        //this->StoreTexture(resource_full_path);
+        this->storeModel(resource_full_path);
     }
     else if (extension == ".glb") { // temp
-        //this->StoreTexture(resource_full_path);
+        this->storeModel(resource_full_path);
     }
 }
 
-void fe::ResourceImporter::StoreTexture(const std::filesystem::path& resource_full_path) {
+void fe::ResourceImporter::storeTexture(const std::filesystem::path& resource_full_path) {
     int            width{};
     int            height{};
     int            components{};
@@ -77,4 +77,8 @@ void fe::ResourceImporter::StoreTexture(const std::filesystem::path& resource_fu
     stbi_image_free(bytes); // can be freed after copying
 
     auto ptr = m_Storage.m_Textures.create(std::move(texture)); // does not need to store this fe::pointer
+}
+
+void fe::ResourceImporter::storeModel(const std::filesystem::path& resource_full_path) {
+    // TODO : Create MeshImporter
 }

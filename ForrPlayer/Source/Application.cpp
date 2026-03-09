@@ -37,6 +37,7 @@ void fe::Application::InitializePlatformSystem(const ApplicationDesc& desc) {
 void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
     std::vector<std::filesystem::path> paths{}; // temp
     paths.emplace_back("Tatarstan-Flag.png");
+    paths.emplace_back("Models/StatueOfLiberty/statue_of_liberty.glb");
 
     m_ResourceManager = std::make_unique<ResourceManager>();
     m_ResourceManager->SetupSceneResources(paths); // TODO : rewrite this
