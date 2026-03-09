@@ -17,6 +17,8 @@
 
 namespace fe {
     class GLTFImporter {
+    private:
+        inline static constexpr size_t JOINTS_COUNT = 128; // temp
     public:
         GLTFImporter()  = default;
         ~GLTFImporter() = default;

@@ -64,13 +64,6 @@ namespace fe {
         UNSIGNED_INT,
     };
 
-    enum class TargetPath {
-        TRANSLATION,
-        ROTATION,
-        SCALE,
-        WEIGHTS
-    };
-
     enum class AlphaMode {
         OPAQUE,
         MASK,
@@ -116,6 +109,13 @@ namespace fe {
     };
 
     struct AnimationChannel {
+        enum class TargetPath {
+            TRANSLATION,
+            ROTATION,
+            SCALE,
+            WEIGHTS
+        };
+
         int        sampler{ -1 };
         int        target_node{ -1 };
         TargetPath target_path{}; // "rotation", "translation", "scale"
