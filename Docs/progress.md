@@ -19,6 +19,7 @@
     GPUResourceManager -> OpenGLResourceManager
     If the name in front of the word ( "OpenGL"ResourceManager ), when there is no interface ( no IResourceManager ),
         otherwise, if the name in back of the word ( Renderer"OpenGL" ), when there is an interface ( IRenderer )
+    CPU/GPU Texture created
 
 ### Problem
     -

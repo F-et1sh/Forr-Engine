@@ -62,10 +62,6 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
     shader_data.model_matrix      = glm::mat4(1.0f);
 
     glNamedBufferData(ubo, sizeof(shader_data), &shader_data, GL_DYNAMIC_DRAW);
-
-    m_ResourceManager.RunForEach<resource::Texture>([](const resource::Texture& texture) {
-        fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
-    });
 }
 
 fe::RendererOpenGL::~RendererOpenGL() {
@@ -98,7 +94,7 @@ void fe::RendererOpenGL::Draw(MeshID index) {
     }
 
     /*for (size_t i = 0; i < 8; i++) {
-        auto& mesh = m_GPUResourceManager.getMesh(i);
+        auto& mesh = m_OpenGLResourceManager.getMesh(i);
         for (const auto& primitive : mesh.primitives) {
             primitive.vao.Bind();
             glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, 0);
@@ -107,4 +103,12 @@ void fe::RendererOpenGL::Draw(MeshID index) {
     }*/
 
     m_Shader.unbind();
+}
+
+void fe::RendererOpenGL::InitializeGPUResources() {
+    m_ResourceManager.RunForEach<resource::Texture>([&](const resource::Texture& texture) {
+        m_OpenGLResourceManager.CreateTexture(texture);
+
+        fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
+    });
 }

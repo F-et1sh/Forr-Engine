@@ -13,7 +13,7 @@
 #include "pch.hpp"
 #include "OpenGLResourceManager.hpp"
 
-fe::MeshID fe::GPUResourceManager::CreateTriangle() {
+fe::MeshID fe::OpenGLResourceManager::CreateTriangle() {
     std::filesystem::path path = PATH.getModelsPath() / "StatueOfLiberty" / "statue_of_liberty.glb";
 
     tinygltf::Model    model{};
@@ -74,10 +74,144 @@ fe::MeshID fe::GPUResourceManager::CreateTriangle() {
     return 0;
 }
 
-void fe::GPUResourceManager::CreateTexture(const resource::Texture& texture) {
+void fe::OpenGLResourceManager::CreateTexture(const resource::Texture& texture) {
+    OpenGLTexture opengl_texture{};
+
+    int min_filter{};
+    int mag_filter{};
+
+    int wrap_s{};
+    int wrap_t{};
+
+    GLenum internal_format{};
+    GLenum data_format{};
+
+    switch (texture.min_filter) {
+        case TextureMinFilter::NEAREST:
+            min_filter = GL_NEAREST;
+            break;
+        case TextureMinFilter::LINEAR:
+            min_filter = GL_LINEAR;
+            break;
+        case TextureMinFilter::NEAREST_MIPMAP_NEAREST:
+            min_filter = GL_NEAREST_MIPMAP_NEAREST;
+            break;
+        case TextureMinFilter::LINEAR_MIPMAP_NEAREST:
+            min_filter = GL_LINEAR_MIPMAP_NEAREST;
+            break;
+        case TextureMinFilter::NEAREST_MIPMAP_LINEAR:
+            min_filter = GL_NEAREST_MIPMAP_LINEAR;
+            break;
+        case TextureMinFilter::LINEAR_MIPMAP_LINEAR:
+            min_filter = GL_LINEAR_MIPMAP_LINEAR;
+            break;
+        default:
+            fe::logging::warning("Unknown min filter %i", texture.min_filter);
+            break;
+    }
+
+    switch (texture.mag_filter) {
+        case TextureMagFilter::NEAREST:
+            mag_filter = GL_NEAREST;
+            break;
+        case TextureMagFilter::LINEAR:
+            mag_filter = GL_LINEAR;
+            break;
+        default:
+            fe::logging::warning("Unknown mag filter %i", texture.mag_filter);
+            break;
+    }
+
+    switch (texture.wrap_s) {
+        case TextureWrap::CLAMP_TO_EDGE:
+            wrap_s = GL_CLAMP_TO_EDGE;
+            break;
+        case TextureWrap::MIRRORED_REPEAT:
+            wrap_s = GL_MIRRORED_REPEAT;
+            break;
+        case TextureWrap::REPEAT:
+            wrap_s = GL_REPEAT;
+            break;
+        default:
+            fe::logging::warning("Unknown wrap s %i", texture.wrap_s);
+            break;
+    }
+
+    switch (texture.wrap_t) {
+        case TextureWrap::CLAMP_TO_EDGE:
+            wrap_t = GL_CLAMP_TO_EDGE;
+            break;
+        case TextureWrap::MIRRORED_REPEAT:
+            wrap_t = GL_MIRRORED_REPEAT;
+            break;
+        case TextureWrap::REPEAT:
+            wrap_t = GL_REPEAT;
+            break;
+        default:
+            fe::logging::warning("Unknown wrap t %i", texture.wrap_t);
+            break;
+    }
+
+    switch (texture.internal_format) {
+        case TextureInternalFormat::RGBA8:
+            internal_format = GL_RGBA8;
+            break;
+        case TextureInternalFormat::RGB8:
+            internal_format = GL_RGB8;
+            break;
+        case TextureInternalFormat::RG8:
+            internal_format = GL_RG8;
+            break;
+        case TextureInternalFormat::R8:
+            internal_format = GL_R8;
+            break;
+        case TextureInternalFormat::SRGB8_ALPHA8:
+            internal_format = GL_SRGB8_ALPHA8;
+            break;
+        case TextureInternalFormat::SRGB8:
+            internal_format = GL_SRGB8;
+            break;
+        default:
+            fe::logging::warning("Unknown internal format %i", texture.internal_format);
+            break;
+    }
+
+    switch (texture.data_format) {
+        case TextureDataFormat::RGBA:
+            data_format = GL_RGBA;
+            break;
+        case TextureDataFormat::RGB:
+            data_format = GL_RGB;
+            break;
+        case TextureDataFormat::RG:
+            data_format = GL_RG;
+            break;
+        case TextureDataFormat::RED:
+            data_format = GL_RED;
+            break;
+        default:
+            fe::logging::warning("Unknown data format %i", texture.data_format);
+            break;
+    }
+
+    glCreateTextures(GL_TEXTURE_2D, 1, &opengl_texture.id);
+    glBindTexture(GL_TEXTURE_2D, opengl_texture.id);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, internal_format, texture.width, texture.height, 0, data_format, GL_UNSIGNED_BYTE, texture.bytes.get());
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    auto ptr = m_Textures.create(opengl_texture); // does not need to store this pointer
 }
 
-void fe::GPUResourceManager::loadMeshes(const tinygltf::Model& model) {
+void fe::OpenGLResourceManager::loadMeshes(const tinygltf::Model& model) {
     /*m_Meshes.resize(model.meshes.size());
     for (size_t i = 0; i < model.meshes.size(); i++) {
         const tinygltf::Mesh& mesh      = model.meshes[i];
@@ -89,7 +223,7 @@ void fe::GPUResourceManager::loadMeshes(const tinygltf::Model& model) {
     }*/
 }
 
-void fe::GPUResourceManager::loadPrimitives(const tinygltf::Model& model, std::vector<Primitive>& this_primitives, const std::vector<tinygltf::Primitive>& primitives) {
+void fe::OpenGLResourceManager::loadPrimitives(const tinygltf::Model& model, std::vector<Primitive>& this_primitives, const std::vector<tinygltf::Primitive>& primitives) {
     //this_primitives.resize(primitives.size());
     //for (size_t i = 0; i < primitives.size(); i++) {
     //    const tinygltf::Primitive& primitive      = primitives[i];
@@ -154,7 +288,7 @@ void fe::GPUResourceManager::loadPrimitives(const tinygltf::Model& model, std::v
     //}
 }
 
-void fe::GPUResourceManager::loadVertices(const tinygltf::Model& model, Vertices& this_vertices, Indices& this_indices, const tinygltf::Primitive& primitive) {
+void fe::OpenGLResourceManager::loadVertices(const tinygltf::Model& model, Vertices& this_vertices, Indices& this_indices, const tinygltf::Primitive& primitive) {
 
     //auto read_attribute = [&](const std::string& attribute_name, auto& data) {
     //    auto it = primitive.attributes.find(attribute_name);
@@ -259,7 +393,7 @@ void fe::GPUResourceManager::loadVertices(const tinygltf::Model& model, Vertices
     //}
 }
 
-void fe::GPUResourceManager::loadIndices(const tinygltf::Model& model, Primitive& this_primitive, Indices& this_indices, const tinygltf::Primitive& primitive) {
+void fe::OpenGLResourceManager::loadIndices(const tinygltf::Model& model, Primitive& this_primitive, Indices& this_indices, const tinygltf::Primitive& primitive) {
     //if (primitive.indices < 0) {
     //    throw std::runtime_error("Primitive has no indices"); // TODO : rewrite
     //}
