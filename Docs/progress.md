@@ -33,6 +33,7 @@
     ResourceStorage::CreateResource() added
     typed_pointer_storage::create() improved
     tinygltf -> Unified for texture is done
+    Model loading ( tinygltf -> Unified ) done without textures and materials
 
 ### Problem
     -

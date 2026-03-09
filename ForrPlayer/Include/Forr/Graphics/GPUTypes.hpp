@@ -64,12 +64,6 @@ namespace fe {
         UNSIGNED_INT,
     };
 
-    enum class AlphaMode {
-        OPAQUE,
-        MASK,
-        BLEND
-    };
-
     using Vertices = std::vector<Vertex>;
     using Indices  = std::vector<Index>;
 

@@ -100,6 +100,12 @@ namespace fe::resource {
     };
 
     struct Material {
+        enum class AlphaMode {
+            OPAQUE,
+            MASK,
+            BLEND
+        };
+
         struct TextureInfo {
             fe::pointer<Texture> texture_id{};
             int                  texture_coord{ 0 }; // TEXCOORD_0 by default
@@ -138,7 +144,7 @@ namespace fe::resource {
         glm::vec3        emissive_factor{ 0.0f, 0.0f, 0.0f }; // default [0,0,0]
         AlphaMode        alpha_mode{ AlphaMode::OPAQUE };     // default - OPAQUE
         float            alpha_cutoff{ 0.5f };                // default 0.5f
-        bool             float_sided{ false };                // default false
+        bool             double_sided{ false };               // default false
         std::vector<int> lods{};                              // level of detail materials ( MSFT_lod )
 
         PbrMetallicRoughness pbr_metallic_roughness{};

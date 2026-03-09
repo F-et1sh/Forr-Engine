@@ -37,6 +37,7 @@
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLTypes.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\TextureImporter.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\GLTFImporter.hpp" />
+    <ClInclude Include="Source\ResourceManagement\Importers\MikkTSpace.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />

@@ -34,7 +34,7 @@ namespace fe {
         static void loadPrimitives(const tinygltf::Model& model, resource::Model& this_model, std::vector<Primitive>& this_primitives, const std::vector<tinygltf::Primitive>& primitives);
         static void loadVertices(const tinygltf::Model& model, resource::Model& this_model, Vertices& this_vertices, Indices& this_indices, const tinygltf::Primitive& primitive);
         static void loadIndices(const tinygltf::Model& model, resource::Model& this_model, Primitive& this_primitive, Indices& this_indices, const tinygltf::Primitive& primitive);
-        static void loadMaterials(const tinygltf::Model& model, resource::Model& this_model);
+        static void loadMaterials(const tinygltf::Model& model, resource::Model& this_model, ResourceStorage& storage);
         static void loadTextures(const tinygltf::Model& model, resource::Model& this_model, ResourceStorage& storage);
         static void loadAnimations(const tinygltf::Model& model, resource::Model& this_model);
 
@@ -44,6 +44,9 @@ namespace fe {
                                                             fe::resource::Texture::ColorSpace texture_color_space,
                                                             ResourceStorage&                  storage);
 
+        static fe::pointer<resource::Material> createMaterial(const tinygltf::Material& material, ResourceStorage& storage);
+
+    private:
         template <typename T>
             requires(std::is_same_v<T, glm::vec2> ||
                      std::is_same_v<T, glm::vec3> ||
