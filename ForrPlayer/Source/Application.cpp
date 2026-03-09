@@ -9,9 +9,9 @@ fe::Application::Application(const ApplicationDesc& desc) {
     this->InitializePrimaryWindow(desc);
     this->InitializeRenderer(desc);
 
-    m_ResourceManager->RunForEach<resource::Model>([&](resource::Model& model) {
-        //m_Model = model;
-        });
+    m_ResourceManager->RunForEach<resource::Model>([&](fe::pointer<resource::Model> ptr) { // take the first pointer
+        m_Model = ptr;
+    });
 }
 
 void fe::Application::Run() {
