@@ -102,7 +102,7 @@ void fe::RendererOpenGL::Draw(fe::pointer<resource::Model> ptr) {
         const auto& mesh_storage = m_OpenGLResourceManager.GetStorage<OpenGLMesh>();
         auto        mesh         = mesh_storage.get(mesh_pointer);
 
-        for (const auto& primitive : mesh->primitives) { // this is crashing, I don't know why
+        for (const auto& primitive : mesh->primitives) {
 
             glBindVertexArray(primitive.vao);
 
