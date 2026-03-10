@@ -79,7 +79,7 @@ namespace fe {
 
     private: // helper functions
         fe::pointer<OpenGLMesh> createMesh(const Mesh& mesh);
-        void createPrimitive(const Primitive& primitive, OpenGLPrimitive& opengl_primitive, Vertices& vertices, Indices& indices);
+        void                    createPrimitive(const Primitive& primitive, OpenGLPrimitive& opengl_primitive);
 
     private:
         ResourceManager& m_ResourceManager;

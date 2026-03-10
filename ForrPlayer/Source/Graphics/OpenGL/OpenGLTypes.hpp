@@ -26,6 +26,10 @@ namespace fe {
     };
 
     struct OpenGLPrimitive {
+        GLuint vao{};
+        GLuint vbo{};
+        GLuint ebo{};
+
         uint32_t index_offset{};
         uint32_t index_count{};
 
@@ -34,14 +38,10 @@ namespace fe {
         fe::pointer<resource::Material> material{};
 
         OpenGLPrimitive()  = default;
-        ~OpenGLPrimitive() = default;
+        ~OpenGLPrimitive() = default; // TODO : provide buffer objects deleting
     };
 
     struct OpenGLMesh {
-        GLuint vao{};
-        GLuint vbo{};
-        GLuint ebo{};
-
         // GLenum index_type{}; uint32_t for all models ( at least for now )
 
         std::vector<OpenGLPrimitive> primitives{};

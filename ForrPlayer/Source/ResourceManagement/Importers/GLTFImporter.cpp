@@ -82,7 +82,7 @@ void fe::GLTFImporter::loadNodes(const tinygltf::Model& model, resource::Model& 
         else {
             this_node.local_matrix = glm::translate(glm::mat4(1.0f), this_node.translation) * glm::mat4_cast(this_node.rotation) * glm::scale(glm::mat4(1.0f), this_node.scale);
         }
-        this_node.weights.assign_range(node.weights);
+        this_node.weights.insert_range(this_node.weights.end(), node.weights);
     }
 }
 
@@ -122,7 +122,7 @@ void fe::GLTFImporter::loadMeshes(const tinygltf::Model& model, resource::Model&
 
         this_mesh.name = mesh.name;
         GLTFImporter::loadPrimitives(model, this_model, this_mesh.primitives, mesh.primitives);
-        this_mesh.weights.assign_range(mesh.weights);
+        this_mesh.weights.insert_range(this_mesh.weights.end(), mesh.weights); // TODO : check is this work or no
     }
 }
 
@@ -269,7 +269,7 @@ void fe::GLTFImporter::loadIndices(const tinygltf::Model& model, resource::Model
             vec.resize(accessor.count);
             memcpy(vec.data(), data_ptr, accessor.count * sizeof(uint8_t));
 
-            this_indices.assign_range(vec); // TODO : check is this work or no
+            this_indices.insert_range(this_indices.end(), vec); // TODO : check is this work or no
 
             this_primitive.index_type   = RenderIndexType::UNSIGNED_INT;
             this_primitive.index_count  = accessor.count;
@@ -289,7 +289,7 @@ void fe::GLTFImporter::loadIndices(const tinygltf::Model& model, resource::Model
                 }
             }
 
-            this_indices.assign_range(vec); // TODO : check is this work or no
+            this_indices.insert_range(this_indices.end(), vec); // TODO : check is this work or no
 
             this_primitive.index_type   = RenderIndexType::UNSIGNED_INT;
             this_primitive.index_count  = accessor.count;

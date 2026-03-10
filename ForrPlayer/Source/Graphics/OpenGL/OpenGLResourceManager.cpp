@@ -122,7 +122,7 @@ fe::pointer<fe::OpenGLTexture> fe::OpenGLResourceManager::CreateTexture(fe::poin
 
 void fe::OpenGLResourceManager::CreateModel(fe::pointer<fe::resource::Model> cpu_model_ptr) { // TODO : the texture or model might be already created, handle it
     OpenGLModel opengl_model{};
-    
+
     const auto& model = *m_ResourceManager.GetResource(cpu_model_ptr);
 
     // mesh hasn't its own extension, so you get a structure here, not a pointer
@@ -144,44 +144,35 @@ void fe::OpenGLResourceManager::CreateModel(fe::pointer<fe::resource::Model> cpu
 fe::pointer<fe::OpenGLMesh> fe::OpenGLResourceManager::createMesh(const Mesh& mesh) {
     OpenGLMesh opengl_mesh{};
 
-    Vertices vertices{};
-    Indices  indices{};
-
-    glCreateVertexArrays(1, &opengl_mesh.vao);
-    glBindVertexArray(opengl_mesh.vao);
-
-    glCreateBuffers(1, &opengl_mesh.vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, opengl_mesh.vbo);
-
-    constexpr GLsizei stride = sizeof(Vertex);
-
-    glVertexAttribIPointer(0, 3, GL_UNSIGNED_SHORT, stride, (void*) offsetof(Vertex, position));
-    glEnableVertexAttribArray(0);
-
-    glCreateBuffers(1, &opengl_mesh.ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl_mesh.ebo);
-
     for (const auto& primitive : mesh.primitives) {
 
         OpenGLPrimitive opengl_primitive{};
 
-        this->createPrimitive(primitive, opengl_primitive, vertices, indices);
+        this->createPrimitive(primitive, opengl_primitive);
+
         opengl_mesh.primitives.emplace_back(std::move(opengl_primitive));
     }
-
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
 
     auto ptr = m_Meshes.create(std::move(opengl_mesh));
     return ptr;
 }
 
-void fe::OpenGLResourceManager::createPrimitive(const Primitive& primitive, OpenGLPrimitive& opengl_primitive, Vertices& vertices, Indices& indices) {
+void fe::OpenGLResourceManager::createPrimitive(const Primitive& primitive, OpenGLPrimitive& opengl_primitive) {
     //opengl_primitive.material // TODO : handle materials
+
+    glCreateVertexArrays(1, &opengl_primitive.vao);
+    glBindVertexArray(opengl_primitive.vao);
+
+    glCreateBuffers(1, &opengl_primitive.vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, opengl_primitive.vbo);
+
+    constexpr GLsizei stride = sizeof(Vertex);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*) offsetof(Vertex, position));
+    glEnableVertexAttribArray(0);
+
+    glCreateBuffers(1, &opengl_primitive.ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl_primitive.ebo);
 
     opengl_primitive.index_count  = primitive.index_count;
     opengl_primitive.index_offset = primitive.index_offset;
@@ -201,6 +192,10 @@ void fe::OpenGLResourceManager::createPrimitive(const Primitive& primitive, Open
     }
     // clang-format on
 
-    vertices.assign_range(primitive.vertices);
-    indices.assign_range(primitive.indices);
+    glBufferData(GL_ARRAY_BUFFER, primitive.vertices.size() * sizeof(Vertex), primitive.vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, primitive.indices.size() * sizeof(GLuint), primitive.indices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 }
