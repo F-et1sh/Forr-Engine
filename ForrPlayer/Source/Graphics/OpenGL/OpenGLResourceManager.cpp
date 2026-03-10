@@ -195,7 +195,7 @@ void fe::OpenGLResourceManager::createPrimitive(const Primitive& primitive, Open
     glBufferData(GL_ARRAY_BUFFER, primitive.vertices.size() * sizeof(Vertex), primitive.vertices.data(), GL_STATIC_DRAW);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, primitive.indices.size() * sizeof(GLuint), primitive.indices.data(), GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }

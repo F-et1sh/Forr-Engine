@@ -2,9 +2,10 @@
 
 ## 10.03.2026
 ### Goal
-    Make a CPU -> GPU model draw ( throw-in ) 
-    ...
+    Make a CPU -> GPU model draw ( throw-in )
+    Speed up gLTF loading
     Make camera movable
+    ...
 
     Not now, but :
     - provide event system for platform
@@ -17,6 +18,7 @@
     fe::pointer::packed() and fe::pointer::unpack() added
     almost done but it's crashing, I don't know why
     fixing the bug ( in progress )
+    the bug fixed. do NEVER unbind EBO before unbinding VAO. EBO MUST BE UNBOUND ONLY AFTER VAO
      
 ### Problem
     -
