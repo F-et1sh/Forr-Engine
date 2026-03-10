@@ -14,6 +14,7 @@
     OpenGL fix
     Model loaded correctly
     fe::pointer::packed() and fe::pointer::unpack() added
+    almost done but it's crashing, I don't know why
 
 ### Problem
     -

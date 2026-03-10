@@ -80,8 +80,8 @@ namespace fe {
         RenderMode render_mode{ RenderMode::TRIANGLES }; // triangles by default
 
         RenderIndexType index_type{};
-        size_t          index_count{};
-        size_t          index_offset{};
+        int             index_count{};
+        int             index_offset{};
 
         Primitive()  = default;
         ~Primitive() = default;

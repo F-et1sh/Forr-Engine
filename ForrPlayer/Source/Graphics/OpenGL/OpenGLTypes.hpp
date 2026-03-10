@@ -52,8 +52,8 @@ namespace fe {
 
     // for 1:1 mapping
     struct OpenGLModel {
-        std::vector<OpenGLMesh>    meshes{};
-        std::vector<OpenGLTexture> textures{};
+        std::vector<fe::pointer<OpenGLMesh>>    pointers_mesh{};
+        std::vector<fe::pointer<OpenGLTexture>> pointers_texture{};
 
         OpenGLModel()  = default;
         ~OpenGLModel() = default;

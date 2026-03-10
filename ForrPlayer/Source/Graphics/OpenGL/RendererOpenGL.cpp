@@ -82,29 +82,50 @@ void fe::RendererOpenGL::SwapBuffers() {
 void fe::RendererOpenGL::Draw(fe::pointer<resource::Model> ptr) {
     m_Shader.bind();
 
-    auto model = m_ResourceManager.GetResource(ptr);
-    for (const auto& mesh : model->meshes) {
+    {
+        m_Camera.translate(glm::vec3(0, 0, -0.025));
+        m_Camera.rotate(glm::vec3(0, 1, 0));
 
+        ShaderData shader_data{};
+        shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
+        shader_data.view_matrix       = m_Camera.getViewMatrix();
+        shader_data.model_matrix      = glm::mat4(1.0f);
+
+        glNamedBufferSubData(ubo, 0, sizeof(shader_data), &shader_data);
+    }
+
+    auto opengl_model = m_OpenGLResourceManager.GetResource<OpenGLModel>(ptr);
+    for (auto mesh_pointer : opengl_model->pointers_mesh) {
+        const auto& mesh_storage = m_OpenGLResourceManager.GetStorage<OpenGLMesh>();
+        auto mesh = mesh_storage.get(mesh_pointer);
+        
+        glBindVertexArray(mesh->vao);
+
+        for (const auto& primitive : mesh->primitives) { // this is crashing, I don't know why
+            glDrawElements(primitive.render_mode, primitive.index_count, GL_UNSIGNED_INT, (void*) (sizeof(GLuint) * primitive.index_offset));
+        }
+
+        glBindVertexArray(0);
     }
 
     m_Shader.unbind();
 }
 
 void fe::RendererOpenGL::InitializeGPUResources() {
-    m_ResourceManager.RunForEach<resource::Texture>([&](const resource::Texture& texture) {
-        m_OpenGLResourceManager.CreateTexture(texture);
+    m_ResourceManager.RunForEach<resource::Texture>([&](const resource::Texture&       texture,
+                                                        fe::pointer<resource::Texture> texture_ptr) {
+        m_OpenGLResourceManager.CreateTexture(texture_ptr);
 
         fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
     });
 
     m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material& material) { // TODO : provide materials
-        //m_OpenGLResourceManager.CreateMaterial(material);
-
-        //fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
+        // ...
     });
 
-    m_ResourceManager.RunForEach<resource::Model>([&](const resource::Model& model) {
-        m_OpenGLResourceManager.CreateModel(model);
+    m_ResourceManager.RunForEach<resource::Model>([&](const resource::Model&       model,
+                                                      fe::pointer<resource::Model> model_ptr) {
+        m_OpenGLResourceManager.CreateModel(model_ptr);
 
         fe::logging::info("Loaded model's mesh count %i", model.meshes.size());
     });

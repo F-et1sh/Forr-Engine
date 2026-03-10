@@ -37,12 +37,12 @@ namespace fe {
     template <typename _Ty>
     class FORR_NODISCARD pointer {
     public:
-        constexpr pointer(handle_t index, handle_t generation) noexcept 
+        constexpr pointer(handle_t index, handle_t generation) noexcept
             : m_index(index), m_generation(generation) {}
         ~pointer() = default;
 
         constexpr explicit pointer(uint64_t packed) noexcept { this->unpack(packed); }
-        
+
         constexpr pointer() noexcept                = default;
         pointer(const pointer&) noexcept            = default;
         pointer& operator=(const pointer&) noexcept = default;
@@ -57,7 +57,7 @@ namespace fe {
         // the pointer is going to be changed after unpacking
         // it's not just getting you an unpacked pointer<_Ty>
         constexpr pointer<_Ty> unpack(uint64_t packed) noexcept {
-            m_index = static_cast<uint32_t>(packed >> 32);
+            m_index      = static_cast<uint32_t>(packed >> 32);
             m_generation = static_cast<uint32_t>(packed & 0xFFFFFFFF);
             return *this;
         }
