@@ -8,6 +8,7 @@
 
     Not now, but :
     - provide event system for platform
+    - project "compiling"
 
 ### Done
     Model loading ( tinygltf -> Unified ) done without textures and materials
@@ -15,7 +16,8 @@
     Model loaded correctly
     fe::pointer::packed() and fe::pointer::unpack() added
     almost done but it's crashing, I don't know why
-
+    fixing the bug ( in progress )
+     
 ### Problem
     -
 

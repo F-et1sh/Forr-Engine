@@ -94,18 +94,27 @@ void fe::RendererOpenGL::Draw(fe::pointer<resource::Model> ptr) {
         glNamedBufferSubData(ubo, 0, sizeof(shader_data), &shader_data);
     }
 
+    //auto cpu_mesh     = m_ResourceManager.GetResource(ptr);
+
     auto opengl_model = m_OpenGLResourceManager.GetResource<OpenGLModel>(ptr);
+
     for (auto mesh_pointer : opengl_model->pointers_mesh) {
         const auto& mesh_storage = m_OpenGLResourceManager.GetStorage<OpenGLMesh>();
-        auto mesh = mesh_storage.get(mesh_pointer);
-        
-        glBindVertexArray(mesh->vao);
+        auto        mesh         = mesh_storage.get(mesh_pointer);
 
         for (const auto& primitive : mesh->primitives) { // this is crashing, I don't know why
-            glDrawElements(primitive.render_mode, primitive.index_count, GL_UNSIGNED_INT, (void*) (sizeof(GLuint) * primitive.index_offset));
-        }
 
-        glBindVertexArray(0);
+            glBindVertexArray(primitive.vao);
+
+            if (primitive.index_count > 0) {
+                glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
+            }
+            else {
+                //glDrawArrays(GL_TRIANGLES, 0, cpu_mesh->meshes[0].primitives[0].vertices.size());
+            }
+
+            glBindVertexArray(0);
+        }
     }
 
     m_Shader.unbind();

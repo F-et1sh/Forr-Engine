@@ -39,7 +39,7 @@ namespace fe {
             requires std::default_initializable<T>
         {
             auto& storage = this->GetStorage<T>();
-            return storage.create(T{});
+            return storage.create();
         }
 
         template <typename T>
