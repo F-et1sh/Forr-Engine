@@ -58,6 +58,26 @@ void fe::RendererVulkan::Draw(fe::pointer<resource::Model> ptr) {
     //this->VKDraw(mesh.vertex_buffer, mesh.index_buffer);
 }
 
+void fe::RendererVulkan::InitializeGPUResources() {
+    m_ResourceManager.RunForEach<resource::Texture>([&](const resource::Texture&       texture,
+                                                        fe::pointer<resource::Texture> texture_ptr) {
+        m_VulkanResourceManager.CreateTexture(texture_ptr);
+
+        fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
+    });
+
+    m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material& material) { // TODO : provide materials
+        // ...
+    });
+
+    m_ResourceManager.RunForEach<resource::Model>([&](const resource::Model&       model,
+                                                      fe::pointer<resource::Model> model_ptr) {
+        m_VulkanResourceManager.CreateModel(model_ptr);
+
+        fe::logging::info("Loaded model's mesh count %i", model.meshes.size());
+    });
+}
+
 void fe::RendererVulkan::configureCamera() {
     m_Camera.setType(Camera::Type::LOOKAT);
     m_Camera.setPosition(glm::vec3(0.0f, 0.0f, -2.5f));

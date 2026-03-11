@@ -16,6 +16,25 @@
 #include "Graphics/GPUTypes.hpp"
 #include "VKTools.hpp"
 
+void fe::VulkanResourceManager::CreateTexture(fe::pointer<fe::resource::Texture> cpu_texture_ptr) {
+    const auto& texture = *m_ResourceManager.GetResource(cpu_texture_ptr);
+    this->createTexture(texture);
+}
+
+void fe::VulkanResourceManager::CreateModel(fe::pointer<fe::resource::Model> cpu_model_ptr) { // TODO : the texture or model might be already created, handle it
+}
+
+fe::pointer<fe::VulkanMesh> fe::VulkanResourceManager::createMesh(const Mesh& mesh) {
+    return fe::pointer<VulkanMesh>(); // TODO : provide this
+}
+
+fe::pointer<fe::VulkanTexture> fe::VulkanResourceManager::createTexture(const resource::Texture& texture) {
+    return fe::pointer<VulkanTexture>(); // TODO : provide this
+}
+
+void fe::VulkanResourceManager::createPrimitive(const Primitive& primitive, VulkanPrimitive& vulkan_primitive) {
+}
+
 //fe::MeshID fe::VulkanResourceManager::CreateTriangle() {
 //    std::vector<Vertex> triangle_vertices{
 //        Vertex{ glm::vec3{ -0.5f, -0.5f, 0.0f } },

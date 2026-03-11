@@ -40,9 +40,9 @@ namespace fe {
         void ClearScreen(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
         void SwapBuffers() override;
 
-        void                                    Draw(fe::pointer<resource::Model> ptr) override;
+        void Draw(fe::pointer<resource::Model> ptr) override;
 
-        void InitializeGPUResources() override { /* ... */ }
+        void InitializeGPUResources() override;
 
     private: // Vulkan initialization queue
         // Create Vulkan base :
@@ -192,7 +192,7 @@ namespace fe {
 
         uint32_t m_CurrentFrame{};
 
-        VulkanResourceManager m_VulkanResourceManager{ m_Context };
+        VulkanResourceManager m_VulkanResourceManager{ m_Context, m_ResourceManager };
 
         fe::vk::CommandPool m_CommandPool{};
     };

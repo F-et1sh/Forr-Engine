@@ -51,17 +51,6 @@ namespace fe {
         FORR_CLASS_MOVABLE(VulkanIndexBuffer)
     };
 
-    struct VulkanMesh {
-        VulkanVertexBuffer vertex_buffer{};
-        VulkanIndexBuffer  index_buffer{};
-
-        VulkanMesh()  = default;
-        ~VulkanMesh() = default;
-
-        FORR_CLASS_NONCOPYABLE(VulkanMesh)
-        FORR_CLASS_MOVABLE(VulkanMesh)
-    };
-
     struct VulkanUniformBuffer {
         fe::vk::DeviceMemory memory{};
         fe::vk::Buffer       buffer{};
@@ -74,5 +63,45 @@ namespace fe {
 
         FORR_CLASS_NONCOPYABLE(VulkanUniformBuffer)
         FORR_CLASS_MOVABLE(VulkanUniformBuffer)
+    };
+
+    struct VulkanTexture { // TODO : provide textures
+
+        VulkanTexture()  = default;
+        ~VulkanTexture() = default;
+    };
+
+    struct VulkanPrimitive {
+        VulkanVertexBuffer vertex_buffer{};
+        VulkanIndexBuffer  index_buffer{};
+
+        uint32_t index_offset{};
+        uint32_t index_count{};
+
+        //GLenum render_mode{ GL_TRIANGLES }; // triangles by default | TODO : provide topology
+
+        fe::pointer<resource::Material> material{};
+
+        VulkanPrimitive()  = default;
+        ~VulkanPrimitive() = default;
+    };
+
+    struct VulkanMesh {
+        // GLenum index_type{}; uint32_t for all models ( at least for now )
+
+        std::vector<VulkanPrimitive> primitives{};
+
+        VulkanMesh()  = default;
+        ~VulkanMesh() = default;
+    };
+
+    // for 1:1 mapping | TODO : don't do this. You don't have to create Model, 
+    //  Mesh and other things like this on GPU-side
+    struct VulkanModel {
+        std::vector<fe::pointer<VulkanMesh>>    pointers_mesh{};
+        std::vector<fe::pointer<VulkanTexture>> pointers_texture{};
+
+        VulkanModel()  = default;
+        ~VulkanModel() = default;
     };
 } // namespace fe
