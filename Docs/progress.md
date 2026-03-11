@@ -2,13 +2,14 @@
 
 ## 11.03.2026
 ### Goal
-    Speed up gLTF loading
+    Provide model loading to Vulkan
     Make camera movable
     ...
 
     Not now, but :
     - provide event system for platform
     - provide project "compiling" ( speed up )
+    - speed up gLTF loading
 
 ### Done
      Camera can move ( only showcase, works bad. 
