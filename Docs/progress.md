@@ -21,6 +21,7 @@
     VulkanResourceManager configured
     bug fixed
     VulkanResourceManager done ( the model is blinking but it's drawing )
+    Blinking fixed
 
 ### Problem
     -

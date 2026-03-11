@@ -125,8 +125,6 @@ namespace fe {
         void VKSetupDescriptorSets();
         void VKSetupPipelineLayout();
 
-        void VKDraw(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer); // temp
-
     private: // Vulkan helper functions
         // get queue family infos for logical device creation and setup m_Context.queue_family_indices
         std::vector<VkDeviceQueueCreateInfo> getQueueFamilyInfos(bool use_swapchain = true, VkQueueFlags requested_queue_types = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
@@ -137,6 +135,11 @@ namespace fe {
                                                                         VkDebugUtilsMessageTypeFlagsEXT             message_type,
                                                                         const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
                                                                         void*                                       user_data);
+
+    private:
+        void BeginFrame();
+        void DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer);
+        void EndFrame();
 
     private: // Others
         void configureCamera();
