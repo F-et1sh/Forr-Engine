@@ -39,6 +39,9 @@ namespace fe {
 
         FORR_NODISCARD glm::mat4 getPerspectiveMatrix() const noexcept { return m_PerspectiveMatrix; }
         FORR_NODISCARD glm::mat4 getViewMatrix() const noexcept { return m_ViewMatrix; }
+        FORR_NODISCARD glm::vec4 getViewPosition() const noexcept { return m_ViewPosition; }
+        FORR_NODISCARD glm::vec3 getPosition() const noexcept { return m_Position; }
+        FORR_NODISCARD glm::vec3 getRotation() const noexcept { return m_Rotation; }
 
         void setType(Type type) noexcept {
             this->m_Type = type;
@@ -67,11 +70,6 @@ namespace fe {
             updateViewMatrix();
         }
 
-        void rotate(glm::vec3 delta) {
-            this->m_Rotation += delta;
-            updateViewMatrix();
-        }
-
         void setTranslation(glm::vec3 translation) {
             this->m_Position = translation;
             updateViewMatrix();
@@ -79,6 +77,11 @@ namespace fe {
 
         void translate(glm::vec3 delta) {
             this->m_Position += delta;
+            updateViewMatrix();
+        }
+
+        void rotate(glm::vec3 delta) {
+            this->m_Rotation += delta;
             updateViewMatrix();
         }
 

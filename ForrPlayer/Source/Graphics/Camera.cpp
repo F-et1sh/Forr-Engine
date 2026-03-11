@@ -55,13 +55,16 @@ void fe::Camera::update(float delta_time) {
             camera_front.z = cos(glm::radians(m_Rotation.x)) * cos(glm::radians(m_Rotation.y));
             camera_front   = glm::normalize(camera_front);
 
-            float moveSpeed = delta_time * m_MovementSpeed;
+            float move_speed = delta_time * m_MovementSpeed;
 
-            if (m_Keys.up) m_Position += camera_front * moveSpeed;
-            if (m_Keys.down) m_Position -= camera_front * moveSpeed;
-            if (m_Keys.left) m_Position -= glm::normalize(glm::cross(camera_front, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
-            if (m_Keys.right) m_Position += glm::normalize(glm::cross(camera_front, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
+            if (m_Keys.up) m_Position += camera_front * move_speed;
+            if (m_Keys.down) m_Position -= camera_front * move_speed;
+            if (m_Keys.left) m_Position -= glm::normalize(glm::cross(camera_front, glm::vec3(0.0f, 1.0f, 0.0f))) * move_speed;
+            if (m_Keys.right) m_Position += glm::normalize(glm::cross(camera_front, glm::vec3(0.0f, 1.0f, 0.0f))) * move_speed;
         }
+    }
+    else {
+        // TODO : look-at logic
     }
 
     updateViewMatrix();
@@ -74,36 +77,36 @@ bool fe::Camera::updatePad(glm::vec2 axis_left, glm::vec2 axis_right, float delt
         const float dead_zone = 0.0015f;
         const float range     = 1.0f - dead_zone;
 
-        glm::vec3 camera_front;
+        glm::vec3 camera_front{};
         camera_front.x = -cos(glm::radians(m_Rotation.x)) * sin(glm::radians(m_Rotation.y));
         camera_front.y = sin(glm::radians(m_Rotation.x));
         camera_front.z = cos(glm::radians(m_Rotation.x)) * cos(glm::radians(m_Rotation.y));
         camera_front   = glm::normalize(camera_front);
 
-        float moveSpeed = delta_time * m_MovementSpeed * 2.0f;
-        float rotSpeed  = delta_time * m_RotationSpeed * 50.0f;
+        float move_speed = delta_time * m_MovementSpeed * 2.0f;
+        float rotation_speed  = delta_time * m_RotationSpeed * 50.0f;
 
         // movement
         if (fabsf(axis_left.y) > dead_zone) {
-            float pos = (fabsf(axis_left.y) - dead_zone) / range;
-            m_Position -= camera_front * pos * ((axis_left.y < 0.0f) ? -1.0f : 1.0f) * moveSpeed;
+            float position = (fabsf(axis_left.y) - dead_zone) / range;
+            m_Position -= camera_front * position * ((axis_left.y < 0.0f) ? -1.0f : 1.0f) * move_speed;
             result = true;
         }
         if (fabsf(axis_left.x) > dead_zone) {
-            float pos = (fabsf(axis_left.x) - dead_zone) / range;
-            m_Position += glm::normalize(glm::cross(camera_front, glm::vec3(0.0f, 1.0f, 0.0f))) * pos * ((axis_left.x < 0.0f) ? -1.0f : 1.0f) * moveSpeed;
+            float position = (fabsf(axis_left.x) - dead_zone) / range;
+            m_Position += glm::normalize(glm::cross(camera_front, glm::vec3(0.0f, 1.0f, 0.0f))) * position * ((axis_left.x < 0.0f) ? -1.0f : 1.0f) * move_speed;
             result = true;
         }
 
         // rotation
         if (fabsf(axis_right.x) > dead_zone) {
-            float pos = (fabsf(axis_right.x) - dead_zone) / range;
-            m_Rotation.y += pos * ((axis_right.x < 0.0f) ? -1.0f : 1.0f) * rotSpeed;
+            float position = (fabsf(axis_right.x) - dead_zone) / range;
+            m_Rotation.y += position * ((axis_right.x < 0.0f) ? -1.0f : 1.0f) * rotation_speed;
             result = true;
         }
         if (fabsf(axis_right.y) > dead_zone) {
-            float pos = (fabsf(axis_right.y) - dead_zone) / range;
-            m_Rotation.x -= pos * ((axis_right.y < 0.0f) ? -1.0f : 1.0f) * rotSpeed;
+            float position = (fabsf(axis_right.y) - dead_zone) / range;
+            m_Rotation.x -= position * ((axis_right.y < 0.0f) ? -1.0f : 1.0f) * rotation_speed;
             result = true;
         }
     }
