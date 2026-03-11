@@ -80,7 +80,7 @@ namespace fe {
         RenderMode render_mode{ RenderMode::TRIANGLES }; // triangles by default
 
         RenderIndexType index_type{};
-        int             index_count{};
+        int             index_count{}; // TODO : review this. Why you need index_count if you already using std::vector<Index>
         int             index_offset{};
 
         Primitive()  = default;

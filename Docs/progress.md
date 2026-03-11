@@ -10,6 +10,7 @@
     - provide event system for platform
     - provide project "compiling" ( speed up )
     - speed up gLTF loading
+    - review GPU resource manager's architecture. It's confusing
 
 ### Done
     Camera can move ( only showcase, works bad. 
@@ -19,6 +20,7 @@
     VKRAII.hpp -> VulkanRAII.hpp
     VulkanResourceManager configured
     bug fixed
+    VulkanResourceManager done ( the model is blinking but it's drawing )
 
 ### Problem
     -
