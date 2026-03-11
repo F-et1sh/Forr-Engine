@@ -1,5 +1,25 @@
 # Forr-Engine Devlog
 
+## 11.03.2026
+### Goal
+    Speed up gLTF loading
+    Make camera movable
+    ...
+
+    Not now, but :
+    - provide event system for platform
+    - provide project "compiling" ( speed up )
+
+### Done
+     Camera can move ( only showcase, works bad. 
+        This needs to be done by the event system for platform )
+
+
+### Problem
+    -
+
+---
+
 ## 10.03.2026
 ### Goal
     Make a CPU -> GPU model draw ( throw-in )

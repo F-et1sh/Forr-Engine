@@ -42,15 +42,17 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
     m_Shader.LoadShader(shader_path);
 
     m_Camera.setType(Camera::Type::LOOKAT);
-    m_Camera.setPosition(glm::vec3(0.0f, 0.0f, -2.5f));
+    m_Camera.setPosition(glm::vec3(0.0f, 0.0f, -4.5f));
     m_Camera.setRotation(glm::vec3(0.0f));
     m_Camera.setFlipY(false);
 
+    float speed  = 0.15f;
     float fov    = 60.0f;
     float aspect = (float) m_PrimaryWindow.getWidth() / (float) m_PrimaryWindow.getHeight();
     float znear  = 1.0f;
     float zfar   = 1000.0f;
     m_Camera.setPerspective(fov, aspect, znear, zfar);
+    m_Camera.setMovementSpeed(speed);
 
     m_Shader.bind();
 
@@ -63,6 +65,8 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
     shader_data.model_matrix      = glm::mat4(1.0f);
 
     glNamedBufferData(ubo, sizeof(shader_data), &shader_data, GL_DYNAMIC_DRAW);
+
+    glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 fe::RendererOpenGL::~RendererOpenGL() {
@@ -82,9 +86,16 @@ void fe::RendererOpenGL::SwapBuffers() {
 void fe::RendererOpenGL::Draw(fe::pointer<resource::Model> ptr) {
     m_Shader.bind();
 
-    {
-        m_Camera.translate(glm::vec3(0, 0, -0.025));
-        m_Camera.rotate(glm::vec3(0, 1, 0));
+    { // temp
+        if (glfwGetKey(m_GLFWwindow, GLFW_KEY_A))
+            m_Camera.translate(glm::vec3(1.0f, 0.0f, 0.0f));
+        else if (glfwGetKey(m_GLFWwindow, GLFW_KEY_D))
+            m_Camera.translate(glm::vec3(-1.0f, 0.0f, 0.0f));
+
+        if (glfwGetKey(m_GLFWwindow, GLFW_KEY_W))
+            m_Camera.translate(glm::vec3(0.0f, 0.0f, 1.0f));
+        else if (glfwGetKey(m_GLFWwindow, GLFW_KEY_S))
+            m_Camera.translate(glm::vec3(0.0f, 0.0f, -1.0f));
 
         ShaderData shader_data{};
         shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
