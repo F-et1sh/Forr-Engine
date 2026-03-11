@@ -17,6 +17,7 @@
     VKTypes.hpp -> VKRAII.hpp
     VKStructures.hpp -> VulkanTypes.hpp
     VKRAII.hpp -> VulkanRAII.hpp
+    VulkanResourceManager configured
 
 ### Problem
     -
