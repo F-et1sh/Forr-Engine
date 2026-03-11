@@ -12,9 +12,9 @@
     - speed up gLTF loading
 
 ### Done
-     Camera can move ( only showcase, works bad. 
+    Camera can move ( only showcase, works bad. 
         This needs to be done by the event system for platform )
-
+    VKTypes.hpp -> VKRAII.hpp
 
 ### Problem
     -

@@ -2,7 +2,7 @@
 
     Forr Engine
 
-    File : VKTypes.cpp
+    File : VKRAII.cpp
     Role : Thin wrapper classes to provide RAII to Vulkan.
         fe::vk:: - is a namespace that contains only thin wrappers.
         Classes/Structs like VulkanDevice won't be here, they will be in fe::

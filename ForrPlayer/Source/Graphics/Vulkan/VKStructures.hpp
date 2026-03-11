@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "VKTypes.hpp"
+#include "VKRAII.hpp"
 
 namespace fe {
     struct VulkanImage {
