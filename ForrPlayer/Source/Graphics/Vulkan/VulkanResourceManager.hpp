@@ -77,7 +77,7 @@ namespace fe {
 
     private: // helper functions
         fe::pointer<VulkanMesh>    createMesh(const Mesh& mesh);
-        fe::pointer<VulkanTexture> createTexture(const resource::Texture& texture);
+        fe::pointer<VulkanTexture> createTexture(fe::pointer<fe::resource::Texture> cpu_texture_ptr);
         void                       createPrimitive(const Primitive& primitive, VulkanPrimitive& vulkan_primitive);
 
     private:

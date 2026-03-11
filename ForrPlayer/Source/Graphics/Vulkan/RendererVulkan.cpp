@@ -54,6 +54,20 @@ void fe::RendererVulkan::SwapBuffers() {
 }
 
 void fe::RendererVulkan::Draw(fe::pointer<resource::Model> ptr) {
+    { // temp
+        auto glfw_window = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
+
+        if (glfwGetKey(glfw_window, GLFW_KEY_A))
+            m_Camera.translate(glm::vec3(1.0f, 0.0f, 0.0f));
+        else if (glfwGetKey(glfw_window, GLFW_KEY_D))
+            m_Camera.translate(glm::vec3(-1.0f, 0.0f, 0.0f));
+
+        if (glfwGetKey(glfw_window, GLFW_KEY_W))
+            m_Camera.translate(glm::vec3(0.0f, 0.0f, 1.0f));
+        else if (glfwGetKey(glfw_window, GLFW_KEY_S))
+            m_Camera.translate(glm::vec3(0.0f, 0.0f, -1.0f));
+    }
+
     auto vulkan_model = m_VulkanResourceManager.GetResource<VulkanModel>(ptr);
 
     for (auto mesh_pointer : vulkan_model->pointers_mesh) {
@@ -77,7 +91,7 @@ void fe::RendererVulkan::InitializeGPUResources() {
                                                         fe::pointer<resource::Texture> texture_ptr) {
         m_VulkanResourceManager.CreateTexture(texture_ptr);
 
-        fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
+        fe::logging::info("VULKAN. Loaded texture's size : %i %i", texture.width, texture.height);
     });
 
     m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material& material) { // TODO : provide materials
@@ -88,7 +102,7 @@ void fe::RendererVulkan::InitializeGPUResources() {
                                                       fe::pointer<resource::Model> model_ptr) {
         m_VulkanResourceManager.CreateModel(model_ptr);
 
-        fe::logging::info("Loaded model's mesh count %i", model.meshes.size());
+        fe::logging::info("VULKAN. Loaded model's mesh count %i", model.meshes.size());
     });
 }
 

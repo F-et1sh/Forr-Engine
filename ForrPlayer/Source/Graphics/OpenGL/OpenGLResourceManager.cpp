@@ -135,6 +135,11 @@ void fe::OpenGLResourceManager::CreateModel(fe::pointer<fe::resource::Model> cpu
     for (const auto& texture_ptr : model.textures) {
         auto ptr = this->CreateTexture(texture_ptr);
         opengl_model.pointers_texture.emplace_back(ptr);
+
+        // TODO : change this to this :
+        // auto& texture = *m_ResourceManager.GetResource(texture_ptr);
+        // auto ptr = this->createTexture(texture);
+        // opengl_model.pointers_texture.emplace_back(ptr);
     }
 
     auto gpu_ptr = m_Models.create(std::move(opengl_model));
