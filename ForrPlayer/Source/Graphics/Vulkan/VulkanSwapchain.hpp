@@ -18,7 +18,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Platform/IWindow.hpp"
-#include "VKRAII.hpp"
+#include "VulkanRAII.hpp"
 #include "VulkanContext.hpp"
 #include "Graphics/IRenderer.hpp"
 

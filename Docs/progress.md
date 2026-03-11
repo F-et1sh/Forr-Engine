@@ -15,6 +15,8 @@
     Camera can move ( only showcase, works bad. 
         This needs to be done by the event system for platform )
     VKTypes.hpp -> VKRAII.hpp
+    VKStructures.hpp -> VulkanTypes.hpp
+    VKRAII.hpp -> VulkanRAII.hpp
 
 ### Problem
     -
