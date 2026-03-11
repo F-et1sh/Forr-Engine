@@ -69,6 +69,9 @@ namespace fe {
 
         VulkanTexture()  = default;
         ~VulkanTexture() = default;
+
+        FORR_CLASS_NONCOPYABLE(VulkanTexture)
+        FORR_CLASS_MOVABLE(VulkanTexture)
     };
 
     struct VulkanPrimitive {
@@ -84,6 +87,9 @@ namespace fe {
 
         VulkanPrimitive()  = default;
         ~VulkanPrimitive() = default;
+
+        FORR_CLASS_NONCOPYABLE(VulkanPrimitive)
+        FORR_CLASS_MOVABLE(VulkanPrimitive)
     };
 
     struct VulkanMesh {
@@ -93,9 +99,12 @@ namespace fe {
 
         VulkanMesh()  = default;
         ~VulkanMesh() = default;
+
+        FORR_CLASS_NONCOPYABLE(VulkanMesh)
+        FORR_CLASS_MOVABLE(VulkanMesh)
     };
 
-    // for 1:1 mapping | TODO : don't do this. You don't have to create Model, 
+    // for 1:1 mapping | TODO : don't do this. You don't have to create Model,
     //  Mesh and other things like this on GPU-side
     struct VulkanModel {
         std::vector<fe::pointer<VulkanMesh>>    pointers_mesh{};
@@ -103,5 +112,8 @@ namespace fe {
 
         VulkanModel()  = default;
         ~VulkanModel() = default;
+
+        FORR_CLASS_NONCOPYABLE(VulkanModel)
+        FORR_CLASS_MOVABLE(VulkanModel)
     };
 } // namespace fe

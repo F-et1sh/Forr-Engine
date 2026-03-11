@@ -22,6 +22,8 @@ void fe::VulkanResourceManager::CreateTexture(fe::pointer<fe::resource::Texture>
 }
 
 void fe::VulkanResourceManager::CreateModel(fe::pointer<fe::resource::Model> cpu_model_ptr) { // TODO : the texture or model might be already created, handle it
+    //VulkanMesh mesh{};
+    //m_Meshes.create(std::move(mesh));
 }
 
 fe::pointer<fe::VulkanMesh> fe::VulkanResourceManager::createMesh(const Mesh& mesh) {
