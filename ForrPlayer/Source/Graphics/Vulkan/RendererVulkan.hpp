@@ -21,7 +21,7 @@
 #include "Volk/volk.h"
 
 #include "Graphics/GPUTypes.hpp"
-#include "VKTypes.hpp"
+#include "VKRAII.hpp"
 
 #include "VulkanContext.hpp"
 #include "VulkanSwapchain.hpp"
