@@ -3,8 +3,7 @@
     Forr Engine
 
     File : OpenGLTypes.hpp
-    Role : OpenGL types like Texture.
-        There mustn't be complex thing. Just thin POD structures.
+    Role : OpenGL types. There mustn't be complex thing. Just thin POD structures.
         This engine is mostly data-oriented designed
 
     Copyright (C) 2026 Farrakh

@@ -21,12 +21,12 @@
 #include "Volk/volk.h"
 
 #include "Graphics/GPUTypes.hpp"
-#include "VKRAII.hpp"
+#include "VulkanRAII.hpp"
 
 #include "VulkanContext.hpp"
 #include "VulkanSwapchain.hpp"
 #include "VKTools.hpp"
-#include "VKStructures.hpp"
+#include "VulkanTypes.hpp"
 
 #include "Graphics/Camera.hpp"
 #include "VulkanResourceManager.hpp"

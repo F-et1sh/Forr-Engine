@@ -2,8 +2,9 @@
 
     Forr Engine
 
-    File : VKStructures.hpp
-    Role : RAII structures
+    File : VulkanTypes.hpp
+    Role : Vulkan types. There mustn't be complex thing. Just thin POD structures.
+        This engine is mostly data-oriented designed
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -12,7 +13,7 @@
 
 #pragma once
 
-#include "VKRAII.hpp"
+#include "VulkanRAII.hpp"
 
 namespace fe {
     struct VulkanImage {

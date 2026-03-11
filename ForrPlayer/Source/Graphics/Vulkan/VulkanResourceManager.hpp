@@ -12,7 +12,7 @@
 
 #pragma once
 #include "Core/types.hpp"
-#include "VKStructures.hpp"
+#include "VulkanTypes.hpp"
 #include "VulkanContext.hpp"
 
 namespace fe {
