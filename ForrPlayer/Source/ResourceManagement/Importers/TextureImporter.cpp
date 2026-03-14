@@ -64,5 +64,7 @@ void fe::TextureImporter::Import(ResourceStorage& storage, const std::filesystem
     stbi_image_free(bytes); // can be freed after copying
 
     auto& texture_storage = storage.GetStorage<resource::Texture>();
-    auto  ptr             = texture_storage.create(std::move(texture)); // does not need to store this fe::pointer
+    auto  ptr             = texture_storage.create(std::move(texture)); // does not need to store this 
+
+
 }

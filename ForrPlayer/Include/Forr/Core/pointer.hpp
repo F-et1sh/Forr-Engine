@@ -3,7 +3,10 @@
     Forr Engine
 
     File : pointer.hpp
-    Role : fe::pointer storage
+    Role : 
+    
+    
+    storage
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.

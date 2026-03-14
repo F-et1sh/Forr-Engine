@@ -17,7 +17,9 @@
 
 namespace fe {
     struct MeshComponent {
-        fe::pointer<resource::Model> model_id{};
+        
+        
+        <resource::Model> model{};
         uint32_t                     mesh_id{};
 
         MeshComponent()  = default;

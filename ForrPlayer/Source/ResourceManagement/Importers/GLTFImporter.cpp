@@ -53,7 +53,9 @@ void fe::GLTFImporter::Import(ResourceStorage& storage, const std::filesystem::p
     GLTFImporter::loadTextures(model, this_model, storage);
     GLTFImporter::loadAnimations(model, this_model);
 
-    auto ptr = storage.CreateResource<resource::Model>(std::move(this_model)); // does not need to store this fe::pointer
+    auto ptr = storage.CreateResource<resource::Model>(std::move(this_model)); // does not need to store this 
+
+
 }
 
 void fe::GLTFImporter::loadNodes(const tinygltf::Model& model, resource::Model& this_model) {

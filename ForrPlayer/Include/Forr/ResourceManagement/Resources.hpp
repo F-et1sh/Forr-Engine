@@ -109,7 +109,7 @@ namespace fe::resource {
         };
 
         struct TextureInfo {
-            fe::pointer<Texture> texture_id{};
+            fe::pointer<Texture> texture{};
             int                  texture_coord{ 0 }; // TEXCOORD_0 by default
 
             TextureInfo()          = default;
