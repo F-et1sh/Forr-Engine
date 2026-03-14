@@ -59,12 +59,16 @@
         uint32_t mesh_index = ~0; // ~0 means that renderer has to draw all meshes
     
         glm::mat4 transform{};
+
+        DrawMeshCommand() = default;
+        ~DrawMeshCommand() = default;
     };
     ```
 
 ### Done
     MeshComponent created
     Textures/Materials logic changed
+    DrawMeshCommand provided
 
 ### Problem
     -

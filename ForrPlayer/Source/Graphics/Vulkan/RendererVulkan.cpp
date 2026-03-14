@@ -53,7 +53,7 @@ void fe::RendererVulkan::ClearScreen(float red, float green, float blue, float a
 void fe::RendererVulkan::SwapBuffers() {
 }
 
-void fe::RendererVulkan::Draw(fe::pointer<resource::Model> ptr) {
+void fe::RendererVulkan::Draw(DrawMeshCommand command) {
     { // temp
         auto glfw_window = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
 
@@ -70,7 +70,7 @@ void fe::RendererVulkan::Draw(fe::pointer<resource::Model> ptr) {
             m_Camera.translate(glm::vec3(0.0f, 0.0f, -speed));
     }
 
-    auto vulkan_model = m_VulkanResourceManager.GetResource<VulkanModel>(ptr);
+    auto vulkan_model = m_VulkanResourceManager.GetResource<VulkanModel>(command.model_ptr);
 
     this->BeginFrame();
 

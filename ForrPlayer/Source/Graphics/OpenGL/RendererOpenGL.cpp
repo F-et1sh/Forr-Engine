@@ -83,7 +83,7 @@ void fe::RendererOpenGL::SwapBuffers() {
     glfwSwapBuffers(m_GLFWwindow);
 }
 
-void fe::RendererOpenGL::Draw(fe::pointer<resource::Model> ptr) {
+void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
     m_Shader.bind();
 
     { // temp
@@ -107,7 +107,7 @@ void fe::RendererOpenGL::Draw(fe::pointer<resource::Model> ptr) {
 
     //auto cpu_mesh     = m_ResourceManager.GetResource(ptr);
 
-    auto opengl_model = m_OpenGLResourceManager.GetResource<OpenGLModel>(ptr);
+    auto opengl_model = m_OpenGLResourceManager.GetResource<OpenGLModel>(command.model_ptr);
 
     for (auto mesh_pointer : opengl_model->pointers_mesh) {
         const auto& mesh_storage = m_OpenGLResourceManager.GetStorage<OpenGLMesh>();
