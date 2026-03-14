@@ -51,10 +51,15 @@ namespace fe {
                                                  size_t              primary_window_index,
                                                  ResourceManager&    resource_manager);
 
-        virtual void ClearScreen(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) = 0;
-        virtual void SwapBuffers()                                                                            = 0;
+        virtual void ClearScreen(float red   = 1.0f,
+                                 float green = 1.0f,
+                                 float blue  = 1.0f,
+                                 float alpha = 1.0f) = 0;
+        virtual void SwapBuffers()                   = 0;
 
+        virtual void BeginFrame()                  = 0;
         virtual void Draw(DrawMeshCommand command) = 0;
+        virtual void EndFrame()                    = 0;
 
         virtual void InitializeGPUResources() = 0;
     };

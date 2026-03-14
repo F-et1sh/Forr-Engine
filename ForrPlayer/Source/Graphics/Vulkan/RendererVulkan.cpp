@@ -48,9 +48,11 @@ fe::RendererVulkan::~RendererVulkan() {
 }
 
 void fe::RendererVulkan::ClearScreen(float red, float green, float blue, float alpha) {
+    // TODO : provide this here
 }
 
 void fe::RendererVulkan::SwapBuffers() {
+    // TODO : provide this here
 }
 
 void fe::RendererVulkan::Draw(DrawMeshCommand command) {
@@ -72,8 +74,6 @@ void fe::RendererVulkan::Draw(DrawMeshCommand command) {
 
     auto vulkan_model = m_VulkanResourceManager.GetResource<VulkanModel>(command.model_ptr);
 
-    this->BeginFrame();
-
     for (auto mesh_pointer : vulkan_model->pointers_mesh) {
         const auto& mesh_storage = m_VulkanResourceManager.GetStorage<VulkanMesh>();
         auto        mesh         = mesh_storage.get(mesh_pointer);
@@ -88,8 +88,6 @@ void fe::RendererVulkan::Draw(DrawMeshCommand command) {
             }
         }
     }
-
-    this->EndFrame();
 }
 
 void fe::RendererVulkan::InitializeGPUResources() {

@@ -83,7 +83,7 @@ void fe::RendererOpenGL::SwapBuffers() {
     glfwSwapBuffers(m_GLFWwindow);
 }
 
-void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
+void fe::RendererOpenGL::BeginFrame() {
     m_Shader.bind();
 
     { // temp
@@ -104,6 +104,9 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
 
         glNamedBufferSubData(ubo, 0, sizeof(shader_data), &shader_data);
     }
+}
+
+void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
 
     //auto cpu_mesh     = m_ResourceManager.GetResource(ptr);
 
@@ -127,7 +130,9 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
             glBindVertexArray(0);
         }
     }
+}
 
+void fe::RendererOpenGL::EndFrame() {
     m_Shader.unbind();
 }
 

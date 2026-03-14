@@ -1,5 +1,22 @@
 # Forr-Engine Devlog
 
+## 15.03.2026
+### Goal
+    ...
+    Review gpu resource manager's architecture
+
+    Not now, but :
+    - provide event system for platform
+    - provide project "compiling" ( speed up )
+    - speed up gLTF loading
+    - review GPU resource manager's architecture. It's confusing
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 14.03.2026
 ### Goal
     Create ECS component preview ( MeshComponent )
@@ -70,6 +87,7 @@
     Textures/Materials logic changed
     DrawMeshCommand provided
     GLTFImportContext added
+    BeginFrame()/EndFrame() added
 
 ### Problem
     -
