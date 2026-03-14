@@ -2,7 +2,8 @@
 
 ## 14.03.2026
 ### Goal
-    ...
+    Create ECS component preview ( MeshComponent )
+    Review resource manager's architecture
 
     Not now, but :
     - provide event system for platform
