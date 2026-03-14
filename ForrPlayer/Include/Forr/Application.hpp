@@ -18,6 +18,8 @@
 #include "Graphics/IRenderer.hpp"
 #include "ResourceManagement/ResourceManager.hpp"
 
+#include "ECS/Components.hpp" // temp
+
 namespace fe {
     struct FORR_API ApplicationDesc {
         std::vector<const char*> args;
@@ -54,6 +56,6 @@ namespace fe {
         size_t   m_PrimaryWindowID{};
         IWindow* m_PrimaryWindow{};
 
-        fe::pointer<resource::Model> m_ModelPtr{}; // temp
+        MeshComponent m_MeshComponent{}; // temp
     };
 } // namespace fe
