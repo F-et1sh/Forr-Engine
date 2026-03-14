@@ -30,8 +30,6 @@
         ~MeshComponent() = default;
     };
 
-    ///
-
     struct MeshHandle {
     public:
         fe::pointer<resource::Model> model_id{}; // + provide MeshHandle using to Resource Management ( both, CPU and GPU )
@@ -39,6 +37,12 @@
 
         MeshHandle() = default;
         ~MeshHandle() = default;
+    };
+
+    ///
+
+    struct ScriptComponent {
+        fe::pointer<resource::Script> script_id{}; // make script as a resource is a good idea, instead of using std::unique_ptr in DOD ECS
     };
     ```
 
