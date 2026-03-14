@@ -28,13 +28,13 @@ namespace fe {
 
         // safe function
         fe::pointer<resource::Texture> GetTexture(uint32_t index)const noexcept {
-            if (index == ~0) return {}; // TODO : provide fallbacks
+            if (index >= textures.size()) return {}; // TODO : provide fallbacks
             return textures[index];
         }
 
         // safe function
         fe::pointer<resource::Material> GetMaterial(uint32_t index)const noexcept {
-            if (index == ~0) return {}; // TODO : provide fallbacks
+            if (index >= materials.size()) return {}; // TODO : provide fallbacks
             return materials[index];
         }
 
