@@ -15,6 +15,8 @@
 #include <cstddef>
 #include "Core/attributes.hpp"
 
+// TODO : think about removing this file
+
 namespace fe {
     // this is going to be removed soon
     //struct FORR_NODISCARD MeshID { // like "using MeshID = size_t;"

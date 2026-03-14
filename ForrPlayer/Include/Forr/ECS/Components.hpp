@@ -12,7 +12,15 @@
 ===============================================*/
 
 #pragma once
+#include "Core/pointer.hpp"
+#include "ResourceManagement/Resources.hpp"
 
 namespace fe {
+    struct MeshComponent {
+        fe::pointer<resource::Model> model_id{};
+        uint32_t                     mesh_id{};
 
-}
+        MeshComponent()  = default;
+        ~MeshComponent() = default;
+    };
+} // namespace fe
