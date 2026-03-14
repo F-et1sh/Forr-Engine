@@ -29,6 +29,17 @@ namespace fe {
         ~RendererDesc() = default;
     };
 
+    struct DrawMeshCommand {
+    public:
+        fe::pointer<resource::Model> model_ptr{};
+        uint32_t                     mesh_index = ~0; // ~0 means that renderer has to draw all meshes
+
+        glm::mat4 transform{};
+
+        DrawMeshCommand()  = default;
+        ~DrawMeshCommand() = default;
+    };
+
     // if you want to add some variable here, use static method IRenderer::Create()
     // the member should be assigned to the devired class, not here
     class FORR_API IRenderer {
@@ -43,7 +54,7 @@ namespace fe {
         virtual void ClearScreen(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) = 0;
         virtual void SwapBuffers()                                                                            = 0;
 
-        virtual void Draw(fe::pointer<resource::Model> ptr) = 0;
+        virtual void Draw(DrawMeshCommand command) = 0;
 
         virtual void InitializeGPUResources() = 0;
     };

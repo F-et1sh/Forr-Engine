@@ -11,6 +11,8 @@
 ===============================================*/
 
 #pragma once
+#include "Core/pointer.hpp"
+
 #include <variant>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
@@ -171,5 +173,4 @@ namespace fe {
         Skin()  = default;
         ~Skin() = default;
     };
-
 } // namespace fe

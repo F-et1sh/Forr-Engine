@@ -17,6 +17,15 @@
 #include "tiny_gltf.h"
 
 namespace fe {
+    struct GLTFImportContext {
+    public:
+        std::vector<fe::pointer<resource::Texture>>  textures;
+        std::vector<fe::pointer<resource::Material>> materials;
+
+        GLTFImportContext()  = default;
+        ~GLTFImportContext() = default;
+    };
+
     class GLTFImporter {
     private:
         inline static constexpr size_t JOINTS_COUNT = 128; // temp

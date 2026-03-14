@@ -381,6 +381,11 @@ void fe::GLTFImporter::loadAnimations(const tinygltf::Model& model, resource::Mo
 using namespace fe::resource;
 
 fe::pointer<Texture> fe::GLTFImporter::createTexture(const tinygltf::Model& model, uint32_t texture_index, ResourceStorage& storage) {
+    if (texture_index >= model.textures.size()) {
+        fe::logging::warning("tinygltf -> Unified. Failed to create a texture. Texture index : %i\nFallbacks are not ready yet", texture_index);
+        return {}; // TODO : think about fallbacks
+    }
+
     const tinygltf::Texture& texture = model.textures[texture_index];
     const tinygltf::Image&   image   = model.images[texture.source];
     tinygltf::Sampler        sampler{};
@@ -488,8 +493,7 @@ fe::pointer<Texture> fe::GLTFImporter::createTexture(const tinygltf::Model& mode
         std::copy(image.image.begin(), image.image.end(), this_texture.bytes.get());
     }
     else {
-        // TODO : change this to "error", when fallbacks will be ready
-        fe::logging::fatal("tinygltf -> Unified. Failed to create a texture\nURI : %s", image.uri.c_str());
+        fe::logging::warning("tinygltf -> Unified. Failed to create a texture\nURI : %s", image.uri.c_str());
         return {}; // TODO : think about fallbacks
     }
 
