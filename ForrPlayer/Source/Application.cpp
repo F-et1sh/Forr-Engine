@@ -9,7 +9,13 @@ fe::Application::Application(const ApplicationDesc& desc) {
     this->InitializePrimaryWindow(desc);
     this->InitializeRenderer(desc);
 
-    m_ResourceManager->RunForEach<resource::Model>([&](fe::pointer<resource::Model> model_ptr, const resource::Model& model) { // take the first model
+    size_t i = 0;
+
+    m_ResourceManager->RunForEach<resource::Model>([&](fe::pointer<resource::Model> model_ptr, const resource::Model& model) { // take the last model
+        if (i == 0) {
+            i++;
+            return;
+        }
         m_MeshComponent.model_ptr = model_ptr;
         m_MeshComponent.mesh_id   = model.meshes.size() - 1; // last mesh
     });
@@ -43,6 +49,7 @@ void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
     std::vector<std::filesystem::path> paths{}; // temp
     paths.emplace_back("Tatarstan-Flag.png");
     paths.emplace_back("Models/StatueOfLiberty/statue_of_liberty.glb");
+    paths.emplace_back("Models/PirateRoom/PirateRoom.gltf");
 
     m_ResourceManager = std::make_unique<ResourceManager>();
     m_ResourceManager->SetupSceneResources(paths); // TODO : rewrite this

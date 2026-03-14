@@ -32,7 +32,10 @@ void fe::VulkanResourceManager::CreateModel(fe::pointer<fe::resource::Model> cpu
         vulkan_model.pointers_mesh.emplace_back(ptr);
 
         for (const auto& primitive : mesh.primitives) {
-            const auto& material = m_ResourceManager.GetResource(primitive.material_ptr);
+            auto material = m_ResourceManager.GetResource(primitive.material_ptr);
+
+            if (!material) continue; // TODO : provide fallbacks
+
             auto        texture_ptr = material->pbr_metallic_roughness.base_color_texture.texture_ptr; // TODO : at first review all this shit, because I just can't read and/or edit this. After that, provide materials
 
             auto ptr = this->createTexture(texture_ptr);

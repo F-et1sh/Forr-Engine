@@ -45,7 +45,7 @@ namespace fe {
         template <typename T>
         FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) {
             auto& storage = this->GetStorage<T>();
-            assert(storage.is_valid(ptr)); // TODO : Add fallbacks somehow
+            if (!storage.is_valid(ptr)) return nullptr; // TODO : provide fallbacks
             return storage.get(ptr);
         }
 

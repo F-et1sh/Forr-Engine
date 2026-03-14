@@ -129,10 +129,7 @@ void fe::GLTFImporter::loadMeshes(GLTFImportContext& context) {
         this_mesh.primitives.resize(mesh.primitives.size());
 
         for (size_t j = 0; j < mesh.primitives.size(); j++) {
-            const tinygltf::Primitive& primitive      = mesh.primitives[j];
-            const tinygltf::Material&  material       = context.model.materials[primitive.material];
-            auto&                      this_primitive = this_mesh.primitives[j];
-
+            auto& this_primitive        = this_mesh.primitives[j];
             this_primitive.material_ptr = context.GetMaterial(j);
         }
     }

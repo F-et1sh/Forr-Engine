@@ -134,6 +134,9 @@ void fe::OpenGLResourceManager::CreateModel(fe::pointer<fe::resource::Model> cpu
 
         for (const auto& primitive : mesh.primitives) {
             auto material    = m_ResourceManager.GetResource(primitive.material_ptr);
+
+            if (!material) continue; // TODO : provide fallbacks
+
             auto texture_ptr = material->pbr_metallic_roughness.base_color_texture.texture_ptr;
 
             auto ptr = this->CreateTexture(texture_ptr);
