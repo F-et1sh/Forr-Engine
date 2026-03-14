@@ -1,5 +1,54 @@
 # Forr-Engine Devlog
 
+## 14.03.2026
+### Goal
+    ...
+
+    Not now, but :
+    - provide event system for platform
+    - provide project "compiling" ( speed up )
+    - speed up gLTF loading
+    - review GPU resource manager's architecture. It's confusing
+
+    Maybe remove fe::resource:: namespace ?
+
+    ```hpp
+    struct SoundComponent {
+    public:
+        fe::pointer<resource::Sound> sound_id{};
+
+        SoundComponent() = default;
+        ~SoundComponent() = default;
+    };
+
+    struct MeshComponent {
+    public:
+        fe::pointer<resource::Mesh> mesh_id{}; // but there is no Mesh in fe::resource::
+
+        MeshComponent() = default;
+        ~MeshComponent() = default;
+    };
+
+    ///
+
+    struct MeshHandle {
+    public:
+        fe::pointer<resource::Model> model_id{}; // + provide MeshHandle using to Resource Management ( both, CPU and GPU )
+        uint32_t mesh_id{};
+
+        MeshHandle() = default;
+        ~MeshHandle() = default;
+    };
+    ```
+
+### Done
+    -
+
+### Problem
+    -
+
+---
+
 ## 11.03.2026
 ### Goal
     Provide model loading to Vulkan
