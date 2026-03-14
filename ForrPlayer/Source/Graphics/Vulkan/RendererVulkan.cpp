@@ -57,15 +57,17 @@ void fe::RendererVulkan::Draw(fe::pointer<resource::Model> ptr) {
     { // temp
         auto glfw_window = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
 
+        float speed = 0.01f;
+
         if (glfwGetKey(glfw_window, GLFW_KEY_A))
-            m_Camera.translate(glm::vec3(1.0f, 0.0f, 0.0f));
+            m_Camera.translate(glm::vec3(speed, 0.0f, 0.0f));
         else if (glfwGetKey(glfw_window, GLFW_KEY_D))
-            m_Camera.translate(glm::vec3(-1.0f, 0.0f, 0.0f));
+            m_Camera.translate(glm::vec3(-speed, 0.0f, 0.0f));
 
         if (glfwGetKey(glfw_window, GLFW_KEY_W))
-            m_Camera.translate(glm::vec3(0.0f, 0.0f, 1.0f));
+            m_Camera.translate(glm::vec3(0.0f, 0.0f, speed));
         else if (glfwGetKey(glfw_window, GLFW_KEY_S))
-            m_Camera.translate(glm::vec3(0.0f, 0.0f, -1.0f));
+            m_Camera.translate(glm::vec3(0.0f, 0.0f, -speed));
     }
 
     auto vulkan_model = m_VulkanResourceManager.GetResource<VulkanModel>(ptr);
