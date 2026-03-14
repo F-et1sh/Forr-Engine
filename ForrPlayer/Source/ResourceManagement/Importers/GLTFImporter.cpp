@@ -48,14 +48,10 @@ void fe::GLTFImporter::Import(ResourceStorage& storage, const std::filesystem::p
     GLTFImporter::loadNodes(model, this_model);
     GLTFImporter::loadSceneRoots(model, this_model);
     GLTFImporter::loadSkins(model, this_model);
-    GLTFImporter::loadMeshes(model, this_model);
-    GLTFImporter::loadMaterials(model, this_model, storage);
-    GLTFImporter::loadTextures(model, this_model, storage);
+    GLTFImporter::loadMeshes(model, this_model, storage);
     GLTFImporter::loadAnimations(model, this_model);
 
-    auto ptr = storage.CreateResource<resource::Model>(std::move(this_model)); // does not need to store this 
-
-
+    auto ptr = storage.CreateResource<resource::Model>(std::move(this_model)); // does not need to store this
 }
 
 void fe::GLTFImporter::loadNodes(const tinygltf::Model& model, resource::Model& this_model) {
@@ -116,7 +112,7 @@ void fe::GLTFImporter::loadSkins(const tinygltf::Model& model, resource::Model& 
     }
 }
 
-void fe::GLTFImporter::loadMeshes(const tinygltf::Model& model, resource::Model& this_model) {
+void fe::GLTFImporter::loadMeshes(const tinygltf::Model& model, resource::Model& this_model, ResourceStorage& storage) {
     this_model.meshes.resize(model.meshes.size());
     for (size_t i = 0; i < model.meshes.size(); i++) {
         const tinygltf::Mesh& mesh      = model.meshes[i];
@@ -125,6 +121,16 @@ void fe::GLTFImporter::loadMeshes(const tinygltf::Model& model, resource::Model&
         this_mesh.name = mesh.name;
         GLTFImporter::loadPrimitives(model, this_model, this_mesh.primitives, mesh.primitives);
         this_mesh.weights.insert_range(this_mesh.weights.end(), mesh.weights); // TODO : check is this work or no
+
+        this_mesh.primitives.resize(mesh.primitives.size());
+
+        for (size_t j = 0; j < mesh.primitives.size(); j++) {
+            const tinygltf::Primitive& primitive      = mesh.primitives[j];
+            const tinygltf::Material&  material       = model.materials[primitive.material];
+            auto&                      this_primitive = this_mesh.primitives[j];
+
+            this_primitive.material_ptr = GLTFImporter::createMaterial(model, material, storage);
+        }
     }
 }
 
@@ -321,52 +327,6 @@ void fe::GLTFImporter::loadIndices(const tinygltf::Model& model, resource::Model
     }
 }
 
-void fe::GLTFImporter::loadTextures(const tinygltf::Model& model, resource::Model& this_model, ResourceStorage& storage) {
-    this_model.textures.resize(model.textures.size());
-    for (size_t i = 0; i < model.textures.size(); i++) {
-        const tinygltf::Texture& texture = model.textures[i];
-
-        const tinygltf::Image&        image = model.images[texture.source];
-        tinygltf::Sampler             sampler{};
-        resource::Texture::ColorSpace texture_color_space = resource::Texture::ColorSpace::LINEAR;
-
-        if (texture.sampler >= 0) {
-            sampler = model.samplers[texture.sampler];
-        }
-        else { // default settings
-            sampler.minFilter = TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
-            sampler.magFilter = TINYGLTF_TEXTURE_FILTER_LINEAR;
-            sampler.wrapS     = TINYGLTF_TEXTURE_WRAP_REPEAT;
-            sampler.wrapT     = TINYGLTF_TEXTURE_WRAP_REPEAT;
-        }
-
-        int gltf_texture_index = static_cast<int>(i);
-
-        for (auto material_ptr : this_model.materials) {
-            resource::Material* material = storage.GetResource(material_ptr);
-
-            //if (material->pbr_metallic_roughness.base_color_texture.index == gltf_texture_index || // TODO : provide textures
-            //    material->emissive_texture.index == gltf_texture_index) {
-            //
-            //    texture_color_space = resource::Texture::ColorSpace::SRGB;
-            //}
-        }
-
-        auto& this_texture = this_model.textures[i];
-        this_texture       = GLTFImporter::createTexture(image, sampler, texture_color_space, storage);
-    }
-}
-
-void fe::GLTFImporter::loadMaterials(const tinygltf::Model& model, resource::Model& this_model, ResourceStorage& storage) {
-    this_model.materials.resize(model.materials.size());
-    for (size_t i = 0; i < model.materials.size(); i++) {
-        const tinygltf::Material& material      = model.materials[i];
-        auto&                     this_material = this_model.materials[i];
-
-        this_material = GLTFImporter::createMaterial(material, storage);
-    }
-}
-
 void fe::GLTFImporter::loadAnimations(const tinygltf::Model& model, resource::Model& this_model) {
     this_model.animations.resize(model.animations.size());
     for (size_t i = 0; i < model.animations.size(); i++) {
@@ -420,10 +380,23 @@ void fe::GLTFImporter::loadAnimations(const tinygltf::Model& model, resource::Mo
 
 using namespace fe::resource;
 
-fe::pointer<Texture> fe::GLTFImporter::createTexture(const tinygltf::Image&   image,
-                                                     const tinygltf::Sampler& sampler,
-                                                     Texture::ColorSpace      texture_color_space,
-                                                     ResourceStorage&         storage) {
+fe::pointer<Texture> fe::GLTFImporter::createTexture(const tinygltf::Model& model, uint32_t texture_index, ResourceStorage& storage) {
+    const tinygltf::Texture& texture = model.textures[texture_index];
+    const tinygltf::Image&   image   = model.images[texture.source];
+    tinygltf::Sampler        sampler{};
+
+    resource::Texture::ColorSpace texture_color_space = resource::Texture::ColorSpace::LINEAR;
+
+    if (texture.sampler >= 0) {
+        sampler = model.samplers[texture.sampler];
+    }
+    else { // default settings
+        sampler.minFilter = TINYGLTF_TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
+        sampler.magFilter = TINYGLTF_TEXTURE_FILTER_LINEAR;
+        sampler.wrapS     = TINYGLTF_TEXTURE_WRAP_REPEAT;
+        sampler.wrapT     = TINYGLTF_TEXTURE_WRAP_REPEAT;
+    }
+
     Texture this_texture{};
 
     if (texture_color_space == Texture::ColorSpace::SRGB) {
@@ -521,12 +494,48 @@ fe::pointer<Texture> fe::GLTFImporter::createTexture(const tinygltf::Image&   im
     }
 
     auto ptr = storage.CreateResource<Texture>(std::move(this_texture));
+
+    // TODO : think about - Is this really so much needed ?
+    // Texture::ColorSpace::SRGB <-> Texture::ColorSpace::LINEAR
+    //
+    //for (const auto& mesh : this_model.meshes) {
+    //    for (const auto& primitive : mesh.primitives) {
+    //        const auto& material = *storage.GetResource(primitive.material_ptr);
+    //
+    //        if (material.pbr_metallic_roughness.base_color_texture.texture_ptr == ptr ||
+    //            material.emissive_texture.texture_ptr == ptr) {
+    //
+    //            texture_color_space = Texture::ColorSpace::SRGB;
+    //
+    //            if (texture_color_space == Texture::ColorSpace::SRGB) {
+    //                if (image.component == 4) // number of color channels
+    //                    this_texture.internal_format = Texture::InternalFormat::SRGB8_ALPHA8;
+    //                else
+    //                    this_texture.internal_format = Texture::InternalFormat::SRGB8;
+    //            }
+    //            else {
+    //                // clang-format off
+    //                switch (image.component) { // number of color channels
+    //                    case 4: this_texture.internal_format = Texture::InternalFormat::RGBA8; break;
+    //                    case 3: this_texture.internal_format = Texture::InternalFormat::RGB8 ; break;
+    //                    case 2: this_texture.internal_format = Texture::InternalFormat::RG8  ; break;
+    //                    case 1: this_texture.internal_format = Texture::InternalFormat::R8   ; break;
+    //                    default:
+    //                        fe::logging::warning("tinygltf -> Unified. Unsupported components ( number of color channels ) %i for internal format. Using RGBA8 as default", image.component);
+    //                        this_texture.internal_format = Texture::InternalFormat::RGBA8;
+    //                }
+    //                // clang-format on
+    //            }
+    //        }
+    //    }
+    //}
+
     return ptr;
 }
 
 #undef OPAQUE
 
-fe::pointer<Material> fe::GLTFImporter::createMaterial(const tinygltf::Material& material, ResourceStorage& storage) {
+fe::pointer<Material> fe::GLTFImporter::createMaterial(const tinygltf::Model& model, const tinygltf::Material& material, ResourceStorage& storage) {
     Material this_material{};
 
     this_material.name = material.name;
@@ -550,25 +559,25 @@ fe::pointer<Material> fe::GLTFImporter::createMaterial(const tinygltf::Material&
 #define THIS_PBR this_material.pbr_metallic_roughness
 #define PBR material.pbrMetallicRoughness
 
-    // TODO : provide textures and materials
-
     fe::GLTFImporter::readVector(THIS_PBR.base_color_factor, PBR.baseColorFactor);
-    //THIS_PBR.base_color_texture.index                 = PBR.baseColorTexture.index;
+    THIS_PBR.base_color_texture.texture_ptr   = GLTFImporter::createTexture(model, PBR.baseColorTexture.index, storage);
     THIS_PBR.base_color_texture.texture_coord = PBR.baseColorTexture.texCoord;
-    THIS_PBR.metallic_factor                  = PBR.metallicFactor;
-    THIS_PBR.roughness_factor                 = PBR.roughnessFactor;
-    //THIS_PBR.metallic_roughness_texture.index         = PBR.metallicRoughnessTexture.index;
+
+    THIS_PBR.metallic_factor  = PBR.metallicFactor;
+    THIS_PBR.roughness_factor = PBR.roughnessFactor;
+
+    THIS_PBR.metallic_roughness_texture.texture_ptr   = GLTFImporter::createTexture(model, PBR.metallicRoughnessTexture.index, storage);
     THIS_PBR.metallic_roughness_texture.texture_coord = PBR.metallicRoughnessTexture.texCoord;
 
-    //this_material.normal_texture.index         = material.normalTexture.index;
+    this_material.normal_texture.texture_ptr   = GLTFImporter::createTexture(model, material.normalTexture.index, storage);
     this_material.normal_texture.texture_coord = material.normalTexture.texCoord;
     this_material.normal_texture.scale         = material.normalTexture.scale;
 
-    //this_material.occlusion_texture.index         = material.occlusionTexture.index;
+    this_material.occlusion_texture.texture_ptr   = GLTFImporter::createTexture(model, material.occlusionTexture.index, storage);
     this_material.occlusion_texture.texture_coord = material.occlusionTexture.texCoord;
     this_material.occlusion_texture.strength      = material.occlusionTexture.strength;
 
-    //this_material.emissive_texture.index         = material.emissiveTexture.index;
+    this_material.emissive_texture.texture_ptr   = GLTFImporter::createTexture(model, material.emissiveTexture.index, storage);
     this_material.emissive_texture.texture_coord = material.emissiveTexture.texCoord;
 
     auto ptr = storage.CreateResource<Material>(std::move(this_material));

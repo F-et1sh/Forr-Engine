@@ -63,7 +63,7 @@
     ```
 
 ### Done
-    -
+    Textures/Materials logic changed
 
 ### Problem
     -

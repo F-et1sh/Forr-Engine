@@ -30,12 +30,14 @@ void fe::VulkanResourceManager::CreateModel(fe::pointer<fe::resource::Model> cpu
     for (const auto& mesh : model.meshes) {
         auto ptr = this->createMesh(mesh);
         vulkan_model.pointers_mesh.emplace_back(ptr);
-    }
 
-    // texture has its own extension, so you get a pointer here
-    for (const auto& texture_ptr : model.textures) {
-        auto ptr = this->createTexture(texture_ptr);
-        vulkan_model.pointers_texture.emplace_back(ptr);
+        for (const auto& primitive : mesh.primitives) {
+            const auto& material = m_ResourceManager.GetResource(primitive.material_ptr);
+            auto        texture_ptr = material->pbr_metallic_roughness.base_color_texture.texture_ptr; // TODO : at first review all this shit, because I just can't read and/or edit this. After that, provide materials
+
+            auto ptr = this->createTexture(texture_ptr);
+            vulkan_model.pointers_texture.emplace_back(ptr);
+        }
     }
 
     auto gpu_ptr = m_Models.create(std::move(vulkan_model));
@@ -137,8 +139,8 @@ void fe::VulkanResourceManager::createPrimitive(const Primitive& primitive, Vulk
 
     /// index buffer
 
-    vulkan_primitive.index_buffer.count  = primitive.indices.size();
-    size_t index_buffer_size = vulkan_primitive.index_buffer.count * sizeof(uint32_t);
+    vulkan_primitive.index_buffer.count = primitive.indices.size();
+    size_t index_buffer_size            = vulkan_primitive.index_buffer.count * sizeof(uint32_t);
 
     VkBufferCreateInfo indexbuffer_create_info{};
     indexbuffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -235,7 +237,7 @@ void fe::VulkanResourceManager::createPrimitive(const Primitive& primitive, Vulk
     vkDestroyBuffer(m_Context.device, staging_buffers.indices.buffer, nullptr);
     vkFreeMemory(m_Context.device, staging_buffers.indices.memory, nullptr);
 
-    vulkan_primitive.index_count = primitive.index_count;
+    vulkan_primitive.index_count  = primitive.index_count;
     vulkan_primitive.index_offset = primitive.index_offset;
 }
 

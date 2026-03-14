@@ -30,21 +30,15 @@ namespace fe {
         static void loadNodes(const tinygltf::Model& model, resource::Model& this_model);
         static void loadSceneRoots(const tinygltf::Model& model, resource::Model& this_model);
         static void loadSkins(const tinygltf::Model& model, resource::Model& this_model);
-        static void loadMeshes(const tinygltf::Model& model, resource::Model& this_model);
+        static void loadMeshes(const tinygltf::Model& model, resource::Model& this_model, ResourceStorage& storage);
         static void loadPrimitives(const tinygltf::Model& model, resource::Model& this_model, std::vector<Primitive>& this_primitives, const std::vector<tinygltf::Primitive>& primitives);
         static void loadVertices(const tinygltf::Model& model, resource::Model& this_model, Vertices& this_vertices, Indices& this_indices, const tinygltf::Primitive& primitive);
         static void loadIndices(const tinygltf::Model& model, resource::Model& this_model, Primitive& this_primitive, Indices& this_indices, const tinygltf::Primitive& primitive);
-        static void loadMaterials(const tinygltf::Model& model, resource::Model& this_model, ResourceStorage& storage);
-        static void loadTextures(const tinygltf::Model& model, resource::Model& this_model, ResourceStorage& storage);
         static void loadAnimations(const tinygltf::Model& model, resource::Model& this_model);
 
     private:
-        static fe::pointer<resource::Texture> createTexture(const tinygltf::Image&            image,
-                                                            const tinygltf::Sampler&          sampler,
-                                                            fe::resource::Texture::ColorSpace texture_color_space,
-                                                            ResourceStorage&                  storage);
-
-        static fe::pointer<resource::Material> createMaterial(const tinygltf::Material& material, ResourceStorage& storage);
+        static fe::pointer<resource::Texture>  createTexture(const tinygltf::Model& model, uint32_t texture_index, ResourceStorage& storage);
+        static fe::pointer<resource::Material> createMaterial(const tinygltf::Model& model, const tinygltf::Material& material, ResourceStorage& storage);
 
     private:
         template <typename T>
