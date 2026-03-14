@@ -40,6 +40,8 @@ namespace fe {
         ~OpenGLPrimitive() = default; // TODO : provide buffer objects deleting
     };
 
+    // TODO : remove all below
+
     struct OpenGLMesh {
         // GLenum index_type{}; uint32_t for all models ( at least for now )
 
