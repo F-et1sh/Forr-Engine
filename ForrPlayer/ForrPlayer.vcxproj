@@ -97,6 +97,7 @@
     <ClInclude Include="Include\Forr\Core\path.hpp" />
     <ClInclude Include="Include\Forr\Core\pointer.hpp" />
     <ClInclude Include="Include\Forr\Core\types.hpp" />
+    <ClInclude Include="Include\Forr\ECS\Components.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Camera.hpp" />
     <ClInclude Include="Include\Forr\Graphics\IRenderer.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Model.hpp" />

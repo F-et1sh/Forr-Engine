@@ -8,8 +8,8 @@
         namespace fe::resource:: means that the class is a DOD structure.
         Resource structure - means that the structure has its own extension, like .png or .gltf.
         If the resource has a metadata file near, a part of the structure will be filled from it.
-        For example, if .png ( example.png ) has to data about "what min filter it is supposed to use". So, the member
-            fe::resource::Texture::min_filter will be set to default but if the resource manager will find
+        For example, if .png ( example.png ) hasn't data about "min filter", so, the member
+            fe::resource::Texture::min_filter will be set to default, but if the resource manager find
             a metadata file near ( example.png.fs ) it will fill the structure from it.
 
     Copyright (C) 2026 Farrakh
@@ -95,6 +95,7 @@ namespace fe::resource {
         ~Texture() = default;
 
         // is this really should be movable only ?
+        // TODO : if this will keep std::unique_ptr<> then it'll keep being movable only
         FORR_CLASS_NONCOPYABLE(Texture)
         FORR_CLASS_MOVABLE(Texture)
     };
