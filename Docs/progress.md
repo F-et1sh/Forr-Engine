@@ -69,6 +69,7 @@
     MeshComponent created
     Textures/Materials logic changed
     DrawMeshCommand provided
+    GLTFImportContext added
 
 ### Problem
     -

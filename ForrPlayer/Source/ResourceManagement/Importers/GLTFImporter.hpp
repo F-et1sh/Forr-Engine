@@ -19,11 +19,30 @@
 namespace fe {
     struct GLTFImportContext {
     public:
+        const tinygltf::Model& model;
+        resource::Model&       this_model;
+        ResourceStorage&       storage;
+
         std::vector<fe::pointer<resource::Texture>>  textures;
         std::vector<fe::pointer<resource::Material>> materials;
 
+        // safe function
+        fe::pointer<resource::Texture> GetTexture(uint32_t index)const noexcept {
+            if (index == ~0) return {}; // TODO : provide fallbacks
+            return textures[index];
+        }
+
+        // safe function
+        fe::pointer<resource::Material> GetMaterial(uint32_t index)const noexcept {
+            if (index == ~0) return {}; // TODO : provide fallbacks
+            return materials[index];
+        }
+
         GLTFImportContext()  = default;
         ~GLTFImportContext() = default;
+
+        GLTFImportContext(const tinygltf::Model& model, resource::Model& this_model, ResourceStorage& storage)
+            : model(model), this_model(this_model), storage(storage) {}
     };
 
     class GLTFImporter {
@@ -36,18 +55,20 @@ namespace fe {
         static void Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path);
 
     private:
-        static void loadNodes(const tinygltf::Model& model, resource::Model& this_model);
-        static void loadSceneRoots(const tinygltf::Model& model, resource::Model& this_model);
-        static void loadSkins(const tinygltf::Model& model, resource::Model& this_model);
-        static void loadMeshes(const tinygltf::Model& model, resource::Model& this_model, ResourceStorage& storage);
-        static void loadPrimitives(const tinygltf::Model& model, resource::Model& this_model, std::vector<Primitive>& this_primitives, const std::vector<tinygltf::Primitive>& primitives);
-        static void loadVertices(const tinygltf::Model& model, resource::Model& this_model, Vertices& this_vertices, Indices& this_indices, const tinygltf::Primitive& primitive);
-        static void loadIndices(const tinygltf::Model& model, resource::Model& this_model, Primitive& this_primitive, Indices& this_indices, const tinygltf::Primitive& primitive);
-        static void loadAnimations(const tinygltf::Model& model, resource::Model& this_model);
+        static void loadNodes(GLTFImportContext& context);
+        static void loadSceneRoots(GLTFImportContext& context);
+        static void loadSkins(GLTFImportContext& context);
+        static void loadMeshes(GLTFImportContext& context);
+        static void loadTextures(GLTFImportContext& context);
+        static void loadMaterials(GLTFImportContext& context);
+        static void loadPrimitives(GLTFImportContext& context, std::vector<Primitive>& this_primitives, const std::vector<tinygltf::Primitive>& primitives);
+        static void loadVertices(GLTFImportContext& context, Vertices& this_vertices, Indices& this_indices, const tinygltf::Primitive& primitive);
+        static void loadIndices(GLTFImportContext& context, Primitive& this_primitive, Indices& this_indices, const tinygltf::Primitive& primitive);
+        static void loadAnimations(GLTFImportContext& context);
 
     private:
         static fe::pointer<resource::Texture>  createTexture(const tinygltf::Model& model, uint32_t texture_index, ResourceStorage& storage);
-        static fe::pointer<resource::Material> createMaterial(const tinygltf::Model& model, const tinygltf::Material& material, ResourceStorage& storage);
+        static fe::pointer<resource::Material> createMaterial(GLTFImportContext& context, uint32_t tinygltf_material_index);
 
     private:
         template <typename T>
