@@ -3,7 +3,9 @@
 ## 14.03.2026
 ### Goal
     Create ECS component preview ( MeshComponent )
-    Review resource manager's architecture
+    Add DrawMeshCommand structure ( more information below )
+    Add BeginFrame()/EndFrame() to IRenderer
+    Review gpu resource manager's architecture
 
     Not now, but :
     - provide event system for platform
@@ -42,7 +44,21 @@
     ///
 
     struct ScriptComponent {
+    public:
         fe::pointer<resource::Script> script_id{}; // make script as a resource is a good idea, instead of using std::unique_ptr in DOD ECS
+
+        ScriptComponent() = default;
+        ~ScriptComponent() = default;
+    };
+
+    ///
+
+    struct DrawMeshCommand { // add this thing for rendering
+    public:
+        fe::pointer<resource::Model> model{};
+        uint32_t mesh_index = ~0; // ~0 means that renderer has to draw all meshes
+    
+        glm::mat4 transform{};
     };
     ```
 

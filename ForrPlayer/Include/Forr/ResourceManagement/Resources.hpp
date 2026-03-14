@@ -26,6 +26,10 @@
 // namespace fe::resource:: means that the class is a
 //  DOD structure, not a high level resource
 namespace fe::resource {
+#define FORR_RESOURCE_BODY(T) \
+    FORR_CLASS_NONCOPYABLE(T) \
+    FORR_CLASS_MOVABLE(T)
+
     struct Texture {
         enum class ColorSpace {
             LINEAR,
@@ -94,10 +98,7 @@ namespace fe::resource {
         Texture()  = default;
         ~Texture() = default;
 
-        // is this really should be movable only ?
-        // TODO : if this will keep std::unique_ptr<> then it'll keep being movable only
-        FORR_CLASS_NONCOPYABLE(Texture)
-        FORR_CLASS_MOVABLE(Texture)
+        FORR_RESOURCE_BODY(Texture)
     };
 
     struct Material {
@@ -157,26 +158,26 @@ namespace fe::resource {
         Material()  = default;
         ~Material() = default;
 
-        FORR_CLASS_NONCOPYABLE(Material)
-        FORR_CLASS_MOVABLE(Material)
+        FORR_RESOURCE_BODY(Material)
     };
 
     struct Model {
-        std::vector<Node>                  nodes{};
-        std::vector<int>                   scene_roots{};
-        std::vector<Skin>                  skins{};
-        std::vector<Mesh>                  meshes{};
+        std::vector<Node> nodes{};
+        std::vector<int>  scene_roots{};
+        std::vector<Skin> skins{};
+        std::vector<Mesh> meshes{};
         // TODO : remove this, it's already in Primitive
         std::vector<fe::pointer<Material>> materials{}; // uses fe::pointer because this type of resource has its own file extension
         // TODO : remove this, it's already in Material
-        std::vector<fe::pointer<Texture>>  textures{};  // uses fe::pointer because this type of resource has its own file extension
-        std::vector<Animation>             animations{};
+        std::vector<fe::pointer<Texture>> textures{}; // uses fe::pointer because this type of resource has its own file extension
+        std::vector<Animation>            animations{};
 
         Model()  = default;
         ~Model() = default;
 
-        FORR_CLASS_NONCOPYABLE(Model)
-        FORR_CLASS_MOVABLE(Model)
+        FORR_RESOURCE_BODY(Model)
     };
+
+#undef FORR_RESOURCE_BODY
 
 } // namespace fe::resource
