@@ -75,7 +75,7 @@ namespace fe {
         Vertices vertices{};
         Indices  indices{};
 
-        fe::pointer<fe::resource::Material> material{};
+        fe::pointer<fe::resource::Material> material_ptr{};
 
         RenderMode render_mode{ RenderMode::TRIANGLES }; // triangles by default
 

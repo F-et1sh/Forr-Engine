@@ -54,6 +54,6 @@ namespace fe {
         size_t   m_PrimaryWindowID{};
         IWindow* m_PrimaryWindow{};
 
-        fe::pointer<resource::Model> m_Model{}; // temp
+        fe::pointer<resource::Model> m_ModelPtr{}; // temp
     };
 } // namespace fe

@@ -109,7 +109,7 @@ namespace fe::resource {
         };
 
         struct TextureInfo {
-            fe::pointer<Texture> texture{};
+            fe::pointer<Texture> texture_ptr{};
             int                  texture_coord{ 0 }; // TEXCOORD_0 by default
 
             TextureInfo()          = default;
@@ -162,15 +162,11 @@ namespace fe::resource {
     };
 
     struct Model {
-        std::vector<Node> nodes{};
-        std::vector<int>  scene_roots{};
-        std::vector<Skin> skins{};
-        std::vector<Mesh> meshes{};
-        // TODO : remove this, it's already in Primitive
-        std::vector<fe::pointer<Material>> materials{}; // uses fe::pointer because this type of resource has its own file extension
-        // TODO : remove this, it's already in Material
-        std::vector<fe::pointer<Texture>> textures{}; // uses fe::pointer because this type of resource has its own file extension
-        std::vector<Animation>            animations{};
+        std::vector<Node>      nodes{};
+        std::vector<int>       scene_roots{};
+        std::vector<Skin>      skins{};
+        std::vector<Mesh>      meshes{};
+        std::vector<Animation> animations{};
 
         Model()  = default;
         ~Model() = default;

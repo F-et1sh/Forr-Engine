@@ -10,7 +10,7 @@ fe::Application::Application(const ApplicationDesc& desc) {
     this->InitializeRenderer(desc);
 
     m_ResourceManager->RunForEach<resource::Model>([&](fe::pointer<resource::Model> ptr) { // take the first pointer
-        m_Model = ptr;
+        m_ModelPtr = ptr;
     });
 }
 
@@ -18,7 +18,7 @@ void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
         m_Renderer->ClearScreen(0.5f, 0.5f, 0.5f, 1.0f);
 
-        m_Renderer->Draw(m_Model); // temp
+        m_Renderer->Draw(m_ModelPtr); // temp
 
         m_Renderer->SwapBuffers();
 
