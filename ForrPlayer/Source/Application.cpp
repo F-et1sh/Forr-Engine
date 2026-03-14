@@ -25,11 +25,15 @@ void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
         m_Renderer->ClearScreen(0.5f, 0.5f, 0.5f, 1.0f);
 
+        m_Renderer->BeginFrame();
+
         DrawMeshCommand command{};
         command.model_ptr = m_MeshComponent.model_ptr;
         command.mesh_index = m_MeshComponent.mesh_id;
         command.transform  = glm::mat4();
         m_Renderer->Draw(command); // temp
+
+        m_Renderer->EndFrame();
 
         m_Renderer->SwapBuffers();
 
