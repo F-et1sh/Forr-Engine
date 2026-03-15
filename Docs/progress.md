@@ -13,6 +13,7 @@
 
 ### Done
     Clear color ability synchronized for all backends
+    Model.hpp removed
 
 ### Problem
     -

@@ -12,7 +12,6 @@
 
 #pragma once
 #include "ResourceManagement/ResourceManager.hpp"
-#include "Graphics/Model.hpp"
 
 #include "tiny_gltf.h" // temp
 
