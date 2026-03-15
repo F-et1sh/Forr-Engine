@@ -28,7 +28,6 @@
     <ClInclude Include="Source\Graphics\Vulkan\VulkanTypes.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Camera.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceManager.hpp" />
-    <ClInclude Include="Include\Forr\Graphics\Model.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceManager.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\Resources.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceImporter.hpp" />
