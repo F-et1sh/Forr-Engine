@@ -56,7 +56,9 @@ namespace fe {
         size_t   m_PrimaryWindowID{};
         IWindow* m_PrimaryWindow{};
 
-        MeshComponent m_MeshComponent{}; // temp
-        MeshComponent m_MeshComponent2{}; // temp
+        struct Object { // temp
+            TransformComponent transform_component{}; 
+            MeshComponent mesh_component{};
+        } m_Object, m_Object2;
     };
 } // namespace fe

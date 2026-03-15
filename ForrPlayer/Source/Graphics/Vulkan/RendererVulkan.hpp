@@ -109,6 +109,7 @@ namespace fe {
         void InitializeDescriptors();
 
         // Create Vulkan pipeline
+        // - setup pipeline layout
         // - create pipeline
         void InitializePipeline();
 

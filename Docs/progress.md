@@ -15,12 +15,14 @@
         Maybe create IShader that will compile shader files and ShaderVulkan/ShaderOpenGL, 
         that will create needed specific objects for backends
     - add textures
+    - add Dear ImGui
 
 ### Done
     Clear color ability synchronized for all backends
     Model.hpp removed
     m_ImageIndex added. Vulkan error messages fixed
     second DrawMeshCommand added
+    multiple objects added. Uniforms work with OpenGL but bugs with Vulkan
 
 ### Problem
     -

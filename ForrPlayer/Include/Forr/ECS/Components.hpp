@@ -16,6 +16,13 @@
 #include "ResourceManagement/Resources.hpp"
 
 namespace fe {
+    struct TransformComponent {
+        glm::mat4 transform{}; // temp
+
+        TransformComponent()  = default;
+        ~TransformComponent() = default;
+    };
+
     struct MeshComponent {
         fe::pointer<resource::Model> model_ptr{};
         uint32_t                     mesh_id = ~0; // ~0 means that renderer has to draw all meshes
