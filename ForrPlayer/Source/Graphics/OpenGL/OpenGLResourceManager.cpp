@@ -183,6 +183,10 @@ void fe::OpenGLResourceManager::createPrimitive(const Primitive& primitive, Open
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*) offsetof(Vertex, position));
     glEnableVertexAttribArray(0);
 
+    // temp
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, stride, (void*) offsetof(Vertex, index));
+    glEnableVertexAttribArray(1);
+
     glCreateBuffers(1, &opengl_primitive.ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl_primitive.ebo);
 

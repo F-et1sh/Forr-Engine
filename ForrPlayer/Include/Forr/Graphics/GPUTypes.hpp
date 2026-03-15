@@ -25,6 +25,7 @@ namespace fe {
     //#pragma pack(push, 1) // disabled for now
     struct Vertex {
         glm::vec3 position{};
+        float     index{}; // temp
         //glm::vec3    normal;
         //glm::vec2    texture_coord;
         //glm::u16vec4 joints;
@@ -42,8 +43,8 @@ namespace fe {
 
     struct ShaderData {
         glm::mat4 projection_matrix{};
-        glm::mat4 model_matrix{};
         glm::mat4 view_matrix{};
+        glm::mat4 model_matrix[2]; // temp
 
         ShaderData()  = default;
         ~ShaderData() = default;
