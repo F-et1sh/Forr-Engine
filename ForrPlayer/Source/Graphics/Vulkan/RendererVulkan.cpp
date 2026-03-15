@@ -1108,8 +1108,9 @@ void fe::RendererVulkan::BeginFrame() {
     vkWaitForFences(m_Device, fences.size(), fences.data(), VK_TRUE, UINT64_MAX);
     VK_CHECK_RESULT(vkResetFences(m_Device, fences.size(), fences.data()));
 
-    uint32_t image_index{};
-    VkResult result = vkAcquireNextImageKHR(m_Device, m_Context.swapchain, UINT64_MAX, m_PresentCompleteSemaphores[m_CurrentFrame], VK_NULL_HANDLE, &image_index);
+    m_ImageIndex = 0;
+
+    VkResult result = vkAcquireNextImageKHR(m_Device, m_Context.swapchain, UINT64_MAX, m_PresentCompleteSemaphores[m_CurrentFrame], VK_NULL_HANDLE, &m_ImageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         this->resizeWindow();
         return;
@@ -1144,7 +1145,7 @@ void fe::RendererVulkan::BeginFrame() {
     render_pass_begin_info.renderArea.extent.height = m_Context.swapchain_extent.height;
     render_pass_begin_info.clearValueCount          = 2;
     render_pass_begin_info.pClearValues             = clear_values;
-    render_pass_begin_info.framebuffer              = m_Framebuffers[image_index];
+    render_pass_begin_info.framebuffer              = m_Framebuffers[m_ImageIndex];
 
     const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
     VK_CHECK_RESULT(vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info));
@@ -1194,7 +1195,7 @@ void fe::RendererVulkan::EndFrame() {
     VkPipelineStageFlags wait_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
     std::array<VkSemaphore, 1> wait_semaphores{ m_PresentCompleteSemaphores[m_CurrentFrame] };
-    std::array<VkSemaphore, 1> signal_semaphores{ m_RenderCompleteSemaphores[m_CurrentFrame] }; // maybe image ?
+    std::array<VkSemaphore, 1> signal_semaphores{ m_RenderCompleteSemaphores[m_ImageIndex] };
 
     VkSubmitInfo submit_info{};
     submit_info.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1216,7 +1217,7 @@ void fe::RendererVulkan::EndFrame() {
     present_info.pWaitSemaphores    = signal_semaphores.data();
     present_info.swapchainCount     = 1;
     present_info.pSwapchains        = &m_Context.swapchain;
-    present_info.pImageIndices      = &m_CurrentFrame;
+    present_info.pImageIndices      = &m_ImageIndex;
 
     VkResult result = vkQueuePresentKHR(m_Context.queue_graphics, &present_info);
 

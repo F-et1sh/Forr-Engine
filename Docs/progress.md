@@ -14,6 +14,7 @@
 ### Done
     Clear color ability synchronized for all backends
     Model.hpp removed
+    m_ImageIndex added. Vulkan error messages fixed
 
 ### Problem
     -
