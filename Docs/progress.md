@@ -12,7 +12,7 @@
     - review GPU resource manager's architecture. It's confusing
 
 ### Done
-    -
+    Clear color ability synchronized for all backends
 
 ### Problem
     -

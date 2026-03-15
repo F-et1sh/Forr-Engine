@@ -37,8 +37,7 @@ namespace fe {
         RendererVulkan(const RendererDesc& desc, IPlatformSystem& platform_system, size_t primary_window_index, ResourceManager& resource_manager);
         ~RendererVulkan();
 
-        void ClearScreen(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
-        void SwapBuffers() override;
+        void SetClearColor(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
 
         void BeginFrame()override;
         void Draw(DrawMeshCommand command) override;

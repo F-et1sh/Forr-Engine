@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
     desc.primary_window_desc.is_fullscreen = false;
     desc.primary_window_desc.name          = "Gmod Realism";
     desc.platform_backend                  = fe::PlatformBackend::GLFW;
-    desc.graphics_backend                  = fe::GraphicsBackend::Vulkan;
+    desc.graphics_backend                  = fe::GraphicsBackend::OpenGL;
 
     fe::Application app{ desc };
     app.Run();

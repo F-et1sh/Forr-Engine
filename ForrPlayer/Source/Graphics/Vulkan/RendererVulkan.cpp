@@ -47,12 +47,9 @@ fe::RendererVulkan::~RendererVulkan() {
     vkDeviceWaitIdle(m_Device);
 }
 
-void fe::RendererVulkan::ClearScreen(float red, float green, float blue, float alpha) {
-    // TODO : provide this here
-}
-
-void fe::RendererVulkan::SwapBuffers() {
-    // TODO : provide this here
+void fe::RendererVulkan::SetClearColor(float red, float green, float blue, float alpha) {
+    // === SETUP CONTEXT ===
+    m_Context.clear_color = { red, green, blue, alpha }; // clear_color
 }
 
 void fe::RendererVulkan::Draw(DrawMeshCommand command) {
@@ -1135,7 +1132,7 @@ void fe::RendererVulkan::BeginFrame() {
     command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
     VkClearValue clear_values[2]{};
-    clear_values[0].color        = { { 0.1f, 0.1f, 0.1f, 1.0f } };
+    clear_values[0].color        = { m_Context.clear_color };
     clear_values[1].depthStencil = { 1.0f, 0 };
 
     VkRenderPassBeginInfo render_pass_begin_info{};

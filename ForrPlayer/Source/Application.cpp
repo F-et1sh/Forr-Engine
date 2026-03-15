@@ -23,8 +23,6 @@ fe::Application::Application(const ApplicationDesc& desc) {
 
 void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
-        m_Renderer->ClearScreen(0.5f, 0.5f, 0.5f, 1.0f);
-
         m_Renderer->BeginFrame();
 
         DrawMeshCommand command{};
@@ -34,8 +32,6 @@ void fe::Application::Run() {
         m_Renderer->Draw(command); // temp
 
         m_Renderer->EndFrame();
-
-        m_Renderer->SwapBuffers();
 
         m_PrimaryWindow->PollEvents();
     }
@@ -72,4 +68,6 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
 
     m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, *m_ResourceManager);
     m_Renderer->InitializeGPUResources();
+
+    m_Renderer->SetClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 }
