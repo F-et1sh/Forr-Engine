@@ -197,5 +197,7 @@ namespace fe {
         VulkanResourceManager m_VulkanResourceManager{ m_Context, m_ResourceManager };
 
         fe::vk::CommandPool m_CommandPool{};
+
+        uint32_t m_ImageIndex{};
     };
 } // namespace fe
