@@ -70,10 +70,10 @@ void fe::RendererVulkan::Draw(DrawMeshCommand command) {
     }
 
     { // temp
-        ShaderData shader_data{};
-        shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
-        shader_data.view_matrix       = m_Camera.getViewMatrix();
-        shader_data.model_matrix      = command.transform;
+        static ShaderData shader_data{};
+        shader_data.projection_matrix       = m_Camera.getPerspectiveMatrix();
+        shader_data.view_matrix             = m_Camera.getViewMatrix();
+        shader_data.model_matrix[command.i] = command.transform;
 
         memcpy(m_UniformBuffers[m_CurrentFrame].mapped, &shader_data, sizeof(ShaderData));
     }
@@ -519,17 +519,23 @@ void fe::RendererVulkan::InitializePipeline() {
     vertex_input_binding_description.stride    = sizeof(Vertex);
     vertex_input_binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-    std::array<VkVertexInputAttributeDescription, 1> vertex_input_attributs{};
+    std::array<VkVertexInputAttributeDescription, 2> vertex_input_attributs{};
     vertex_input_attributs[0].binding  = 0;
     vertex_input_attributs[0].location = 0;
     vertex_input_attributs[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
     vertex_input_attributs[0].offset   = offsetof(Vertex, position);
 
+    // temp
+    vertex_input_attributs[1].binding  = 0;
+    vertex_input_attributs[1].location = 1;
+    vertex_input_attributs[1].format   = VK_FORMAT_R32_SFLOAT;
+    vertex_input_attributs[1].offset   = offsetof(Vertex, index);
+
     VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info{};
     vertex_input_state_create_info.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertex_input_state_create_info.vertexBindingDescriptionCount   = 1;
     vertex_input_state_create_info.pVertexBindingDescriptions      = &vertex_input_binding_description;
-    vertex_input_state_create_info.vertexAttributeDescriptionCount = 1;
+    vertex_input_state_create_info.vertexAttributeDescriptionCount = vertex_input_attributs.size();
     vertex_input_state_create_info.pVertexAttributeDescriptions    = vertex_input_attributs.data();
 
     std::array<VkPipelineShaderStageCreateInfo, 2> shader_stages_create_info{};
@@ -1197,7 +1203,7 @@ void fe::RendererVulkan::EndFrame() {
     VkPipelineStageFlags wait_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
     std::array<VkSemaphore, 1> wait_semaphores{ m_PresentCompleteSemaphores[m_CurrentFrame] };
-    std::array<VkSemaphore, 1> signal_semaphores{ m_RenderCompleteSemaphores[m_CurrentFrame] };
+    std::array<VkSemaphore, 1> signal_semaphores{ m_RenderCompleteSemaphores[m_ImageIndex] };
 
     VkSubmitInfo submit_info{};
     submit_info.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;

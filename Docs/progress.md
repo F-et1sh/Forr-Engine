@@ -23,6 +23,7 @@
     m_ImageIndex added. Vulkan error messages fixed
     second DrawMeshCommand added
     multiple objects added. Uniforms work with OpenGL but bugs with Vulkan
+    multiple objects provided ( very bad code but it works )
 
 ### Problem
     -

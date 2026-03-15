@@ -62,7 +62,7 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
     ShaderData shader_data{};
     shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
     shader_data.view_matrix       = m_Camera.getViewMatrix();
-    shader_data.model_matrix      = glm::mat4(1.0f);
+    //shader_data.model_matrix      = glm::mat4(1.0f);
 
     glNamedBufferData(ubo, sizeof(shader_data), &shader_data, GL_DYNAMIC_DRAW);
 
@@ -97,10 +97,10 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
         else if (glfwGetKey(m_GLFWwindow, GLFW_KEY_S))
             m_Camera.translate(glm::vec3(0.0f, 0.0f, -1.0f));
 
-        ShaderData shader_data{};
-        shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
-        shader_data.view_matrix       = m_Camera.getViewMatrix();
-        shader_data.model_matrix      = command.transform;
+        static ShaderData shader_data{};
+        shader_data.projection_matrix       = m_Camera.getPerspectiveMatrix();
+        shader_data.view_matrix             = m_Camera.getViewMatrix();
+        shader_data.model_matrix[command.i] = command.transform;
 
         glNamedBufferSubData(ubo, 0, sizeof(shader_data), &shader_data);
     }

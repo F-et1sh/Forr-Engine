@@ -37,6 +37,7 @@ void fe::Application::Run() {
             command.model_ptr  = m_Object.mesh_component.model_ptr;
             command.mesh_index = m_Object.mesh_component.mesh_id;
             command.transform  = m_Object.transform_component.transform;
+            command.i          = 0;
 
             m_Object.transform_component.transform = glm::rotate(m_Object.transform_component.transform, 0.01f, glm::vec3(0, 1, 0));
 
@@ -46,6 +47,7 @@ void fe::Application::Run() {
             command2.model_ptr  = m_Object2.mesh_component.model_ptr;
             command2.mesh_index = m_Object2.mesh_component.mesh_id;
             command2.transform  = m_Object2.transform_component.transform;
+            command2.i          = 1;
 
             m_Renderer->Draw(command2);
         }

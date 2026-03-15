@@ -257,6 +257,10 @@ void fe::GLTFImporter::loadVertices(GLTFImportContext& context, Vertices& this_v
         auto& vertex    = this_vertices[i];
         vertex.position = positions[i];
 
+        if (context.this_model.meshes.size() == 7) { // temp
+            vertex.index = 1;
+        }
+
         // TODO : support this
 
         //if (i < normals.size()) {
