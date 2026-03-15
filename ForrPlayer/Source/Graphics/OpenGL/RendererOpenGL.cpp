@@ -74,16 +74,13 @@ fe::RendererOpenGL::~RendererOpenGL() {
     glFinish();
 }
 
-void fe::RendererOpenGL::ClearScreen(float red, float green, float blue, float alpha) {
+void fe::RendererOpenGL::SetClearColor(float red, float green, float blue, float alpha) {
     glClearColor(red, green, blue, alpha);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-void fe::RendererOpenGL::SwapBuffers() {
-    glfwSwapBuffers(m_GLFWwindow);
 }
 
 void fe::RendererOpenGL::BeginFrame() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     m_Shader.bind();
 
     { // temp
@@ -134,6 +131,8 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
 
 void fe::RendererOpenGL::EndFrame() {
     m_Shader.unbind();
+
+    glfwSwapBuffers(m_GLFWwindow);
 }
 
 void fe::RendererOpenGL::InitializeGPUResources() {
