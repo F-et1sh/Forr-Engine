@@ -13,7 +13,7 @@
 #include "pch.hpp"
 #include "RendererOpenGL.hpp"
 
-static unsigned int ubo{};
+static unsigned int ubo{}; // temp
 
 fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
                                    IPlatformSystem&    platform_system,
@@ -82,6 +82,9 @@ void fe::RendererOpenGL::BeginFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_Shader.bind();
+}
+
+void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
 
     { // temp
         if (glfwGetKey(m_GLFWwindow, GLFW_KEY_A))
@@ -97,13 +100,10 @@ void fe::RendererOpenGL::BeginFrame() {
         ShaderData shader_data{};
         shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
         shader_data.view_matrix       = m_Camera.getViewMatrix();
-        shader_data.model_matrix      = glm::mat4(1.0f);
+        shader_data.model_matrix      = command.transform;
 
         glNamedBufferSubData(ubo, 0, sizeof(shader_data), &shader_data);
     }
-}
-
-void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
 
     //auto cpu_mesh     = m_ResourceManager.GetResource(ptr);
 

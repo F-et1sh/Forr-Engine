@@ -69,6 +69,15 @@ void fe::RendererVulkan::Draw(DrawMeshCommand command) {
             m_Camera.translate(glm::vec3(0.0f, 0.0f, -speed));
     }
 
+    { // temp
+        ShaderData shader_data{};
+        shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
+        shader_data.view_matrix       = m_Camera.getViewMatrix();
+        shader_data.model_matrix      = command.transform;
+
+        memcpy(m_UniformBuffers[m_CurrentFrame].mapped, &shader_data, sizeof(ShaderData));
+    }
+
     auto vulkan_model = m_VulkanResourceManager.GetResource<VulkanModel>(command.model_ptr);
 
     for (auto mesh_pointer : vulkan_model->pointers_mesh) {
@@ -1120,13 +1129,6 @@ void fe::RendererVulkan::BeginFrame() {
         return;
     }
 
-    ShaderData shader_data{};
-    shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
-    shader_data.view_matrix       = m_Camera.getViewMatrix();
-    shader_data.model_matrix      = glm::mat4(1.0f);
-
-    memcpy(m_UniformBuffers[m_CurrentFrame].mapped, &shader_data, sizeof(ShaderData));
-
     vkResetCommandBuffer(m_CommandBuffers[m_CurrentFrame], 0);
 
     VkCommandBufferBeginInfo command_buffer_begin_info{};
@@ -1195,7 +1197,7 @@ void fe::RendererVulkan::EndFrame() {
     VkPipelineStageFlags wait_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
     std::array<VkSemaphore, 1> wait_semaphores{ m_PresentCompleteSemaphores[m_CurrentFrame] };
-    std::array<VkSemaphore, 1> signal_semaphores{ m_RenderCompleteSemaphores[m_ImageIndex] };
+    std::array<VkSemaphore, 1> signal_semaphores{ m_RenderCompleteSemaphores[m_CurrentFrame] };
 
     VkSubmitInfo submit_info{};
     submit_info.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1229,5 +1231,5 @@ void fe::RendererVulkan::EndFrame() {
         return;
     }
 
-    m_CurrentFrame = (m_CurrentFrame + 1) % m_Context.max_concurrent_frames;
+    m_CurrentFrame = (m_CurrentFrame + 1) % VulkanContext::max_concurrent_frames;
 }
