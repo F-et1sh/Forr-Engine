@@ -14,6 +14,7 @@
         that Shader class should compile all shader files. Now I'm tired to compile shaders manually.
         Maybe create IShader that will compile shader files and ShaderVulkan/ShaderOpenGL, 
         that will create needed specific objects for backends
+    - add textures
 
 ### Done
     Clear color ability synchronized for all backends
