@@ -18,7 +18,7 @@
 namespace fe {
     struct MeshComponent {
         fe::pointer<resource::Model> model_ptr{};
-        uint32_t                     mesh_id{};
+        uint32_t                     mesh_id = ~0; // ~0 means that renderer has to draw all meshes
 
         MeshComponent()  = default;
         ~MeshComponent() = default;

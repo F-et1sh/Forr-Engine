@@ -57,5 +57,6 @@ namespace fe {
         IWindow* m_PrimaryWindow{};
 
         MeshComponent m_MeshComponent{}; // temp
+        MeshComponent m_MeshComponent2{}; // temp
     };
 } // namespace fe

@@ -12,12 +12,17 @@ fe::Application::Application(const ApplicationDesc& desc) {
     size_t i = 0;
 
     m_ResourceManager->RunForEach<resource::Model>([&](fe::pointer<resource::Model> model_ptr, const resource::Model& model) { // take the last model
-        if (i == 0) {
-            i++;
-            return;
+        switch (i) {
+            case 0:
+                m_MeshComponent.model_ptr = model_ptr;
+                m_MeshComponent.mesh_id   = ~0;
+                break;
+            case 1:
+                m_MeshComponent2.model_ptr = model_ptr;
+                m_MeshComponent2.mesh_id   = ~0;
+                break;
         }
-        m_MeshComponent.model_ptr = model_ptr;
-        m_MeshComponent.mesh_id   = model.meshes.size() - 1; // last mesh
+        i++;
     });
 }
 
@@ -25,11 +30,20 @@ void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
         m_Renderer->BeginFrame();
 
-        DrawMeshCommand command{};
-        command.model_ptr = m_MeshComponent.model_ptr;
-        command.mesh_index = m_MeshComponent.mesh_id;
-        command.transform  = glm::mat4();
-        m_Renderer->Draw(command); // temp
+        { // temp
+            DrawMeshCommand command{};
+            command.model_ptr  = m_MeshComponent.model_ptr;
+            command.mesh_index = m_MeshComponent.mesh_id;
+            command.transform  = glm::mat4();
+
+            DrawMeshCommand command2{};
+            command2.model_ptr  = m_MeshComponent2.model_ptr;
+            command2.mesh_index = m_MeshComponent2.mesh_id;
+            command2.transform  = glm::translate(glm::mat4(1.0f), glm::vec3(50, 0, 0));
+
+            m_Renderer->Draw(command);
+            m_Renderer->Draw(command2);
+        }
 
         m_Renderer->EndFrame();
 

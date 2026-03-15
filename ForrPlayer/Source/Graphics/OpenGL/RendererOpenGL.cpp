@@ -123,13 +123,12 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
             else {
                 //glDrawArrays(GL_TRIANGLES, 0, cpu_mesh->meshes[0].primitives[0].vertices.size());
             }
-
-            glBindVertexArray(0);
         }
     }
 }
 
 void fe::RendererOpenGL::EndFrame() {
+    glBindVertexArray(0);
     m_Shader.unbind();
 
     glfwSwapBuffers(m_GLFWwindow);
