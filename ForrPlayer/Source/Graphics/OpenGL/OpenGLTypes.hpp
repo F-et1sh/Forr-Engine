@@ -24,6 +24,8 @@ namespace fe {
         ~OpenGLTexture() = default;
     };
 
+    // TODO : rewrite all below
+
     struct OpenGLPrimitive {
         GLuint vao{};
         GLuint vbo{};
