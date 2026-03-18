@@ -116,4 +116,43 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(VulkanModel)
         FORR_CLASS_MOVABLE(VulkanModel)
     };
+
+    namespace temp { // TODO : use this instead of the structures upper
+        struct VulkanPrimitive {
+            uint32_t index_offset{};
+            uint32_t index_count{};
+
+            fe::pointer<resource::Material> material{};
+
+            VulkanPrimitive()  = default;
+            ~VulkanPrimitive() = default;
+
+            FORR_CLASS_NONCOPYABLE(VulkanPrimitive)
+            FORR_CLASS_MOVABLE(VulkanPrimitive)
+        };
+
+        struct VulkanMesh {
+            VulkanVertexBuffer vertex_buffer{};
+            VulkanIndexBuffer  index_buffer{};
+
+            std::vector<temp::VulkanPrimitive> primitives{};
+
+            VulkanMesh()  = default;
+            ~VulkanMesh() = default;
+
+            FORR_CLASS_NONCOPYABLE(VulkanMesh)
+            FORR_CLASS_MOVABLE(VulkanMesh)
+        };
+
+        struct VulkanModel {
+            std::vector<fe::pointer<temp::VulkanMesh>> pointers_mesh{};
+            std::vector<fe::pointer<VulkanTexture>>    pointers_texture{};
+
+            VulkanModel()  = default;
+            ~VulkanModel() = default;
+
+            FORR_CLASS_NONCOPYABLE(VulkanModel)
+            FORR_CLASS_MOVABLE(VulkanModel)
+        };
+    } // namespace temp
 } // namespace fe
