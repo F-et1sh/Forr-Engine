@@ -38,6 +38,8 @@
     <ClInclude Include="Source\ResourceManagement\Importers\GLTFImporter.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\MikkTSpace.hpp" />
     <ClInclude Include="Include\Forr\ECS\Components.hpp" />
+    <ClInclude Include="Source\Graphics\ResourceLookupTable.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceImporter.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -65,5 +67,6 @@
     <ClCompile Include="Source\ResourceManagement\Importers\TextureImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\GLTFImporter.cpp" />
     <ClCompile Include="..\ThirdParty\MikkTSpace\src\mikktspace.c" />
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceImporter.cpp" />
   </ItemGroup>
 </Project>

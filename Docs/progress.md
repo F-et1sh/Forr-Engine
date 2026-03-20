@@ -21,6 +21,7 @@
 ### Done
     Trying to review
     gTLF, unified logic and Vulkan types are reviewed
+    ResourceLookupTable created. VulkanResourceImporter created
 
 ### Problem
     -
