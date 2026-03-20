@@ -19,7 +19,7 @@ namespace fe {
             : m_ResourceManager(resource_manager), m_Storage(storage) {}
         ~VulkanResourceImporter() = default;
 
-        fe::pointer<VulkanTexture> ImportTexture(const resource::Texture& texture);
+        FORR_NODISCARD fe::pointer<VulkanTexture> ImportTexture(const resource::Texture& texture);
 
     private:
         ResourceManager&       m_ResourceManager;

@@ -17,6 +17,8 @@
 
 #include "VulkanResourceImporter.hpp"
 
+#include "Graphics/ResourceLookupTable.hpp"
+
 namespace fe {
     class VulkanResourceManager {
     public:
@@ -26,11 +28,23 @@ namespace fe {
 
         void CreateTexture(fe::pointer<resource::Texture> texture_ptr);
 
+        const VulkanTexture* GetTexture(fe::pointer<resource::Texture> texture_ptr)const {
+            auto gpu_packed = m_LookupTable.GetPointerGPU(texture_ptr.packed());
+
+            fe::pointer<VulkanTexture> gpu_pointer{};
+            gpu_pointer.unpack(gpu_packed);
+
+            auto texture = m_Storage.m_Textures.get(gpu_pointer);
+            return texture;
+        }
+
     private:
         VulkanResourceStorage  m_Storage{};
         VulkanResourceImporter m_Importer{ m_ResourceManager, m_Storage };
 
         VulkanContext&   m_Context;
         ResourceManager& m_ResourceManager;
+
+        ResourceLookupTable m_LookupTable{};
     };
 } // namespace fe

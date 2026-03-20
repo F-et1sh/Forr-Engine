@@ -25,6 +25,7 @@
     VulkanResourceStorage added
     VulkanResourceManagement folder added
     class VulkanResourceStorage -> struct VulkanResourceStorage. VulkanResourceManager::CreateResource() -> VulkanResourceManager::Create*()
+    ResourceLookupTable done. But idk is it works or no cuz freaking VS 2022 don't wonna work on freaking i9-14900K with 64GB RAM
 
 ### Problem
     -

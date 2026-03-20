@@ -18,7 +18,10 @@
 
 void fe::VulkanResourceManager::CreateTexture(fe::pointer<fe::resource::Texture> texture_ptr) {
     const auto& texture = *m_ResourceManager.GetResource(texture_ptr);
-    auto        ptr     = m_Importer.ImportResource(texture_ptr); // does not need to store this fe::pointer
+
+    auto ptr = m_Importer.ImportTexture(texture); // does not need to store this fe::pointer
+
+
 }
 
 void fe::VulkanResourceManager::CreateModel(fe::pointer<fe::resource::Model> cpu_model_ptr) { // TODO : the texture or model might be already created, handle it
@@ -36,7 +39,7 @@ void fe::VulkanResourceManager::CreateModel(fe::pointer<fe::resource::Model> cpu
 
             if (!material) continue; // TODO : provide fallbacks
 
-            auto        texture_ptr = material->pbr_metallic_roughness.base_color_texture.texture_ptr; // TODO : at first review all this shit, because I just can't read and/or edit this. After that, provide materials
+            auto texture_ptr = material->pbr_metallic_roughness.base_color_texture.texture_ptr; // TODO : at first review all this shit, because I just can't read and/or edit this. After that, provide materials
 
             auto ptr = this->createTexture(texture_ptr);
             vulkan_model.pointers_texture.emplace_back(ptr);
