@@ -46,8 +46,11 @@ namespace fe {
             if constexpr (std::is_same_v<T, resource::Texture>) {
                 return m_Textures;
             }
+            else if constexpr (std::is_same_v<T, resource::Model>) {
+                return m_Models;
+            }
             else if constexpr (std::is_same_v<T, resource::Material>) {
-                //return m_Materials;
+                //return m_Materials; // TODO : provide materials
             }
             else
                 constexpr {
@@ -59,5 +62,7 @@ namespace fe {
 
     private:
         std::unordered_map<fe::pointer<resource::Texture>, uint64_t> m_Textures{};
+        std::unordered_map<fe::pointer<resource::Model>, uint64_t>   m_Models{};
+        //std::unordered_map<fe::pointer<resource::Material>, uint64_t> m_Materials{};
     };
 } // namespace fe
