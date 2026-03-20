@@ -87,7 +87,7 @@ void fe::RendererVulkan::Draw(DrawMeshCommand command) {
         for (const auto& primitive : mesh->primitives) {
 
             if (primitive.index_count > 0) {
-                this->DrawPrimitive(primitive.vertex_buffer, primitive.index_buffer);
+                //this->DrawPrimitive(primitive.vertex_buffer, primitive.index_buffer);
             }
             else {
                 // TODO : provide this if it is needed
@@ -1190,6 +1190,8 @@ void fe::RendererVulkan::DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, 
     VkBuffer index_buffer_raw = index_buffer.buffer;
     vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
 
+    //vkCmdPushConstants(command_buffer, m_PipelineLayout, )
+    
     vkCmdDrawIndexed(command_buffer, index_buffer.count, 1, 0, 0, 0);
 }
 

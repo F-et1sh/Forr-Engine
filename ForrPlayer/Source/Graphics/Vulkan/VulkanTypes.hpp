@@ -75,13 +75,8 @@ namespace fe {
     };
 
     struct VulkanPrimitive {
-        VulkanVertexBuffer vertex_buffer{};
-        VulkanIndexBuffer  index_buffer{};
-
         uint32_t index_offset{};
         uint32_t index_count{};
-
-        //GLenum render_mode{ GL_TRIANGLES }; // triangles by default | TODO : provide topology
 
         fe::pointer<resource::Material> material{};
 
@@ -93,7 +88,8 @@ namespace fe {
     };
 
     struct VulkanMesh {
-        // GLenum index_type{}; uint32_t for all models ( at least for now )
+        VulkanVertexBuffer vertex_buffer{};
+        VulkanIndexBuffer  index_buffer{};
 
         std::vector<VulkanPrimitive> primitives{};
 
@@ -104,8 +100,6 @@ namespace fe {
         FORR_CLASS_MOVABLE(VulkanMesh)
     };
 
-    // for 1:1 mapping | TODO : don't do this. You don't have to create Model,
-    //  Mesh and other things like this on GPU-side
     struct VulkanModel {
         std::vector<fe::pointer<VulkanMesh>>    pointers_mesh{};
         std::vector<fe::pointer<VulkanTexture>> pointers_texture{};
@@ -116,43 +110,4 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(VulkanModel)
         FORR_CLASS_MOVABLE(VulkanModel)
     };
-
-    namespace temp { // TODO : use this instead of the structures upper
-        struct VulkanPrimitive {
-            uint32_t index_offset{};
-            uint32_t index_count{};
-
-            fe::pointer<resource::Material> material{};
-
-            VulkanPrimitive()  = default;
-            ~VulkanPrimitive() = default;
-
-            FORR_CLASS_NONCOPYABLE(VulkanPrimitive)
-            FORR_CLASS_MOVABLE(VulkanPrimitive)
-        };
-
-        struct VulkanMesh {
-            VulkanVertexBuffer vertex_buffer{};
-            VulkanIndexBuffer  index_buffer{};
-
-            std::vector<temp::VulkanPrimitive> primitives{};
-
-            VulkanMesh()  = default;
-            ~VulkanMesh() = default;
-
-            FORR_CLASS_NONCOPYABLE(VulkanMesh)
-            FORR_CLASS_MOVABLE(VulkanMesh)
-        };
-
-        struct VulkanModel {
-            std::vector<fe::pointer<temp::VulkanMesh>> pointers_mesh{};
-            std::vector<fe::pointer<VulkanTexture>>    pointers_texture{};
-
-            VulkanModel()  = default;
-            ~VulkanModel() = default;
-
-            FORR_CLASS_NONCOPYABLE(VulkanModel)
-            FORR_CLASS_MOVABLE(VulkanModel)
-        };
-    } // namespace temp
 } // namespace fe
