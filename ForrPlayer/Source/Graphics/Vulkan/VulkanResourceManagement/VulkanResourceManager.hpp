@@ -27,6 +27,9 @@ namespace fe {
         ~VulkanResourceManager() = default;
 
         void CreateTexture(fe::pointer<resource::Texture> texture_ptr);
+        void CreateModel(fe::pointer<resource::Model> model_ptr);
+
+        // TODO : rewrite all below. Getters must be invoked by GPU pointers. Not CPU
 
         const VulkanTexture* GetTexture(fe::pointer<resource::Texture> texture_ptr) const {
             uint64_t                   packed = m_LookupTable.GetPackedPointerGPU(texture_ptr);
@@ -36,9 +39,17 @@ namespace fe {
             return texture;
         }
 
+        const VulkanModel* GetModel(fe::pointer<resource::Model> model_ptr) const {
+            uint64_t                 packed = m_LookupTable.GetPackedPointerGPU(model_ptr);
+            fe::pointer<VulkanModel> gpu_pointer{ packed };
+
+            auto model = m_Storage.m_Models.get(gpu_pointer);
+            return model;
+        }
+
     private:
-        VulkanResourceStorage  m_Storage{};
-        ResourceLookupTable    m_LookupTable{};
+        VulkanResourceStorage m_Storage{};
+        ResourceLookupTable   m_LookupTable{};
         VulkanResourceCreator m_Importer{ m_ResourceManager, m_Storage };
 
         VulkanContext&   m_Context;

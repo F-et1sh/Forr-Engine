@@ -20,6 +20,10 @@ namespace fe {
         ~VulkanResourceCreator() = default;
 
         FORR_NODISCARD fe::pointer<VulkanTexture> CreateTexture(const resource::Texture& texture);
+        FORR_NODISCARD fe::pointer<VulkanModel> CreateModel(const resource::Model& model);
+
+    private:
+        FORR_NODISCARD fe::pointer<VulkanMesh> createMesh(const resource::Model::Mesh& mesh);
 
     private:
         ResourceManager&       m_ResourceManager;

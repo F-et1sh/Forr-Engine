@@ -78,21 +78,23 @@ void fe::RendererVulkan::Draw(DrawMeshCommand command) {
         memcpy(m_UniformBuffers[m_CurrentFrame].mapped, &shader_data, sizeof(ShaderData));
     }
 
-    auto vulkan_model = m_VulkanResourceManager.GetResource<VulkanModel>(command.model_ptr);
+    auto vulkan_model = m_VulkanResourceManager.GetModel(command.model_ptr);
 
     for (auto mesh_pointer : vulkan_model->pointers_mesh) {
-        const auto& mesh_storage = m_VulkanResourceManager.GetStorage<VulkanMesh>();
-        auto        mesh         = mesh_storage.get(mesh_pointer);
+        //const auto& mesh_storage = m_VulkanResourceManager.GetStorage<VulkanMesh>();
+        //auto        mesh         = mesh_storage.get(mesh_pointer);
 
-        for (const auto& primitive : mesh->primitives) {
+        //for (const auto& primitive : mesh->primitives) {
 
-            if (primitive.index_count > 0) {
-                //this->DrawPrimitive(primitive.vertex_buffer, primitive.index_buffer);
-            }
-            else {
-                // TODO : provide this if it is needed
-            }
-        }
+        //    if (primitive.index_count > 0) {
+        //        //this->DrawPrimitive(primitive.vertex_buffer, primitive.index_buffer);
+        //    }
+        //    else {
+        //        // TODO : provide this if it is needed
+        //    }
+        //}
+
+        m_VulkanResourceManager.GetModel
     }
 }
 
