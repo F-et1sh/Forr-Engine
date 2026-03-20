@@ -29,6 +29,7 @@
     VulkanResourceImporter -> VulkanResourceCreator
     new architecture almost provided for Vulkan
     new architecture's declaration is almost done
+    VulkanResourceManager::CreateResource() unified
 
 ### Problem
     -
