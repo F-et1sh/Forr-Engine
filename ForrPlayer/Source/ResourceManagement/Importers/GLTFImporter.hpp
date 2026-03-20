@@ -61,9 +61,9 @@ namespace fe {
         static void loadMeshes(GLTFImportContext& context);
         static void loadTextures(GLTFImportContext& context);
         static void loadMaterials(GLTFImportContext& context);
-        static void loadPrimitives(GLTFImportContext& context, std::vector<Primitive>& this_primitives, const std::vector<tinygltf::Primitive>& primitives);
+        static void loadPrimitives(GLTFImportContext& context, std::vector<resource::Model::Primitive>& this_primitives, const std::vector<tinygltf::Primitive>& primitives);
         static void loadVertices(GLTFImportContext& context, Vertices& this_vertices, Indices& this_indices, const tinygltf::Primitive& primitive);
-        static void loadIndices(GLTFImportContext& context, Primitive& this_primitive, Indices& this_indices, const tinygltf::Primitive& primitive);
+        static void loadIndices(GLTFImportContext& context, resource::Model::Primitive& this_primitive, Indices& this_indices, const tinygltf::Primitive& primitive);
         static void loadAnimations(GLTFImportContext& context);
 
     private:

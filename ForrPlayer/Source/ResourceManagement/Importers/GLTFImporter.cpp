@@ -151,7 +151,7 @@ void fe::GLTFImporter::loadMaterials(GLTFImportContext& context) {
     }
 }
 
-void fe::GLTFImporter::loadPrimitives(GLTFImportContext& context, std::vector<Primitive>& this_primitives, const std::vector<tinygltf::Primitive>& primitives) {
+void fe::GLTFImporter::loadPrimitives(GLTFImportContext& context, std::vector<resource::Model::Primitive>& this_primitives, const std::vector<tinygltf::Primitive>& primitives) {
     this_primitives.resize(primitives.size());
     for (size_t i = 0; i < primitives.size(); i++) {
         const tinygltf::Primitive& primitive      = primitives[i];
@@ -281,7 +281,8 @@ void fe::GLTFImporter::loadVertices(GLTFImportContext& context, Vertices& this_v
     }
 }
 
-void fe::GLTFImporter::loadIndices(GLTFImportContext& context, Primitive& this_primitive, Indices& this_indices, const tinygltf::Primitive& primitive) {
+// TODO : review. Move this to mesh
+void fe::GLTFImporter::loadIndices(GLTFImportContext& context, resource::Model::Primitive& this_primitive, Indices& this_indices, const tinygltf::Primitive& primitive) {
     if (primitive.indices < 0) {
         fe::logging::error("Primitive has no indices");
         return;
