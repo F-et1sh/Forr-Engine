@@ -18,10 +18,8 @@
 
 void fe::VulkanResourceManager::CreateTexture(fe::pointer<fe::resource::Texture> texture_ptr) {
     const auto& texture = *m_ResourceManager.GetResource(texture_ptr);
-
-    auto ptr = m_Importer.ImportTexture(texture); // does not need to store this fe::pointer
-
-
+    auto        ptr     = m_Importer.CreateTexture(texture); // does not need to store this fe::pointer
+    m_LookupTable.Insert(texture_ptr, ptr);
 }
 
 void fe::VulkanResourceManager::CreateModel(fe::pointer<fe::resource::Model> cpu_model_ptr) { // TODO : the texture or model might be already created, handle it
