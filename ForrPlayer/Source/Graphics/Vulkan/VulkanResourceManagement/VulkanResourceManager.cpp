@@ -14,11 +14,11 @@
 #include "VulkanResourceManager.hpp"
 
 #include "Graphics/GPUTypes.hpp"
-#include "VKTools.hpp"
+#include "Graphics/Vulkan/VKTools.hpp"
 
-void fe::VulkanResourceManager::CreateTexture(fe::pointer<fe::resource::Texture> cpu_texture_ptr) {
-    const auto& texture = *m_ResourceManager.GetResource(cpu_texture_ptr);
-    auto        ptr     = createTexture(cpu_texture_ptr); // does not need to store this fe::pointer
+void fe::VulkanResourceManager::CreateTexture(fe::pointer<fe::resource::Texture> texture_ptr) {
+    const auto& texture = *m_ResourceManager.GetResource(texture_ptr);
+    auto        ptr     = m_Importer.ImportResource(texture_ptr); // does not need to store this fe::pointer
 }
 
 void fe::VulkanResourceManager::CreateModel(fe::pointer<fe::resource::Model> cpu_model_ptr) { // TODO : the texture or model might be already created, handle it

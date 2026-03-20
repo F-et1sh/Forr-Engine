@@ -15,14 +15,13 @@
 #include "Graphics/Vulkan/VulkanTypes.hpp"
 
 namespace fe {
-    class VulkanResourceStorage {
+    struct VulkanResourceStorage {
     public:
-        VulkanResourceStorage()  = default;
-        ~VulkanResourceStorage() = default;
-
-    private:
         fe::typed_pointer_storage<VulkanTexture> m_Textures{};
         fe::typed_pointer_storage<VulkanModel>   m_Models{};
         fe::typed_pointer_storage<VulkanMesh>    m_Meshes{};
+
+        VulkanResourceStorage()  = default;
+        ~VulkanResourceStorage() = default;
     };
 } // namespace fe

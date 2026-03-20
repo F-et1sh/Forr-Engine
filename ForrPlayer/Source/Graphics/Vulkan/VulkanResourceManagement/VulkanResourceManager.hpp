@@ -13,7 +13,7 @@
 #pragma once
 #include "Core/types.hpp"
 #include "ResourceManagement/ResourceManager.hpp"
-#include "VulkanContext.hpp"
+#include "Graphics/Vulkan/VulkanContext.hpp"
 
 #include "VulkanResourceImporter.hpp"
 
@@ -24,10 +24,7 @@ namespace fe {
             : m_Context(context), m_ResourceManager(resource_manager) {}
         ~VulkanResourceManager() = default;
 
-        template <typename T>
-        void CreateResource(fe::pointer<T> cpu_side_pointer) {
-            fe::pointer<T> ptr = m_Importer.ImportResource<T>(cpu_side_pointer); // does not need to store this pointer
-        }
+        void CreateTexture(fe::pointer<resource::Texture> texture_ptr);
 
     private:
         VulkanResourceStorage  m_Storage{};

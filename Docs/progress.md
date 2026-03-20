@@ -24,6 +24,7 @@
     ResourceLookupTable created. VulkanResourceImporter created
     VulkanResourceStorage added
     VulkanResourceManagement folder added
+    class VulkanResourceStorage -> struct VulkanResourceStorage. VulkanResourceManager::CreateResource() -> VulkanResourceManager::Create*()
 
 ### Problem
     -
