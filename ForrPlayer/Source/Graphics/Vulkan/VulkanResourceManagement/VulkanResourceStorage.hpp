@@ -12,7 +12,7 @@
 
 #pragma once
 #include "ResourceManagement/ResourceManager.hpp"
-#include "VulkanTypes.hpp"
+#include "Graphics/Vulkan/VulkanTypes.hpp"
 
 namespace fe {
     class VulkanResourceStorage {

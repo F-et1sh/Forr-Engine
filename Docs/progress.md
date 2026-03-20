@@ -23,6 +23,7 @@
     gTLF, unified logic and Vulkan types are reviewed
     ResourceLookupTable created. VulkanResourceImporter created
     VulkanResourceStorage added
+    VulkanResourceManagement folder added
 
 ### Problem
     -
