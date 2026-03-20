@@ -123,15 +123,39 @@ void fe::GLTFImporter::loadMeshes(GLTFImportContext& context) {
         auto&                 this_mesh = context.this_model.meshes[i];
 
         this_mesh.name = mesh.name;
-        GLTFImporter::loadPrimitives(context, this_mesh.primitives, mesh.primitives);
-        this_mesh.weights.insert_range(this_mesh.weights.end(), mesh.weights); // TODO : check is this work or no
 
-        this_mesh.primitives.resize(mesh.primitives.size());
+        context.mesh_primitive_offset_index = {}; // reset this before loading new mesh
 
-        for (size_t j = 0; j < mesh.primitives.size(); j++) {
-            auto& this_primitive        = this_mesh.primitives[j];
-            this_primitive.material_ptr = context.GetMaterial(j);
+        const std::vector<tinygltf::Primitive>&  primitives      = mesh.primitives;
+        std::vector<resource::Model::Mesh::Primitive>& this_primitives = this_mesh.primitives;
+
+        this_primitives.resize(primitives.size());
+
+        for (size_t i = 0; i < primitives.size(); i++) {
+            const tinygltf::Primitive& primitive      = primitives[i];
+            auto&                      this_primitive = this_primitives[i];
+
+            this_primitive.material_ptr = context.GetMaterial(i);
+
+            GLTFImporter::loadIndices(context, this_primitive, this_mesh.indices, primitive); // indices go first
+            GLTFImporter::loadVertices(context, this_mesh.vertices, this_mesh.indices, primitive);
+
+            // clang-format off
+            switch (primitive.mode) {
+                case TINYGLTF_MODE_POINTS        : this_primitive.render_mode = RenderMode::POINTS        ; break;
+                case TINYGLTF_MODE_LINE          : this_primitive.render_mode = RenderMode::LINES         ; break;
+                case TINYGLTF_MODE_LINE_LOOP     : this_primitive.render_mode = RenderMode::LINE_LOOP     ; break;
+                case TINYGLTF_MODE_LINE_STRIP    : this_primitive.render_mode = RenderMode::LINE_STRIP    ; break;
+                case TINYGLTF_MODE_TRIANGLES     : this_primitive.render_mode = RenderMode::TRIANGLES     ; break;
+                case TINYGLTF_MODE_TRIANGLE_STRIP: this_primitive.render_mode = RenderMode::TRIANGLE_STRIP; break;
+                case TINYGLTF_MODE_TRIANGLE_FAN  : this_primitive.render_mode = RenderMode::TRIANGLE_FAN  ; break;
+                default:
+                    fe::logging::warning("tinygltf -> Unified. Unsupported render mode %i. Using TRIANGLES as default", primitive.mode);
+            }
+            // clang-format on
         }
+
+        this_mesh.weights.insert_range(this_mesh.weights.end(), mesh.weights);
     }
 }
 
@@ -148,34 +172,6 @@ void fe::GLTFImporter::loadMaterials(GLTFImportContext& context) {
 
     for (size_t i = 0; i < context.model.materials.size(); i++) {
         context.materials[i] = GLTFImporter::createMaterial(context, i);
-    }
-}
-
-void fe::GLTFImporter::loadPrimitives(GLTFImportContext& context, std::vector<resource::Model::Primitive>& this_primitives, const std::vector<tinygltf::Primitive>& primitives) {
-    this_primitives.resize(primitives.size());
-    for (size_t i = 0; i < primitives.size(); i++) {
-        const tinygltf::Primitive& primitive      = primitives[i];
-        auto&                      this_primitive = this_primitives[i];
-
-        GLTFImporter::loadIndices(context, this_primitive, this_primitive.indices, primitive); // indices go first
-        GLTFImporter::loadVertices(context, this_primitive.vertices, this_primitive.indices, primitive);
-
-        // TODO : support materials
-        //this_primitive.material = primitive.material;
-
-        // clang-format off
-        switch (primitive.mode) {
-            case TINYGLTF_MODE_POINTS        : this_primitive.render_mode = RenderMode::POINTS        ; break;
-            case TINYGLTF_MODE_LINE          : this_primitive.render_mode = RenderMode::LINES         ; break;
-            case TINYGLTF_MODE_LINE_LOOP     : this_primitive.render_mode = RenderMode::LINE_LOOP     ; break;
-            case TINYGLTF_MODE_LINE_STRIP    : this_primitive.render_mode = RenderMode::LINE_STRIP    ; break;
-            case TINYGLTF_MODE_TRIANGLES     : this_primitive.render_mode = RenderMode::TRIANGLES     ; break;
-            case TINYGLTF_MODE_TRIANGLE_STRIP: this_primitive.render_mode = RenderMode::TRIANGLE_STRIP; break;
-            case TINYGLTF_MODE_TRIANGLE_FAN  : this_primitive.render_mode = RenderMode::TRIANGLE_FAN  ; break;
-            default:
-                fe::logging::warning("tinygltf -> Unified. Unsupported render mode %i. Using TRIANGLES as default", primitive.mode);
-        }
-        // clang-format on
     }
 }
 
@@ -257,10 +253,6 @@ void fe::GLTFImporter::loadVertices(GLTFImportContext& context, Vertices& this_v
         auto& vertex    = this_vertices[i];
         vertex.position = positions[i];
 
-        if (context.this_model.meshes.size() == 7) { // temp
-            vertex.index = 1;
-        }
-
         // TODO : support this
 
         //if (i < normals.size()) {
@@ -281,8 +273,7 @@ void fe::GLTFImporter::loadVertices(GLTFImportContext& context, Vertices& this_v
     }
 }
 
-// TODO : review. Move this to mesh
-void fe::GLTFImporter::loadIndices(GLTFImportContext& context, resource::Model::Primitive& this_primitive, Indices& this_indices, const tinygltf::Primitive& primitive) {
+void fe::GLTFImporter::loadIndices(GLTFImportContext& context, resource::Model::Mesh::Primitive& this_primitive, Indices& this_indices, const tinygltf::Primitive& primitive) {
     if (primitive.indices < 0) {
         fe::logging::error("Primitive has no indices");
         return;
@@ -299,11 +290,13 @@ void fe::GLTFImporter::loadIndices(GLTFImportContext& context, resource::Model::
             vec.resize(accessor.count);
             memcpy(vec.data(), data_ptr, accessor.count * sizeof(uint8_t));
 
-            this_indices.insert_range(this_indices.end(), vec); // TODO : check is this work or no
+            this_indices.insert_range(this_indices.end(), vec);
 
-            this_primitive.index_type   = RenderIndexType::UNSIGNED_INT;
+            this_primitive.index_type   = RenderIndexType::UNSIGNED_INT; // TODO : maybe remove this ?
             this_primitive.index_count  = accessor.count;
-            this_primitive.index_offset = 0;
+            this_primitive.index_offset = context.mesh_primitive_offset_index;
+
+            context.mesh_primitive_offset_index += accessor.count;
 
             break;
         }
@@ -319,28 +312,35 @@ void fe::GLTFImporter::loadIndices(GLTFImportContext& context, resource::Model::
                 }
             }
 
-            this_indices.insert_range(this_indices.end(), vec); // TODO : check is this work or no
+            this_indices.insert_range(this_indices.end(), vec);
 
-            this_primitive.index_type   = RenderIndexType::UNSIGNED_INT;
+            this_primitive.index_type   = RenderIndexType::UNSIGNED_INT; // TODO : maybe remove this ?
             this_primitive.index_count  = accessor.count;
-            this_primitive.index_offset = 0;
+            this_primitive.index_offset = context.mesh_primitive_offset_index;
+
+            context.mesh_primitive_offset_index += accessor.count;
 
             break;
         }
         case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT: {
-            this_indices.resize(accessor.count);
+            std::vector<uint32_t> vec{};
+            vec.resize(accessor.count);
             if (buffer_view.byteStride == 0 || buffer_view.byteStride == sizeof(uint32_t)) { // tightly packed
-                memcpy(this_indices.data(), data_ptr, accessor.count * sizeof(uint32_t));
+                memcpy(vec.data(), data_ptr, accessor.count * sizeof(uint32_t));
             }
             else {
                 for (size_t i = 0; i < accessor.count; i++) {
-                    this_indices[i] = *reinterpret_cast<const uint32_t*>(data_ptr + (i * buffer_view.byteStride));
+                    vec[i] = *reinterpret_cast<const uint32_t*>(data_ptr + (i * buffer_view.byteStride));
                 }
             }
 
-            this_primitive.index_type   = RenderIndexType::UNSIGNED_INT;
+            this_indices.insert_range(this_indices.end(), vec);
+
+            this_primitive.index_type   = RenderIndexType::UNSIGNED_INT; // TODO : maybe remove this ?
             this_primitive.index_count  = accessor.count;
-            this_primitive.index_offset = 0;
+            this_primitive.index_offset = context.mesh_primitive_offset_index;
+
+            context.mesh_primitive_offset_index += accessor.count;
 
             break;
         }
@@ -365,16 +365,16 @@ void fe::GLTFImporter::loadAnimations(GLTFImportContext& context) {
             this_channel.target_node = channel.target_node;
 
             if (channel.target_path == "translation") {
-                this_channel.target_path = AnimationChannel::TargetPath::TRANSLATION;
+                this_channel.target_path = Model::AnimationChannel::TargetPath::TRANSLATION;
             }
             else if (channel.target_path == "rotation") {
-                this_channel.target_path = AnimationChannel::TargetPath::ROTATION;
+                this_channel.target_path = Model::AnimationChannel::TargetPath::ROTATION;
             }
             else if (channel.target_path == "scale") {
-                this_channel.target_path = AnimationChannel::TargetPath::SCALE;
+                this_channel.target_path = Model::AnimationChannel::TargetPath::SCALE;
             }
             else if (channel.target_path == "weights") {
-                this_channel.target_path = AnimationChannel::TargetPath::WEIGHTS;
+                this_channel.target_path = Model::AnimationChannel::TargetPath::WEIGHTS;
             }
         }
 
@@ -388,13 +388,13 @@ void fe::GLTFImporter::loadAnimations(GLTFImportContext& context) {
             fe::GLTFImporter::readAccessorVec4(context.model, sampler.output, this_sampler.values);
 
             if (sampler.interpolation == "LINEAR") {
-                this_sampler.interpolation = AnimationSampler::InterpolationMode::LINEAR;
+                this_sampler.interpolation = Model::AnimationSampler::InterpolationMode::LINEAR;
             }
             else if (sampler.interpolation == "STEP") {
-                this_sampler.interpolation = AnimationSampler::InterpolationMode::STEP;
+                this_sampler.interpolation = Model::AnimationSampler::InterpolationMode::STEP;
             }
             else if (sampler.interpolation == "CUBICSPLINE") {
-                this_sampler.interpolation = AnimationSampler::InterpolationMode::CUBICSPLINE;
+                this_sampler.interpolation = Model::AnimationSampler::InterpolationMode::CUBICSPLINE;
             }
         }
     }
