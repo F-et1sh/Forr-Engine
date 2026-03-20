@@ -125,93 +125,93 @@ void fe::OpenGLResourceManager::CreateModel(fe::pointer<fe::resource::Model> cpu
 
     // TODO : review all of this
 
-    const auto& model = *m_ResourceManager.GetResource(cpu_model_ptr);
+    //const auto& model = *m_ResourceManager.GetResource(cpu_model_ptr);
 
-    // mesh hasn't its own extension, so you get a structure here, not a pointer
-    for (const auto& mesh : model.meshes) {
-        auto ptr = this->createMesh(mesh);
-        opengl_model.pointers_mesh.emplace_back(ptr);
+    //// mesh hasn't its own extension, so you get a structure here, not a pointer
+    //for (const auto& mesh : model.meshes) {
+    //    auto ptr = this->createMesh(mesh);
+    //    opengl_model.pointers_mesh.emplace_back(ptr);
 
-        for (const auto& primitive : mesh.primitives) {
-            auto material    = m_ResourceManager.GetResource(primitive.material_ptr);
+    //    for (const auto& primitive : mesh.primitives) {
+    //        auto material    = m_ResourceManager.GetResource(primitive.material_ptr);
 
-            if (!material) continue; // TODO : provide fallbacks
+    //        if (!material) continue; // TODO : provide fallbacks
 
-            auto texture_ptr = material->pbr_metallic_roughness.base_color_texture.texture_ptr;
+    //        auto texture_ptr = material->pbr_metallic_roughness.base_color_texture.texture_ptr;
 
-            auto ptr = this->CreateTexture(texture_ptr);
-            opengl_model.pointers_texture.emplace_back(ptr);
+    //        auto ptr = this->CreateTexture(texture_ptr);
+    //        opengl_model.pointers_texture.emplace_back(ptr);
 
-            // TODO : change this to this :
-            // auto& texture = *m_ResourceManager.GetResource(texture_ptr);
-            // auto ptr = this->createTexture(texture);
-            // opengl_model.pointers_texture.emplace_back(ptr);
-        }
-    }
+    //        // TODO : change this to this :
+    //        // auto& texture = *m_ResourceManager.GetResource(texture_ptr);
+    //        // auto ptr = this->createTexture(texture);
+    //        // opengl_model.pointers_texture.emplace_back(ptr);
+    //    }
+    //}
 
     auto gpu_ptr = m_Models.create(std::move(opengl_model));
     m_CPU_GPU_Model.insert({ cpu_model_ptr.packed(), gpu_ptr.packed() });
 }
 
-fe::pointer<fe::OpenGLMesh> fe::OpenGLResourceManager::createMesh(const Mesh& mesh) {
-    OpenGLMesh opengl_mesh{};
-
-    for (const auto& primitive : mesh.primitives) {
-
-        OpenGLPrimitive opengl_primitive{};
-
-        this->createPrimitive(primitive, opengl_primitive);
-
-        opengl_mesh.primitives.emplace_back(std::move(opengl_primitive));
-    }
-
-    auto ptr = m_Meshes.create(std::move(opengl_mesh));
-    return ptr;
-}
-
-void fe::OpenGLResourceManager::createPrimitive(const Primitive& primitive, OpenGLPrimitive& opengl_primitive) {
-    //opengl_primitive.material // TODO : handle materials
-
-    glCreateVertexArrays(1, &opengl_primitive.vao);
-    glBindVertexArray(opengl_primitive.vao);
-
-    glCreateBuffers(1, &opengl_primitive.vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, opengl_primitive.vbo);
-
-    constexpr GLsizei stride = sizeof(Vertex);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*) offsetof(Vertex, position));
-    glEnableVertexAttribArray(0);
-
-    // temp
-    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, stride, (void*) offsetof(Vertex, index));
-    glEnableVertexAttribArray(1);
-
-    glCreateBuffers(1, &opengl_primitive.ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl_primitive.ebo);
-
-    opengl_primitive.index_count  = primitive.index_count;
-    opengl_primitive.index_offset = primitive.index_offset;
-
-    // clang-format off
-    switch (primitive.render_mode) {
-        case RenderMode::POINTS        : opengl_primitive.render_mode = GL_POINTS        ; break;
-        case RenderMode::LINES         : opengl_primitive.render_mode = GL_LINES         ; break;
-        case RenderMode::LINE_LOOP     : opengl_primitive.render_mode = GL_LINE_LOOP     ; break;
-        case RenderMode::LINE_STRIP    : opengl_primitive.render_mode = GL_LINE_STRIP    ; break;
-        case RenderMode::TRIANGLES     : opengl_primitive.render_mode = GL_TRIANGLES     ; break;
-        case RenderMode::TRIANGLE_STRIP: opengl_primitive.render_mode = GL_TRIANGLE_STRIP; break;
-        case RenderMode::TRIANGLE_FAN  : opengl_primitive.render_mode = GL_TRIANGLE_FAN  ; break;
-        default:
-            fe::logging::warning("Unified -> OpenGL. Unsupported render mode %i. Using GL_TRIANGLES as default", primitive.render_mode);
-            opengl_primitive.render_mode = GL_TRIANGLES;
-    }
-    // clang-format on
-
-    glBufferData(GL_ARRAY_BUFFER, primitive.vertices.size() * sizeof(Vertex), primitive.vertices.data(), GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, primitive.indices.size() * sizeof(GLuint), primitive.indices.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
+//fe::pointer<fe::OpenGLMesh> fe::OpenGLResourceManager::createMesh(const Mesh& mesh) {
+//    OpenGLMesh opengl_mesh{};
+//
+//    for (const auto& primitive : mesh.primitives) {
+//
+//        OpenGLPrimitive opengl_primitive{};
+//
+//        this->createPrimitive(primitive, opengl_primitive);
+//
+//        opengl_mesh.primitives.emplace_back(std::move(opengl_primitive));
+//    }
+//
+//    auto ptr = m_Meshes.create(std::move(opengl_mesh));
+//    return ptr;
+//}
+//
+//void fe::OpenGLResourceManager::createPrimitive(const Primitive& primitive, OpenGLPrimitive& opengl_primitive) {
+//    //opengl_primitive.material // TODO : handle materials
+//
+//    glCreateVertexArrays(1, &opengl_primitive.vao);
+//    glBindVertexArray(opengl_primitive.vao);
+//
+//    glCreateBuffers(1, &opengl_primitive.vbo);
+//    glBindBuffer(GL_ARRAY_BUFFER, opengl_primitive.vbo);
+//
+//    constexpr GLsizei stride = sizeof(Vertex);
+//
+//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*) offsetof(Vertex, position));
+//    glEnableVertexAttribArray(0);
+//
+//    // temp
+//    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, stride, (void*) offsetof(Vertex, index));
+//    glEnableVertexAttribArray(1);
+//
+//    glCreateBuffers(1, &opengl_primitive.ebo);
+//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl_primitive.ebo);
+//
+//    opengl_primitive.index_count  = primitive.index_count;
+//    opengl_primitive.index_offset = primitive.index_offset;
+//
+//    // clang-format off
+//    switch (primitive.render_mode) {
+//        case RenderMode::POINTS        : opengl_primitive.render_mode = GL_POINTS        ; break;
+//        case RenderMode::LINES         : opengl_primitive.render_mode = GL_LINES         ; break;
+//        case RenderMode::LINE_LOOP     : opengl_primitive.render_mode = GL_LINE_LOOP     ; break;
+//        case RenderMode::LINE_STRIP    : opengl_primitive.render_mode = GL_LINE_STRIP    ; break;
+//        case RenderMode::TRIANGLES     : opengl_primitive.render_mode = GL_TRIANGLES     ; break;
+//        case RenderMode::TRIANGLE_STRIP: opengl_primitive.render_mode = GL_TRIANGLE_STRIP; break;
+//        case RenderMode::TRIANGLE_FAN  : opengl_primitive.render_mode = GL_TRIANGLE_FAN  ; break;
+//        default:
+//            fe::logging::warning("Unified -> OpenGL. Unsupported render mode %i. Using GL_TRIANGLES as default", primitive.render_mode);
+//            opengl_primitive.render_mode = GL_TRIANGLES;
+//    }
+//    // clang-format on
+//
+//    glBufferData(GL_ARRAY_BUFFER, primitive.vertices.size() * sizeof(Vertex), primitive.vertices.data(), GL_STATIC_DRAW);
+//    glBufferData(GL_ELEMENT_ARRAY_BUFFER, primitive.indices.size() * sizeof(GLuint), primitive.indices.data(), GL_STATIC_DRAW);
+//
+//    glBindBuffer(GL_ARRAY_BUFFER, 0);
+//    glBindVertexArray(0);
+//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+//}

@@ -71,32 +71,43 @@ void fe::RendererVulkan::Draw(DrawMeshCommand command) {
 
     { // temp
         static ShaderData shader_data{};
-        shader_data.projection_matrix       = m_Camera.getPerspectiveMatrix();
-        shader_data.view_matrix             = m_Camera.getViewMatrix();
-        shader_data.model_matrix[command.i] = command.transform;
+        shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
+        shader_data.view_matrix       = m_Camera.getViewMatrix();
+        shader_data.model_matrix      = command.transform;
 
         memcpy(m_UniformBuffers[m_CurrentFrame].mapped, &shader_data, sizeof(ShaderData));
     }
 
-    auto gpu_ptr = m_VulkanResourceManager.GetGPUPointer(command.model_ptr);
+    auto        gpu_ptr      = m_VulkanResourceManager.GetGPUPointer(command.model_ptr);
     const auto& vulkan_model = *m_VulkanResourceManager.GetResource(gpu_ptr);
 
     for (auto mesh_pointer : vulkan_model.pointers_mesh) {
         const auto& mesh = *m_VulkanResourceManager.GetResource(mesh_pointer);
 
-        // TODO :
-        // bind mesh.vertex_buffer
-        // bind mesh.index_buffer
+        //const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame]; // temp
+        //{ // temp
+
+        //    VkDeviceSize offsets[1]{ 0 };
+
+        //    VkBuffer vertex_buffer_raw = mesh.vertex_buffer.buffer;
+        //    vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
+
+        //    VkBuffer index_buffer_raw = mesh.index_buffer.buffer;
+        //    vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
+
+        //    //vkCmdPushConstants(command_buffer, m_PipelineLayout, )
+        //}
 
         for (const auto& primitive : mesh.primitives) {
 
             if (primitive.index_count > 0) {
-                
-                // TODO :
-                // bind material ( provide materials )
-                // draw with primitive.index_offset and primitive.index_count
 
-                //this->DrawPrimitive(primitive.vertex_buffer, primitive.index_buffer);
+                // TODO : bind material ( provide materials )
+
+                // TODO : do not find vertex and index buffers multiple times
+                this->DrawPrimitive(mesh.vertex_buffer, mesh.index_buffer, primitive.index_offset, primitive.index_count);
+
+                //vkCmdDrawIndexed(command_buffer, primitive.index_count, 1, primitive.index_offset, 0, 0); // temp
             }
             else {
                 // TODO : provide this if it is needed
@@ -528,7 +539,7 @@ void fe::RendererVulkan::InitializePipeline() {
     vertex_input_binding_description.stride    = sizeof(Vertex);
     vertex_input_binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-    std::array<VkVertexInputAttributeDescription, 2> vertex_input_attributs{};
+    std::array<VkVertexInputAttributeDescription, 1> vertex_input_attributs{};
     vertex_input_attributs[0].binding  = 0;
     vertex_input_attributs[0].location = 0;
     vertex_input_attributs[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
@@ -1188,7 +1199,7 @@ void fe::RendererVulkan::BeginFrame() {
     vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline);
 }
 
-void fe::RendererVulkan::DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer) {
+void fe::RendererVulkan::DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer, uint32_t index_offset, uint32_t index_count) {
     const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
 
     VkDeviceSize offsets[1]{ 0 };
@@ -1200,8 +1211,8 @@ void fe::RendererVulkan::DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, 
     vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
 
     //vkCmdPushConstants(command_buffer, m_PipelineLayout, )
-    
-    vkCmdDrawIndexed(command_buffer, index_buffer.count, 1, 0, 0, 0);
+
+    vkCmdDrawIndexed(command_buffer, index_count, 1, index_offset, 0, 0);
 }
 
 void fe::RendererVulkan::EndFrame() {

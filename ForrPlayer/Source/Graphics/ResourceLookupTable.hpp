@@ -11,6 +11,8 @@
 ===============================================*/
 
 #pragma once
+#include "Core/pointer.hpp"
+#include <unordered_map>
 
 namespace fe {
     // the table invokes CPU and returns GPU pointers
@@ -20,13 +22,13 @@ namespace fe {
         ResourceLookupTable()  = default;
         ~ResourceLookupTable() = default;
 
-        template <typename CPU, typename GPU>
-        void Insert(fe::pointer<CPU> cpu_side_pointer, fe::pointer<GPU> gpu_side_pointer) const {
-            const auto& storage = this->GetStorage<CPU>();
+        template <resource::resource_t CPU, typename GPU>
+        void Insert(fe::pointer<CPU> cpu_side_pointer, fe::pointer<GPU> gpu_side_pointer) {
+            auto& storage = this->GetStorage<CPU>();
             storage.insert({ cpu_side_pointer, gpu_side_pointer.packed() });
         }
 
-        template <typename T>
+        template <resource::resource_t T>
         FORR_NODISCARD uint64_t GetPackedPointerGPU(fe::pointer<T> cpu_side_pointer) const {
             const auto& storage = this->GetStorage<T>();
 
@@ -41,7 +43,8 @@ namespace fe {
         }
 
     private:
-        template <typename T>
+        // const
+        template <resource::resource_t T>
         const std::unordered_map<fe::pointer<T>, uint64_t>& GetStorage() const {
             if constexpr (std::is_same_v<T, resource::Texture>) {
                 return m_Textures;
@@ -52,12 +55,30 @@ namespace fe {
             else if constexpr (std::is_same_v<T, resource::Material>) {
                 //return m_Materials; // TODO : provide materials
             }
-            else
-                constexpr {
-                    // TODO : Add fallbacks
-                    assert(false);
-                    return {};
-                }
+            else {
+                // TODO : Add fallbacks
+                assert(false);
+                return {};
+            }
+        }
+
+        // non-const
+        template <resource::resource_t T>
+        std::unordered_map<fe::pointer<T>, uint64_t>& GetStorage() {
+            if constexpr (std::is_same_v<T, resource::Texture>) {
+                return m_Textures;
+            }
+            else if constexpr (std::is_same_v<T, resource::Model>) {
+                return m_Models;
+            }
+            else if constexpr (std::is_same_v<T, resource::Material>) {
+                //return m_Materials; // TODO : provide materials
+            }
+            else {
+                // TODO : Add fallbacks
+                assert(false);
+                return {};
+            }
         }
 
     private:

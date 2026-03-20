@@ -59,22 +59,18 @@ namespace fe {
             else if constexpr (std::is_same_v<T, resource::Model>) {
                 return fe::pointer<VulkanModel>{ packed };
             }
-            else if constexpr (std::is_same_v<T, resource::Mesh>) {
-                return fe::pointer<VulkanMesh>{ packed };
+            else {
+                assert(false);
+                return {};
             }
-            else
-                constexpr {
-                    assert(false);
-                    return {};
-                }
         }
 
     private:
+        VulkanContext&   m_Context;
+        ResourceManager& m_ResourceManager;
+
         VulkanResourceStorage m_Storage{};
         ResourceLookupTable   m_LookupTable{};
         VulkanResourceCreator m_Importer{ m_Context, m_ResourceManager, m_Storage };
-
-        VulkanContext&   m_Context;
-        ResourceManager& m_ResourceManager;
     };
 } // namespace fe

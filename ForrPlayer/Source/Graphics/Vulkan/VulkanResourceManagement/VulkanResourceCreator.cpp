@@ -27,7 +27,7 @@ fe::pointer<fe::VulkanTexture> fe::VulkanResourceCreator::CreateResource(const r
 FORR_NODISCARD fe::pointer<fe::VulkanModel> fe::VulkanResourceCreator::CreateResource(const resource::Model& model) {
     VulkanModel this_model{};
 
-    this_model.pointers_mesh.resize(model.meshes.size());
+    this_model.pointers_mesh.reserve(model.meshes.size());
 
     for (const auto& mesh : model.meshes) {
         auto ptr = this->createMesh(mesh);
@@ -109,12 +109,12 @@ fe::pointer<fe::VulkanMesh> fe::VulkanResourceCreator::createMesh(const resource
     vulkan_mesh.index_buffer.count = mesh.indices.size();
     size_t index_buffer_size       = vulkan_mesh.index_buffer.count * sizeof(uint32_t);
 
-    VkBufferCreateInfo indexbuffer_create_info{};
-    indexbuffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    indexbuffer_create_info.size  = index_buffer_size;
-    indexbuffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    VkBufferCreateInfo index_buffer_create_info{};
+    index_buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    index_buffer_create_info.size  = index_buffer_size;
+    index_buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-    VK_CHECK_RESULT(vkCreateBuffer(m_Context.device, &indexbuffer_create_info, nullptr, &staging_buffers.indices.buffer));
+    VK_CHECK_RESULT(vkCreateBuffer(m_Context.device, &index_buffer_create_info, nullptr, &staging_buffers.indices.buffer));
 
     vkGetBufferMemoryRequirements(m_Context.device, staging_buffers.indices.buffer, &memory_requirements);
 
@@ -129,10 +129,10 @@ fe::pointer<fe::VulkanMesh> fe::VulkanResourceCreator::createMesh(const resource
     vkUnmapMemory(m_Context.device, staging_buffers.indices.memory);
     VK_CHECK_RESULT(vkBindBufferMemory(m_Context.device, staging_buffers.indices.buffer, staging_buffers.indices.memory, offset));
 
-    indexbuffer_create_info.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    index_buffer_create_info.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
     VkBuffer index_buffer_raw{};
-    VK_CHECK_RESULT(vkCreateBuffer(m_Context.device, &indexbuffer_create_info, nullptr, &index_buffer_raw));
+    VK_CHECK_RESULT(vkCreateBuffer(m_Context.device, &index_buffer_create_info, nullptr, &index_buffer_raw));
     vulkan_mesh.index_buffer.buffer.attach(m_Context.device, index_buffer_raw);
 
     vkGetBufferMemoryRequirements(m_Context.device, index_buffer_raw, &memory_requirements);

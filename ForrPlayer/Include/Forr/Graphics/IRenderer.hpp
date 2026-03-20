@@ -34,8 +34,6 @@ namespace fe {
         fe::pointer<resource::Model> model_ptr{};
         uint32_t                     mesh_index = ~0; // ~0 means that renderer has to draw all meshes
 
-        int i = 0; // temp
-
         glm::mat4 transform{};
 
         DrawMeshCommand()  = default;

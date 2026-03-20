@@ -39,9 +39,9 @@ namespace fe {
 
         void SetClearColor(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
 
-        void BeginFrame()override;
+        void BeginFrame() override;
         void Draw(DrawMeshCommand command) override;
-        void EndFrame()override;
+        void EndFrame() override;
 
         void InitializeGPUResources() override;
 
@@ -139,7 +139,7 @@ namespace fe {
                                                                         void*                                       user_data);
 
     private:
-        void DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer);
+        void DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer, uint32_t index_offset, uint32_t index_count);
 
     private: // Others
         void configureCamera();

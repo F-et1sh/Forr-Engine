@@ -43,7 +43,7 @@ namespace fe {
     struct ShaderData {
         glm::mat4 projection_matrix{};
         glm::mat4 view_matrix{};
-        glm::mat4 model_matrix[2]; // temp
+        glm::mat4 model_matrix{};
 
         ShaderData()  = default;
         ~ShaderData() = default;
