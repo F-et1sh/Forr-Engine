@@ -27,7 +27,7 @@
     <ClInclude Include="Source\Graphics\Vulkan\VulkanSwapchain.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanTypes.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Camera.hpp" />
-    <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceManager.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceManager.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceManager.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\Resources.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceImporter.hpp" />
@@ -39,8 +39,8 @@
     <ClInclude Include="Source\ResourceManagement\Importers\MikkTSpace.hpp" />
     <ClInclude Include="Include\Forr\ECS\Components.hpp" />
     <ClInclude Include="Source\Graphics\ResourceLookupTable.hpp" />
-    <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceImporter.hpp" />
-    <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceStorage.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceImporter.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceStorage.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -59,7 +59,7 @@
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="Source\Graphics\Camera.cpp" />
-    <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManager.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceManager.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceManager.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceImporter.cpp" />
     <ClCompile Include="..\ThirdParty\stb\src\stb_image.cpp" />
@@ -68,7 +68,7 @@
     <ClCompile Include="Source\ResourceManagement\Importers\TextureImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\GLTFImporter.cpp" />
     <ClCompile Include="..\ThirdParty\MikkTSpace\src\mikktspace.c" />
-    <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceImporter.cpp" />
-    <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceStorage.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceImporter.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceStorage.cpp" />
   </ItemGroup>
 </Project>
