@@ -20,6 +20,13 @@
 #include "Graphics/ResourceLookupTable.hpp"
 
 namespace fe {
+    template <typename T>
+    concept vulkan_resource_t =
+        (std::is_same_v<T, VulkanTexture>) ||
+        (std::is_same_v<T, VulkanMesh>) ||
+        //(std::is_same_v<T, VulkanMaterial>) || // TODO : provide materials
+        (std::is_same_v<T, VulkanModel>);
+
     class VulkanResourceManager {
     public:
         VulkanResourceManager(VulkanContext& context, ResourceManager& resource_manager)
@@ -29,22 +36,32 @@ namespace fe {
         void CreateTexture(fe::pointer<resource::Texture> texture_ptr);
         void CreateModel(fe::pointer<resource::Model> model_ptr);
 
-        // TODO : rewrite all below. Getters must be invoked by GPU pointers. Not CPU
+        template <vulkan_resource_t T>
+        FORR_NODISCARD const T* GetResource(fe::pointer<T> pointer) const {
+            const auto& storage = m_Storage.GetStorage<T>();
 
-        const VulkanTexture* GetTexture(fe::pointer<resource::Texture> texture_ptr) const {
-            uint64_t                   packed = m_LookupTable.GetPackedPointerGPU(texture_ptr);
-            fe::pointer<VulkanTexture> gpu_pointer{ packed };
-
-            auto texture = m_Storage.m_Textures.get(gpu_pointer);
-            return texture;
+            auto resource = storage.get(pointer);
+            return resource;
         }
 
-        const VulkanModel* GetModel(fe::pointer<resource::Model> model_ptr) const {
-            uint64_t                 packed = m_LookupTable.GetPackedPointerGPU(model_ptr);
-            fe::pointer<VulkanModel> gpu_pointer{ packed };
+        template <resource::resource_t T>
+        auto GetGPUPointer(fe::pointer<T> pointer) {
+            uint64_t packed = m_LookupTable.GetPackedPointerGPU(pointer);
 
-            auto model = m_Storage.m_Models.get(gpu_pointer);
-            return model;
+            if constexpr (std::is_same_v<T, resource::Texture>) {
+                return fe::pointer<VulkanTexture>{ packed };
+            }
+            else if constexpr (std::is_same_v<T, resource::Model>) {
+                return fe::pointer<VulkanModel>{ packed };
+            }
+            else if constexpr (std::is_same_v<T, resource::Mesh>) {
+                return fe::pointer<VulkanMesh>{ packed };
+            }
+            else
+                constexpr {
+                    assert(false);
+                    return {};
+                }
         }
 
     private:

@@ -276,6 +276,12 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Model)
     };
 
+    template <typename T>
+    concept resource_t =
+        (std::is_same_v<T, Texture>) ||
+        (std::is_same_v<T, Material>) ||
+        (std::is_same_v<T, Model>);
+
 #undef FORR_RESOURCE_BODY
 
 } // namespace fe::resource

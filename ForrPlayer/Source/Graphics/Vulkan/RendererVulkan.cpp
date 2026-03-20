@@ -78,23 +78,30 @@ void fe::RendererVulkan::Draw(DrawMeshCommand command) {
         memcpy(m_UniformBuffers[m_CurrentFrame].mapped, &shader_data, sizeof(ShaderData));
     }
 
-    auto vulkan_model = m_VulkanResourceManager.GetModel(command.model_ptr);
+    auto gpu_ptr = m_VulkanResourceManager.GetGPUPointer(command.model_ptr);
+    const auto& vulkan_model = *m_VulkanResourceManager.GetResource(gpu_ptr);
 
-    for (auto mesh_pointer : vulkan_model->pointers_mesh) {
-        //const auto& mesh_storage = m_VulkanResourceManager.GetStorage<VulkanMesh>();
-        //auto        mesh         = mesh_storage.get(mesh_pointer);
+    for (auto mesh_pointer : vulkan_model.pointers_mesh) {
+        const auto& mesh = *m_VulkanResourceManager.GetResource(mesh_pointer);
 
-        //for (const auto& primitive : mesh->primitives) {
+        // TODO :
+        // bind mesh.vertex_buffer
+        // bind mesh.index_buffer
 
-        //    if (primitive.index_count > 0) {
-        //        //this->DrawPrimitive(primitive.vertex_buffer, primitive.index_buffer);
-        //    }
-        //    else {
-        //        // TODO : provide this if it is needed
-        //    }
-        //}
+        for (const auto& primitive : mesh.primitives) {
 
-        m_VulkanResourceManager.GetModel
+            if (primitive.index_count > 0) {
+                
+                // TODO :
+                // bind material ( provide materials )
+                // draw with primitive.index_offset and primitive.index_count
+
+                //this->DrawPrimitive(primitive.vertex_buffer, primitive.index_buffer);
+            }
+            else {
+                // TODO : provide this if it is needed
+            }
+        }
     }
 }
 
