@@ -13,8 +13,6 @@
 #pragma once
 #include "ResourceManagement/ResourceManager.hpp"
 
-#include "tiny_gltf.h" // temp
-
 #include "OpenGLTypes.hpp"
 
 namespace fe {

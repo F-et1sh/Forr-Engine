@@ -20,6 +20,7 @@
 
 ### Done
     Trying to review
+    gTLF, unified logic and Vulkan types are reviewed
 
 ### Problem
     -

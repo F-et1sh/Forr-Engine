@@ -162,24 +162,25 @@ namespace fe::resource {
     };
 
     struct Model {
-        struct Primitive {
+        struct Mesh {
+            struct Primitive {
+                fe::pointer<fe::resource::Material> material_ptr{};
+
+                RenderMode render_mode{ RenderMode::TRIANGLES }; // triangles by default
+
+                RenderIndexType index_type{ RenderIndexType::UNSIGNED_INT }; // this should be removed
+                int             index_count{};
+                int             index_offset{};
+
+                Primitive()  = default;
+                ~Primitive() = default;
+            };
+
+            std::string name{};
+
             Vertices vertices{};
             Indices  indices{};
 
-            fe::pointer<fe::resource::Material> material_ptr{};
-
-            RenderMode render_mode{ RenderMode::TRIANGLES }; // triangles by default
-
-            RenderIndexType index_type{};
-            int             index_count{}; // TODO : review this. Why you need index_count if you already using std::vector<Index>
-            int             index_offset{};
-
-            Primitive()  = default;
-            ~Primitive() = default;
-        };
-
-        struct Mesh {
-            std::string            name{};
             std::vector<Primitive> primitives{};
             std::vector<float>     weights{}; // weights to be applied to the Morph Targets
 

@@ -21,19 +21,23 @@ namespace fe {
     public:
         const tinygltf::Model& model;
         resource::Model&       this_model;
-        ResourceStorage&       storage;
 
         std::vector<fe::pointer<resource::Texture>>  textures;
         std::vector<fe::pointer<resource::Material>> materials;
 
+        ResourceStorage& storage;
+
+        // this needs to store index_count and index_offset of Mesh::Primitive
+        uint32_t mesh_primitive_offset_index{};
+
         // safe function
-        fe::pointer<resource::Texture> GetTexture(uint32_t index)const noexcept {
+        fe::pointer<resource::Texture> GetTexture(uint32_t index) const noexcept {
             if (index >= textures.size()) return {}; // TODO : provide fallbacks
             return textures[index];
         }
 
         // safe function
-        fe::pointer<resource::Material> GetMaterial(uint32_t index)const noexcept {
+        fe::pointer<resource::Material> GetMaterial(uint32_t index) const noexcept {
             if (index >= materials.size()) return {}; // TODO : provide fallbacks
             return materials[index];
         }
@@ -61,9 +65,8 @@ namespace fe {
         static void loadMeshes(GLTFImportContext& context);
         static void loadTextures(GLTFImportContext& context);
         static void loadMaterials(GLTFImportContext& context);
-        static void loadPrimitives(GLTFImportContext& context, std::vector<resource::Model::Primitive>& this_primitives, const std::vector<tinygltf::Primitive>& primitives);
         static void loadVertices(GLTFImportContext& context, Vertices& this_vertices, Indices& this_indices, const tinygltf::Primitive& primitive);
-        static void loadIndices(GLTFImportContext& context, resource::Model::Primitive& this_primitive, Indices& this_indices, const tinygltf::Primitive& primitive);
+        static void loadIndices(GLTFImportContext& context, resource::Model::Mesh::Primitive& this_primitive, Indices& this_indices, const tinygltf::Primitive& primitive);
         static void loadAnimations(GLTFImportContext& context);
 
     private:

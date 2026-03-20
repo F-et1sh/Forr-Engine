@@ -25,7 +25,6 @@ namespace fe {
     //#pragma pack(push, 1) // disabled for now
     struct Vertex {
         glm::vec3 position{};
-        float     index{}; // temp
         //glm::vec3    normal;
         //glm::vec2    texture_coord;
         //glm::u16vec4 joints;
