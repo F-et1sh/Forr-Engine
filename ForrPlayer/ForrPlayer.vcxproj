@@ -178,6 +178,9 @@
     <ClCompile Include="Source\ResourceManagement\ResourceImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceManager.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\Importers\README.md" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

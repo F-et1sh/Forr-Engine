@@ -71,4 +71,7 @@
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceImporter.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceStorage.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\Importers\README.md" />
+  </ItemGroup>
 </Project>

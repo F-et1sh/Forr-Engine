@@ -12,3 +12,8 @@
 
 #include "pch.hpp"
 #include "VulkanResourceImporter.hpp"
+
+fe::pointer<fe::VulkanTexture> fe::VulkanResourceImporter::ImportTexture(const resource::Texture& texture) {
+    //m_Storage
+    return fe::pointer<VulkanTexture>();
+}
