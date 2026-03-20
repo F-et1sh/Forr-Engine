@@ -535,10 +535,10 @@ void fe::RendererVulkan::InitializePipeline() {
     vertex_input_attributs[0].offset   = offsetof(Vertex, position);
 
     // temp
-    vertex_input_attributs[1].binding  = 0;
-    vertex_input_attributs[1].location = 1;
-    vertex_input_attributs[1].format   = VK_FORMAT_R32_SFLOAT;
-    vertex_input_attributs[1].offset   = offsetof(Vertex, index);
+    //vertex_input_attributs[1].binding  = 0;
+    //vertex_input_attributs[1].location = 1;
+    //vertex_input_attributs[1].format   = VK_FORMAT_R32_SFLOAT;
+    //vertex_input_attributs[1].offset   = offsetof(Vertex, index);
 
     VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info{};
     vertex_input_state_create_info.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
