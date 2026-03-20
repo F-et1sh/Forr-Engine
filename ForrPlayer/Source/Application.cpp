@@ -9,18 +9,18 @@ fe::Application::Application(const ApplicationDesc& desc) {
     this->InitializePrimaryWindow(desc);
     this->InitializeRenderer(desc);
 
-    size_t i = 0;
+    size_t i = 0; // temp
 
-    m_ResourceManager->RunForEach<resource::Model>([&](fe::pointer<resource::Model> model_ptr, const resource::Model& model) { // take the last model
+    m_ResourceManager->RunForEach<resource::Model>([&](fe::pointer<resource::Model> model_ptr, const resource::Model& model) { // temp
         switch (i) {
             case 0:
-                m_Object.mesh_component.model_ptr = model_ptr;
-                m_Object.mesh_component.mesh_id   = ~0;
+                m_Object.mesh_component.model_ptr      = model_ptr;
+                m_Object.mesh_component.mesh_id        = ~0;
                 m_Object.transform_component.transform = glm::translate(glm::mat4(1.0f), glm::vec3(50, 0, 0));
                 break;
             case 1:
-                m_Object2.mesh_component.model_ptr = model_ptr;
-                m_Object2.mesh_component.mesh_id   = ~0;
+                m_Object2.mesh_component.model_ptr      = model_ptr;
+                m_Object2.mesh_component.mesh_id        = ~0;
                 m_Object2.transform_component.transform = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
                 break;
         }
@@ -37,7 +37,6 @@ void fe::Application::Run() {
             command.model_ptr  = m_Object.mesh_component.model_ptr;
             command.mesh_index = m_Object.mesh_component.mesh_id;
             command.transform  = m_Object.transform_component.transform;
-            command.i          = 0;
 
             m_Object.transform_component.transform = glm::rotate(m_Object.transform_component.transform, 0.01f, glm::vec3(0, 1, 0));
 
@@ -47,7 +46,6 @@ void fe::Application::Run() {
             command2.model_ptr  = m_Object2.mesh_component.model_ptr;
             command2.mesh_index = m_Object2.mesh_component.mesh_id;
             command2.transform  = m_Object2.transform_component.transform;
-            command2.i          = 1;
 
             m_Renderer->Draw(command2);
         }

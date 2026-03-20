@@ -15,9 +15,7 @@
 
 #pragma once
 #include <vector>
-#include <optional>
 #include <cstdint>
-#include <cassert>
 #include <unordered_map>
 #include <typeindex>
 #include <memory>
@@ -74,6 +72,20 @@ namespace fe {
 
         template <storable_t>
         friend class typed_pointer_storage;
+    };
+
+    template <typename T>
+    struct pointer_hash {
+        constexpr std::size_t operator()(const pointer<T>& p) const noexcept {
+            return std::hash<uint64_t>{}(p.packed());
+        }
+    };
+
+    template <typename T>
+    struct pointer_equal {
+        constexpr bool operator()(const pointer<T>& a, const pointer<T>& b) const noexcept {
+            return a == b;
+        }
     };
 
     template <storable_t _Ty>
@@ -285,3 +297,13 @@ namespace fe {
     };
 
 } // namespace fe
+
+namespace std {
+    template <fe::storable_t T>
+    struct std::hash<fe::pointer<T>> {
+        constexpr std::size_t operator()(const fe::pointer<T>& p) const noexcept {
+            return std::hash<uint64_t>{}(p.packed());
+        }
+    };
+
+} // namespace std

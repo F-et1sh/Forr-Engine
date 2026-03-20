@@ -98,9 +98,9 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
             m_Camera.translate(glm::vec3(0.0f, 0.0f, -1.0f));
 
         static ShaderData shader_data{};
-        shader_data.projection_matrix       = m_Camera.getPerspectiveMatrix();
-        shader_data.view_matrix             = m_Camera.getViewMatrix();
-        shader_data.model_matrix[command.i] = command.transform;
+        shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
+        shader_data.view_matrix       = m_Camera.getViewMatrix();
+        //shader_data.model_matrix[command.i] = command.transform;
 
         glNamedBufferSubData(ubo, 0, sizeof(shader_data), &shader_data);
     }

@@ -22,7 +22,7 @@ namespace fe {
         fe::typed_pointer_storage<VulkanMesh>    m_Meshes{};
 
         template <typename T>
-        const fe::typed_pointer_storage<T>& GetStorage()const {
+        const fe::typed_pointer_storage<T>& GetStorage() const {
             if constexpr (std::is_same_v<T, VulkanTexture>) {
                 return m_Textures;
             }
@@ -32,11 +32,10 @@ namespace fe {
             else if constexpr (std::is_same_v<T, VulkanMesh>) {
                 return m_Meshes;
             }
-            else
-                constexpr {
-                    assert(false);
-                    return {};
-                }
+            else {
+                assert(false);
+                return {};
+            }
         }
 
         VulkanResourceStorage()  = default;

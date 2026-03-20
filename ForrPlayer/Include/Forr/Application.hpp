@@ -57,8 +57,8 @@ namespace fe {
         IWindow* m_PrimaryWindow{};
 
         struct Object { // temp
-            TransformComponent transform_component{}; 
-            MeshComponent mesh_component{};
+            TransformComponent transform_component{};
+            MeshComponent      mesh_component{};
         } m_Object, m_Object2;
     };
 } // namespace fe

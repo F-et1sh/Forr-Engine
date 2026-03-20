@@ -83,8 +83,8 @@ bool fe::Camera::updatePad(glm::vec2 axis_left, glm::vec2 axis_right, float delt
         camera_front.z = cos(glm::radians(m_Rotation.x)) * cos(glm::radians(m_Rotation.y));
         camera_front   = glm::normalize(camera_front);
 
-        float move_speed = delta_time * m_MovementSpeed * 2.0f;
-        float rotation_speed  = delta_time * m_RotationSpeed * 50.0f;
+        float move_speed     = delta_time * m_MovementSpeed * 2.0f;
+        float rotation_speed = delta_time * m_RotationSpeed * 50.0f;
 
         // movement
         if (fabsf(axis_left.y) > dead_zone) {

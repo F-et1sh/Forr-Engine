@@ -16,9 +16,9 @@
 namespace fe {
     class TextureImporter {
     public:
-        TextureImporter() = default;
+        TextureImporter()  = default;
         ~TextureImporter() = default;
 
         static void Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path);
     };
-}
+} // namespace fe

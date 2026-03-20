@@ -30,7 +30,8 @@ void fe::GLTFImporter::Import(ResourceStorage& storage, const std::filesystem::p
         good = loader.LoadBinaryFromFile(&model, &error, &warning, filename);
     }
     else {
-        fe::logging::error("Wrong resource extension. It's not .gltf or .glb\nPath : %s", filename.c_str());
+        fe::logging::error("Failed to load GLTF model.\nWrong resource extension. It's not .gltf or .glb\nPath : %s", filename.c_str());
+        return;
     }
 
     if (!warning.empty()) {
@@ -38,9 +39,11 @@ void fe::GLTFImporter::Import(ResourceStorage& storage, const std::filesystem::p
     }
     if (!error.empty()) {
         fe::logging::error("Failed to load GLTF model.\nGot an error : %s", error.c_str());
+        return;
     }
     if (!good) {
         fe::logging::error("Failed to load GLTF model.\n\"good\" value is false : %s", error.c_str());
+        return;
     }
 
     resource::Model this_model{};
@@ -126,7 +129,7 @@ void fe::GLTFImporter::loadMeshes(GLTFImportContext& context) {
 
         context.mesh_primitive_offset_index = {}; // reset this before loading new mesh
 
-        const std::vector<tinygltf::Primitive>&  primitives      = mesh.primitives;
+        const std::vector<tinygltf::Primitive>&        primitives      = mesh.primitives;
         std::vector<resource::Model::Mesh::Primitive>& this_primitives = this_mesh.primitives;
 
         this_primitives.resize(primitives.size());
@@ -349,6 +352,8 @@ void fe::GLTFImporter::loadIndices(GLTFImportContext& context, resource::Model::
     }
 }
 
+using namespace fe::resource;
+
 void fe::GLTFImporter::loadAnimations(GLTFImportContext& context) {
     context.this_model.animations.resize(context.model.animations.size());
     for (size_t i = 0; i < context.model.animations.size(); i++) {
@@ -399,8 +404,6 @@ void fe::GLTFImporter::loadAnimations(GLTFImportContext& context) {
         }
     }
 }
-
-using namespace fe::resource;
 
 fe::pointer<Texture> fe::GLTFImporter::createTexture(const tinygltf::Model& model, uint32_t texture_index, ResourceStorage& storage) {
     if (texture_index >= model.textures.size()) {

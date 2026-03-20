@@ -23,7 +23,7 @@ namespace fe {
 
         // TODO : make a separate function for this
         fe::pointer<OpenGLTexture> CreateTexture(fe::pointer<fe::resource::Texture> cpu_texture_ptr);
-        void CreateModel(fe::pointer<fe::resource::Model> cpu_model_ptr);
+        void                       CreateModel(fe::pointer<fe::resource::Model> cpu_model_ptr);
 
         template <typename GPU, typename CPU>
         const GPU* GetResource(fe::pointer<CPU> cpu_ptr) {
@@ -33,7 +33,7 @@ namespace fe {
             assert(it != lookup_table.end());
 
             const auto& storage = this->GetStorage<GPU>();
-            
+
             fe::pointer<GPU> gpu_ptr{};
             gpu_ptr.unpack(it->second);
 
@@ -75,8 +75,8 @@ namespace fe {
         }
 
     private: // helper functions
-        fe::pointer<OpenGLMesh> createMesh(const Mesh& mesh);
-        void                    createPrimitive(const Primitive& primitive, OpenGLPrimitive& opengl_primitive);
+        //fe::pointer<OpenGLMesh> createMesh(const Mesh& mesh);
+        //void                    createPrimitive(const Primitive& primitive, OpenGLPrimitive& opengl_primitive);
 
     private:
         ResourceManager& m_ResourceManager;
