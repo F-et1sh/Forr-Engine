@@ -30,6 +30,7 @@
     new architecture almost provided for Vulkan
     new architecture's declaration is almost done
     VulkanResourceManager::CreateResource() unified
+    gpu resource manager is done for Vulkan. Texture.hpp ( OpenGL ) removed
 
 ### Problem
     -

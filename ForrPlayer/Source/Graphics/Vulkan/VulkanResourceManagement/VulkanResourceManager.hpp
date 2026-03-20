@@ -72,7 +72,7 @@ namespace fe {
     private:
         VulkanResourceStorage m_Storage{};
         ResourceLookupTable   m_LookupTable{};
-        VulkanResourceCreator m_Importer{ m_ResourceManager, m_Storage };
+        VulkanResourceCreator m_Importer{ m_Context, m_ResourceManager, m_Storage };
 
         VulkanContext&   m_Context;
         ResourceManager& m_ResourceManager;

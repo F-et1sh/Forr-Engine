@@ -13,12 +13,9 @@
     <ClInclude Include="Source\Platform\GLFW\PlatformSystemGLFW.hpp" />
     <ClInclude Include="Source\Platform\GLFW\WindowGLFW.hpp" />
     <ClInclude Include="Include\Forr\Graphics\IRenderer.hpp" />
-    <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
-    <ClInclude Include="Source\Graphics\OpenGL\OpenGLResourceManager.hpp" />
     <ClInclude Include="Include\Forr\Graphics\GPUTypes.hpp" />
     <ClInclude Include="Include\Forr\Core\types.hpp" />
     <ClInclude Include="Include\Forr\Core\path.hpp" />
-    <ClInclude Include="Source\Graphics\OpenGL\Shader.hpp" />
     <ClInclude Include="Source\Tools.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanRAII.hpp" />
@@ -32,8 +29,6 @@
     <ClInclude Include="Include\Forr\ResourceManagement\Resources.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceImporter.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceStorage.hpp" />
-    <ClInclude Include="Source\Graphics\OpenGL\Texture.hpp" />
-    <ClInclude Include="Source\Graphics\OpenGL\OpenGLTypes.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\TextureImporter.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\GLTFImporter.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\MikkTSpace.hpp" />
@@ -41,6 +36,10 @@
     <ClInclude Include="Source\Graphics\ResourceLookupTable.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceStorage.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceCreator.hpp" />
+    <ClInclude Include="Source\Graphics\OpenGL\OpenGLResourceManager.hpp" />
+    <ClInclude Include="Source\Graphics\OpenGL\OpenGLTypes.hpp" />
+    <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
+    <ClInclude Include="Source\Graphics\OpenGL\Shader.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -51,11 +50,8 @@
     <ClCompile Include="Source\Platform\GLFW\PlatformSystemGLFW.cpp" />
     <ClCompile Include="Source\Platform\GLFW\WindowGLFW.cpp" />
     <ClCompile Include="Source\Graphics\IRenderer.cpp" />
-    <ClCompile Include="Source\Graphics\OpenGL\RendererOpenGL.cpp" />
-    <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManager.cpp" />
     <ClCompile Include="..\ThirdParty\glad\src\gl.c" />
     <ClCompile Include="Source\path.cpp" />
-    <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="Source\Graphics\Camera.cpp" />
@@ -70,6 +66,9 @@
     <ClCompile Include="..\ThirdParty\MikkTSpace\src\mikktspace.c" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceStorage.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceCreator.cpp" />
+    <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManager.cpp" />
+    <ClCompile Include="Source\Graphics\OpenGL\RendererOpenGL.cpp" />
+    <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\Importers\README.md" />
