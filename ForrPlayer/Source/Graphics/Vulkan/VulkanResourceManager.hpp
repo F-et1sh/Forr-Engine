@@ -13,8 +13,9 @@
 #pragma once
 #include "Core/types.hpp"
 #include "ResourceManagement/ResourceManager.hpp"
-#include "VulkanTypes.hpp"
 #include "VulkanContext.hpp"
+
+#include "VulkanResourceImporter.hpp"
 
 namespace fe {
     class VulkanResourceManager {
@@ -87,8 +88,7 @@ namespace fe {
         std::unordered_map<uint64_t, uint64_t> m_CPU_GPU_Texture{};
         std::unordered_map<uint64_t, uint64_t> m_CPU_GPU_Model{};
 
-        fe::typed_pointer_storage<VulkanTexture> m_Textures{};
-        fe::typed_pointer_storage<VulkanModel>   m_Models{};
-        fe::typed_pointer_storage<VulkanMesh>    m_Meshes{};
+        VulkanResourceStorage  m_Storage{};
+        VulkanResourceImporter m_Importer{ m_ResourceManager, m_Storage };
     };
 } // namespace fe
