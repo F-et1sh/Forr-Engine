@@ -108,7 +108,7 @@ void fe::RendererVulkan::Draw(DrawMeshCommand command) {
 void fe::RendererVulkan::InitializeGPUResources() {
     m_ResourceManager.RunForEach<resource::Texture>([&](const resource::Texture&       texture,
                                                         fe::pointer<resource::Texture> texture_ptr) {
-        m_VulkanResourceManager.CreateTexture(texture_ptr);
+        m_VulkanResourceManager.CreateResource(texture_ptr);
 
         fe::logging::info("VULKAN. Loaded texture's size : %i %i", texture.width, texture.height);
     });
@@ -119,7 +119,7 @@ void fe::RendererVulkan::InitializeGPUResources() {
 
     m_ResourceManager.RunForEach<resource::Model>([&](const resource::Model&       model,
                                                       fe::pointer<resource::Model> model_ptr) {
-        //m_VulkanResourceManager.CreateModel(model_ptr);
+        m_VulkanResourceManager.CreateResource(model_ptr);
 
         fe::logging::info("VULKAN. Loaded model's mesh count %i", model.meshes.size());
     });

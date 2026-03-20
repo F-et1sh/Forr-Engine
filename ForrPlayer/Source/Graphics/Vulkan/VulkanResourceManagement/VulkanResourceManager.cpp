@@ -18,7 +18,7 @@
 
 void fe::VulkanResourceManager::CreateTexture(fe::pointer<fe::resource::Texture> texture_ptr) {
     const auto& texture = *m_ResourceManager.GetResource(texture_ptr);
-    auto        ptr     = m_Importer.CreateTexture(texture); // does not need to store this fe::pointer
+    auto        ptr     = m_Importer.CreateResource(texture); // does not need to store this fe::pointer
     m_LookupTable.Insert(texture_ptr, ptr);
 }
 

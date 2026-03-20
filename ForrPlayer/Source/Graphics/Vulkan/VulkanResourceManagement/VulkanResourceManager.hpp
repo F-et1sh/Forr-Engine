@@ -33,8 +33,13 @@ namespace fe {
             : m_Context(context), m_ResourceManager(resource_manager) {}
         ~VulkanResourceManager() = default;
 
-        void CreateTexture(fe::pointer<resource::Texture> texture_ptr);
-        void CreateModel(fe::pointer<resource::Model> model_ptr);
+        template <resource::resource_t T>
+        auto CreateResource(fe::pointer<T> resource_ptr) {
+            const auto& resource = *m_ResourceManager.GetResource(resource_ptr);
+            auto        ptr      = m_Importer.CreateResource(resource); // does not need to store this fe::pointer
+            m_LookupTable.Insert(resource_ptr, ptr);
+            return ptr;
+        }
 
         template <vulkan_resource_t T>
         FORR_NODISCARD const T* GetResource(fe::pointer<T> pointer) const {
@@ -45,7 +50,7 @@ namespace fe {
         }
 
         template <resource::resource_t T>
-        auto GetGPUPointer(fe::pointer<T> pointer) {
+        FORR_NODISCARD auto GetGPUPointer(fe::pointer<T> pointer) {
             uint64_t packed = m_LookupTable.GetPackedPointerGPU(pointer);
 
             if constexpr (std::is_same_v<T, resource::Texture>) {

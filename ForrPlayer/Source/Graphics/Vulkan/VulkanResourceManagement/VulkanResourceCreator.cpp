@@ -13,14 +13,14 @@
 #include "pch.hpp"
 #include "VulkanResourceCreator.hpp"
 
-fe::pointer<fe::VulkanTexture> fe::VulkanResourceCreator::CreateTexture(const resource::Texture& texture) {
+fe::pointer<fe::VulkanTexture> fe::VulkanResourceCreator::CreateResource(const resource::Texture& texture) {
     VulkanTexture this_texture{};
 
     auto ptr = m_Storage.m_Textures.create(std::move(this_texture));
     return ptr;
 }
 
-FORR_NODISCARD fe::pointer<fe::VulkanModel> fe::VulkanResourceCreator::CreateModel(const resource::Model& model) {
+FORR_NODISCARD fe::pointer<fe::VulkanModel> fe::VulkanResourceCreator::CreateResource(const resource::Model& model) {
     VulkanModel this_model{};
 
     for (const auto& mesh : model.meshes) {
