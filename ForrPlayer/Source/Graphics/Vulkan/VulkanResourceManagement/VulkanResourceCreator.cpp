@@ -2,7 +2,7 @@
 
     Forr Engine
 
-    File : VulkanResourceImporter.cpp
+    File : VulkanResourceCreator.cpp
     Role : creates Vulkan resources from unified ones
 
     Copyright (C) 2026 Farrakh
@@ -11,9 +11,9 @@
 ===============================================*/
 
 #include "pch.hpp"
-#include "VulkanResourceImporter.hpp"
+#include "VulkanResourceCreator.hpp"
 
-fe::pointer<fe::VulkanTexture> fe::VulkanResourceImporter::ImportTexture(const resource::Texture& texture) {
+fe::pointer<fe::VulkanTexture> fe::VulkanResourceCreator::CreateTexture(const resource::Texture& texture) {
     VulkanTexture this_texture{};
 
     

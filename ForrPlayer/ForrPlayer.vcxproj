@@ -116,7 +116,7 @@
     <ClInclude Include="Source\Graphics\OpenGL\Texture.hpp" />
     <ClInclude Include="Source\Graphics\ResourceLookupTable.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
-    <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceImporter.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceCreator.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceStorage.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanTypes.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VKTools.hpp" />
@@ -159,7 +159,7 @@
     <ClCompile Include="Source\Graphics\OpenGL\RendererOpenGL.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
-    <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceImporter.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceCreator.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceManager.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceStorage.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />

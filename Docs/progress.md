@@ -21,11 +21,12 @@
 ### Done
     Trying to review
     gTLF, unified logic and Vulkan types are reviewed
-    ResourceLookupTable created. VulkanResourceImporter created
+    ResourceLookupTable created. VulkanResourceCreator created
     VulkanResourceStorage added
     VulkanResourceManagement folder added
     class VulkanResourceStorage -> struct VulkanResourceStorage. VulkanResourceManager::CreateResource() -> VulkanResourceManager::Create*()
     ResourceLookupTable done. But idk is it works or no cuz freaking VS 2022 don't wonna work on freaking i9-14900K with 64GB RAM
+    VulkanResourceImporter -> VulkanResourceCreator
 
 ### Problem
     -
