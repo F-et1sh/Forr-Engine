@@ -10,12 +10,17 @@
 
 ===============================================*/
 
+#include "VulkanResourceStorage.hpp"
+
 namespace fe {
     class VulkanResourceImporter {
     public:
-        VulkanResourceImporter() = default;
+        VulkanResourceImporter(ResourceManager& resource_manager, VulkanResourceStorage& storage)
+            : m_ResourceManager(resource_manager), m_Storage(storage) {}
         ~VulkanResourceImporter() = default;
 
-
+    private:
+        ResourceManager&       m_ResourceManager;
+        VulkanResourceStorage& m_Storage;
     };
-}
+} // namespace fe

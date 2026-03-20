@@ -117,6 +117,7 @@
     <ClInclude Include="Source\Graphics\ResourceLookupTable.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceImporter.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceStorage.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanTypes.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VKTools.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanRAII.hpp" />
@@ -160,6 +161,7 @@
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceImporter.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManager.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceStorage.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="Source\Layer.cpp" />
     <ClCompile Include="Source\logging.cpp" />
