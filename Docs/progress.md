@@ -1,5 +1,29 @@
 # Forr-Engine Devlog
 
+## 21.03.2026
+### Goal
+    Rewrite OpenGL renderer architecture
+    Add push_constant
+    Add Dear ImGui
+
+    Not now, but :
+    - provide event system for platform
+    - provide project "compiling" ( speed up )
+    - speed up gLTF loading
+    - review GPU resource manager's architecture. It's confusing
+    - create Shader class for both backends. When the project will be able to be "compiled", 
+        that Shader class should compile all shader files. Now I'm tired to compile shaders manually.
+        Maybe create IShader that will compile shader files and ShaderVulkan/ShaderOpenGL, 
+        that will create needed specific objects for backends
+    - add textures
+    - add Dear ImGui
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 20.03.2026
 ### Goal
     Rewrite VulkanPrimitive ( OpenGLPrimitive )
