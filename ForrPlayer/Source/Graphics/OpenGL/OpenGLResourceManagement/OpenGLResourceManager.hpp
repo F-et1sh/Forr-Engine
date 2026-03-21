@@ -2,8 +2,8 @@
 
     Forr Engine
 
-    File : VulkanResourceManager.hpp
-    Role : GPU Resource Manager ( for Vulkan )
+    File : OpenGLResourceManager.hpp
+    Role : GPU Resource Manager ( for OpenGL )
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -11,26 +11,23 @@
 ===============================================*/
 
 #pragma once
-#include "Core/types.hpp"
 #include "ResourceManagement/ResourceManager.hpp"
-#include "Graphics/Vulkan/VulkanContext.hpp"
-
-#include "VulkanResourceCreator.hpp"
+#include "Graphics/OpenGL/OpenGLTypes.hpp"
 #include "Graphics/ResourceLookupTable.hpp"
 
 namespace fe {
     template <typename T>
-    concept vulkan_resource_t =
-        (std::is_same_v<T, VulkanTexture>) ||
-        (std::is_same_v<T, VulkanMesh>) ||
-        //(std::is_same_v<T, VulkanMaterial>) || // TODO : provide materials
-        (std::is_same_v<T, VulkanModel>);
+    concept opengl_resource_t =
+        (std::is_same_v<T, OpenGLTexture>) ||
+        (std::is_same_v<T, OpenGLMesh>) ||
+        //(std::is_same_v<T, OpenGLMaterial>) || // TODO : provide materials
+        (std::is_same_v<T, OpenGLModel>);
 
-    class VulkanResourceManager {
+    class OpenGLResourceManager {
     public:
-        VulkanResourceManager(VulkanContext& context, ResourceManager& resource_manager)
-            : m_Context(context), m_ResourceManager(resource_manager) {}
-        ~VulkanResourceManager() = default;
+        //VulkanResourceManager(VulkanContext& context, ResourceManager& resource_manager)
+            //: m_Context(context), m_ResourceManager(resource_manager) {}
+        ~OpenGLResourceManager() = default;
 
         template <resource::resource_t T>
         auto CreateResource(fe::pointer<T> resource_ptr) {
@@ -40,7 +37,7 @@ namespace fe {
             return ptr;
         }
 
-        template <vulkan_resource_t T>
+        template <opengl_resource_t T>
         FORR_NODISCARD const T* GetResource(fe::pointer<T> pointer) const {
             const auto& storage = m_Storage.GetStorage<T>();
 
@@ -53,10 +50,10 @@ namespace fe {
             uint64_t packed = m_LookupTable.GetPackedPointerGPU(pointer);
 
             if constexpr (std::is_same_v<T, resource::Texture>) {
-                return fe::pointer<VulkanTexture>{ packed };
+                return fe::pointer<OpenGLTexture>{ packed };
             }
             else if constexpr (std::is_same_v<T, resource::Model>) {
-                return fe::pointer<VulkanModel>{ packed };
+                return fe::pointer<OpenGLModel>{ packed };
             }
             else {
                 assert(false);
@@ -65,11 +62,11 @@ namespace fe {
         }
 
     private:
-        VulkanContext&   m_Context;
+        //VulkanContext&   m_Context;
         ResourceManager& m_ResourceManager;
 
-        VulkanResourceStorage m_Storage{};
+        //VulkanResourceStorage m_Storage{};
         ResourceLookupTable   m_LookupTable{};
-        VulkanResourceCreator m_Importer{ m_Context, m_ResourceManager, m_Storage };
+        //VulkanResourceCreator m_Importer{ m_Context, m_ResourceManager, m_Storage };
     };
 } // namespace fe

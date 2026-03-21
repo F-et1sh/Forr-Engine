@@ -14,7 +14,7 @@
 #include "Graphics/IRenderer.hpp"
 #include "Graphics/Camera.hpp"
 
-#include "OpenGLResourceManager.hpp"
+#include "OpenGLResourceManagement/OpenGLResourceManager.hpp"
 
 #include "Shader.hpp"
 #include <GLFW/glfw3.h>
@@ -36,14 +36,14 @@ namespace fe {
     private:
         ResourceManager& m_ResourceManager;
 
-        Shader                m_Shader;
-        OpenGLResourceManager m_OpenGLResourceManager;
+        Shader m_Shader;
 
         IPlatformSystem& m_PlatformSystem;
         IWindow&         m_PrimaryWindow;
 
         GLFWwindow* m_GLFWwindow;
 
-        Camera m_Camera{}; // temp
+        OpenGLResourceManager m_OpenGLResourceManager;
+        Camera                m_Camera{}; // temp
     };
 } // namespace fe
