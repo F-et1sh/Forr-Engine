@@ -2,7 +2,7 @@
 
     Forr Engine
 
-    File : ResourceLookupTable.hpp
+    File : GPUResourceLookupTable.hpp
     Role : unified lookup table for CPU <-> GPU communication
 
     Copyright (C) 2026 Farrakh
@@ -17,10 +17,10 @@
 namespace fe {
     // the table invokes CPU and returns GPU pointers
     // all pointers are packed
-    class ResourceLookupTable {
+    class GPUResourceLookupTable {
     public:
-        ResourceLookupTable()  = default;
-        ~ResourceLookupTable() = default;
+        GPUResourceLookupTable()  = default;
+        ~GPUResourceLookupTable() = default;
 
         template <resource::resource_t CPU, typename GPU>
         void Insert(fe::pointer<CPU> cpu_side_pointer, fe::pointer<GPU> gpu_side_pointer) {
