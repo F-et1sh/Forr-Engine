@@ -139,7 +139,7 @@ namespace fe {
                                                                         void*                                       user_data);
 
     private:
-        void DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer, uint32_t index_offset, uint32_t index_count);
+        void DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer, uint32_t index_offset, uint32_t index_count, uint32_t i_temp);
 
     private: // Others
         void configureCamera();

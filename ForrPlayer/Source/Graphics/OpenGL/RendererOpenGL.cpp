@@ -98,19 +98,25 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
             m_Camera.translate(glm::vec3(0.0f, 0.0f, 1.0f));
         else if (glfwGetKey(m_GLFWwindow, GLFW_KEY_S))
             m_Camera.translate(glm::vec3(0.0f, 0.0f, -1.0f));
-
-        static ShaderData shader_data{};
-        shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
-        shader_data.view_matrix       = m_Camera.getViewMatrix();
-        shader_data.model_matrix      = command.transform;
-
-        glNamedBufferSubData(ubo, 0, sizeof(shader_data), &shader_data);
     }
 
-    auto gpu_ptr = m_OpenGLResourceManager.GetGPUPointer(command.model_ptr);
-    auto model   = m_OpenGLResourceManager.GetResource(gpu_ptr);
+    auto        gpu_ptr = m_OpenGLResourceManager.GetGPUPointer(command.model_ptr);
+    const auto& model   = *m_OpenGLResourceManager.GetResource(gpu_ptr);
 
-    for (auto mesh_pointer : model->pointers_mesh) {
+    static ShaderData shader_data{};
+    shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
+    shader_data.view_matrix       = m_Camera.getViewMatrix();
+
+    uint32_t i = 0;
+    if (model.pointers_mesh.size() != 8) {
+        i = 1;
+    }
+
+    shader_data.model_matrices[i] = command.transform;
+
+    glNamedBufferSubData(ubo, 0, sizeof(shader_data), &shader_data);
+
+    for (auto mesh_pointer : model.pointers_mesh) {
         const auto& mesh = *m_OpenGLResourceManager.GetResource(mesh_pointer);
 
         glBindVertexArray(mesh.vao);

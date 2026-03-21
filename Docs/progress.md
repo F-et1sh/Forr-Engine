@@ -1,5 +1,24 @@
 # Forr-Engine Devlog
 
+## 22.03.2026
+### Goal
+    Not now, but :
+    - provide event system for platform
+    - provide project "compiling" ( speed up )
+    - speed up gLTF loading
+    - create Shader class for both backends. When the project will be able to be "compiled", 
+        that Shader class should compile all shader files. Now I'm tired to compile shaders manually.
+        Maybe create IShader that will compile shader files and ShaderVulkan/ShaderOpenGL, 
+        that will create needed specific objects for backends
+    - add textures
+    - add Dear ImGui
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 21.03.2026
 ### Goal
     Rewrite OpenGL renderer architecture
@@ -10,7 +29,6 @@
     - provide event system for platform
     - provide project "compiling" ( speed up )
     - speed up gLTF loading
-    - review GPU resource manager's architecture. It's confusing
     - create Shader class for both backends. When the project will be able to be "compiled", 
         that Shader class should compile all shader files. Now I'm tired to compile shaders manually.
         Maybe create IShader that will compile shader files and ShaderVulkan/ShaderOpenGL, 
@@ -23,6 +41,7 @@
     ResourceLookupTable -> GPUResourceLookupTable
     OpenGL drawing with new architecture done
     OpenGL VSync bug fixed
+    push_constants added for Vulkan
 
 ### Problem
     -
@@ -37,7 +56,6 @@
     - provide event system for platform
     - provide project "compiling" ( speed up )
     - speed up gLTF loading
-    - review GPU resource manager's architecture. It's confusing
     - create Shader class for both backends. When the project will be able to be "compiled", 
         that Shader class should compile all shader files. Now I'm tired to compile shaders manually.
         Maybe create IShader that will compile shader files and ShaderVulkan/ShaderOpenGL, 
@@ -73,7 +91,6 @@
     - provide event system for platform
     - provide project "compiling" ( speed up )
     - speed up gLTF loading
-    - review GPU resource manager's architecture. It's confusing
     - create Shader class for both backends. When the project will be able to be "compiled", 
         that Shader class should compile all shader files. Now I'm tired to compile shaders manually.
         Maybe create IShader that will compile shader files and ShaderVulkan/ShaderOpenGL, 
@@ -97,7 +114,6 @@
     - provide event system for platform
     - provide project "compiling" ( speed up )
     - speed up gLTF loading
-    - review GPU resource manager's architecture. It's confusing
     - create Shader class for both backends. When the project will be able to be "compiled", 
         that Shader class should compile all shader files. Now I'm tired to compile shaders manually.
         Maybe create IShader that will compile shader files and ShaderVulkan/ShaderOpenGL, 
@@ -120,7 +136,6 @@
     - provide event system for platform
     - provide project "compiling" ( speed up )
     - speed up gLTF loading
-    - review GPU resource manager's architecture. It's confusing
     - create Shader class for both backends. When the project will be able to be "compiled", 
         that Shader class should compile all shader files. Now I'm tired to compile shaders manually.
         Maybe create IShader that will compile shader files and ShaderVulkan/ShaderOpenGL, 
@@ -143,7 +158,6 @@
     - provide event system for platform
     - provide project "compiling" ( speed up )
     - speed up gLTF loading
-    - review GPU resource manager's architecture. It's confusing
     - create Shader class for both backends. When the project will be able to be "compiled", 
         that Shader class should compile all shader files. Now I'm tired to compile shaders manually.
         Maybe create IShader that will compile shader files and ShaderVulkan/ShaderOpenGL, 
