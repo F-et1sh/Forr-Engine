@@ -40,6 +40,8 @@
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLTypes.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\Shader.hpp" />
+    <ClInclude Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceStorage.hpp" />
+    <ClInclude Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceCreator.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -69,6 +71,8 @@
     <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceManager.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\RendererOpenGL.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
+    <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceStorage.cpp" />
+    <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceCreator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\Importers\README.md" />
