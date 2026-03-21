@@ -56,7 +56,7 @@ void fe::RendererVulkan::Draw(DrawMeshCommand command) {
     { // temp
         auto glfw_window = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
 
-        float speed = 0.01f;
+        float speed = 0.1f;
 
         if (glfwGetKey(glfw_window, GLFW_KEY_A))
             m_Camera.translate(glm::vec3(speed, 0.0f, 0.0f));
@@ -69,17 +69,21 @@ void fe::RendererVulkan::Draw(DrawMeshCommand command) {
             m_Camera.translate(glm::vec3(0.0f, 0.0f, -speed));
     }
 
-    { // temp
-        static ShaderData shader_data{};
-        shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
-        shader_data.view_matrix       = m_Camera.getViewMatrix();
-        shader_data.model_matrix      = command.transform;
-
-        memcpy(m_UniformBuffers[m_CurrentFrame].mapped, &shader_data, sizeof(ShaderData));
-    }
-
     auto        gpu_ptr      = m_VulkanResourceManager.GetGPUPointer(command.model_ptr);
     const auto& vulkan_model = *m_VulkanResourceManager.GetResource(gpu_ptr);
+
+    static ShaderData shader_data{};
+    shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
+    shader_data.view_matrix       = m_Camera.getViewMatrix();
+
+    uint32_t i = 0;
+    if (vulkan_model.pointers_mesh.size() != 8) {
+        i = 1;
+    }
+
+    shader_data.model_matrices[i] = command.transform;
+
+    memcpy(m_UniformBuffers[m_CurrentFrame].mapped, &shader_data, sizeof(ShaderData));
 
     for (auto mesh_pointer : vulkan_model.pointers_mesh) {
         const auto& mesh = *m_VulkanResourceManager.GetResource(mesh_pointer);
@@ -105,7 +109,7 @@ void fe::RendererVulkan::Draw(DrawMeshCommand command) {
                 // TODO : bind material ( provide materials )
 
                 // TODO : do not find vertex and index buffers multiple times
-                this->DrawPrimitive(mesh.vertex_buffer, mesh.index_buffer, primitive.index_offset, primitive.index_count);
+                this->DrawPrimitive(mesh.vertex_buffer, mesh.index_buffer, primitive.index_offset, primitive.index_count, i);
 
                 //vkCmdDrawIndexed(command_buffer, primitive.index_count, 1, primitive.index_offset, 0, 0); // temp
             }
@@ -989,6 +993,14 @@ void fe::RendererVulkan::VKSetupPipelineLayout() {
     pipeline_layout_create_info.setLayoutCount = 1;
     pipeline_layout_create_info.pSetLayouts    = &descriptor_set_layout_raw;
 
+    VkPushConstantRange push_constant{};
+    push_constant.offset     = 0;
+    push_constant.size       = sizeof(uint32_t); // index
+    push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    pipeline_layout_create_info.pPushConstantRanges    = &push_constant;
+    pipeline_layout_create_info.pushConstantRangeCount = 1;
+
     VkPipelineLayout pipeline_layout_raw{};
     VK_CHECK_RESULT(vkCreatePipelineLayout(m_Device, &pipeline_layout_create_info, nullptr, &pipeline_layout_raw));
     m_PipelineLayout.attach(m_Device, pipeline_layout_raw);
@@ -1199,7 +1211,7 @@ void fe::RendererVulkan::BeginFrame() {
     vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline);
 }
 
-void fe::RendererVulkan::DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer, uint32_t index_offset, uint32_t index_count) {
+void fe::RendererVulkan::DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer, uint32_t index_offset, uint32_t index_count, uint32_t i_temp) {
     const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
 
     VkDeviceSize offsets[1]{ 0 };
@@ -1210,7 +1222,8 @@ void fe::RendererVulkan::DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, 
     VkBuffer index_buffer_raw = index_buffer.buffer;
     vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
 
-    //vkCmdPushConstants(command_buffer, m_PipelineLayout, )
+    uint32_t constants = i_temp;
+    vkCmdPushConstants(command_buffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(uint32_t), &constants);
 
     vkCmdDrawIndexed(command_buffer, index_count, 1, index_offset, 0, 0);
 }
