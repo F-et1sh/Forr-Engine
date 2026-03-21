@@ -120,9 +120,9 @@ void fe::VulkanSwapchain::CreateSwapchain() {
     std::vector<VkPresentModeKHR> present_modes(present_mode_count);
     VK_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(m_Context.physical_device, m_Surface, &present_mode_count, present_modes.data()));
 
-    VkPresentModeKHR swapchain_present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    VkPresentModeKHR swapchain_present_mode = VK_PRESENT_MODE_FIFO_KHR; // vsync active
 
-    if (m_PrimaryWindow.getVSync() == 0) {
+    if (m_PrimaryWindow.getVSync() == 0) { // disable vsync
         for (size_t i = 0; i < present_mode_count; i++) {
 
             if (present_modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {

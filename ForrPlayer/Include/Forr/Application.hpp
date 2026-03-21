@@ -22,14 +22,15 @@
 
 namespace fe {
     struct FORR_API ApplicationDesc {
-        std::vector<const char*> args;
-
-        std::string application_name{};
-
-        WindowDesc primary_window_desc{};
+        bool validation_enabled = true;
 
         GraphicsBackend graphics_backend{};
         PlatformBackend platform_backend{};
+
+        std::vector<const char*> args;
+
+        std::string application_name{};
+        WindowDesc  primary_window_desc{};
 
         ApplicationDesc()  = default;
         ~ApplicationDesc() = default;
