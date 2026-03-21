@@ -19,11 +19,13 @@
 
 namespace fe {
     struct FORR_API RendererDesc {
-        std::string     application_name{};
         PlatformBackend platform_backend{};
         GraphicsBackend graphics_backend{};
 
         bool validation_enabled = true;
+
+        std::string application_name{};
+        WindowDesc  primary_window_desc{};
 
         RendererDesc()  = default;
         ~RendererDesc() = default;

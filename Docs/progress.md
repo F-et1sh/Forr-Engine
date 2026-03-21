@@ -22,6 +22,7 @@
     OpenGLResourceManagement folder created
     ResourceLookupTable -> GPUResourceLookupTable
     OpenGL drawing with new architecture done
+    OpenGL VSync bug fixed
 
 ### Problem
     -

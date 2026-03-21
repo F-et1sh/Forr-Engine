@@ -28,6 +28,8 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
 
     glfwMakeContextCurrent(m_GLFWwindow);
 
+    glfwSwapInterval(desc.primary_window_desc.vsync); // set vsync ( only after calling glfwMakeContextCurrent )
+
     // Load OpenGL functions, gladLoadGL returns the loaded version, 0 on error.
     int version = gladLoadGL(glfwGetProcAddress);
     if (version == 0) {
@@ -66,7 +68,7 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
 
     glNamedBufferData(ubo, sizeof(shader_data), &shader_data, GL_DYNAMIC_DRAW);
 
-    glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 fe::RendererOpenGL::~RendererOpenGL() {

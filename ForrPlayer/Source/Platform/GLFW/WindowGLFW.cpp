@@ -47,7 +47,7 @@ void fe::WindowGLFW::Initialize(const WindowDesc& desc) {
         return;
     }
 
-    glfwSwapInterval(m_Description.vsync); // set VSync
+    glfwSwapInterval(m_Description.vsync); // set vsync
 
     glfwSetWindowUserPointer(m_GLFWwindow, this);
 
