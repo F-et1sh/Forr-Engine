@@ -25,8 +25,8 @@ namespace fe {
 
     class OpenGLResourceManager {
     public:
-        //VulkanResourceManager(VulkanContext& context, ResourceManager& resource_manager)
-            //: m_Context(context), m_ResourceManager(resource_manager) {}
+        OpenGLResourceManager(ResourceManager& resource_manager)
+            : m_ResourceManager(resource_manager) {}
         ~OpenGLResourceManager() = default;
 
         template <resource::resource_t T>
@@ -62,7 +62,6 @@ namespace fe {
         }
 
     private:
-        //VulkanContext&   m_Context;
         ResourceManager& m_ResourceManager;
 
         //VulkanResourceStorage m_Storage{};
