@@ -19,7 +19,8 @@
     - add Dear ImGui
 
 ### Done
-    -
+    OpenGLResourceManagement folder created
+    ResourceLookupTable -> GPUResourceLookupTable
 
 ### Problem
     -

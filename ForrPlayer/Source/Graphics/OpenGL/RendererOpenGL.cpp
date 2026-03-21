@@ -107,24 +107,24 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
 
     //auto cpu_mesh     = m_ResourceManager.GetResource(ptr);
 
-    auto opengl_model = m_OpenGLResourceManager.GetResource<OpenGLModel>(command.model_ptr);
+    //auto opengl_model = m_OpenGLResourceManager.GetResource<OpenGLModel>(command.model_ptr);
 
-    for (auto mesh_pointer : opengl_model->pointers_mesh) {
-        const auto& mesh_storage = m_OpenGLResourceManager.GetStorage<OpenGLMesh>();
-        auto        mesh         = mesh_storage.get(mesh_pointer);
+    //for (auto mesh_pointer : opengl_model->pointers_mesh) {
+    //    const auto& mesh_storage = m_OpenGLResourceManager.GetStorage<OpenGLMesh>();
+    //    auto        mesh         = mesh_storage.get(mesh_pointer);
 
-        for (const auto& primitive : mesh->primitives) {
+    //    for (const auto& primitive : mesh->primitives) {
 
-            glBindVertexArray(primitive.vao);
+    //        glBindVertexArray(primitive.vao);
 
-            if (primitive.index_count > 0) {
-                glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
-            }
-            else {
-                //glDrawArrays(GL_TRIANGLES, 0, cpu_mesh->meshes[0].primitives[0].vertices.size());
-            }
-        }
-    }
+    //        if (primitive.index_count > 0) {
+    //            glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
+    //        }
+    //        else {
+    //            //glDrawArrays(GL_TRIANGLES, 0, cpu_mesh->meshes[0].primitives[0].vertices.size());
+    //        }
+    //    }
+    //}
 }
 
 void fe::RendererOpenGL::EndFrame() {

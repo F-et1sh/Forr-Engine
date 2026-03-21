@@ -16,7 +16,6 @@
 #include "Graphics/Vulkan/VulkanContext.hpp"
 
 #include "VulkanResourceCreator.hpp"
-
 #include "Graphics/ResourceLookupTable.hpp"
 
 namespace fe {

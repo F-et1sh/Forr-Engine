@@ -22,43 +22,46 @@ namespace fe {
 
         OpenGLTexture()  = default;
         ~OpenGLTexture() = default;
+
+        FORR_CLASS_NONCOPYABLE(OpenGLTexture)
+        FORR_CLASS_MOVABLE(OpenGLTexture)
     };
 
-    // TODO : rewrite all below
-
     struct OpenGLPrimitive {
-        GLuint vao{};
-        GLuint vbo{};
-        GLuint ebo{};
-
         uint32_t index_offset{};
         uint32_t index_count{};
-
-        GLenum render_mode{ GL_TRIANGLES }; // triangles by default
 
         fe::pointer<resource::Material> material{};
 
         OpenGLPrimitive()  = default;
-        ~OpenGLPrimitive() = default; // TODO : provide buffer objects deleting
+        ~OpenGLPrimitive() = default;
+
+        FORR_CLASS_NONCOPYABLE(OpenGLPrimitive)
+        FORR_CLASS_MOVABLE(OpenGLPrimitive)
     };
 
-    // TODO : remove all below
-
     struct OpenGLMesh {
-        // GLenum index_type{}; uint32_t for all models ( at least for now )
+        GLuint vao{};
+        GLuint vbo{};
+        GLuint ebo{};
 
         std::vector<OpenGLPrimitive> primitives{};
 
         OpenGLMesh()  = default;
         ~OpenGLMesh() = default;
+
+        FORR_CLASS_NONCOPYABLE(OpenGLMesh)
+        FORR_CLASS_MOVABLE(OpenGLMesh)
     };
 
-    // for 1:1 mapping
     struct OpenGLModel {
         std::vector<fe::pointer<OpenGLMesh>>    pointers_mesh{};
         std::vector<fe::pointer<OpenGLTexture>> pointers_texture{};
 
         OpenGLModel()  = default;
         ~OpenGLModel() = default;
+
+        FORR_CLASS_NONCOPYABLE(OpenGLModel)
+        FORR_CLASS_MOVABLE(OpenGLModel)
     };
 } // namespace fe
