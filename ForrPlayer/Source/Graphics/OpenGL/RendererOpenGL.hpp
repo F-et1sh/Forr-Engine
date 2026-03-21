@@ -43,7 +43,7 @@ namespace fe {
 
         GLFWwindow* m_GLFWwindow;
 
-        OpenGLResourceManager m_OpenGLResourceManager;
+        OpenGLResourceManager m_OpenGLResourceManager{ m_ResourceManager };
         Camera                m_Camera{}; // temp
     };
 } // namespace fe
