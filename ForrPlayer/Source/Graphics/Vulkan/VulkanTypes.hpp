@@ -3,8 +3,8 @@
     Forr Engine
 
     File : VulkanTypes.hpp
-    Role : Vulkan types. There mustn't be complex thing. Just thin POD structures.
-        This engine is mostly data-oriented designed
+    Role : Vulkan types. All structures here must be movable only
+        Even if the structure is only 4 bytes
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.

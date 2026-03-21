@@ -13,6 +13,8 @@
 #pragma once
 #include "ResourceManagement/ResourceManager.hpp"
 #include "Graphics/OpenGL/OpenGLTypes.hpp"
+
+#include "OpenGLResourceCreator.hpp"
 #include "Graphics/GPUResourceLookupTable.hpp"
 
 namespace fe {
@@ -64,8 +66,8 @@ namespace fe {
     private:
         ResourceManager& m_ResourceManager;
 
-        //VulkanResourceStorage m_Storage{};
-        GPUResourceLookupTable   m_LookupTable{};
-        //VulkanResourceCreator m_Importer{ m_Context, m_ResourceManager, m_Storage };
+        OpenGLResourceStorage  m_Storage{};
+        GPUResourceLookupTable m_LookupTable{};
+        OpenGLResourceCreator  m_Importer{ m_ResourceManager, m_Storage };
     };
 } // namespace fe

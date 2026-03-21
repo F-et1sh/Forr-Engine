@@ -3,8 +3,8 @@
     Forr Engine
 
     File : OpenGLTypes.hpp
-    Role : OpenGL types. There mustn't be complex thing. Just thin POD structures.
-        This engine is mostly data-oriented designed
+    Role : OpenGL types. All structures here must be movable only
+        Even if the structure is only 4 bytes
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -28,6 +28,8 @@ namespace fe {
     };
 
     struct OpenGLPrimitive {
+        GLenum render_mode{};
+
         uint32_t index_offset{};
         uint32_t index_count{};
 
