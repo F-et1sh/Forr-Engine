@@ -11,6 +11,7 @@
 ===============================================*/
 
 #pragma once
+#include <filesystem>
 
 namespace fe {
     struct FORR_API ShaderDesc {
@@ -21,7 +22,7 @@ namespace fe {
         ~ShaderDesc() = default;
     };
 
-    class IShader {
+    class FORR_API IShader {
     public:
         IShader()          = default;
         virtual ~IShader() = default;
