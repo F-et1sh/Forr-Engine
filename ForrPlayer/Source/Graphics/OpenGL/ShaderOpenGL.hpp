@@ -13,6 +13,8 @@
 #pragma once
 #include "Graphics/IShader.hpp"
 
+#include <glad/gl.h>
+
 namespace fe {
     class ShaderOpenGL : public IShader {
     public:
@@ -25,5 +27,11 @@ namespace fe {
         void Unbind();
 
     private:
+        void loadSource(const std::filesystem::path& full_path, const char* source_dst);
+        void attachVertexShader(const std::filesystem::path& full_path);
+        void attachFragmentShader(const std::filesystem::path& full_path);
+
+    private:
+        GLuint m_Program = 0;
     };
 } // namespace fe
