@@ -2,6 +2,8 @@
 
 ## 22.03.2026
 ### Goal
+    Create minimal IShader class and create different shaders for Vulkan and OpenGL
+
     Not now, but :
     - provide event system for platform
     - provide project "compiling" ( speed up )
@@ -12,6 +14,8 @@
         that will create needed specific objects for backends
     - add textures
     - add Dear ImGui
+    - create own extension to cache model parts and unload the model from RAM to disc and load it again when needs
+    - maybe move this "Not now, but" to other file ?
 
 ### Done
     -
