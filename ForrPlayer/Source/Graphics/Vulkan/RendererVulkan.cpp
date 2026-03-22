@@ -85,8 +85,9 @@ void fe::RendererVulkan::Draw(DrawMeshCommand command) {
 
     memcpy(m_UniformBuffers[m_CurrentFrame].mapped, &shader_data, sizeof(ShaderData));
 
-    for (auto mesh_pointer : vulkan_model.pointers_mesh) {
-        const auto& mesh = *m_VulkanResourceManager.GetResource(mesh_pointer);
+    if (command.mesh_index != ~0) {
+        auto        mesh_pointer = vulkan_model.pointers_mesh[command.mesh_index];
+        const auto& mesh         = *m_VulkanResourceManager.GetResource(mesh_pointer);
 
         //const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame]; // temp
         //{ // temp
@@ -115,6 +116,41 @@ void fe::RendererVulkan::Draw(DrawMeshCommand command) {
             }
             else {
                 // TODO : provide this if it is needed
+            }
+        }
+    }
+    else {
+        for (auto mesh_pointer : vulkan_model.pointers_mesh) {
+            const auto& mesh = *m_VulkanResourceManager.GetResource(mesh_pointer);
+
+            //const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame]; // temp
+            //{ // temp
+
+            //    VkDeviceSize offsets[1]{ 0 };
+
+            //    VkBuffer vertex_buffer_raw = mesh.vertex_buffer.buffer;
+            //    vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
+
+            //    VkBuffer index_buffer_raw = mesh.index_buffer.buffer;
+            //    vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
+
+            //    //vkCmdPushConstants(command_buffer, m_PipelineLayout, )
+            //}
+
+            for (const auto& primitive : mesh.primitives) {
+
+                if (primitive.index_count > 0) {
+
+                    // TODO : bind material ( provide materials )
+
+                    // TODO : do not find vertex and index buffers multiple times
+                    this->DrawPrimitive(mesh.vertex_buffer, mesh.index_buffer, primitive.index_offset, primitive.index_count, i);
+
+                    //vkCmdDrawIndexed(command_buffer, primitive.index_count, 1, primitive.index_offset, 0, 0); // temp
+                }
+                else {
+                    // TODO : provide this if it is needed
+                }
             }
         }
     }
@@ -549,12 +585,6 @@ void fe::RendererVulkan::InitializePipeline() {
     vertex_input_attributs[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
     vertex_input_attributs[0].offset   = offsetof(Vertex, position);
 
-    // temp
-    //vertex_input_attributs[1].binding  = 0;
-    //vertex_input_attributs[1].location = 1;
-    //vertex_input_attributs[1].format   = VK_FORMAT_R32_SFLOAT;
-    //vertex_input_attributs[1].offset   = offsetof(Vertex, index);
-
     VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info{};
     vertex_input_state_create_info.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertex_input_state_create_info.vertexBindingDescriptionCount   = 1;
@@ -986,12 +1016,12 @@ void fe::RendererVulkan::VKSetupDescriptorSets() {
 }
 
 void fe::RendererVulkan::VKSetupPipelineLayout() {
-    VkDescriptorSetLayout descriptor_set_layout_raw = m_DescriptorSetLayout;
+    VkDescriptorSetLayout descriptor_set_layout_raw[] = { m_DescriptorSetLayout };
 
     VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
     pipeline_layout_create_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipeline_layout_create_info.setLayoutCount = 1;
-    pipeline_layout_create_info.pSetLayouts    = &descriptor_set_layout_raw;
+    pipeline_layout_create_info.pSetLayouts    = descriptor_set_layout_raw;
 
     VkPushConstantRange push_constant{};
     push_constant.offset     = 0;
