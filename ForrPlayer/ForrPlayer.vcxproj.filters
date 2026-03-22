@@ -76,6 +76,7 @@
     <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceStorage.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceCreator.cpp" />
     <ClCompile Include="Source\Graphics\IShader.cpp" />
+    <ClCompile Include="Source\Graphics\OpenGL\ShaderOpenGL.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\Importers\README.md" />
