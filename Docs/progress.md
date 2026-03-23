@@ -1,5 +1,15 @@
 # Forr-Engine Devlog
 
+## 23.03.2026
+### Goal
+    -
+
+### Done
+    "Not now, but" moved to not-now-but.md
+
+### Problem
+    -
+
 ## 22.03.2026
 ### Goal
     Create minimal IShader class and create different shaders for Vulkan and OpenGL

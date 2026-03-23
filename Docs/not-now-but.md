@@ -1,0 +1,13 @@
+# Forr-Engine Not now, but :
+
+# Added 23.03.2026
+- provide event system for platform
+- provide project "compiling" ( speed up )
+- speed up gLTF loading
+- create Shader class for both backends. When the project will be able to be "compiled", 
+    that Shader class should compile all shader files. Now I'm tired to compile shaders manually.
+    Maybe create IShader that will compile shader files and ShaderVulkan/ShaderOpenGL, 
+    that will create needed specific objects for backends
+- add textures
+- add Dear ImGui
+- create own extension to cache model parts and unload the model from RAM to disc and load it again when needs
