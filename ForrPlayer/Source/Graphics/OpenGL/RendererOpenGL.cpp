@@ -84,9 +84,6 @@ void fe::RendererOpenGL::BeginFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_Shader.bind();
-}
-
-void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
 
     { // temp
         if (glfwGetKey(m_GLFWwindow, GLFW_KEY_A))
@@ -100,21 +97,20 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
             m_Camera.translate(glm::vec3(0.0f, 0.0f, -1.0f));
     }
 
+    m_ShaderData.projection_matrix = m_Camera.getPerspectiveMatrix();
+    m_ShaderData.view_matrix       = m_Camera.getViewMatrix();
+}
+
+void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
+
+    // TODO : wtf ?
+    // Meshes also can have thier own transform, but only models can
+
     auto        gpu_ptr = m_OpenGLResourceManager.GetGPUPointer(command.model_ptr);
     const auto& model   = *m_OpenGLResourceManager.GetResource(gpu_ptr);
 
-    static ShaderData shader_data{};
-    shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
-    shader_data.view_matrix       = m_Camera.getViewMatrix();
-
-    uint32_t i = 0;
-    if (model.pointers_mesh.size() != 8) {
-        i = 1;
-    }
-
-    shader_data.model_matrices[i] = command.transform;
-
-    glNamedBufferSubData(ubo, 0, sizeof(shader_data), &shader_data);
+    size_t model_index = m_I;
+    m_ShaderData.model_matrices[m_I] = command.transform;
 
     for (auto mesh_pointer : model.pointers_mesh) {
         const auto& mesh = *m_OpenGLResourceManager.GetResource(mesh_pointer);
@@ -122,16 +118,24 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
         glBindVertexArray(mesh.vao);
 
         for (const auto& primitive : mesh.primitives) {
+            m_Shader.setUniformInt("model_index", model_index); // temp
+
             glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
         }
     }
+
+    m_I++;
 }
 
 void fe::RendererOpenGL::EndFrame() {
+    glNamedBufferSubData(ubo, 0, sizeof(ShaderData), &m_ShaderData);
+
     glBindVertexArray(0);
     m_Shader.unbind();
 
     glfwSwapBuffers(m_GLFWwindow);
+
+    m_I = 0;
 }
 
 void fe::RendererOpenGL::InitializeGPUResources() {
