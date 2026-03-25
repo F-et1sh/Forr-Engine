@@ -2,14 +2,17 @@
 
 ## 25.03.2026
 ### Goal
-    Add fe::IShader::runPreprocessor()
     Add fe::GraphicsBackend to fe::ShaderDesc
+    Create models matrices storing and passing to the shader.
+        Push models matrices in fe::IRenderer::EndFrame() and push model id while drawing ( push_constants or glUniform1i )
 
 ### Done
-    -
+    fe::GraphicsBackend added to fe::ShaderDesc
 
 ### Problem
-    -
+    I don't understand how I supposed to use IShader.
+    I don't think that I will directly call it from the application.
+    In the application I most likely will use fe::Material or something like that
 
 ## 23.03.2026
 ### Goal

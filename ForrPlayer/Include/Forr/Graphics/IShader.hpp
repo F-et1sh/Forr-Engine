@@ -12,11 +12,14 @@
 
 #pragma once
 #include <filesystem>
+#include "Platform/IPlatformSystem.hpp"
 
 namespace fe {
     struct FORR_API ShaderDesc {
         std::filesystem::path vertex_relative_path{};
         std::filesystem::path fragment_relative_path{};
+
+        GraphicsBackend graphics_backend{};
 
         ShaderDesc()  = default;
         ~ShaderDesc() = default;
