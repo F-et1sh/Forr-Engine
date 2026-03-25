@@ -5,9 +5,11 @@
     Add fe::GraphicsBackend to fe::ShaderDesc
     Create models matrices storing and passing to the shader.
         Push models matrices in fe::IRenderer::EndFrame() and push model id while drawing ( push_constants or glUniform1i )
+    Add UBO ( or SSBO ) for Camera and other scene data
 
 ### Done
     fe::GraphicsBackend added to fe::ShaderDesc
+    Model matrices pushing provided to RendererOpenGL. Without abstractions yet
 
 ### Problem
     I don't understand how I supposed to use IShader.

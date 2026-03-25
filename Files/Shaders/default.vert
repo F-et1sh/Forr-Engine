@@ -8,10 +8,18 @@ layout (binding = 0) uniform UBO {
 	mat4 model_matrices[32];
 } ubo;
 
+#ifdef USE_VULKAN // change this to USE_OPENGL and #ifdef to #ifndef
 layout(push_constant) uniform PushConstants {
 	int index;
 } constants;
+#else
+uniform int model_index;
+#endif
 
 void main() {
+#ifdef USE_VULKAN // change this to USE_OPENGL and #ifdef to #ifndef
 	gl_Position = ubo.projection_matrix * ubo.view_matrix * ubo.model_matrices[constants.index] * vec4(a_Position.xyz, 1.0f);
+#else
+	gl_Position = ubo.projection_matrix * ubo.view_matrix * ubo.model_matrices[model_index] * vec4(a_Position.xyz, 1.0f);
+#endif
 }
