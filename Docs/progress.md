@@ -1,5 +1,16 @@
 # Forr-Engine Devlog
 
+## 25.03.2026
+### Goal
+    Add fe::IShader::runPreprocessor()
+    Add fe::GraphicsBackend to fe::ShaderDesc
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 23.03.2026
 ### Goal
     -
