@@ -5,6 +5,41 @@
     Create shader reflection and unified material for it
     Add UBO ( or SSBO ) for Camera and other scene data
 
+    ```cpp
+    namespace fe::resource {
+        struct Material {
+        public:
+            enum class PropertyType {
+                // ...
+            };
+
+            struct Property {
+            public:
+                size_t       offset{};
+                size_t       size{};
+                PropertyType type{};
+
+                Property()  = default;
+                ~Property() = default;
+            };
+
+            void set_float(std::string name, float value) { // logic
+                auto& prop = properties[name];
+                memcpy(buffer.data() + prop.offset, &value, sizeof(float));
+            }
+
+            std::unordered_map<std::string, Property> properties;
+            std::vector<uint8_t>                      buffer;
+            fe::pointer<IShader>                      linked_shader{};
+
+            Material()  = default;
+            ~Material() = default;
+
+            FORR_RESOURCE_BODY(Material)
+        };
+    } // namespace fe::resource
+    ```
+
 ### Done
     Happy Birthday to me !!
 

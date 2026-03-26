@@ -30,7 +30,7 @@ namespace fe::resource {
     FORR_CLASS_NONCOPYABLE(T) \
     FORR_CLASS_MOVABLE(T)
 
-    struct Texture {
+    struct FORR_API Texture {
         enum class ColorSpace {
             LINEAR,
             SRGB
@@ -101,14 +101,14 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Texture)
     };
 
-    struct Material {
+    struct FORR_API Material {
         enum class AlphaMode {
             OPAQUE,
             MASK,
             BLEND
         };
 
-        struct TextureInfo {
+        struct FORR_API TextureInfo {
             fe::pointer<Texture> texture_ptr{};
             int                  texture_coord{ 0 }; // TEXCOORD_0 by default
 
@@ -116,21 +116,21 @@ namespace fe::resource {
             virtual ~TextureInfo() = default;
         };
 
-        struct NormalTextureInfo : public TextureInfo {
+        struct FORR_API NormalTextureInfo : public TextureInfo {
             float scale{ 1.0f };
 
             NormalTextureInfo()  = default;
             ~NormalTextureInfo() = default;
         };
 
-        struct OcclusionTextureInfo : public TextureInfo {
+        struct FORR_API OcclusionTextureInfo : public TextureInfo {
             float strength{ 1.0f };
 
             OcclusionTextureInfo()  = default;
             ~OcclusionTextureInfo() = default;
         };
 
-        struct PbrMetallicRoughness {
+        struct FORR_API PbrMetallicRoughness {
             glm::vec4   base_color_factor{ 1.0f, 1.0f, 1.0f, 1.0f }; // default [1,1,1,1]
             TextureInfo base_color_texture{};
             float       metallic_factor{ 1.0f };  // default 1
@@ -161,9 +161,9 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Material)
     };
 
-    struct Model {
-        struct Mesh {
-            struct Primitive {
+    struct FORR_API Model {
+        struct FORR_API Mesh {
+            struct FORR_API Primitive {
                 fe::pointer<fe::resource::Material> material_ptr{};
 
                 RenderMode render_mode{ RenderMode::TRIANGLES }; // triangles by default
@@ -188,7 +188,7 @@ namespace fe::resource {
             ~Mesh() = default;
         };
 
-        struct AnimationChannel {
+        struct FORR_API AnimationChannel {
             enum class TargetPath {
                 TRANSLATION,
                 ROTATION,
@@ -204,7 +204,7 @@ namespace fe::resource {
             ~AnimationChannel() = default;
         };
 
-        struct AnimationSampler {
+        struct FORR_API AnimationSampler {
             enum class InterpolationMode {
                 LINEAR,
                 STEP,
@@ -219,7 +219,7 @@ namespace fe::resource {
             ~AnimationSampler() = default;
         };
 
-        struct Animation {
+        struct FORR_API Animation {
             std::vector<AnimationChannel> channels{};
             std::vector<AnimationSampler> samplers{};
 
@@ -227,7 +227,7 @@ namespace fe::resource {
             ~Animation() = default;
         };
 
-        struct Node {
+        struct FORR_API Node {
             // TODO : I think this shouldn't be just int
             int camera{ -1 };
             int skin{ -1 };
@@ -252,7 +252,7 @@ namespace fe::resource {
             ~Node() = default;
         };
 
-        struct Skin {
+        struct FORR_API Skin {
             std::string            name{};
             std::vector<glm::mat4> inverse_bind_matrices{};
             int                    skeleton{ -1 }; // the index of the node used as a skeleton root
