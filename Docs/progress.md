@@ -2,6 +2,7 @@
 
 ## 26.03.2026
 ### Goal
+    Create shader reflection and unified material for it
     Add UBO ( or SSBO ) for Camera and other scene data
 
 ### Done
