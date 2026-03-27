@@ -131,6 +131,7 @@
     <ClInclude Include="Source\Platform\GLFW\WindowGLFW.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\GLTFImporter.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\MikkTSpace.hpp" />
+    <ClInclude Include="Source\ResourceManagement\Importers\ShaderImporter.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\TextureImporter.hpp" />
     <ClInclude Include="Source\Tools.hpp" />
   </ItemGroup>
@@ -181,6 +182,7 @@
     <ClCompile Include="Source\Platform\GLFW\PlatformSystemGLFW.cpp" />
     <ClCompile Include="Source\Platform\GLFW\WindowGLFW.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\GLTFImporter.cpp" />
+    <ClCompile Include="Source\ResourceManagement\Importers\ShaderImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\TextureImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceManager.cpp" />

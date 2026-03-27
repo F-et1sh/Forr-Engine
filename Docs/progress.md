@@ -45,6 +45,7 @@
     the first day being 16
     fe::resource::Material structure changed
     fe::resource::Shader added
+    ShaderImporter added
 
 ### Problem
     -
