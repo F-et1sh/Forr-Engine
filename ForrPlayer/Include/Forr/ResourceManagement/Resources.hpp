@@ -22,6 +22,7 @@
 #include "Core/types.hpp"
 
 #include "Graphics/GPUTypes.hpp"
+#include "Graphics/IShader.hpp"
 
 // namespace fe::resource:: means that the class is a
 //  DOD structure, not a high level resource
@@ -102,58 +103,26 @@ namespace fe::resource {
     };
 
     struct FORR_API Material {
-        enum class AlphaMode {
-            OPAQUE,
-            MASK,
-            BLEND
+    public:
+        struct FORR_API Property {
+        public:
+            enum class Type {
+                FLOAT,
+                INT
+                // ...
+            };
+
+            size_t offset{};
+            size_t size{};
+            Type   type{};
+
+            Property()  = default;
+            ~Property() = default;
         };
 
-        struct FORR_API TextureInfo {
-            fe::pointer<Texture> texture_ptr{};
-            int                  texture_coord{ 0 }; // TEXCOORD_0 by default
-
-            TextureInfo()          = default;
-            virtual ~TextureInfo() = default;
-        };
-
-        struct FORR_API NormalTextureInfo : public TextureInfo {
-            float scale{ 1.0f };
-
-            NormalTextureInfo()  = default;
-            ~NormalTextureInfo() = default;
-        };
-
-        struct FORR_API OcclusionTextureInfo : public TextureInfo {
-            float strength{ 1.0f };
-
-            OcclusionTextureInfo()  = default;
-            ~OcclusionTextureInfo() = default;
-        };
-
-        struct FORR_API PbrMetallicRoughness {
-            glm::vec4   base_color_factor{ 1.0f, 1.0f, 1.0f, 1.0f }; // default [1,1,1,1]
-            TextureInfo base_color_texture{};
-            float       metallic_factor{ 1.0f };  // default 1
-            float       roughness_factor{ 1.0f }; // default 1
-            TextureInfo metallic_roughness_texture{};
-
-            PbrMetallicRoughness()  = default;
-            ~PbrMetallicRoughness() = default;
-        };
-
-        std::string name{};
-
-        glm::vec3        emissive_factor{ 0.0f, 0.0f, 0.0f }; // default [0,0,0]
-        AlphaMode        alpha_mode{ AlphaMode::OPAQUE };     // default - OPAQUE
-        float            alpha_cutoff{ 0.5f };                // default 0.5f
-        bool             double_sided{ false };               // default false
-        std::vector<int> lods{};                              // level of detail materials ( MSFT_lod )
-
-        PbrMetallicRoughness pbr_metallic_roughness{};
-
-        NormalTextureInfo    normal_texture{};
-        OcclusionTextureInfo occlusion_texture{};
-        TextureInfo          emissive_texture{};
+        std::unordered_map<std::string, Property> properties{};
+        std::vector<uint8_t>                      buffer{};
+        IShader*                                  linked_shader_ptr{};
 
         Material()  = default;
         ~Material() = default;
