@@ -14,4 +14,9 @@
 #include "ShaderImporter.hpp"
 
 void fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
+    resource::Shader this_shader{};
+
+
+
+    auto ptr = storage.CreateResource<resource::Shader>(std::move(this_shader)); // does not need to store this pointer
 }

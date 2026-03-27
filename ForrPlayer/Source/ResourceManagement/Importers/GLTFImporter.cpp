@@ -58,7 +58,7 @@ void fe::GLTFImporter::Import(ResourceStorage& storage, const std::filesystem::p
     GLTFImporter::loadMeshes(context);
     GLTFImporter::loadAnimations(context);
 
-    auto ptr = storage.CreateResource<resource::Model>(std::move(this_model)); // does not need to store this
+    auto ptr = storage.CreateResource<resource::Model>(std::move(this_model)); // does not need to store this pointer
 }
 
 void fe::GLTFImporter::loadNodes(GLTFImportContext& context) {

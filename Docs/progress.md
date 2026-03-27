@@ -46,9 +46,10 @@
     fe::resource::Material structure changed
     fe::resource::Shader added
     ShaderImporter added
+    trying to provide Shader for OpenGL
 
 ### Problem
-    -
+    I don't know how to organize shaders
 
 ## 26.03.2026
 ### Goal

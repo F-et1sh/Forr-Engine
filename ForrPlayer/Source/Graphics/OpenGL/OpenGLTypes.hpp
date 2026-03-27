@@ -30,6 +30,15 @@ namespace fe {
         FORR_RESOURCE_BODY(OpenGLTexture)
     };
 
+    struct OpenGLShader {
+        GLuint program_id{};
+
+        OpenGLShader()  = default;
+        ~OpenGLShader() = default;
+
+        FORR_RESOURCE_BODY(OpenGLShader)
+    };
+
     struct OpenGLPrimitive {
         GLenum render_mode{};
 

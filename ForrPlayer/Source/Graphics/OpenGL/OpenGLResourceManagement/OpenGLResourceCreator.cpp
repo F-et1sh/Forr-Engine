@@ -130,6 +130,15 @@ FORR_NODISCARD fe::pointer<fe::OpenGLModel> fe::OpenGLResourceCreator::CreateRes
     return ptr;
 }
 
+FORR_NODISCARD fe::pointer<fe::OpenGLShader> fe::OpenGLResourceCreator::CreateResource(const resource::Shader& shader) {
+    OpenGLShader this_shader{};
+
+    //this_shader.program_id
+
+    auto ptr = m_Storage.m_Shaders.create(std::move(this_shader));
+    return ptr;
+}
+
 fe::pointer<fe::OpenGLMesh> fe::OpenGLResourceCreator::createMesh(const resource::Model::Mesh& mesh) {
     OpenGLMesh this_mesh{};
 
