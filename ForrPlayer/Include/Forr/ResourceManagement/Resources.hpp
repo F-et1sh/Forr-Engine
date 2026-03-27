@@ -102,6 +102,16 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Texture)
     };
 
+    struct FORR_API Shader {
+    public:
+        std::unique_ptr<IShader> impl{};
+
+        Shader()  = default;
+        ~Shader() = default;
+
+        FORR_RESOURCE_BODY(Shader)
+    };
+
     struct FORR_API Material {
     public:
         struct FORR_API Property {
@@ -112,9 +122,10 @@ namespace fe::resource {
                 // ...
             };
 
-            size_t offset{};
-            size_t size{};
-            Type   type{};
+            uint32_t offset{};
+            uint32_t size{};
+            uint32_t count{};
+            Type     type{};
 
             Property()  = default;
             ~Property() = default;
@@ -122,7 +133,7 @@ namespace fe::resource {
 
         std::unordered_map<std::string, Property> properties{};
         std::vector<uint8_t>                      buffer{};
-        IShader*                                  linked_shader_ptr{};
+        fe::pointer<fe::resource::Shader>         linked_shader_ptr{};
 
         Material()  = default;
         ~Material() = default;
@@ -248,6 +259,7 @@ namespace fe::resource {
     template <typename T>
     concept resource_t =
         (std::is_same_v<T, Texture>) ||
+        (std::is_same_v<T, Shader>) ||
         (std::is_same_v<T, Material>) ||
         (std::is_same_v<T, Model>);
 
