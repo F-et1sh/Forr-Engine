@@ -2,6 +2,7 @@
 
 ## 27.03.2026
 ### Goal
+    Create fe::resource::Shader and maybe use PIMPL in it
     Create shader reflection and unified material for it
     Add UBO ( or SSBO ) for Camera and other scene data
 
@@ -42,6 +43,8 @@
 
 ### Done
     the first day being 16
+    fe::resource::Material structure changed
+    fe::resource::Shader added
 
 ### Problem
     -

@@ -17,14 +17,17 @@
 #include <glad/gl.h>
 
 namespace fe {
+#define FORR_RESOURCE_BODY(T) \
+    FORR_CLASS_NONCOPYABLE(T) \
+    FORR_CLASS_MOVABLE(T)
+
     struct OpenGLTexture {
         GLuint id{};
 
         OpenGLTexture()  = default;
         ~OpenGLTexture() = default;
 
-        FORR_CLASS_NONCOPYABLE(OpenGLTexture)
-        FORR_CLASS_MOVABLE(OpenGLTexture)
+        FORR_RESOURCE_BODY(OpenGLTexture)
     };
 
     struct OpenGLPrimitive {
@@ -38,8 +41,7 @@ namespace fe {
         OpenGLPrimitive()  = default;
         ~OpenGLPrimitive() = default;
 
-        FORR_CLASS_NONCOPYABLE(OpenGLPrimitive)
-        FORR_CLASS_MOVABLE(OpenGLPrimitive)
+        FORR_RESOURCE_BODY(OpenGLPrimitive)
     };
 
     struct OpenGLMesh {
@@ -52,8 +54,7 @@ namespace fe {
         OpenGLMesh()  = default;
         ~OpenGLMesh() = default;
 
-        FORR_CLASS_NONCOPYABLE(OpenGLMesh)
-        FORR_CLASS_MOVABLE(OpenGLMesh)
+        FORR_RESOURCE_BODY(OpenGLMesh)
     };
 
     struct OpenGLModel {
@@ -63,7 +64,8 @@ namespace fe {
         OpenGLModel()  = default;
         ~OpenGLModel() = default;
 
-        FORR_CLASS_NONCOPYABLE(OpenGLModel)
-        FORR_CLASS_MOVABLE(OpenGLModel)
+        FORR_RESOURCE_BODY(OpenGLModel)
     };
+
+#undef FORR_RESOURCE_BODY
 } // namespace fe
