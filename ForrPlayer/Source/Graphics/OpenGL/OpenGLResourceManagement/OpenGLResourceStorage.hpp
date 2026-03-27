@@ -20,6 +20,7 @@ namespace fe {
         fe::typed_pointer_storage<OpenGLTexture> m_Textures{};
         fe::typed_pointer_storage<OpenGLModel>   m_Models{};
         fe::typed_pointer_storage<OpenGLMesh>    m_Meshes{};
+        fe::typed_pointer_storage<OpenGLShader>  m_Shaders{};
 
         template <typename T>
         const fe::typed_pointer_storage<T>& GetStorage() const {
@@ -31,6 +32,9 @@ namespace fe {
             }
             else if constexpr (std::is_same_v<T, OpenGLMesh>) {
                 return m_Meshes;
+            }
+            else if constexpr (std::is_same_v<T, OpenGLShader>) {
+                return m_Shaders;
             }
             else {
                 assert(false);

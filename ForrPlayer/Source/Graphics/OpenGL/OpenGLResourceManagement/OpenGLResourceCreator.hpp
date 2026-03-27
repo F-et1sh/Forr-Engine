@@ -21,6 +21,7 @@ namespace fe {
 
         FORR_NODISCARD fe::pointer<OpenGLTexture> CreateResource(const resource::Texture& texture);
         FORR_NODISCARD fe::pointer<OpenGLModel> CreateResource(const resource::Model& model);
+        FORR_NODISCARD fe::pointer<OpenGLShader> CreateResource(const resource::Shader& shader);
 
     private:
         FORR_NODISCARD fe::pointer<OpenGLMesh> createMesh(const resource::Model::Mesh& mesh);
