@@ -104,7 +104,7 @@ namespace fe::resource {
 
     struct FORR_API Shader {
     public:
-        std::unique_ptr<IShader> impl{};
+        std::string source{}; // TODO : think about using fe::ArenaMarker
 
         Shader()  = default;
         ~Shader() = default;
