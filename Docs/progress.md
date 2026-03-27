@@ -5,6 +5,7 @@
     Create fe::resource::Shader and maybe use PIMPL in it
     Create shader reflection and unified material for it
     Provide unified material importing aka MaterialImporter
+    Change directory : Files\\Shaders now must be in Files\\Resources\\Shaders
     Add UBO ( or SSBO ) for Camera and other scene data
 
     ```cpp
