@@ -38,7 +38,7 @@
     ```
 
 ### Done
-    -
+    came up with extension name : .forr_<type>. ".forr_meta", ".forr_material"
 
 ### Problem
     -
