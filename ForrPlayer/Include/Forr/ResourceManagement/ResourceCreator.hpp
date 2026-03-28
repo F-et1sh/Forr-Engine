@@ -19,15 +19,6 @@
 
 namespace fe {
     class FORR_API ResourceCreator {
-    private:
-        struct MetaBaseInfo {
-            uint64_t              resource_pointer_packed{};
-            std::filesystem::path resource_relative_path{};
-
-            MetaBaseInfo()  = default;
-            ~MetaBaseInfo() = default;
-        };
-
     public:
         ResourceCreator(ResourceStorage& storage) : m_Storage(storage) {}
         ~ResourceCreator() = default;
