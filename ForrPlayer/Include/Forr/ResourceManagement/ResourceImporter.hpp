@@ -3,12 +3,8 @@
     Forr Engine
 
     File : ResourceImporter.hpp
-    Role : imports resources and their metadata.
-            Importer per library rule.
-            - GLTFImporter    -> .gltf, .glb
-            - TextureImporter -> .png, .jpg, .jpeg, etc
-            - SoundImporter   -> .wav, .ogg, etc
-
+    Role : imports resources and their metadata
+            
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
 

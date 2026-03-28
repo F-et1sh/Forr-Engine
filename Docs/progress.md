@@ -4,6 +4,7 @@
 ### Goal
     Provide unified material importing aka MaterialImporter
     Create ResourceCreator and material creation in it
+    Remove ShaderImporter
     Create shader reflection and unified material for it
     Add UBO ( or SSBO ) for Camera and other scene data
 
@@ -41,6 +42,7 @@
 ### Done
     came up with extension name : .forr_<type>. ".forr_meta", ".forr_material"
     MaterialImporter added
+    ResourceCreator added
 
 ### Problem
     -
