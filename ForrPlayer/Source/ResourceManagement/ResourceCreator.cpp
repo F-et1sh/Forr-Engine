@@ -13,8 +13,6 @@
 #include "pch.hpp"
 #include "ResourceManagement/ResourceCreator.hpp"
 
-#include <fstream>
-
 void fe::ResourceCreator::CreateMaterial(fe::pointer<resource::Material> pointer, const std::filesystem::path& resource_full_path) {
     resource::Material& material = *m_Storage.GetResource(pointer);
 
@@ -28,7 +26,14 @@ void fe::ResourceCreator::CreateMaterial(fe::pointer<resource::Material> pointer
 }
 
 void fe::ResourceCreator::createMetadata(const std::filesystem::path& resource_full_path) {
-    //std::filesystem::path metadata_path = resource_full_path + 
+    std::filesystem::path metadata_path = resource_full_path.wstring() + PATH.getMetadataExtension().wstring();
 
-    PathManager
+    std::ofstream file(metadata_path);
+    if (!file.good()) {
+        fe::logging::error("Unified -> %s. Failed create metadata\nPath : %s\nResource Path : %s",
+                           metadata_path.extension().string().c_str(),
+                           metadata_path.string().c_str(),
+                           resource_full_path.string().c_str());
+        return;
+    }
 }

@@ -43,10 +43,11 @@
     came up with extension name : .forr_<type>. ".forr_meta", ".forr_material"
     MaterialImporter added
     ResourceCreator added
-    fe::PathManager::getMetadataExtension() and fe::PathManager::getMaterialExtension() added
+    fe::PathManager::getMetadataExtension() and fe::PathManager::getMaterialExtension() are added
+    trying to add fe::ResourceCreator::createMaterial()
 
 ### Problem
-    -
+    I don't want to create any serialization till C++26
 
 ## 27.03.2026
 ### Goal
