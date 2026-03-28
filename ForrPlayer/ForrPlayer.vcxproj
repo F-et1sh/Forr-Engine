@@ -108,6 +108,7 @@
     <ClInclude Include="Include\Forr\Platform\IWindow.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceCreator.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceImporter.hpp" />
+    <ClInclude Include="Include\Forr\ResourceManagement\ResourceLookupTable.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceManager.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\Resources.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceStorage.hpp" />
