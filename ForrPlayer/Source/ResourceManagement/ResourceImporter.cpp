@@ -16,20 +16,13 @@
 #include "Importers/TextureImporter.hpp"
 #include "Importers/GLTFImporter.hpp"
 #include "Importers/ShaderImporter.hpp"
+#include "Importers/MaterialImporter.hpp"
 
 void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_relative_path) {
     std::filesystem::path resource_full_path = PATH.getResourcesPath() / resource_relative_path;
     std::filesystem::path extension          = resource_full_path.extension();
 
-    // TODO : add metadata parsing
-    // TODO : come up with extension for metadata :
-    // .forr
-    // .forrsave
-    // .forsave
-    // .fs - legacy version
-    // .forrmeta
-    // .formeta
-    // .fm
+    // TODO : add metadata parsing ( .forr_meta )
 
     if (extension == ".png") {
         TextureImporter::Import(m_Storage, resource_full_path);
@@ -39,5 +32,8 @@ void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_
     }
     else if (extension == ".vert" || extension == ".frag" || extension == ".spv" || extension == ".glsl") { // honestly, idk - shader can have any extension, even ".hui"
         ShaderImporter::Import(m_Storage, resource_full_path);
+    }
+    else if (extension == ".forr_material") {
+        MaterialImporter::Import(m_Storage, resource_full_path);
     }
 }
