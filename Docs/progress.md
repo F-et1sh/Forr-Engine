@@ -3,6 +3,7 @@
 ## 28.03.2026
 ### Goal
     Provide unified material importing aka MaterialImporter
+    Create ResourceCreator and material creation in it
     Create shader reflection and unified material for it
     Add UBO ( or SSBO ) for Camera and other scene data
 
