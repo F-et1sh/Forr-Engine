@@ -102,16 +102,6 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Texture)
     };
 
-    struct FORR_API Shader {
-    public:
-        std::string source{}; // TODO : think about using fe::ArenaMarker
-
-        Shader()  = default;
-        ~Shader() = default;
-
-        FORR_RESOURCE_BODY(Shader)
-    };
-
     struct FORR_API Material {
     public:
         struct FORR_API Property {
@@ -133,7 +123,7 @@ namespace fe::resource {
 
         std::unordered_map<std::string, Property> properties{};
         std::vector<uint8_t>                      buffer{};
-        fe::pointer<fe::resource::Shader>         linked_shader_ptr{};
+        //fe::pointer<fe::resource::Shader>         linked_shader_ptr{};
 
         Material()  = default;
         ~Material() = default;
@@ -259,7 +249,6 @@ namespace fe::resource {
     template <typename T>
     concept resource_t =
         (std::is_same_v<T, Texture>) ||
-        (std::is_same_v<T, Shader>) ||
         (std::is_same_v<T, Material>) ||
         (std::is_same_v<T, Model>);
 

@@ -1,11 +1,53 @@
 # Forr-Engine Devlog
 
+## 28.03.2026
+### Goal
+    Provide unified material importing aka MaterialImporter
+    Create shader reflection and unified material for it
+    Add UBO ( or SSBO ) for Camera and other scene data
+
+    ```hpp
+    struct FORR_API Material {
+    public:
+        struct FORR_API Property {
+        public:
+            enum class Type {
+                FLOAT,
+                INT
+                // ...
+            };
+
+            uint32_t offset{};
+            uint32_t size{};
+            uint32_t count{};
+            Type     type{};
+
+            Property()  = default;
+            ~Property() = default;
+        };
+
+        std::unordered_map<std::string, Property> properties{};
+        std::vector<uint8_t>                      buffer{};
+
+
+        Material()  = default;
+        ~Material() = default;
+
+        FORR_RESOURCE_BODY(Material)
+    };
+    ```
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 27.03.2026
 ### Goal
     Create fe::resource::Shader and maybe use PIMPL in it
     Create shader reflection and unified material for it
     Provide unified material importing aka MaterialImporter
-    Change directory : Files\\Shaders now must be in Files\\Resources\\Shaders
     Add UBO ( or SSBO ) for Camera and other scene data
 
     ```cpp
