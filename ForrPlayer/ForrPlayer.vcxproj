@@ -93,6 +93,7 @@
     <ClInclude Include="Include\Forr\Application.hpp" />
     <ClInclude Include="Include\Forr\Core\attributes.hpp" />
     <ClInclude Include="Include\Forr\Core\custom_allocators.hpp" />
+    <ClInclude Include="Include\Forr\Core\guid.hpp" />
     <ClInclude Include="Include\Forr\Core\logging.hpp" />
     <ClInclude Include="Include\Forr\Core\path.hpp" />
     <ClInclude Include="Include\Forr\Core\pointer.hpp" />
