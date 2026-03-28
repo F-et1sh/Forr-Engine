@@ -48,6 +48,7 @@
     trying to add fe::ResourceCreator::createMaterial()
     GUID added
     SPIRV-Reflect added
+    ShaderImporter removed
 
 ### Problem
     I don't want to create any serialization till C++26
