@@ -20,7 +20,9 @@ void fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem:
 
     std::ifstream file(resource_full_path);
     if (!file.good()) {
-        fe::logging::error("%s -> Unified. Failed to open shader file\nPath : %s", resource_full_path.extension().string().c_str(), resource_full_path.string().c_str());
+        fe::logging::error("%s -> Unified. Failed to open shader file\nPath : %s",
+                           resource_full_path.extension().string().c_str(),
+                           resource_full_path.string().c_str());
         return;
     }
 

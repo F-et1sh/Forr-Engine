@@ -134,6 +134,7 @@ FORR_NODISCARD fe::pointer<fe::OpenGLShader> fe::OpenGLResourceCreator::CreateRe
     OpenGLShader this_shader{};
 
     //this_shader.program_id
+    //shader.source
 
     auto ptr = m_Storage.m_Shaders.create(std::move(this_shader));
     return ptr;
