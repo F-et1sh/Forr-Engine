@@ -45,6 +45,16 @@ namespace fe {
             return m_AssetsPath / L"Models";
         }
 
+        //
+
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getMetadataExtension() const noexcept {
+            return L".forr_meta";
+        }
+
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getMaterialExtension() const noexcept {
+            return L".forr_material";
+        }
+
     private:
         PathManager()  = default;
         ~PathManager() = default;
