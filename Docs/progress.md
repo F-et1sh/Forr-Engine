@@ -43,6 +43,7 @@
     came up with extension name : .forr_<type>. ".forr_meta", ".forr_material"
     MaterialImporter added
     ResourceCreator added
+    fe::PathManager::getMetadataExtension() and fe::PathManager::getMaterialExtension() added
 
 ### Problem
     -

@@ -18,6 +18,17 @@
 void fe::ResourceCreator::CreateMaterial(fe::pointer<resource::Material> pointer, const std::filesystem::path& resource_full_path) {
     resource::Material& material = *m_Storage.GetResource(pointer);
 
-    std::ofstream file{};
-    file.open(resource_full_path);
+    std::ofstream file(resource_full_path);
+    if (!file.good()) {
+        fe::logging::error("Unified -> %s. Failed create material\nPath : %s",
+                           resource_full_path.extension().string().c_str(),
+                           resource_full_path.string().c_str());
+        return;
+    }
+}
+
+void fe::ResourceCreator::createMetadata(const std::filesystem::path& resource_full_path) {
+    //std::filesystem::path metadata_path = resource_full_path + 
+
+    PathManager
 }
