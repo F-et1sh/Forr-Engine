@@ -47,6 +47,7 @@
     fe::PathManager::getMetadataExtension() and fe::PathManager::getMaterialExtension() are added
     trying to add fe::ResourceCreator::createMaterial()
     GUID added
+    SPIRV-Reflect added
 
 ### Problem
     I don't want to create any serialization till C++26
