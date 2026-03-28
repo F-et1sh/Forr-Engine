@@ -46,6 +46,7 @@
     <ClInclude Include="Source\Graphics\OpenGL\ShaderOpenGL.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\ShaderImporter.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\MaterialImporter.hpp" />
+    <ClInclude Include="Include\Forr\ResourceManagement\ResourceCreator.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -81,6 +82,7 @@
     <ClCompile Include="Source\Graphics\OpenGL\ShaderOpenGL.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\ShaderImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\MaterialImporter.cpp" />
+    <ClCompile Include="Source\ResourceManagement\ResourceCreator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\Importers\README.md" />

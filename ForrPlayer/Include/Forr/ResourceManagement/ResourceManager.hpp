@@ -14,6 +14,7 @@
 #include <filesystem>
 #include "ResourceStorage.hpp"
 #include "ResourceImporter.hpp"
+#include "ResourceCreator.hpp"
 
 namespace fe {
     class ResourceManager {
@@ -32,5 +33,6 @@ namespace fe {
     private:
         ResourceStorage  m_Storage{};
         ResourceImporter m_Importer{ m_Storage };
+        ResourceCreator m_Creator{ m_Storage };
     };
 } // namespace fe
