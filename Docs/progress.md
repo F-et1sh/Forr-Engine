@@ -4,6 +4,7 @@
 ### Goal
     Provide unified material importing aka MaterialImporter
     Create ResourceCreator and material creation in it
+    Create GUID for resources
     Remove ShaderImporter
     Create shader reflection and unified material for it
     Add UBO ( or SSBO ) for Camera and other scene data
@@ -45,6 +46,7 @@
     ResourceCreator added
     fe::PathManager::getMetadataExtension() and fe::PathManager::getMaterialExtension() are added
     trying to add fe::ResourceCreator::createMaterial()
+    GUID added
 
 ### Problem
     I don't want to create any serialization till C++26

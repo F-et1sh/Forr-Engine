@@ -47,6 +47,7 @@
     <ClInclude Include="Source\ResourceManagement\Importers\ShaderImporter.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\MaterialImporter.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceCreator.hpp" />
+    <ClInclude Include="Include\Forr\Core\guid.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
