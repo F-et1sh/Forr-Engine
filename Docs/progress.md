@@ -1,5 +1,32 @@
 # Forr-Engine Devlog
 
+## 30.03.2026
+### Goal
+    Create fe::resource::Shader containing the source
+    Provide shader reflection via SPRV-Reflect and fill up fe::resource::Material with it
+    Provide fe::resource::Material saving with ResourceCreator
+    Provide unified material importing aka MaterialImporter
+    Add UBO ( and SSBO ) for Camera and other scene data
+
+### Done
+    -
+
+### Problem
+    -
+
+## 29.03.2026
+### Goal
+    Provide shader reflection via SPRV-Reflect and fill up fe::resource::Material with it
+    Provide fe::resource::Material saving with ResourceCreator
+    Provide unified material importing aka MaterialImporter
+    Add UBO ( and SSBO ) for Camera and other scene data
+
+### Done
+    I finally got my Sony Camera ZV-E10 - I'm gonna be a bloger! or vloger, idk
+
+### Problem
+    Time management
+
 ## 28.03.2026
 ### Goal
     Provide unified material importing aka MaterialImporter
@@ -7,7 +34,7 @@
     Create GUID for resources
     Remove ShaderImporter
     Create shader reflection and unified material for it
-    Add UBO ( or SSBO ) for Camera and other scene data
+    Add UBO ( and SSBO ) for Camera and other scene data
 
     ```hpp
     struct FORR_API Material {
