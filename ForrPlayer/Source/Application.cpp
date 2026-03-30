@@ -26,6 +26,8 @@ fe::Application::Application(const ApplicationDesc& desc) {
         }
         i++;
     });
+
+
 }
 
 void fe::Application::Run() {
