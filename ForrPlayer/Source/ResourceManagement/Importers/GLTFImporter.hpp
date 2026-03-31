@@ -56,7 +56,7 @@ namespace fe {
         GLTFImporter()  = default;
         ~GLTFImporter() = default;
 
-        static void Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path);
+        static fe::pointer<resource::Model> Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path);
 
     private:
         static void loadNodes(GLTFImportContext& context);

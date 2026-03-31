@@ -17,7 +17,7 @@
 
 using namespace fe::resource;
 
-void fe::TextureImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
+fe::pointer<Texture> fe::TextureImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
     int            width{};
     int            height{};
     int            components{};
@@ -63,6 +63,6 @@ void fe::TextureImporter::Import(ResourceStorage& storage, const std::filesystem
 
     stbi_image_free(bytes); // can be freed after copying
 
-    auto& texture_storage = storage.GetStorage<resource::Texture>();
-    auto  ptr             = texture_storage.create(std::move(texture)); // does not need to store this
+    auto ptr = storage.CreateResource(std::move(texture));
+    return ptr;
 }
