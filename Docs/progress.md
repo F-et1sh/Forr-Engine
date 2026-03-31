@@ -13,6 +13,7 @@
     Shader update
     ShaderImporter added
     ShaderImporter done
+    Files\\Shaders -> Files\\Resources\\Shaders
 
 ### Problem
     Sleep debt

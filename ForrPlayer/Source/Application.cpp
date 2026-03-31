@@ -72,6 +72,9 @@ void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
     paths.emplace_back("Models/StatueOfLiberty/statue_of_liberty.glb");
     paths.emplace_back("Models/PirateRoom/PirateRoom.gltf");
 
+    paths.emplace_back("Shaders/default.vert.spv");
+    paths.emplace_back("Shaders/default.frag.spv");
+
     m_ResourceManager = std::make_unique<ResourceManager>();
     m_ResourceManager->SetupSceneResources(paths); // TODO : rewrite this
 }
