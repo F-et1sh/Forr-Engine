@@ -48,6 +48,7 @@
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceCreator.hpp" />
     <ClInclude Include="Include\Forr\Core\guid.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceLookupTable.hpp" />
+    <ClInclude Include="Source\ResourceManagement\Importers\ShaderImporter.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -84,6 +85,7 @@
     <ClCompile Include="Source\ResourceManagement\Importers\MaterialImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceCreator.cpp" />
     <ClCompile Include="..\ThirdParty\SPIRV-Reflect\src\spirv_reflect.c" />
+    <ClCompile Include="Source\ResourceManagement\Importers\ShaderImporter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\Importers\README.md" />

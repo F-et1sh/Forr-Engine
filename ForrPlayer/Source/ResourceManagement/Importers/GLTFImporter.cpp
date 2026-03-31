@@ -31,7 +31,7 @@ fe::pointer<fe::resource::Model> fe::GLTFImporter::Import(ResourceStorage& stora
     }
     else {
         fe::logging::error("Failed to load GLTF model.\nWrong resource extension. It's not .gltf or .glb\nPath : %s", filename.c_str());
-        return;
+        return {};
     }
 
     if (!warning.empty()) {
@@ -39,11 +39,11 @@ fe::pointer<fe::resource::Model> fe::GLTFImporter::Import(ResourceStorage& stora
     }
     if (!error.empty()) {
         fe::logging::error("Failed to load GLTF model.\nGot an error : %s", error.c_str());
-        return;
+        return {};
     }
     if (!good) {
         fe::logging::error("Failed to load GLTF model.\n\"good\" value is false : %s", error.c_str());
-        return;
+        return {};
     }
 
     resource::Model this_model{};

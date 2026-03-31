@@ -27,7 +27,7 @@ fe::pointer<Texture> fe::TextureImporter::Import(ResourceStorage& storage, const
 
     if (!bytes) {
         fe::logging::error("STBI -> Unified. Failed to load a texture\nPath : %s", components, resource_full_path.string().c_str());
-        return;
+        return {};
     }
 
     Texture::InternalFormat internal_format{};
