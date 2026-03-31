@@ -13,5 +13,7 @@
 
 @echo off
 
+xcopy /y /i /s "..\\..\\External\\SPIRV-Reflect\\include" "..\\..\\ThirdParty\\SPIRV-Reflect\\include" >nul
+
 xcopy /y /i /s "..\\..\\External\\SPIRV-Reflect\\spirv_reflect.h" "..\\..\\ThirdParty\\SPIRV-Reflect\\include\\" >nul
 xcopy /y /i /s "..\\..\\External\\SPIRV-Reflect\\spirv_reflect.c" "..\\..\\ThirdParty\\SPIRV-Reflect\\src\\" >nul

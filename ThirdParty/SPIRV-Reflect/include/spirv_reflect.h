@@ -37,7 +37,6 @@ VERSION HISTORY
 #include "./include/spirv/unified1/spirv.h"
 #endif
 
-
 #include <stdint.h>
 #include <string.h>
 

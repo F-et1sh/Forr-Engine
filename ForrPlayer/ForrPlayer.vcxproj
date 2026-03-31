@@ -135,6 +135,7 @@
     <ClInclude Include="Source\ResourceManagement\Importers\GLTFImporter.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\MaterialImporter.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\MikkTSpace.hpp" />
+    <ClInclude Include="Source\ResourceManagement\Importers\ShaderImporter.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\TextureImporter.hpp" />
     <ClInclude Include="Source\Tools.hpp" />
   </ItemGroup>
@@ -150,6 +151,8 @@
     <ClCompile Include="..\ThirdParty\SPIRV-Reflect\src\spirv_reflect.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);FORRENGINE_EXPORTS</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);FORRENGINE_EXPORTS</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="..\ThirdParty\stb\src\stb_image.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -163,6 +166,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Source\ResourceManagement\Importers\ShaderImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceCreator.cpp" />
     <ClCompile Include="Source\Graphics\Camera.cpp" />
     <ClCompile Include="Source\Application.cpp" />

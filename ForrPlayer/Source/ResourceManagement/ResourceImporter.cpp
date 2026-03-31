@@ -15,6 +15,7 @@
 
 #include "Importers/TextureImporter.hpp"
 #include "Importers/GLTFImporter.hpp"
+#include "Importers/ShaderImporter.hpp"
 #include "Importers/MaterialImporter.hpp"
 
 void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_relative_path) {
@@ -28,6 +29,9 @@ void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_
     }
     else if (extension == ".gltf" || extension == ".glb") {
         GLTFImporter::Import(m_Storage, resource_full_path);
+    }
+    else if (extension == ".glsl" || extension == ".vert" || extension == ".frag") {
+        ShaderImporter::Import(m_Storage, resource_full_path);
     }
     else if (extension == ".forr_material") {
         MaterialImporter::Import(m_Storage, resource_full_path);
