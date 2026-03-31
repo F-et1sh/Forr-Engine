@@ -14,6 +14,7 @@
     ShaderImporter added
     ShaderImporter done
     Files\\Shaders -> Files\\Resources\\Shaders
+    Shaders properties are loading
 
 ### Problem
     Sleep debt

@@ -58,7 +58,7 @@ bool fe::Shader::loadFromSource(const char* source, const unsigned int& type) co
 bool fe::Shader::loadFromFile(const std::filesystem::path& path, const unsigned int& type) {
     std::ifstream file(path);
     if (!file.good()) {
-        std::wcerr << L"ERROR: Failed to open shader file\nPath : " << path.c_str() << '\n'
+        std::wcerr << L"ERROR : Failed to open shader file\nPath : " << path.c_str() << '\n'
                    << '\n';
         return false;
     }
@@ -68,7 +68,7 @@ bool fe::Shader::loadFromFile(const std::filesystem::path& path, const unsigned 
     file.close();
 
     if (source.empty()) {
-        std::wcerr << L"ERROR: Shader file is empty\nPath: " << path.c_str() << '\n'
+        std::wcerr << L"ERROR : Shader file is empty\nPath: " << path.c_str() << '\n'
                    << '\n';
         return false;
     }

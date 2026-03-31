@@ -27,7 +27,11 @@ fe::Application::Application(const ApplicationDesc& desc) {
         i++;
     });
 
-
+    m_ResourceManager->RunForEach<resource::Shader>([&](fe::pointer<resource::Shader> shader_ptr, const resource::Shader& shader) {
+        for (const auto& [name, property] : shader.properties) {
+            fe::logging::info("%s -> %i", name.c_str(), property.offset);
+        }
+    });
 }
 
 void fe::Application::Run() {
@@ -68,9 +72,9 @@ void fe::Application::InitializePlatformSystem(const ApplicationDesc& desc) {
 
 void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
     std::vector<std::filesystem::path> paths{}; // temp
-    paths.emplace_back("Tatarstan-Flag.png");
-    paths.emplace_back("Models/StatueOfLiberty/statue_of_liberty.glb");
-    paths.emplace_back("Models/PirateRoom/PirateRoom.gltf");
+    //paths.emplace_back("Tatarstan-Flag.png");
+    //paths.emplace_back("Models/StatueOfLiberty/statue_of_liberty.glb");
+    //paths.emplace_back("Models/PirateRoom/PirateRoom.gltf");
 
     paths.emplace_back("Shaders/default.vert.spv");
     paths.emplace_back("Shaders/default.frag.spv");
