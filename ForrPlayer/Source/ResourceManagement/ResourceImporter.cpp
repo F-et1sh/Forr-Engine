@@ -30,7 +30,7 @@ void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_
     else if (extension == ".gltf" || extension == ".glb") {
         GLTFImporter::Import(m_Storage, resource_full_path);
     }
-    else if (extension == ".glsl" || extension == ".vert" || extension == ".frag") {
+    else if (extension == ".spv") {
         ShaderImporter::Import(m_Storage, resource_full_path);
     }
     else if (extension == ".forr_material") {

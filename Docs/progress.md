@@ -12,6 +12,7 @@
     Importers now return a value
     Shader update
     ShaderImporter added
+    ShaderImporter done
 
 ### Problem
     Sleep debt
