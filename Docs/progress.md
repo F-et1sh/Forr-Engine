@@ -1,5 +1,19 @@
 # Forr-Engine Devlog
 
+## 31.03.2026
+### Goal
+    Create fe::resource::Shader containing the source
+    Provide shader reflection via SPRV-Reflect and fill up fe::resource::Material with it
+    Provide fe::resource::Material saving with ResourceCreator
+    Provide unified material importing aka MaterialImporter
+    Add UBO ( and SSBO ) for Camera and other scene data
+
+### Done
+    Importers now return a value
+
+### Problem
+    Sleep debt
+
 ## 30.03.2026
 ### Goal
     Create fe::resource::Shader containing the source

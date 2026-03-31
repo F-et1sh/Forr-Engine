@@ -31,8 +31,8 @@ namespace fe {
         void RunForEach(Func&& func) { m_Storage.RunForEach<T>(func); }
 
     private:
-        ResourceStorage  m_Storage{};
         ResourceImporter m_Importer{ m_Storage };
-        ResourceCreator m_Creator{ m_Storage };
+        ResourceCreator  m_Creator{ m_Storage };
+        ResourceStorage  m_Storage{};
     };
 } // namespace fe

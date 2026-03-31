@@ -15,8 +15,9 @@
 
 #include <fstream>
 
-void fe::MaterialImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
+fe::pointer<fe::resource::Material> fe::MaterialImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
     resource::Material this_material{};
 
-    auto ptr = storage.CreateResource<resource::Material>(std::move(this_material)); // does not need to store this pointer
+    auto ptr = storage.CreateResource<resource::Material>(std::move(this_material));
+    return ptr;
 }

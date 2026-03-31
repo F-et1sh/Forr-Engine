@@ -103,6 +103,16 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Texture)
     };
 
+    struct FORR_API Shader {
+    public:
+        std::string source_code{};
+
+        Shader()  = default;
+        ~Shader() = default;
+
+        FORR_RESOURCE_BODY(Shader)
+    };
+
     struct FORR_API Material {
     public:
         struct FORR_API Property {
@@ -124,7 +134,9 @@ namespace fe::resource {
 
         std::unordered_map<std::string, Property> properties{};
         std::vector<uint8_t>                      buffer{};
-        //fe::pointer<fe::resource::Shader>         linked_shader_ptr{};
+
+        fe::pointer<fe::resource::Shader> vertex_shader_ptr{};
+        fe::pointer<fe::resource::Shader> fragment_shader_ptr{};
 
         Material()  = default;
         ~Material() = default;

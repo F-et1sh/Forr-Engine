@@ -15,7 +15,7 @@
 
 #include "MikkTSpace.hpp"
 
-void fe::GLTFImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
+fe::pointer<fe::resource::Model> fe::GLTFImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
     tinygltf::Model    model{};
     tinygltf::TinyGLTF loader{};
     std::string        error{};
@@ -58,7 +58,8 @@ void fe::GLTFImporter::Import(ResourceStorage& storage, const std::filesystem::p
     GLTFImporter::loadMeshes(context);
     GLTFImporter::loadAnimations(context);
 
-    auto ptr = storage.CreateResource<resource::Model>(std::move(this_model)); // does not need to store this pointer
+    auto ptr = storage.CreateResource<resource::Model>(std::move(this_model));
+    return ptr;
 }
 
 void fe::GLTFImporter::loadNodes(GLTFImportContext& context) {
@@ -568,47 +569,47 @@ fe::pointer<Material> fe::GLTFImporter::createMaterial(GLTFImportContext& contex
     const tinygltf::Material& material = context.model.materials[tinygltf_material_index];
     Material                  this_material{};
 
-//    this_material.name = material.name;
-//
-//    fe::GLTFImporter::readVector(this_material.emissive_factor, material.emissiveFactor);
-//
-//    // clang-format off
-//    if      (material.alphaMode == "OPAQUE") this_material.alpha_mode = Material::AlphaMode::OPAQUE;
-//    else if (material.alphaMode == "MASK"  ) this_material.alpha_mode = Material::AlphaMode::MASK;
-//    else if (material.alphaMode == "BLEND" ) this_material.alpha_mode = Material::AlphaMode::BLEND;
-//    else {
-//        fe::logging::warning("tinygltf -> Unified. Unsupported material alpha mode %s. Using BLEND as default", material.alphaMode.c_str());
-//        this_material.alpha_mode = Material::AlphaMode::BLEND;
-//    }
-//    // clang-format on
-//
-//    this_material.alpha_cutoff = material.alphaCutoff;
-//    this_material.double_sided = material.doubleSided;
-//    this_material.lods         = material.lods;
-//
-//#define THIS_PBR this_material.pbr_metallic_roughness
-//#define PBR material.pbrMetallicRoughness
-//
-//    fe::GLTFImporter::readVector(THIS_PBR.base_color_factor, PBR.baseColorFactor);
-//    THIS_PBR.base_color_texture.texture_ptr   = context.GetTexture(PBR.baseColorTexture.index);
-//    THIS_PBR.base_color_texture.texture_coord = PBR.baseColorTexture.texCoord;
-//
-//    THIS_PBR.metallic_factor  = PBR.metallicFactor;
-//    THIS_PBR.roughness_factor = PBR.roughnessFactor;
-//
-//    THIS_PBR.metallic_roughness_texture.texture_ptr   = context.GetTexture(PBR.metallicRoughnessTexture.index);
-//    THIS_PBR.metallic_roughness_texture.texture_coord = PBR.metallicRoughnessTexture.texCoord;
-//
-//    this_material.normal_texture.texture_ptr   = context.GetTexture(material.normalTexture.index);
-//    this_material.normal_texture.texture_coord = material.normalTexture.texCoord;
-//    this_material.normal_texture.scale         = material.normalTexture.scale;
-//
-//    this_material.occlusion_texture.texture_ptr   = context.GetTexture(material.occlusionTexture.index);
-//    this_material.occlusion_texture.texture_coord = material.occlusionTexture.texCoord;
-//    this_material.occlusion_texture.strength      = material.occlusionTexture.strength;
-//
-//    this_material.emissive_texture.texture_ptr   = context.GetTexture(material.emissiveTexture.index);
-//    this_material.emissive_texture.texture_coord = material.emissiveTexture.texCoord;
+    //    this_material.name = material.name;
+    //
+    //    fe::GLTFImporter::readVector(this_material.emissive_factor, material.emissiveFactor);
+    //
+    //    // clang-format off
+    //    if      (material.alphaMode == "OPAQUE") this_material.alpha_mode = Material::AlphaMode::OPAQUE;
+    //    else if (material.alphaMode == "MASK"  ) this_material.alpha_mode = Material::AlphaMode::MASK;
+    //    else if (material.alphaMode == "BLEND" ) this_material.alpha_mode = Material::AlphaMode::BLEND;
+    //    else {
+    //        fe::logging::warning("tinygltf -> Unified. Unsupported material alpha mode %s. Using BLEND as default", material.alphaMode.c_str());
+    //        this_material.alpha_mode = Material::AlphaMode::BLEND;
+    //    }
+    //    // clang-format on
+    //
+    //    this_material.alpha_cutoff = material.alphaCutoff;
+    //    this_material.double_sided = material.doubleSided;
+    //    this_material.lods         = material.lods;
+    //
+    //#define THIS_PBR this_material.pbr_metallic_roughness
+    //#define PBR material.pbrMetallicRoughness
+    //
+    //    fe::GLTFImporter::readVector(THIS_PBR.base_color_factor, PBR.baseColorFactor);
+    //    THIS_PBR.base_color_texture.texture_ptr   = context.GetTexture(PBR.baseColorTexture.index);
+    //    THIS_PBR.base_color_texture.texture_coord = PBR.baseColorTexture.texCoord;
+    //
+    //    THIS_PBR.metallic_factor  = PBR.metallicFactor;
+    //    THIS_PBR.roughness_factor = PBR.roughnessFactor;
+    //
+    //    THIS_PBR.metallic_roughness_texture.texture_ptr   = context.GetTexture(PBR.metallicRoughnessTexture.index);
+    //    THIS_PBR.metallic_roughness_texture.texture_coord = PBR.metallicRoughnessTexture.texCoord;
+    //
+    //    this_material.normal_texture.texture_ptr   = context.GetTexture(material.normalTexture.index);
+    //    this_material.normal_texture.texture_coord = material.normalTexture.texCoord;
+    //    this_material.normal_texture.scale         = material.normalTexture.scale;
+    //
+    //    this_material.occlusion_texture.texture_ptr   = context.GetTexture(material.occlusionTexture.index);
+    //    this_material.occlusion_texture.texture_coord = material.occlusionTexture.texCoord;
+    //    this_material.occlusion_texture.strength      = material.occlusionTexture.strength;
+    //
+    //    this_material.emissive_texture.texture_ptr   = context.GetTexture(material.emissiveTexture.index);
+    //    this_material.emissive_texture.texture_coord = material.emissiveTexture.texCoord;
 
     auto ptr = context.storage.CreateResource<Material>(std::move(this_material));
     return ptr;

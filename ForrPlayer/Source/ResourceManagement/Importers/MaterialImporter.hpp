@@ -19,6 +19,6 @@ namespace fe {
         MaterialImporter()  = default;
         ~MaterialImporter() = default;
 
-        static void Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path);
+        static fe::pointer<resource::Material> Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path);
     };
 }
