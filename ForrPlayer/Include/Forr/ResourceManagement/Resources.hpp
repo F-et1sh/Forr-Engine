@@ -105,7 +105,35 @@ namespace fe::resource {
 
     struct FORR_API Shader {
     public:
+        struct FORR_API Layout {
+        public:
+            struct FORR_API Property {
+            public:
+                enum class Type {
+                    Float,
+                    Vec2,
+                    Vec3,
+                    Vec4,
+                    Mat4,
+                    Int,
+                    UInt,
+                    Sampler2D
+                };
+
+                uint32_t offset{};
+                uint32_t size{};
+                uint32_t count{};
+                Type     type{};
+
+                Property()  = default;
+                ~Property() = default;
+            };
+
+            std::unordered_map<std::string, Property> properties{};
+        };
+
         std::string source_code{};
+        Layout      layout{};
 
         Shader()  = default;
         ~Shader() = default;
@@ -115,28 +143,11 @@ namespace fe::resource {
 
     struct FORR_API Material {
     public:
-        struct FORR_API Property {
-        public:
-            enum class Type {
-                FLOAT,
-                INT
-                // ...
-            };
-
-            uint32_t offset{};
-            uint32_t size{};
-            uint32_t count{};
-            Type     type{};
-
-            Property()  = default;
-            ~Property() = default;
-        };
-
-        std::unordered_map<std::string, Property> properties{};
-        std::vector<uint8_t>                      buffer{};
+        std::vector<uint8_t> buffer{};
 
         fe::pointer<fe::resource::Shader> vertex_shader_ptr{};
         fe::pointer<fe::resource::Shader> fragment_shader_ptr{};
+        // add more later...
 
         Material()  = default;
         ~Material() = default;
