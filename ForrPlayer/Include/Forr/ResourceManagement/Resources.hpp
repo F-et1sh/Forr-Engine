@@ -20,6 +20,7 @@
 #pragma once
 #include <vector>
 #include "Core/types.hpp"
+#include "Core/guid.hpp"
 
 #include "Graphics/GPUTypes.hpp"
 #include "Graphics/IShader.hpp"
@@ -131,7 +132,7 @@ namespace fe::resource {
         uint32_t ssbo_size{};
         uint32_t push_constant_size{};
 
-        std::vector<uint32_t> source_code{};
+        std::vector<char> source_code{};
 
         std::unordered_map<std::string, Property> properties{};
 

@@ -38,11 +38,11 @@ bool fe::ShaderImporter::loadSourceCode(ShaderImportContext& context) {
 
     size_t size = file.tellg();
 
-    file.seekg(0);
-    std::vector<uint32_t> spirv(size / sizeof(uint32_t));
-    file.read(reinterpret_cast<char*>(spirv.data()), size);
+    std::vector<char> buffer(file.tellg());
+    file.seekg(0, std::ios::beg);
+    file.read(buffer.data(), static_cast<std::streamsize>(buffer.size()));
 
-    context.shader.source_code = std::move(spirv);
+    context.shader.source_code = std::move(buffer);
 
     return true;
 }

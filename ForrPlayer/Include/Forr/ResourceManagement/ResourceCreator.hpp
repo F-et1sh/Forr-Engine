@@ -13,6 +13,9 @@
 ===============================================*/
 
 #pragma once
+#include "Core/logging.hpp"
+#include "Core/path.hpp"
+
 #include "ResourceStorage.hpp"
 
 #include <fstream>
