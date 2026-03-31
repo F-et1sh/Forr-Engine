@@ -105,35 +105,35 @@ namespace fe::resource {
 
     struct FORR_API Shader {
     public:
-        struct FORR_API Layout {
+        struct FORR_API Property {
         public:
-            struct FORR_API Property {
-            public:
-                enum class Type {
-                    Float,
-                    Vec2,
-                    Vec3,
-                    Vec4,
-                    Mat4,
-                    Int,
-                    UInt,
-                    Sampler2D
-                };
-
-                uint32_t offset{};
-                uint32_t size{};
-                uint32_t count{};
-                Type     type{};
-
-                Property()  = default;
-                ~Property() = default;
+            enum class Type {
+                FLOAT,
+                VEC2,
+                VEC3,
+                VEC4,
+                MAT4,
+                INT,
+                UINT,
+                SAMPLER2D
             };
 
-            std::unordered_map<std::string, Property> properties{};
+            uint32_t offset{};
+            uint32_t size{};
+            uint32_t count{};
+            Type     type{};
+
+            Property()  = default;
+            ~Property() = default;
         };
 
-        std::string source_code{};
-        Layout      layout{};
+        uint32_t ubo_size{};
+        uint32_t ssbo_size{};
+        uint32_t push_constant_size{};
+
+        std::vector<uint32_t> source_code{};
+
+        std::unordered_map<std::string, Property> properties{};
 
         Shader()  = default;
         ~Shader() = default;
