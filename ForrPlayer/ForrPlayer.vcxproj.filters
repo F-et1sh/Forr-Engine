@@ -42,8 +42,6 @@
     <ClInclude Include="Source\Graphics\OpenGL\Shader.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceStorage.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceCreator.hpp" />
-    <ClInclude Include="Include\Forr\Graphics\IShader.hpp" />
-    <ClInclude Include="Source\Graphics\OpenGL\ShaderOpenGL.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\MaterialImporter.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceCreator.hpp" />
     <ClInclude Include="Include\Forr\Core\guid.hpp" />
@@ -80,8 +78,6 @@
     <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceStorage.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceCreator.cpp" />
-    <ClCompile Include="Source\Graphics\IShader.cpp" />
-    <ClCompile Include="Source\Graphics\OpenGL\ShaderOpenGL.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\MaterialImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceCreator.cpp" />
     <ClCompile Include="..\ThirdParty\SPIRV-Reflect\src\spirv_reflect.c" />
