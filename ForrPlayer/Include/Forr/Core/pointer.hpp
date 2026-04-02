@@ -66,9 +66,14 @@ namespace fe {
         constexpr bool operator==(const pointer&) const noexcept = default;
         constexpr bool operator!=(const pointer&) const noexcept = default;
 
+        constexpr bool operator!() const noexcept {
+            return m_index == std::numeric_limits<handle_t>::max() ||
+                   m_generation == std::numeric_limits<handle_t>::max();
+        }
+
     private:
         handle_t m_index{ std::numeric_limits<handle_t>::max() };
-        handle_t m_generation{ 0 };
+        handle_t m_generation{ std::numeric_limits<handle_t>::max() };
 
         template <storable_t>
         friend class typed_pointer_storage;
