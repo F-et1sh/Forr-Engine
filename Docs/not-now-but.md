@@ -1,5 +1,8 @@
 # Forr-Engine Not now, but :
 
+# Added 02.04.2026
+- create material instance
+
 # Added 23.03.2026
 - provide event system for platform
 - provide project "compiling" ( speed up )

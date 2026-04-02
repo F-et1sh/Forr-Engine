@@ -14,6 +14,7 @@
     fe::pointer::m_generation now initializes as std::numeric_limits<handle_t>::max() like fe::pointer::m_index. added operator! for fe::pointer<>
     default gltf material created
     IShader removed
+    fe::pointer operator! -> fe::pointer operator bool
 
 ### Problem
     Got ill

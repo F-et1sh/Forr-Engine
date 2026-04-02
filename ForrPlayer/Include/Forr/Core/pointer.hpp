@@ -66,9 +66,9 @@ namespace fe {
         constexpr bool operator==(const pointer&) const noexcept = default;
         constexpr bool operator!=(const pointer&) const noexcept = default;
 
-        constexpr bool operator!() const noexcept {
-            return m_index == std::numeric_limits<handle_t>::max() ||
-                   m_generation == std::numeric_limits<handle_t>::max();
+        constexpr operator bool() const noexcept {
+            return m_index != std::numeric_limits<handle_t>::max() &&
+                   m_generation != std::numeric_limits<handle_t>::max();
         }
 
     private:

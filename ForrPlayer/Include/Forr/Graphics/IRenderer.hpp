@@ -64,6 +64,7 @@ namespace fe {
         virtual void Draw(DrawMeshCommand command) = 0;
         virtual void EndFrame()                    = 0;
 
+        // TODO : remove this. It should work other way
         virtual void InitializeGPUResources() = 0;
 
     private:
