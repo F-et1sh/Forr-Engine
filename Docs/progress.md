@@ -2,6 +2,7 @@
 
 ## 02.04.2026
 ### Goal
+    Redesign resource management : extension dependent --> type dependent
     Create default material for gLTF
     Add UBO ( and SSBO ) for Camera and other scene data
 
