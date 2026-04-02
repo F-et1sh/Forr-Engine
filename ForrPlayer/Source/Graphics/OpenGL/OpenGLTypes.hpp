@@ -39,6 +39,15 @@ namespace fe {
         FORR_RESOURCE_BODY(OpenGLShader)
     };
 
+    struct OpenGLMaterial {
+        // TODO : provide logic
+
+        OpenGLMaterial()  = default;
+        ~OpenGLMaterial() = default;
+
+        FORR_RESOURCE_BODY(OpenGLMaterial)
+    };
+
     struct OpenGLPrimitive {
         GLenum render_mode{};
 

@@ -53,7 +53,7 @@ namespace fe {
                 return m_Models;
             }
             else if constexpr (std::is_same_v<T, resource::Material>) {
-                //return m_Materials; // TODO : provide materials
+                return m_Materials;
             }
             else {
                 // TODO : Add fallbacks
@@ -72,7 +72,7 @@ namespace fe {
                 return m_Models;
             }
             else if constexpr (std::is_same_v<T, resource::Material>) {
-                //return m_Materials; // TODO : provide materials
+                return m_Materials;
             }
             else {
                 // TODO : Add fallbacks
@@ -84,6 +84,6 @@ namespace fe {
     private:
         std::unordered_map<fe::pointer<resource::Texture>, uint64_t> m_Textures{};
         std::unordered_map<fe::pointer<resource::Model>, uint64_t>   m_Models{};
-        //std::unordered_map<fe::pointer<resource::Material>, uint64_t> m_Materials{};
+        std::unordered_map<fe::pointer<resource::Material>, uint64_t> m_Materials{};
     };
 } // namespace fe

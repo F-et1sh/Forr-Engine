@@ -69,6 +69,8 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
     glNamedBufferData(ubo, sizeof(shader_data), &shader_data, GL_DYNAMIC_DRAW);
 
     //glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    m_OpenGLResourceManager.CreateResource(desc.default_gltf_material_ptr);
 }
 
 fe::RendererOpenGL::~RendererOpenGL() {
@@ -109,7 +111,7 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
     auto        gpu_ptr = m_OpenGLResourceManager.GetGPUPointer(command.model_ptr);
     const auto& model   = *m_OpenGLResourceManager.GetResource(gpu_ptr);
 
-    size_t model_index = m_I;
+    size_t model_index               = m_I;
     m_ShaderData.model_matrices[m_I] = command.transform;
 
     for (auto mesh_pointer : model.pointers_mesh) {
@@ -148,6 +150,8 @@ void fe::RendererOpenGL::InitializeGPUResources() {
 
     m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material& material) {
         //material.
+        //const auto& vertex_shader = *m_ResourceManager.GetResource(material.vertex_shader_ptr);
+        //vertex_shader.source_code - compile
     });
 
     m_ResourceManager.RunForEach<resource::Model>([&](const resource::Model&       model,
