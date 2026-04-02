@@ -4,12 +4,14 @@
 ### Goal
     Redesign resource management : extension dependent --> type dependent
     Create default material for gLTF
+    remove IShader
     Add UBO ( and SSBO ) for Camera and other scene data
 
 ### Done
     fe::ResourceManager now uses full paths instead of relative
     Resource Management logic got better. Material logic now can be made. Some bugs fixed
     fe::pointer::m_generation now initializes as std::numeric_limits<handle_t>::max() like fe::pointer::m_index. added operator! for fe::pointer<>
+    default gltf material created
 
 ### Problem
     Got ill

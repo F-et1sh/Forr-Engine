@@ -42,7 +42,10 @@ bool fe::ShaderImporter::loadSourceCode(ShaderImportContext& context) {
     file.seekg(0, std::ios::beg);
     file.read(buffer.data(), static_cast<std::streamsize>(buffer.size()));
 
-    context.shader.source_code = std::move(buffer);
+    // TODO : optimize this
+
+    context.shader.source_code.reserve(buffer.size());
+    for (char c : buffer) context.shader.source_code.emplace_back(static_cast<uint32_t>(c));
 
     return true;
 }
