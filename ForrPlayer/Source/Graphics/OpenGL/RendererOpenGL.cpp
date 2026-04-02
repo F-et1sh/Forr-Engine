@@ -146,8 +146,8 @@ void fe::RendererOpenGL::InitializeGPUResources() {
         fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
     });
 
-    m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material& material) { // TODO : provide materials
-        // ...
+    m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material& material) {
+        //material.
     });
 
     m_ResourceManager.RunForEach<resource::Model>([&](const resource::Model&       model,
