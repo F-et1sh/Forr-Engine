@@ -18,9 +18,15 @@
 #include "Importers/ShaderImporter.hpp"
 #include "Importers/MaterialImporter.hpp"
 
-void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_relative_path) {
-    std::filesystem::path resource_full_path = PATH.getResourcesPath() / resource_relative_path;
-    std::filesystem::path extension          = resource_full_path.extension();
+#define IMPORT_INSTANCE(T, T_IMPORTER)                                                                     \
+    template <>                                                                                            \
+    fe::pointer<T> fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_full_path) { \
+        return T_IMPORTER::Import(m_Storage, resource_full_path);                                          \
+    }                                                                                                      \
+    template fe::pointer<T> fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_full_path);
+
+void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_full_path) {
+    std::filesystem::path extension = resource_full_path.extension();
 
     // TODO : add metadata parsing ( .forr_meta )
 
@@ -37,3 +43,10 @@ void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_
         MaterialImporter::Import(m_Storage, resource_full_path);
     }
 }
+
+IMPORT_INSTANCE(fe::resource::Texture, fe::TextureImporter)
+IMPORT_INSTANCE(fe::resource::Model, fe::GLTFImporter)
+IMPORT_INSTANCE(fe::resource::Shader, fe::ShaderImporter)
+IMPORT_INSTANCE(fe::resource::Material, fe::MaterialImporter)
+
+#undef IMPORT_INSTANCE

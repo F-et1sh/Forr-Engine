@@ -7,7 +7,8 @@
     Add UBO ( and SSBO ) for Camera and other scene data
 
 ### Done
-    -
+    fe::ResourceManager now uses full paths instead of relative
+    Resource Management logic got better. Material logic now can be made. Some bugs fixed
 
 ### Problem
     Got ill
