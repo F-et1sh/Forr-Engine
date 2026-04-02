@@ -42,35 +42,35 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
 
     std::filesystem::path shader_path = PATH.getShadersPath() / "default";
     m_Shader.LoadShader(shader_path);
-
-    m_Camera.setType(Camera::Type::LOOKAT);
-    m_Camera.setPosition(glm::vec3(0.0f, 0.0f, -4.5f));
-    m_Camera.setRotation(glm::vec3(0.0f));
-    m_Camera.setFlipY(false);
-
-    float speed  = 0.15f;
-    float fov    = 60.0f;
-    float aspect = (float) m_PrimaryWindow.getWidth() / (float) m_PrimaryWindow.getHeight();
-    float znear  = 1.0f;
-    float zfar   = 1000.0f;
-    m_Camera.setPerspective(fov, aspect, znear, zfar);
-    m_Camera.setMovementSpeed(speed);
-
-    m_Shader.bind();
-
-    glCreateBuffers(1, &ubo);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
-
-    ShaderData shader_data{};
-    shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
-    shader_data.view_matrix       = m_Camera.getViewMatrix();
-    //shader_data.model_matrix      = glm::mat4(1.0f);
-
-    glNamedBufferData(ubo, sizeof(shader_data), &shader_data, GL_DYNAMIC_DRAW);
-
-    //glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    
+    //m_Camera.setType(Camera::Type::LOOKAT);
+    //m_Camera.setPosition(glm::vec3(0.0f, 0.0f, -4.5f));
+    //m_Camera.setRotation(glm::vec3(0.0f));
+    //m_Camera.setFlipY(false);
+    //
+    //float speed  = 0.15f;
+    //float fov    = 60.0f;
+    //float aspect = (float) m_PrimaryWindow.getWidth() / (float) m_PrimaryWindow.getHeight();
+    //float znear  = 1.0f;
+    //float zfar   = 1000.0f;
+    //m_Camera.setPerspective(fov, aspect, znear, zfar);
+    //m_Camera.setMovementSpeed(speed);
 
     m_OpenGLResourceManager.CreateResource(desc.default_gltf_material_ptr);
+
+    //m_Shader.bind();
+
+    //glCreateBuffers(1, &ubo);
+    //glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
+
+    //ShaderData shader_data{};
+    //shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
+    //shader_data.view_matrix       = m_Camera.getViewMatrix();
+    //shader_data.model_matrix      = glm::mat4(1.0f);
+
+    //glNamedBufferData(ubo, sizeof(shader_data), &shader_data, GL_DYNAMIC_DRAW);
+
+    //glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 fe::RendererOpenGL::~RendererOpenGL() {
@@ -85,7 +85,7 @@ void fe::RendererOpenGL::SetClearColor(float red, float green, float blue, float
 void fe::RendererOpenGL::BeginFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_Shader.bind();
+    //m_Shader.bind();
 
     { // temp
         if (glfwGetKey(m_GLFWwindow, GLFW_KEY_A))
@@ -120,9 +120,18 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
         glBindVertexArray(mesh.vao);
 
         for (const auto& primitive : mesh.primitives) {
+            auto        gpu_material_ptr = m_OpenGLResourceManager.GetGPUPointer(primitive.material_ptr);
+            const auto& material         = *m_OpenGLResourceManager.GetResource(gpu_material_ptr);
+
+            const auto& shader = *m_OpenGLResourceManager.GetResource(material.shader_ptr);
+
+            glUseProgram(shader.program_id);
+
             m_Shader.setUniformInt("model_index", model_index); // temp
 
             glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
+            
+            glUseProgram(0);
         }
     }
 
@@ -133,7 +142,7 @@ void fe::RendererOpenGL::EndFrame() {
     glNamedBufferSubData(ubo, 0, sizeof(ShaderData), &m_ShaderData);
 
     glBindVertexArray(0);
-    m_Shader.unbind();
+    //m_Shader.unbind();
 
     glfwSwapBuffers(m_GLFWwindow);
 

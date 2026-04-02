@@ -36,16 +36,14 @@ bool fe::ShaderImporter::loadSourceCode(ShaderImportContext& context) {
         return false;
     }
 
-    size_t size = file.tellg();
+    std::streampos file_size;
 
-    std::vector<char> buffer(file.tellg());
+    file.seekg(0, std::ios::end);
+    file_size = file.tellg();
     file.seekg(0, std::ios::beg);
-    file.read(buffer.data(), static_cast<std::streamsize>(buffer.size()));
 
-    // TODO : optimize this
-
-    context.shader.source_code.reserve(buffer.size());
-    for (char c : buffer) context.shader.source_code.emplace_back(static_cast<uint32_t>(c));
+    context.shader.source_code.resize(file_size);
+    file.read((char*) &context.shader.source_code[0], file_size);
 
     return true;
 }

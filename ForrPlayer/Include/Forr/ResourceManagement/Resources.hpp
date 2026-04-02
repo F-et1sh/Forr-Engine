@@ -131,7 +131,7 @@ namespace fe::resource {
         uint32_t ssbo_size{};
         uint32_t push_constant_size{};
 
-        std::vector<uint32_t> source_code{};
+        std::string source_code{};
 
         std::unordered_map<std::string, Property> properties{};
 
@@ -273,6 +273,7 @@ namespace fe::resource {
     template <typename T>
     concept resource_t =
         (std::is_same_v<T, Texture>) ||
+        (std::is_same_v<T, Shader>) ||
         (std::is_same_v<T, Material>) ||
         (std::is_same_v<T, Model>);
 
