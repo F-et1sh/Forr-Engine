@@ -5,6 +5,7 @@
     Redesign resource management : extension dependent --> type dependent
     Create default material for gLTF
     remove IShader
+    Create new Shader class for OpenGL
     Add UBO ( and SSBO ) for Camera and other scene data
 
 ### Done
