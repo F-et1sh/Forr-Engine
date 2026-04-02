@@ -18,13 +18,6 @@
 #include "Graphics/GPUResourceLookupTable.hpp"
 
 namespace fe {
-    template <typename T>
-    concept opengl_resource_t =
-        (std::is_same_v<T, OpenGLTexture>) ||
-        (std::is_same_v<T, OpenGLMesh>) ||
-        //(std::is_same_v<T, OpenGLMaterial>) || // TODO : provide materials
-        (std::is_same_v<T, OpenGLModel>);
-
     class OpenGLResourceManager {
     public:
         OpenGLResourceManager(ResourceManager& resource_manager)
@@ -55,6 +48,9 @@ namespace fe {
             }
             else if constexpr (std::is_same_v<T, resource::Model>) {
                 return fe::pointer<OpenGLModel>{ packed };
+            }
+            else if constexpr (std::is_same_v<T, resource::Material>) {
+                return fe::pointer<OpenGLMaterial>{ packed };
             }
             else {
                 assert(false);

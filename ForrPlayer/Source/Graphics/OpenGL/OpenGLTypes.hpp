@@ -40,7 +40,7 @@ namespace fe {
     };
 
     struct OpenGLMaterial {
-        // TODO : provide logic
+        fe::pointer<OpenGLShader> shader_ptr{};
 
         OpenGLMaterial()  = default;
         ~OpenGLMaterial() = default;
@@ -54,7 +54,7 @@ namespace fe {
         uint32_t index_offset{};
         uint32_t index_count{};
 
-        fe::pointer<resource::Material> material{};
+        fe::pointer<resource::Material> material_ptr{};
 
         OpenGLPrimitive()  = default;
         ~OpenGLPrimitive() = default;
@@ -84,6 +84,14 @@ namespace fe {
 
         FORR_RESOURCE_BODY(OpenGLModel)
     };
+
+    template <typename T>
+    concept opengl_resource_t =
+        (std::is_same_v<T, OpenGLTexture>) ||
+        (std::is_same_v<T, OpenGLMesh>) ||
+        (std::is_same_v<T, OpenGLShader>) ||
+        (std::is_same_v<T, OpenGLMaterial>) ||
+        (std::is_same_v<T, OpenGLModel>);
 
 #undef FORR_RESOURCE_BODY
 } // namespace fe

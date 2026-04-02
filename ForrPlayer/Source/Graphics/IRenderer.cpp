@@ -41,8 +41,8 @@ std::unique_ptr<fe::IRenderer> fe::IRenderer::Create(const RendererDesc& desc, I
 
 void fe::IRenderer::createDefaultMaterials(RendererDesc& desc, ResourceManager& resource_manager) {
     resource::Material material{};
-    material.vertex_shader_ptr   = resource_manager.ImportResource<resource::Shader>(PATH.getDefaultShadersPath() / "GLTF" / "default.vert.spv");
-    material.fragment_shader_ptr = resource_manager.ImportResource<resource::Shader>(PATH.getDefaultShadersPath() / "GLTF" / "default.frag.spv");
+    material.vertex_shader_ptr   = resource_manager.ImportResource<resource::Shader>(PATH.getShadersPath() / "default3.vert");
+    material.fragment_shader_ptr = resource_manager.ImportResource<resource::Shader>(PATH.getShadersPath() / "default.frag");
     //material.buffer = ...
     if (!desc.default_gltf_material_ptr) desc.default_gltf_material_ptr = resource_manager.CreateResource(std::move(material));
 }

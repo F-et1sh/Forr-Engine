@@ -38,7 +38,7 @@ namespace fe {
                 return m_Shaders;
             }
             else if constexpr (std::is_same_v<T, OpenGLMaterial>) {
-                return m_Shaders;
+                return m_Materials;
             }
             else {
                 assert(false);
