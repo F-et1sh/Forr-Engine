@@ -23,7 +23,6 @@
 #include "Core/guid.hpp"
 
 #include "Graphics/GPUTypes.hpp"
-#include "Graphics/IShader.hpp"
 
 // namespace fe::resource:: means that the class is a
 //  DOD structure, not a high level resource
