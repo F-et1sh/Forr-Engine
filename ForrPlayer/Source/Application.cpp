@@ -72,12 +72,12 @@ void fe::Application::InitializePlatformSystem(const ApplicationDesc& desc) {
 
 void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
     std::vector<std::filesystem::path> paths{}; // temp
-    //paths.emplace_back("Tatarstan-Flag.png");
-    //paths.emplace_back("Models/StatueOfLiberty/statue_of_liberty.glb");
-    //paths.emplace_back("Models/PirateRoom/PirateRoom.gltf");
+    //paths.emplace_back(PATH.getResourcesPath() / "Tatarstan-Flag.png");
+    //paths.emplace_back(PATH.getModelsPath() / "StatueOfLiberty/statue_of_liberty.glb");
+    //paths.emplace_back(PATH.getModelsPath() / "PirateRoom/PirateRoom.gltf");
 
-    paths.emplace_back("Shaders/default.vert.spv");
-    paths.emplace_back("Shaders/default.frag.spv");
+    //paths.emplace_back(PATH.getShadersPath() / "default.vert.spv");
+    //paths.emplace_back(PATH.getShadersPath() / "default.frag.spv");
 
     m_ResourceManager = std::make_unique<ResourceManager>();
     m_ResourceManager->SetupSceneResources(paths); // TODO : rewrite this

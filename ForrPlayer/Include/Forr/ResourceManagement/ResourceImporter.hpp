@@ -20,7 +20,10 @@ namespace fe {
         ~ResourceImporter() = default;
 
         // upload resource to the storage
-        void ImportResource(const std::filesystem::path& resource_relative_path);
+        void ImportResource(const std::filesystem::path& resource_full_path);
+
+        template<typename T>
+        fe::pointer<T> ImportResource(const std::filesystem::path& resource_full_path);
 
     private:
         ResourceStorage& m_Storage;

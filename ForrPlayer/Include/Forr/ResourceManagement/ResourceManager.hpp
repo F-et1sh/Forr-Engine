@@ -22,7 +22,29 @@ namespace fe {
         ResourceManager()  = default;
         ~ResourceManager() = default;
 
-        void SetupSceneResources(const std::vector<std::filesystem::path>& resource_relative_paths);
+        void SetupSceneResources(const std::vector<std::filesystem::path>& resource_full_paths);
+
+        template <typename T>
+        FORR_NODISCARD fe::pointer<T> ImportResource(const std::filesystem::path& resource_full_path) {
+            return m_Importer.ImportResource<T>(resource_full_path);
+        }
+
+        template <typename T>
+        FORR_NODISCARD fe::pointer<T> CreateResource(const T& value) {
+            return m_Storage.CreateResource(value);
+        }
+
+        template <typename T>
+        FORR_NODISCARD fe::pointer<T> CreateResource(T&& value) {
+            return m_Storage.CreateResource(std::move(value));
+        }
+
+        template <typename T>
+        FORR_NODISCARD fe::pointer<T> CreateResource()
+            requires std::default_initializable<T>
+        {
+            return m_Storage.CreateResource();
+        }
 
         template <typename T>
         FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) { return m_Storage.GetResource(ptr); }
