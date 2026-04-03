@@ -569,6 +569,10 @@ fe::pointer<Material> fe::GLTFImporter::createMaterial(GLTFImportContext& contex
     const tinygltf::Material& material = context.model.materials[tinygltf_material_index];
     Material                  this_material{};
 
+    // temp
+    auto that_material = context.storage.GetResource<resource::Material>(fe::pointer<resource::Material>{ 0 });
+    this_material.color = that_material->color;
+
     //    this_material.name = material.name;
     //
     //    fe::GLTFImporter::readVector(this_material.emissive_factor, material.emissiveFactor);
