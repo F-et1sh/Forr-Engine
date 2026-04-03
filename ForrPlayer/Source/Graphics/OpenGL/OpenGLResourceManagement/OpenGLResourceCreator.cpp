@@ -133,63 +133,63 @@ FORR_NODISCARD fe::pointer<fe::OpenGLModel> fe::OpenGLResourceCreator::CreateRes
 FORR_NODISCARD fe::pointer<fe::OpenGLMaterial> fe::OpenGLResourceCreator::CreateResource(const resource::Material& material) {
     OpenGLMaterial this_material{};
 
-    OpenGLShader shader_program{};
-    shader_program.program_id = glCreateProgram();
+    //OpenGLShader shader_program{};
+    //shader_program.program_id = glCreateProgram();
 
-    const resource::Shader& vertex_shader   = *m_ResourceManager.GetResource(material.vertex_shader_ptr);
-    const resource::Shader& fragment_shader = *m_ResourceManager.GetResource(material.fragment_shader_ptr);
+    //const resource::Shader& vertex_shader   = *m_ResourceManager.GetResource(material.vertex_shader_ptr);
+    //const resource::Shader& fragment_shader = *m_ResourceManager.GetResource(material.fragment_shader_ptr);
 
-    // vertex
-    {
-        unsigned int shader = glCreateShader(GL_VERTEX_SHADER);
+    //// vertex
+    //{
+    //    unsigned int shader = glCreateShader(GL_VERTEX_SHADER);
 
-        const char* source_raw = vertex_shader.source_code.c_str();
+    //    const char* source_raw = vertex_shader.source_code.c_str();
 
-        glShaderSource(shader, 1, &source_raw, nullptr);
-        glAttachShader(shader_program.program_id, shader);
-        glDeleteShader(shader);
+    //    glShaderSource(shader, 1, &source_raw, nullptr);
+    //    glAttachShader(shader_program.program_id, shader);
+    //    glDeleteShader(shader);
 
-        int result = 0;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-        if (result == GL_FALSE) {
-            int length = 0;
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-            char* message = (char*) _malloca(length * sizeof(char));
-            glGetShaderInfoLog(shader, length, &length, message);
+    //    int result = 0;
+    //    glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+    //    if (result == GL_FALSE) {
+    //        int length = 0;
+    //        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+    //        char* message = (char*) _malloca(length * sizeof(char));
+    //        glGetShaderInfoLog(shader, length, &length, message);
 
-            fe::logging::error("TEMP CODE ERROR : %s", message);
+    //        fe::logging::error("TEMP CODE ERROR : %s", message);
 
-            glDeleteShader(shader);
-        }
-    }
+    //        glDeleteShader(shader);
+    //    }
+    //}
 
-    // fragment
-    {
-        unsigned int shader = glCreateShader(GL_FRAGMENT_SHADER);
+    //// fragment
+    //{
+    //    unsigned int shader = glCreateShader(GL_FRAGMENT_SHADER);
 
-        const char* source_raw = fragment_shader.source_code.c_str();
+    //    const char* source_raw = fragment_shader.source_code.c_str();
 
-        glShaderSource(shader, 1, &source_raw, nullptr);
-        glAttachShader(shader_program.program_id, shader);
-        glDeleteShader(shader);
+    //    glShaderSource(shader, 1, &source_raw, nullptr);
+    //    glAttachShader(shader_program.program_id, shader);
+    //    glDeleteShader(shader);
 
-        int result = 0;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-        if (result == GL_FALSE) {
-            int length = 0;
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-            char* message = (char*) _malloca(length * sizeof(char));
-            glGetShaderInfoLog(shader, length, &length, message);
+    //    int result = 0;
+    //    glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+    //    if (result == GL_FALSE) {
+    //        int length = 0;
+    //        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+    //        char* message = (char*) _malloca(length * sizeof(char));
+    //        glGetShaderInfoLog(shader, length, &length, message);
 
-            fe::logging::error("TEMP CODE ERROR : %s", message);
+    //        fe::logging::error("TEMP CODE ERROR : %s", message);
 
-            glDeleteShader(shader);
-        }
-    }
+    //        glDeleteShader(shader);
+    //    }
+    //}
 
-    auto shader_program_ptr = m_Storage.m_Shaders.create(std::move(shader_program));
+    //auto shader_program_ptr = m_Storage.m_Shaders.create(std::move(shader_program));
 
-    this_material.shader_ptr = shader_program_ptr;
+    //this_material.shader_ptr = shader_program_ptr;
 
     auto ptr = m_Storage.m_Materials.create(std::move(this_material));
     return ptr;

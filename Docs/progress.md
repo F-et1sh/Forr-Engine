@@ -10,6 +10,7 @@
     
 ### Done
     fe::IRenderer::createDefaultMaterials() removed
+    fe::resource::Material with glm::vec3 color added
 
 ### Problem
     Got ill
