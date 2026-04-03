@@ -27,8 +27,6 @@ namespace fe {
         std::string application_name{};
         WindowDesc  primary_window_desc{};
 
-        fe::pointer<fe::resource::Material> default_gltf_material_ptr{};
-
         RendererDesc()  = default;
         ~RendererDesc() = default;
     };
@@ -66,8 +64,5 @@ namespace fe {
 
         // TODO : remove this. It should work other way
         virtual void InitializeGPUResources() = 0;
-
-    private:
-        static void createDefaultMaterials(RendererDesc& desc, ResourceManager& resource_manager);
     };
 } // namespace fe

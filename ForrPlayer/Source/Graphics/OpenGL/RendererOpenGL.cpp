@@ -56,7 +56,7 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
     //m_Camera.setPerspective(fov, aspect, znear, zfar);
     //m_Camera.setMovementSpeed(speed);
 
-    m_OpenGLResourceManager.CreateResource(desc.default_gltf_material_ptr);
+    //m_OpenGLResourceManager.CreateResource(desc.default_gltf_material_ptr);
 
     //m_Shader.bind();
 
