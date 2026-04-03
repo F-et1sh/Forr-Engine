@@ -160,6 +160,8 @@ fe::pointer<fe::OpenGLMesh> fe::OpenGLResourceCreator::createMesh(const resource
     for (const auto& primitive : mesh.primitives) {
         auto& this_primitive = this_mesh.primitives.emplace_back();
 
+        this_primitive.material_ptr = primitive.material_ptr;
+
         this_primitive.index_count  = primitive.index_count;
         this_primitive.index_offset = primitive.index_offset;
 
