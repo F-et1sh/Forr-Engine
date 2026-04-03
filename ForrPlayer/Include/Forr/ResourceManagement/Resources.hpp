@@ -141,13 +141,23 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Shader)
     };
 
+    //struct FORR_API Material {
+    //public:
+    //    std::vector<uint8_t> buffer{};
+    //
+    //    fe::pointer<fe::resource::Shader> vertex_shader_ptr{};
+    //    fe::pointer<fe::resource::Shader> fragment_shader_ptr{};
+    //    // add more later...
+    //
+    //    Material()  = default;
+    //    ~Material() = default;
+    //
+    //    FORR_RESOURCE_BODY(Material)
+    //};
+
     struct FORR_API Material {
     public:
-        std::vector<uint8_t> buffer{};
-
-        fe::pointer<fe::resource::Shader> vertex_shader_ptr{};
-        fe::pointer<fe::resource::Shader> fragment_shader_ptr{};
-        // add more later...
+        glm::vec3 color{};
 
         Material()  = default;
         ~Material() = default;

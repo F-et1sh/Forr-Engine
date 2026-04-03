@@ -3,7 +3,7 @@
     Forr Engine
 
     File : MaterialImporter.cpp
-    Role : imports resources and their metadata. for vert, frag and spv
+    Role : imports resources and their metadata. for forr_material
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -17,6 +17,10 @@
 
 fe::pointer<fe::resource::Material> fe::MaterialImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
     resource::Material this_material{};
+
+    // TODO : provide material serializing and then this - importing
+
+    // ( I don't wanna make any serialization without C++26 )
 
     auto ptr = storage.CreateResource<resource::Material>(std::move(this_material));
     return ptr;
