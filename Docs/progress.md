@@ -2,7 +2,11 @@
 
 ## 04.04.2026
 ### Goal
-    -
+    Create fe::resource::Material structure with only glm::vec3 color
+    Provide material importing
+    Provide material creation in backend
+    Provide material using ( push its parameter to the shader )
+    ( shader are loaded in the graphics backend like before. Only OpenGL for now )
     
 ### Done
     fe::IRenderer::createDefaultMaterials() removed
