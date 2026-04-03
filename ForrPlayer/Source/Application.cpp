@@ -27,10 +27,8 @@ fe::Application::Application(const ApplicationDesc& desc) {
         i++;
     });
 
-    m_ResourceManager->RunForEach<resource::Shader>([&](fe::pointer<resource::Shader> shader_ptr, const resource::Shader& shader) {
-        for (const auto& [name, property] : shader.properties) {
-            fe::logging::info("%s -> %i", name.c_str(), property.offset);
-        }
+    m_ResourceManager->RunForEach<resource::Material>([&](fe::pointer<resource::Material> material_ptr, const resource::Material& material) {
+        // ...
     });
 }
 
