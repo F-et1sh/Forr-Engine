@@ -1,5 +1,15 @@
 # Forr-Engine Devlog
 
+## 04.04.2026
+### Goal
+    -
+    
+### Done
+    fe::IRenderer::createDefaultMaterials() removed
+
+### Problem
+    Got ill
+
 ## 02.04.2026
 ### Goal
     Redesign resource management : extension dependent --> type dependent
