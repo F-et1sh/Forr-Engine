@@ -27,7 +27,7 @@ namespace fe {
         template <resource::resource_t T>
         auto CreateResource(fe::pointer<T> cpu_resource_ptr) {
             const auto& resource = *m_ResourceManager.GetResource(cpu_resource_ptr);
-            auto        ptr      = m_Importer.CreateResource(resource); // does not need to store this fe::pointer
+            auto        ptr      = m_Importer.CreateResource(resource);
             m_LookupTable.Insert(cpu_resource_ptr, ptr);
             return ptr;
         }

@@ -42,7 +42,7 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
 
     std::filesystem::path shader_path = PATH.getShadersPath() / "default";
     m_Shader.LoadShader(shader_path);
-    
+
     //m_Camera.setType(Camera::Type::LOOKAT);
     //m_Camera.setPosition(glm::vec3(0.0f, 0.0f, -4.5f));
     //m_Camera.setRotation(glm::vec3(0.0f));
@@ -123,15 +123,15 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
             auto        gpu_material_ptr = m_OpenGLResourceManager.GetGPUPointer(primitive.material_ptr);
             const auto& material         = *m_OpenGLResourceManager.GetResource(gpu_material_ptr);
 
-            const auto& shader = *m_OpenGLResourceManager.GetResource(material.shader_ptr);
+            //const auto& shader = *m_OpenGLResourceManager.GetResource(material.shader_ptr);
 
-            glUseProgram(shader.program_id);
+            //glUseProgram(shader.program_id);
 
             m_Shader.setUniformInt("model_index", model_index); // temp
 
             glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
-            
-            glUseProgram(0);
+
+            //glUseProgram(0);
         }
     }
 
@@ -157,10 +157,11 @@ void fe::RendererOpenGL::InitializeGPUResources() {
         fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
     });
 
-    m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material& material) {
-        //material.
-        //const auto& vertex_shader = *m_ResourceManager.GetResource(material.vertex_shader_ptr);
-        //vertex_shader.source_code - compile
+    m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material&       material,
+                                                         fe::pointer<resource::Material> material_ptr) {
+        m_OpenGLResourceManager.CreateResource(material_ptr);
+
+        fe::logging::info("Loaded material's color : %f %f %f", material.color.x, material.color.y, material.color.z);
     });
 
     m_ResourceManager.RunForEach<resource::Model>([&](const resource::Model&       model,

@@ -22,7 +22,7 @@ fe::pointer<fe::resource::Material> fe::MaterialImporter::Import(ResourceStorage
 
     // ( I don't wanna make any serialization without C++26 )
 
-    this_material.color = { 0.76f, 0.67f, 0.52f };
+    this_material.color = glm::vec3{ 0.76f, 0.67f, 0.52f };
 
     auto ptr = storage.CreateResource<resource::Material>(std::move(this_material));
     return ptr;

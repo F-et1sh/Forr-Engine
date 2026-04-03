@@ -77,6 +77,8 @@ void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
     //paths.emplace_back(PATH.getShadersPath() / "default.vert.spv");
     //paths.emplace_back(PATH.getShadersPath() / "default.frag.spv");
 
+    paths.emplace_back("some_file.forr_material");
+
     m_ResourceManager = std::make_unique<ResourceManager>();
     m_ResourceManager->SetupSceneResources(paths); // TODO : rewrite this
 }

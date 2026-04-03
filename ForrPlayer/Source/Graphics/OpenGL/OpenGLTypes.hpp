@@ -40,7 +40,9 @@ namespace fe {
     };
 
     struct OpenGLMaterial {
-        fe::pointer<OpenGLShader> shader_ptr{};
+        //fe::pointer<OpenGLShader> shader_ptr{};
+
+        glm::vec3 color{};
 
         OpenGLMaterial()  = default;
         ~OpenGLMaterial() = default;
