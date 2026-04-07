@@ -30,17 +30,17 @@ namespace fe {
         FORR_RESOURCE_BODY(OpenGLTexture)
     };
 
-    struct OpenGLShader {
+    struct OpenGLShaderProgram {
         GLuint program_id{};
 
-        OpenGLShader()  = default;
-        ~OpenGLShader() = default;
+        OpenGLShaderProgram()  = default;
+        ~OpenGLShaderProgram() = default;
 
-        FORR_RESOURCE_BODY(OpenGLShader)
+        FORR_RESOURCE_BODY(OpenGLShaderProgram)
     };
 
     struct OpenGLMaterial {
-        //fe::pointer<OpenGLShader> shader_ptr{};
+        fe::pointer<OpenGLShaderProgram> shader_ptr{};
 
         glm::vec3 color{};
 
@@ -91,7 +91,7 @@ namespace fe {
     concept opengl_resource_t =
         (std::is_same_v<T, OpenGLTexture>) ||
         (std::is_same_v<T, OpenGLMesh>) ||
-        (std::is_same_v<T, OpenGLShader>) ||
+        (std::is_same_v<T, OpenGLShaderProgram>) ||
         (std::is_same_v<T, OpenGLMaterial>) ||
         (std::is_same_v<T, OpenGLModel>);
 

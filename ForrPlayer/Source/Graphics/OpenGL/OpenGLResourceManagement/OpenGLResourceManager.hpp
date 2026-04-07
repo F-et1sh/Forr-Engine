@@ -27,7 +27,7 @@ namespace fe {
         template <resource::resource_t T>
         auto CreateResource(fe::pointer<T> cpu_resource_ptr) {
             const auto& resource = *m_ResourceManager.GetResource(cpu_resource_ptr);
-            auto        ptr      = m_Importer.CreateResource(resource);
+            auto        ptr      = m_Creator.CreateResource(resource);
             m_LookupTable.Insert(cpu_resource_ptr, ptr);
             return ptr;
         }
@@ -63,6 +63,6 @@ namespace fe {
 
         OpenGLResourceStorage  m_Storage{};
         GPUResourceLookupTable m_LookupTable{};
-        OpenGLResourceCreator  m_Importer{ m_ResourceManager, m_Storage };
+        OpenGLResourceCreator  m_Creator{ m_ResourceManager, m_Storage };
     };
 } // namespace fe

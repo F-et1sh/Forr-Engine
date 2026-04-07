@@ -44,10 +44,10 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
     //std::filesystem::path shader_path = PATH.getShadersPath() / "default";
     //m_Shader.LoadShader(shader_path);
 
-    std::filesystem::path vertex_shader_path   = PATH.getShadersPath() / L"default3.vert";
-    std::filesystem::path fragment_shader_path = PATH.getShadersPath() / L"default2.frag";
+    //std::filesystem::path vertex_shader_path   = PATH.getShadersPath() / L"default3.vert";
+    //std::filesystem::path fragment_shader_path = PATH.getShadersPath() / L"default2.frag";
 
-    m_Shader.LoadShader(vertex_shader_path, fragment_shader_path);
+    //m_Shader.LoadShader(vertex_shader_path, fragment_shader_path);
 
     m_Camera.setType(Camera::Type::LOOKAT);
     m_Camera.setPosition(glm::vec3(0.0f, 0.0f, -4.5f));
@@ -62,25 +62,7 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
     m_Camera.setPerspective(fov, aspect, znear, zfar);
     m_Camera.setMovementSpeed(speed);
 
-    m_Shader.bind();
-
-    glCreateBuffers(1, &ubo);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
-
-    ShaderData shader_data{};
-    shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
-    shader_data.view_matrix       = m_Camera.getViewMatrix();
-    //shader_data.model_matrix      = glm::mat4(1.0f);
-
-    glNamedBufferData(ubo, sizeof(shader_data), &shader_data, GL_DYNAMIC_DRAW);
-
-    {
-        glCreateBuffers(1, &ubo2);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 1, ubo2);
-
-        glm::vec3 color{ 1.0f, 1.0f, 1.0f };
-        glNamedBufferData(ubo2, sizeof(glm::vec3), &color, GL_DYNAMIC_DRAW);
-    }
+    //m_Shader.bind();
 
     //glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
@@ -98,7 +80,7 @@ void fe::RendererOpenGL::SetClearColor(float red, float green, float blue, float
 void fe::RendererOpenGL::BeginFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_Shader.bind();
+    //m_Shader.bind();
 
     { // temp
         if (glfwGetKey(m_GLFWwindow, GLFW_KEY_A))
@@ -130,23 +112,27 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
     for (auto mesh_pointer : model.pointers_mesh) {
         const auto& mesh = *m_OpenGLResourceManager.GetResource(mesh_pointer);
 
-        glBindVertexArray(mesh.vao);
-
         for (const auto& primitive : mesh.primitives) {
             auto        gpu_material_ptr = m_OpenGLResourceManager.GetGPUPointer(primitive.material_ptr);
             const auto& material         = *m_OpenGLResourceManager.GetResource(gpu_material_ptr);
 
-            //const auto& shader = *m_OpenGLResourceManager.GetResource(material.shader_ptr);
+            const auto& shader = *m_OpenGLResourceManager.GetResource(material.shader_ptr);
 
-            //glUseProgram(shader.program_id);
+            glUseProgram(shader.program_id);
 
+            glBindVertexArray(mesh.vao);
+
+            glNamedBufferSubData(ubo, 0, sizeof(ShaderData), &m_ShaderData);
             glNamedBufferSubData(ubo2, 0, sizeof(glm::vec3), &material.color);
 
-            m_Shader.setUniformInt("model_index", model_index); // temp
+            auto location = glGetUniformLocation(shader.program_id, "model_index");
+            glUniform1i(location, model_index);
 
             glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
 
-            //glUseProgram(0);
+            glBindVertexArray(0);
+
+            glUseProgram(0);
         }
     }
 
@@ -154,10 +140,8 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
 }
 
 void fe::RendererOpenGL::EndFrame() {
-    glNamedBufferSubData(ubo, 0, sizeof(ShaderData), &m_ShaderData);
 
-    glBindVertexArray(0);
-    m_Shader.unbind();
+    //m_Shader.unbind();
 
     glfwSwapBuffers(m_GLFWwindow);
 
@@ -174,7 +158,34 @@ void fe::RendererOpenGL::InitializeGPUResources() {
 
     m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material&       material,
                                                          fe::pointer<resource::Material> material_ptr) {
-        m_OpenGLResourceManager.CreateResource(material_ptr);
+        auto        gpu_material_ptr = m_OpenGLResourceManager.CreateResource(material_ptr);
+        const auto& gpu_material     = m_OpenGLResourceManager.GetResource(gpu_material_ptr);
+
+        const auto& shader_program = m_OpenGLResourceManager.GetResource(gpu_material->shader_ptr);
+
+        glUseProgram(shader_program->program_id);
+
+        {
+            glCreateBuffers(1, &ubo);
+            glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
+
+            ShaderData shader_data{};
+            shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
+            shader_data.view_matrix       = m_Camera.getViewMatrix();
+            //shader_data.model_matrix      = glm::mat4(1.0f);
+
+            glNamedBufferData(ubo, sizeof(shader_data), &shader_data, GL_DYNAMIC_DRAW);
+
+            {
+                glCreateBuffers(1, &ubo2);
+                glBindBufferBase(GL_UNIFORM_BUFFER, 1, ubo2);
+
+                glm::vec3 color{ 1.0f, 1.0f, 1.0f };
+                glNamedBufferData(ubo2, sizeof(glm::vec3), &color, GL_DYNAMIC_DRAW);
+            }
+        }
+
+        glUseProgram(0);
 
         fe::logging::info("Loaded material's color : %f %f %f", material.color.x, material.color.y, material.color.z);
     });

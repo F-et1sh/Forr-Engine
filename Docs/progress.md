@@ -1,12 +1,39 @@
 # Forr-Engine Devlog
 
+## 07.04.2026
+### Goal
+    see something on the screen
+    provide 'official' creation of default materials
+    provide OpenGL backend resources destroying
+    ( think about how and where create shader's UBOs )
+    ( to use model id you can check the shader for name like 'model_id' while reflecting )
+    ( maybe make warnings if Vulkan backend gets a shader with single uniforms or if OpenGL one gets a shader with push_constants )
+    using reflected info from the shader, build parameters in the material and insert std::vector<char> or something
+    provide textures to the material
+    
+### Done
+     -
+
+### Problem
+    Got ill
+
 ## 04.04.2026
 ### Goal
+    night of 03.04.2026 :
     Create fe::resource::Material structure with only glm::vec3 color
     Provide material importing
     Provide material creation in backend
     Provide material using ( push its parameter to the shader )
     ( shader are loaded in the graphics backend like before. Only OpenGL for now )
+    day of 04.04.2026 :
+    move shaders into material ( loading logic )
+    provide 'official' creation of default materials
+    provide OpenGL backend resources destroying
+    ( think about how and where create shader's UBOs )
+    ( to use model id you can check the shader for name like 'model_id' while reflecting )
+    ( maybe make warnings if Vulkan backend gets a shader with single uniforms or if OpenGL one gets a shader with push_constants )
+    using reflected info from the shader, build parameters in the material and insert std::vector<char> or something
+    provide textures to the material
     
 ### Done
     fe::IRenderer::createDefaultMaterials() removed

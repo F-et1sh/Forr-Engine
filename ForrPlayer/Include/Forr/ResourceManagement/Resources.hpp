@@ -105,6 +105,12 @@ namespace fe::resource {
 
     struct FORR_API Shader {
     public:
+        enum class Type {
+            VERTEX,
+            FRAGMENT
+            // add more later...
+        };
+
         struct FORR_API Property {
         public:
             enum class Type {
@@ -127,11 +133,13 @@ namespace fe::resource {
             ~Property() = default;
         };
 
+        Type type{};
+
         uint32_t ubo_size{};
         uint32_t ssbo_size{};
         uint32_t push_constant_size{};
 
-        std::string source_code{};
+        std::vector<uint32_t> source_code{};
 
         std::unordered_map<std::string, Property> properties{};
 
@@ -158,6 +166,10 @@ namespace fe::resource {
     struct FORR_API Material {
     public:
         glm::vec3 color{};
+
+        fe::pointer<fe::resource::Shader> vertex_shader_ptr{};
+        fe::pointer<fe::resource::Shader> fragment_shader_ptr{};
+        // add more later...
 
         Material()  = default;
         ~Material() = default;
