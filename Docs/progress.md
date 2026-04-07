@@ -2,7 +2,8 @@
 
 ## 07.04.2026
 ### Goal
-    see something on the screen
+    create ShaderCompiler
+    ( see something on the screen )
     provide 'official' creation of default materials
     provide OpenGL backend resources destroying
     ( think about how and where create shader's UBOs )
