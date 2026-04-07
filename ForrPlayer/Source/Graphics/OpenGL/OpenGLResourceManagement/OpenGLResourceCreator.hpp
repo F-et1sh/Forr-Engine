@@ -15,19 +15,20 @@
 namespace fe {
     class OpenGLResourceCreator {
     public:
-        OpenGLResourceCreator(ResourceManager& resource_manager, OpenGLResourceStorage& storage)
-            : m_ResourceManager(resource_manager), m_Storage(storage) {}
+        OpenGLResourceCreator(ResourceManager& resource_manager, OpenGLResourceStorage& opengl_storage)
+            : m_ResourceManager(resource_manager), m_OpenGLStorage(opengl_storage) {}
         ~OpenGLResourceCreator() = default;
 
-        FORR_NODISCARD fe::pointer<OpenGLTexture> CreateResource(const resource::Texture& texture);
-        FORR_NODISCARD fe::pointer<OpenGLModel> CreateResource(const resource::Model& model);
-        FORR_NODISCARD fe::pointer<OpenGLMaterial> CreateResource(const resource::Material& material);
+        fe::pointer<OpenGLTexture> CreateResource(const resource::Texture& texture);
+        fe::pointer<OpenGLModel> CreateResource(const resource::Model& model);
+        fe::pointer<OpenGLMaterial> CreateResource(const resource::Material& material);
 
     private:
-        FORR_NODISCARD fe::pointer<OpenGLMesh> createMesh(const resource::Model::Mesh& mesh);
+        fe::pointer<OpenGLMesh> createMesh(const resource::Model::Mesh& mesh);
+        fe::pointer<OpenGLShaderProgram> createShaderProgram(std::vector<resource::Shader*> shaders);
 
     private:
         ResourceManager&       m_ResourceManager;
-        OpenGLResourceStorage& m_Storage;
+        OpenGLResourceStorage& m_OpenGLStorage;
     };
 } // namespace fe

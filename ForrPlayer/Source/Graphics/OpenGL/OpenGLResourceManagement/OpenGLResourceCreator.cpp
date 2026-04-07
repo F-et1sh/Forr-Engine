@@ -112,11 +112,11 @@ fe::pointer<fe::OpenGLTexture> fe::OpenGLResourceCreator::CreateResource(const r
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    auto ptr = m_Storage.m_Textures.create(std::move(this_texture));
+    auto ptr = m_OpenGLStorage.m_Textures.create(std::move(this_texture));
     return ptr;
 }
 
-FORR_NODISCARD fe::pointer<fe::OpenGLModel> fe::OpenGLResourceCreator::CreateResource(const resource::Model& model) {
+fe::pointer<fe::OpenGLModel> fe::OpenGLResourceCreator::CreateResource(const resource::Model& model) {
     OpenGLModel this_model{};
 
     this_model.pointers_mesh.reserve(model.meshes.size());
@@ -126,16 +126,68 @@ FORR_NODISCARD fe::pointer<fe::OpenGLModel> fe::OpenGLResourceCreator::CreateRes
         this_model.pointers_mesh.emplace_back(ptr);
     }
 
-    auto ptr = m_Storage.m_Models.create(std::move(this_model));
+    auto ptr = m_OpenGLStorage.m_Models.create(std::move(this_model));
     return ptr;
 }
 
-FORR_NODISCARD fe::pointer<fe::OpenGLMaterial> fe::OpenGLResourceCreator::CreateResource(const resource::Material& material) {
+fe::pointer<fe::OpenGLMaterial> fe::OpenGLResourceCreator::CreateResource(const resource::Material& material) {
     OpenGLMaterial this_material{};
 
-    this_material.color = material.color;
+    auto vertex_shader   = m_ResourceManager.GetResource(material.vertex_shader_ptr);
+    auto fragment_shader = m_ResourceManager.GetResource(material.fragment_shader_ptr);
 
-    auto ptr = m_Storage.m_Materials.create(std::move(this_material));
+    this_material.color      = material.color;
+    this_material.shader_ptr = this->createShaderProgram({ vertex_shader, fragment_shader });
+
+    auto ptr = m_OpenGLStorage.m_Materials.create(std::move(this_material));
+    return ptr;
+}
+
+fe::pointer<fe::OpenGLShaderProgram> fe::OpenGLResourceCreator::createShaderProgram(std::vector<resource::Shader*> shaders) {
+    OpenGLShaderProgram this_shader_program{};
+    this_shader_program.program_id = glCreateProgram();
+
+    for (size_t i = 0; i < shaders.size(); i++) {
+        const auto& shader = shaders[i];
+
+        unsigned int opengl_type{};
+        unsigned int opengl_shader{};
+
+        // clang-format off
+        switch (shader->type) {
+            case resource::Shader::Type::VERTEX: opengl_type = GL_VERTEX_SHADER; break;
+            case resource::Shader::Type::FRAGMENT: opengl_type = GL_FRAGMENT_SHADER; break;
+        }
+        // clang-format on
+
+        opengl_shader = glCreateShader(opengl_type);
+
+        glShaderBinary(1, &opengl_shader, GL_SHADER_BINARY_FORMAT_SPIR_V, shader->source_code.data(), shader->source_code.size() * sizeof(uint32_t));
+        glSpecializeShader(opengl_shader, "main", 0, nullptr, nullptr);
+
+        glCompileShader(opengl_shader);
+
+        int result = 0;
+        glGetShaderiv(opengl_shader, GL_COMPILE_STATUS, &result);
+        if (result == GL_FALSE) {
+            int length = 0;
+            glGetShaderiv(opengl_shader, GL_INFO_LOG_LENGTH, &length);
+            char* message = (char*) _malloca(length * sizeof(char));
+            glGetShaderInfoLog(opengl_shader, length, &length, message);
+
+            fe::logging::error("Unified -> OpenGL. Failed to compile a shader\nMessage : %s", message);
+        }
+        else {
+            glAttachShader(this_shader_program.program_id, opengl_shader);
+        }
+
+        glDeleteShader(opengl_shader);
+    }
+
+    glLinkProgram(this_shader_program.program_id);
+    glValidateProgram(this_shader_program.program_id);
+
+    auto ptr = m_OpenGLStorage.m_Shaders.create(std::move(this_shader_program));
     return ptr;
 }
 
@@ -188,6 +240,6 @@ fe::pointer<fe::OpenGLMesh> fe::OpenGLResourceCreator::createMesh(const resource
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    auto ptr = m_Storage.m_Meshes.create(std::move(this_mesh));
+    auto ptr = m_OpenGLStorage.m_Meshes.create(std::move(this_mesh));
     return ptr;
 }

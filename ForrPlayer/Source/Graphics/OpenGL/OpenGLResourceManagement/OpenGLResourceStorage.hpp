@@ -17,11 +17,11 @@
 namespace fe {
     struct OpenGLResourceStorage {
     public:
-        fe::typed_pointer_storage<OpenGLTexture>  m_Textures{};
-        fe::typed_pointer_storage<OpenGLModel>    m_Models{};
-        fe::typed_pointer_storage<OpenGLMesh>     m_Meshes{};
-        fe::typed_pointer_storage<OpenGLShader>   m_Shaders{};
-        fe::typed_pointer_storage<OpenGLMaterial> m_Materials{};
+        fe::typed_pointer_storage<OpenGLTexture>       m_Textures{};
+        fe::typed_pointer_storage<OpenGLModel>         m_Models{};
+        fe::typed_pointer_storage<OpenGLMesh>          m_Meshes{};
+        fe::typed_pointer_storage<OpenGLShaderProgram> m_Shaders{};
+        fe::typed_pointer_storage<OpenGLMaterial>      m_Materials{};
 
         template <typename T>
         const fe::typed_pointer_storage<T>& GetStorage() const {
@@ -34,7 +34,7 @@ namespace fe {
             else if constexpr (std::is_same_v<T, OpenGLMesh>) {
                 return m_Meshes;
             }
-            else if constexpr (std::is_same_v<T, OpenGLShader>) {
+            else if constexpr (std::is_same_v<T, OpenGLShaderProgram>) {
                 return m_Shaders;
             }
             else if constexpr (std::is_same_v<T, OpenGLMaterial>) {

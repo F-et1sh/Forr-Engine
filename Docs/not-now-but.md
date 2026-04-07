@@ -1,5 +1,8 @@
 # Forr-Engine Not now, but :
 
+# Added 04.04.2026
+- provide Assimp
+
 # Added 02.04.2026
 - create material instance
 

@@ -42,6 +42,9 @@ void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_
     else if (extension == ".forr_material") {
         MaterialImporter::Import(m_Storage, resource_full_path);
     }
+    else if (extension == ".vert" || extension == ".frag") {
+        ShaderImporter::Import(m_Storage, resource_full_path);
+    }
 }
 
 IMPORT_INSTANCE(fe::resource::Texture, fe::TextureImporter)

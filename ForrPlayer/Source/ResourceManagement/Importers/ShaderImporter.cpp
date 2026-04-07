@@ -25,6 +25,11 @@ fe::pointer<fe::resource::Shader> fe::ShaderImporter::Import(ResourceStorage& st
     if (!result) return {};
     ShaderImporter::loadProperties(context);
 
+    if (resource_full_path.extension() == ".vert")
+        shader.type = Shader::Type::VERTEX;
+    else
+        shader.type = Shader::Type::FRAGMENT;
+
     auto ptr = storage.CreateResource(std::move(shader));
     return ptr;
 }

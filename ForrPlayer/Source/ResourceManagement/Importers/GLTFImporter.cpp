@@ -569,10 +569,6 @@ fe::pointer<Material> fe::GLTFImporter::createMaterial(GLTFImportContext& contex
     const tinygltf::Material& material = context.model.materials[tinygltf_material_index];
     Material                  this_material{};
 
-    // temp
-    auto that_material = context.storage.GetResource<resource::Material>(fe::pointer<resource::Material>{ 0 });
-    this_material.color = that_material->color;
-
     //    this_material.name = material.name;
     //
     //    fe::GLTFImporter::readVector(this_material.emissive_factor, material.emissiveFactor);
@@ -615,8 +611,10 @@ fe::pointer<Material> fe::GLTFImporter::createMaterial(GLTFImportContext& contex
     //    this_material.emissive_texture.texture_ptr   = context.GetTexture(material.emissiveTexture.index);
     //    this_material.emissive_texture.texture_coord = material.emissiveTexture.texCoord;
 
-    auto ptr = context.storage.CreateResource<Material>(std::move(this_material));
-    return ptr;
+    //auto ptr = context.storage.CreateResource<Material>(std::move(this_material));
+    //return ptr;
+
+    return fe::pointer<resource::Material>{ 0 }; // temp
 }
 
 void fe::GLTFImporter::readVector(glm::vec2& dst, const std::vector<double>& src) {
