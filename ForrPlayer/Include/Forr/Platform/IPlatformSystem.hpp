@@ -14,19 +14,11 @@
 #include <vector>
 #include <memory>
 #include "Core/attributes.hpp"
+#include "Core/types.hpp"
 
 #include "IWindow.hpp"
 
 namespace fe {
-    enum class FORR_API GraphicsBackend {
-        OpenGL,
-        Vulkan
-    };
-
-    enum class FORR_API PlatformBackend {
-        GLFW
-    };
-
     struct FORR_API PlatformSystemDesc {
         PlatformBackend platform_backend{};
         GraphicsBackend graphics_backend{};

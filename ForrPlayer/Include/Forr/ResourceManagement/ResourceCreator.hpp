@@ -21,6 +21,17 @@
 #include <fstream>
 
 namespace fe {
+    struct Context { // temp
+        GraphicsBackend graphics_backend{};
+
+        fe::pointer<resource::Shader>   default_gltf_vertex_shader_ptr{};
+        fe::pointer<resource::Shader>   default_gltf_fragment_shader_ptr{};
+        fe::pointer<resource::Material> default_gltf_material_ptr{};
+
+        Context()  = default;
+        ~Context() = default;
+    };
+
     class FORR_API ResourceCreator {
     public:
         ResourceCreator(ResourceStorage& storage) : m_Storage(storage) {}
@@ -55,6 +66,7 @@ namespace fe {
         }
 
     private:
+        void createDefaultShaders();
         void createDefaultMaterials();
 
     private:

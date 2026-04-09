@@ -3,7 +3,7 @@
     Forr Engine
 
     File : ResourceManager.hpp
-    Role : Resource Management System
+    Role : resource management system
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.

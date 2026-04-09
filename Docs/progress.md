@@ -8,6 +8,7 @@
         compile that shaders via the shaderc ( don't forget about defines )
         create something like 'ShaderReflector' to use it in ShaderImporter and ShaderCompiler
         ...
+        provide GraphicsBackend to ResourceCreator
     }
 
     ( see something on the screen )
