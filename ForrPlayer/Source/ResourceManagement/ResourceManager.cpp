@@ -3,7 +3,7 @@
     Forr Engine
 
     File : ResourceManager.cpp
-    Role : Resource Management System
+    Role : resource management system
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -14,7 +14,7 @@
 #include "ResourceManagement/ResourceManager.hpp"
 
 void fe::ResourceManager::CreateDefaultResources() {
-    //m_Storage.CreateResource()
+    m_Creator.CreateDefaultResources();
 }
 
 void fe::ResourceManager::SetupSceneResources(const std::vector<std::filesystem::path>& resource_full_paths) {
