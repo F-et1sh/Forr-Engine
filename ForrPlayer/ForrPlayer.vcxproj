@@ -101,6 +101,7 @@
     <ClInclude Include="Include\Forr\ECS\Components.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Camera.hpp" />
     <ClInclude Include="Include\Forr\Graphics\IRenderer.hpp" />
+    <ClInclude Include="Include\Forr\Graphics\Shaders\ShaderCompiler.hpp" />
     <ClInclude Include="Include\Forr\Layer.hpp" />
     <ClInclude Include="Include\Forr\PCH\pch.hpp" />
     <ClInclude Include="Include\Forr\Platform\IPlatformSystem.hpp" />
@@ -164,6 +165,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Shaders\ShaderCompiler.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\ShaderImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceCreator.cpp" />
     <ClCompile Include="Source\Graphics\Camera.cpp" />
