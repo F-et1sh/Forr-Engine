@@ -80,6 +80,7 @@ void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
 
     m_ResourceManager = std::make_unique<ResourceManager>();
     m_ResourceManager->SetupSceneResources(paths); // TODO : rewrite this
+    //m_ResourceManager->
 }
 
 void fe::Application::InitializePrimaryWindow(const ApplicationDesc& desc) {

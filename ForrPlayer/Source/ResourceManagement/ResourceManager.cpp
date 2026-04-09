@@ -13,8 +13,12 @@
 #include "pch.hpp"
 #include "ResourceManagement/ResourceManager.hpp"
 
+void fe::ResourceManager::CreateDefaultResources() {
+    //m_Storage.CreateResource()
+}
+
 void fe::ResourceManager::SetupSceneResources(const std::vector<std::filesystem::path>& resource_full_paths) {
     for (const auto& path : resource_full_paths) {
-        this->m_Importer.ImportResource(path); // uploads resource to the storage
+        m_Importer.ImportResource(path); // uploads resource to the storage
     }
 }

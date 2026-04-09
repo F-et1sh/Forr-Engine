@@ -26,6 +26,8 @@ namespace fe {
         ResourceCreator(ResourceStorage& storage) : m_Storage(storage) {}
         ~ResourceCreator() = default;
 
+        void CreateDefaultResources();
+
         void CreateMaterial(fe::pointer<resource::Material> pointer, const std::filesystem::path& resource_relative_path);
 
         template <typename T>
@@ -51,6 +53,9 @@ namespace fe {
                 }
             }
         }
+
+    private:
+        void createDefaultMaterials();
 
     private:
         ResourceStorage& m_Storage;
