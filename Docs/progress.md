@@ -1,15 +1,13 @@
 # Forr-Engine Devlog
 
-## 09.04.2026
+## 10.04.2026
 ### Goal
-    
-    create ShaderCompiler : {
+    create ShaderCompiler {
         write default shaders ( GLSL )
-        add this : https://github.com/google/shaderc?tab=readme-ov-file
+        add this : https://github.com/google/shaderc
         compile that shaders via the shaderc ( don't forget about defines )
-        convert spv to hex
         create something like 'ShaderReflector' to use it in ShaderImporter and ShaderCompiler
-
+        ...
     }
 
     ( see something on the screen )
@@ -25,7 +23,32 @@
      -
 
 ### Problem
-    Got ill
+    -
+
+## 09.04.2026
+### Goal
+    create ShaderCompiler {
+        write default shaders ( GLSL )
+        add this : https://github.com/google/shaderc
+        compile that shaders via the shaderc ( don't forget about defines )
+        create something like 'ShaderReflector' to use it in ShaderImporter and ShaderCompiler
+        ...
+    }
+
+    ( see something on the screen )
+    provide 'official' creation of default materials
+    provide OpenGL backend resources destroying
+    ( think about how and where create shader's UBOs )
+    ( to use model id you can check the shader for name like 'model_id' while reflecting )
+    ( maybe make warnings if Vulkan backend gets a shader with single uniforms or if OpenGL one gets a shader with push_constants )
+    using reflected info from the shader, build parameters in the material and insert std::vector<char> or something
+    provide textures to the material
+    
+### Done
+     ShaderCompiler added
+
+### Problem
+    Idk how to include shaderc. I'm using shaderc from VulkanSDK for now
 
 ## 08.04.2026
 ### Goal

@@ -1,5 +1,8 @@
 # Forr-Engine Not now, but :
 
+# Added 09.04.2026
+- use submodules for shaderc, not from VulkanSDK
+
 # Added 04.04.2026
 - provide Assimp
 
