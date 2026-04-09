@@ -13,6 +13,10 @@
 #include "pch.hpp"
 #include "ResourceManagement/ResourceCreator.hpp"
 
+void fe::ResourceCreator::CreateDefaultResources() {
+    this->createDefaultMaterials();
+}
+
 void fe::ResourceCreator::CreateMaterial(fe::pointer<resource::Material> pointer, const std::filesystem::path& resource_full_path) {
     resource::Material& material = *m_Storage.GetResource(pointer);
 
@@ -23,4 +27,12 @@ void fe::ResourceCreator::CreateMaterial(fe::pointer<resource::Material> pointer
                            resource_full_path.string().c_str());
         return;
     }
+}
+
+void fe::ResourceCreator::createDefaultMaterials() {
+    resource::Shader gltf_vertex_shader{};
+    gltf_vertex_shader.source_code = {};
+
+    //resource::Material gltf_material{};
+    //gltf_material.
 }

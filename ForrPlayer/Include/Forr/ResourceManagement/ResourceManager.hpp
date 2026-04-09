@@ -22,6 +22,7 @@ namespace fe {
         ResourceManager()  = default;
         ~ResourceManager() = default;
 
+        void CreateDefaultResources();
         void SetupSceneResources(const std::vector<std::filesystem::path>& resource_full_paths);
 
         template <typename T>
