@@ -20,7 +20,7 @@
     provide textures to the material
     
 ### Done
-     -
+     shaderc linking problem resolved
 
 ### Problem
     -
