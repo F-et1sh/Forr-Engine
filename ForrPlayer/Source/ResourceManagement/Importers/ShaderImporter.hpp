@@ -22,10 +22,6 @@ namespace fe {
         ResourceStorage&             storage;
         const std::filesystem::path& resource_full_path;
 
-        //std::string current_property_name{}; // TODO : add later
-
-        SpvReflectShaderModule module{};
-
         ShaderImportContext(resource::Shader& shader, ResourceStorage& storage, const std::filesystem::path& resource_full_path)
             : shader(shader), storage(storage), resource_full_path(resource_full_path) {}
         ~ShaderImportContext() = default;
@@ -44,10 +40,5 @@ namespace fe {
 
     private:
         static bool loadSourceCode(ShaderImportContext& context);
-        static void loadProperties(ShaderImportContext& context);
-        static void parseMember(ShaderImportContext& context, const SpvReflectBlockVariable& block);
-
-    private:
-        static PropertyType convertType(const SpvReflectTypeDescription* type);
     };
 } // namespace fe
