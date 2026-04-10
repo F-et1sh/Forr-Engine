@@ -10,7 +10,7 @@
         ...
         provide GraphicsBackend to ResourceCreator
     }
-
+    add Engine/User folders
     ( see something on the screen )
     provide 'official' creation of default materials
     provide OpenGL backend resources destroying
@@ -25,6 +25,7 @@
      ShaderReflector added
      ShaderImporter now uses ShaderReflector
      ResourceManagementContext added
+     ShaderImporter now uses ShaderCompiler
 
 ### Problem
     -

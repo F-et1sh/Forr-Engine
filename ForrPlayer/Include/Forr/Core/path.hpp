@@ -51,13 +51,10 @@ namespace fe {
 
         //
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getMetadataExtension() const noexcept {
-            return L".forr_meta";
-        }
-
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getMaterialExtension() const noexcept {
-            return L".forr_material";
-        }
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getMetadataExtension() const noexcept { return L".forr_meta"; }
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getMaterialExtension() const noexcept { return L".forr_material"; }
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getVertexShaderExtension() const noexcept { return L".vertex"; }
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getFragmentShaderExtension() const noexcept { return L".fragment"; }
 
     private:
         PathManager()  = default;
