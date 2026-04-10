@@ -18,6 +18,7 @@
 
 #include "ResourceManagementContext.hpp"
 #include "ResourceStorage.hpp"
+#include "ResourceImporter.hpp"
 
 #include <fstream>
 
@@ -35,13 +36,11 @@ namespace fe {
 
     class FORR_API ResourceCreator {
     public:
-        ResourceCreator(ResourceManagementContext& context, ResourceStorage& storage) 
-            : m_Context(context), m_Storage(storage) {}
+        ResourceCreator(ResourceManagementContext& context, ResourceStorage& storage, ResourceImporter& importer)
+            : m_Context(context), m_Storage(storage), m_Importer(importer) {}
         ~ResourceCreator() = default;
 
         void CreateDefaultResources();
-
-        void CreateMaterial(fe::pointer<resource::Material> pointer, const std::filesystem::path& resource_relative_path);
 
         template <typename T>
         void CreateMeta(fe::pointer<T> pointer, const std::filesystem::path& resource_relative_path) {
@@ -73,6 +72,7 @@ namespace fe {
 
     private:
         ResourceManagementContext& m_Context;
-        ResourceStorage& m_Storage;
+        ResourceStorage&           m_Storage;
+        ResourceImporter&          m_Importer;
     };
 } // namespace fe

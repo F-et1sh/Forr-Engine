@@ -11,7 +11,7 @@
 ===============================================*/
 
 #pragma once
-#include "Graphics/IRenderer.hpp"
+#include "Core/types.hpp"
 #include "ResourceManagement/Resources.hpp"
 
 namespace fe {

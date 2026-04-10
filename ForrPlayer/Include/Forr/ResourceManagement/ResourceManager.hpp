@@ -65,7 +65,7 @@ namespace fe {
         ResourceManagementContext m_Context{};
 
         ResourceImporter m_Importer{ m_Context, m_Storage };
-        ResourceCreator  m_Creator{ m_Context, m_Storage };
+        ResourceCreator  m_Creator{ m_Context, m_Storage, m_Importer };
         ResourceStorage  m_Storage{ m_Context };
     };
 } // namespace fe

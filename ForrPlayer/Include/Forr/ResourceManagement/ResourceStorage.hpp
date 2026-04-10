@@ -25,12 +25,6 @@ namespace fe {
         ~ResourceStorage() = default;
 
         template <typename T>
-        FORR_NODISCARD fe::pointer<T> CreateResource(const T& value) {
-            auto& storage = this->GetStorage<T>();
-            return storage.create(value);
-        }
-
-        template <typename T>
         FORR_NODISCARD fe::pointer<T> CreateResource(T&& value) {
             auto& storage = this->GetStorage<T>();
             return storage.create(std::move(value));
@@ -69,6 +63,8 @@ namespace fe {
             else if constexpr (std::is_same_v<T, fe::resource::Shader>)
                 return m_Shader;
         }
+
+        const ResourceManagementContext& GetContext() const noexcept { return m_Context; }
 
     private:
         ResourceManagementContext& m_Context;

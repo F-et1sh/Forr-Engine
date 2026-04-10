@@ -17,28 +17,11 @@
 #include "spirv_reflect.h"
 
 namespace fe {
-    struct ShaderImportContext {
-        resource::Shader&            shader;
-        ResourceStorage&             storage;
-        const std::filesystem::path& resource_full_path;
-
-        ShaderImportContext(resource::Shader& shader, ResourceStorage& storage, const std::filesystem::path& resource_full_path)
-            : shader(shader), storage(storage), resource_full_path(resource_full_path) {}
-        ~ShaderImportContext() = default;
-    };
-
     class ShaderImporter {
-    public:
-        using Property     = resource::Shader::Property;
-        using PropertyType = resource::Shader::Property::Type;
-
     public:
         ShaderImporter()  = default;
         ~ShaderImporter() = default;
 
         static fe::pointer<resource::Shader> Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path);
-
-    private:
-        static bool loadSourceCode(ShaderImportContext& context);
     };
 } // namespace fe
