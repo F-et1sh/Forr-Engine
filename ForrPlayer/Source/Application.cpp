@@ -70,19 +70,16 @@ void fe::Application::InitializePlatformSystem(const ApplicationDesc& desc) {
 
 void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
     std::vector<std::filesystem::path> paths{}; // temp
-    paths.emplace_back(PATH.getShadersPath() / "default3.vert");
-    paths.emplace_back(PATH.getShadersPath() / "default2.frag");
-    paths.emplace_back("some_file.forr_material"); // add a random material
-    //paths.emplace_back(PATH.getResourcesPath() / "Tatarstan-Flag.png");
-    paths.emplace_back(PATH.getModelsPath() / "StatueOfLiberty/statue_of_liberty.glb");
-    paths.emplace_back(PATH.getModelsPath() / "PirateRoom/PirateRoom.gltf");
+    paths.emplace_back(PATH.getResourcesPath() / "Tatarstan-Flag.png");
+    //paths.emplace_back(PATH.getModelsPath() / "StatueOfLiberty/statue_of_liberty.glb");
+    //paths.emplace_back(PATH.getModelsPath() / "PirateRoom/PirateRoom.gltf");
 
     ResourceManagerDesc resource_manager_desc{};
     resource_manager_desc.graphics_backend = desc.graphics_backend;
 
     m_ResourceManager = std::make_unique<ResourceManager>(resource_manager_desc);
     m_ResourceManager->SetupSceneResources(paths); // TODO : rewrite this
-    //m_ResourceManager->
+    m_ResourceManager->CreateDefaultResources();
 }
 
 void fe::Application::InitializePrimaryWindow(const ApplicationDesc& desc) {

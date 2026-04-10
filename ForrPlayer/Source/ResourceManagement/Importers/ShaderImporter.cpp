@@ -23,7 +23,7 @@ using namespace fe::resource;
 fe::pointer<fe::resource::Shader> fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
     Shader shader{};
 
-    std::ifstream file(resource_full_path, std::ios::ate);
+    std::ifstream file(resource_full_path, std::ios::binary | std::ios::ate);
     if (!file.good()) {
         fe::logging::error("File -> Unified. Failed to open shader file\nPath : %s", resource_full_path.string().c_str());
         return {};
@@ -40,8 +40,6 @@ fe::pointer<fe::resource::Shader> fe::ShaderImporter::Import(ResourceStorage& st
     source_code.resize(file_size);
     file.read((char*) &source_code[0], file_size);
 
-    ShaderReflector::Reflect(shader);
-
     if (resource_full_path.extension() == PATH.getVertexShaderExtension()) {
         shader.type = Shader::Type::VERTEX;
     }
@@ -55,6 +53,8 @@ fe::pointer<fe::resource::Shader> fe::ShaderImporter::Import(ResourceStorage& st
 
     const auto& resource_management_context = storage.GetContext();
     ShaderCompiler::Compile(shader.source_code, source_code, shader.type, resource_management_context.graphics_backend);
+
+    ShaderReflector::Reflect(shader);
 
     auto ptr = storage.CreateResource(std::move(shader));
     return ptr;
