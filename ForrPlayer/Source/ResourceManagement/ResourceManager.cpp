@@ -13,6 +13,10 @@
 #include "pch.hpp"
 #include "ResourceManagement/ResourceManager.hpp"
 
+fe::ResourceManager::ResourceManager(ResourceManagerDesc desc) {
+    m_Context.graphics_backend = desc.graphics_backend;
+}
+
 void fe::ResourceManager::CreateDefaultResources() {
     m_Creator.CreateDefaultResources();
 }

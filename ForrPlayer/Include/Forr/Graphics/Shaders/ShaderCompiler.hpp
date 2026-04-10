@@ -21,5 +21,7 @@ namespace fe {
         ~ShaderCompiler() = default;
 
         static void Compile(std::vector<uint32_t>& dst, std::string_view src, resource::Shader::Type shader_type, GraphicsBackend graphics_backend);
+
+    private:
     };
 } // namespace fe

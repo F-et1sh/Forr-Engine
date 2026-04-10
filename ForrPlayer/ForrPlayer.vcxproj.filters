@@ -49,6 +49,7 @@
     <ClInclude Include="Source\ResourceManagement\Importers\ShaderImporter.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Shaders\ShaderCompiler.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Shaders\ShaderReflector.hpp" />
+    <ClInclude Include="Include\Forr\ResourceManagement\ResourceManagementContext.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />

@@ -12,14 +12,22 @@
 
 #pragma once
 #include <filesystem>
+#include "ResourceManagementContext.hpp"
 #include "ResourceStorage.hpp"
 #include "ResourceImporter.hpp"
 #include "ResourceCreator.hpp"
 
 namespace fe {
+    struct ResourceManagerDesc {
+        GraphicsBackend graphics_backend{};
+
+        ResourceManagerDesc()  = default;
+        ~ResourceManagerDesc() = default;
+    };
+
     class ResourceManager {
     public:
-        ResourceManager()  = default;
+        ResourceManager(ResourceManagerDesc desc);
         ~ResourceManager() = default;
 
         void CreateDefaultResources();
@@ -54,8 +62,10 @@ namespace fe {
         void RunForEach(Func&& func) { m_Storage.RunForEach<T>(func); }
 
     private:
-        ResourceImporter m_Importer{ m_Storage };
-        ResourceCreator  m_Creator{ m_Storage };
-        ResourceStorage  m_Storage{};
+        ResourceManagementContext m_Context{};
+
+        ResourceImporter m_Importer{ m_Context, m_Storage };
+        ResourceCreator  m_Creator{ m_Context, m_Storage };
+        ResourceStorage  m_Storage{ m_Context };
     };
 } // namespace fe

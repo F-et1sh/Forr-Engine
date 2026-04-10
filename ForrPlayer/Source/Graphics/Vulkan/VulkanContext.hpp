@@ -3,7 +3,7 @@
     Forr Engine
 
     File : VulkanContext.hpp
-    Role : VulkanContext just a container for Vulkan stuff aka state.
+    Role : VulkanContext just a container for all Vulkan stuff/state.
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.

@@ -24,6 +24,7 @@
      shaderc linking problem resolved
      ShaderReflector added
      ShaderImporter now uses ShaderReflector
+     ResourceManagementContext added
 
 ### Problem
     -
