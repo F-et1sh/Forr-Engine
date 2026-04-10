@@ -16,6 +16,7 @@
 #include "Core/logging.hpp"
 #include "Core/path.hpp"
 
+#include "ResourceManagementContext.hpp"
 #include "ResourceStorage.hpp"
 
 #include <fstream>
@@ -34,7 +35,8 @@ namespace fe {
 
     class FORR_API ResourceCreator {
     public:
-        ResourceCreator(ResourceStorage& storage) : m_Storage(storage) {}
+        ResourceCreator(ResourceManagementContext& context, ResourceStorage& storage) 
+            : m_Context(context), m_Storage(storage) {}
         ~ResourceCreator() = default;
 
         void CreateDefaultResources();
@@ -70,6 +72,7 @@ namespace fe {
         void createDefaultMaterials();
 
     private:
+        ResourceManagementContext& m_Context;
         ResourceStorage& m_Storage;
     };
 } // namespace fe

@@ -14,12 +14,14 @@
 #include "Core/pointer.hpp"
 #include "Resources.hpp"
 
+#include "ResourceManagementContext.hpp"
+
 namespace fe {
     class ResourceImporter; // forward declaration
 
     class ResourceStorage {
     public:
-        ResourceStorage()  = default;
+        ResourceStorage(ResourceManagementContext& context) : m_Context(context) {}
         ~ResourceStorage() = default;
 
         template <typename T>
@@ -69,6 +71,8 @@ namespace fe {
         }
 
     private:
+        ResourceManagementContext& m_Context;
+
         fe::typed_pointer_storage<fe::resource::Texture>  m_Textures{};
         fe::typed_pointer_storage<fe::resource::Material> m_Materials{};
         fe::typed_pointer_storage<fe::resource::Model>    m_Models{};

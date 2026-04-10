@@ -11,12 +11,14 @@
 ===============================================*/
 
 #pragma once
+#include "ResourceManagementContext.hpp"
 #include "ResourceStorage.hpp"
 
 namespace fe {
     class ResourceImporter {
     public:
-        ResourceImporter(ResourceStorage& storage) : m_Storage(storage) {}
+        ResourceImporter(ResourceManagementContext& context, ResourceStorage& storage) 
+            : m_Context(context), m_Storage(storage) {}
         ~ResourceImporter() = default;
 
         // upload resource to the storage
@@ -27,6 +29,7 @@ namespace fe {
         fe::pointer<T> ImportResource(const std::filesystem::path& resource_full_path);
 
     private:
+        ResourceManagementContext& m_Context;
         ResourceStorage& m_Storage;
     };
 } // namespace fe
