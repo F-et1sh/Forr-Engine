@@ -26,6 +26,7 @@
      ShaderImporter now uses ShaderReflector
      ResourceManagementContext added
      ShaderImporter now uses ShaderCompiler
+     shader loading fixed
 
 ### Problem
     -

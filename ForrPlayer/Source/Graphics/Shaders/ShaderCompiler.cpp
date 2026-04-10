@@ -15,11 +15,13 @@
 
 #include "shaderc/shaderc.hpp"
 
+#include <fstream>
+
 void fe::ShaderCompiler::Compile(std::vector<uint32_t>& dst, std::string_view src, resource::Shader::Type shader_type, GraphicsBackend graphics_backend) {
     static shaderc::Compiler compiler{};
 
-    shaderc::CompileOptions  options{};
-    shaderc_shader_kind      kind{};
+    shaderc::CompileOptions options{};
+    shaderc_shader_kind     kind{};
 
     switch (graphics_backend) {
         case GraphicsBackend::OpenGL:
@@ -36,6 +38,7 @@ void fe::ShaderCompiler::Compile(std::vector<uint32_t>& dst, std::string_view sr
         default:
             fe::logging::warning("The selected graphics backend %i for shader was not found. Using the default one", graphics_backend);
 
+            options.AddMacroDefinition("FORR_USE_OPENGL");
             options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
 
             break;
@@ -57,11 +60,10 @@ void fe::ShaderCompiler::Compile(std::vector<uint32_t>& dst, std::string_view sr
     auto result = compiler.CompileGlslToSpv(src.data(), src.size(), kind, "shader", options);
 
     if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-        fe::logging::error("Failed to compile a shader\nStage : %i\nMessage : %s", shader_type, result.GetErrorMessage().c_str());
+        fe::logging::error("Failed to compile a shader\nShader Type : %i\n///\n%s\n///\n%s", shader_type, src.data(), result.GetErrorMessage().c_str());
         dst.clear();
         return;
     }
 
     dst.assign(result.cbegin(), result.cend());
 }
-
