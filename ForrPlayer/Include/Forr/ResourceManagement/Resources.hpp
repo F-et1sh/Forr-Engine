@@ -133,14 +133,8 @@ namespace fe::resource {
             ~Property() = default;
         };
 
-        Type type{};
-
-        uint32_t ubo_size{};
-        uint32_t ssbo_size{};
-        uint32_t push_constant_size{};
-
-        std::vector<uint32_t> source_code{};
-
+        Type                                      type{};
+        std::vector<uint32_t>                     source_code{};
         std::unordered_map<std::string, Property> properties{};
 
         Shader()  = default;
