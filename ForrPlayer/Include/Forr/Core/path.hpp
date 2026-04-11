@@ -29,8 +29,8 @@ namespace fe {
             return m_ExecutablePath;
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD const std::filesystem::path& getAssetsPath() const noexcept {
-            return m_AssetsPath;
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getAssetsPath() const noexcept {
+            return m_AssetsPath / L"Engine";
         }
 
         FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getResourcesPath() const noexcept {
