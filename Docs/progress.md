@@ -3,6 +3,7 @@
 ## 11.04.2026
 ### Goal
     add Engine/User folders
+    create new system for PathManager
     provide OpenGL backend resources destroying
     ( think about how and where create shader's UBOs )
     ( to use model id you can check the shader for name like 'model_id' while reflecting )
@@ -10,7 +11,7 @@
     provide textures to the material
     
 ### Done
-     -
+     Engine/User and Shared folders created
 
 ### Problem
     -
@@ -42,6 +43,7 @@
      ResourceManagementContext added
      ShaderImporter now uses ShaderCompiler
      shader loading fixed
+     seen something on the screen
 
 ### Problem
     -
