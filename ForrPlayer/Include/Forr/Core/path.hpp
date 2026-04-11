@@ -34,7 +34,7 @@ namespace fe {
         }
 
         FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getResourcesPath() const noexcept {
-            return m_AssetsPath / L"Resources";
+            return this->getAssetsPath() / L"Resources";
         }
 
         FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getModelsPath() const noexcept {
