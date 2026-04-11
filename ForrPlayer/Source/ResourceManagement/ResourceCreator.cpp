@@ -31,7 +31,7 @@ void fe::ResourceCreator::createDefaultMaterials() {
     resource::Material gltf_material{};
     gltf_material.vertex_shader_ptr   = m_Context.default_gltf_vertex_shader_ptr;
     gltf_material.fragment_shader_ptr = m_Context.default_gltf_fragment_shader_ptr;
-    gltf_material.color               = { 0.6f, 0.7f, 1.0f };
+    gltf_material.color               = { 0.6f, 0.7f, 0.1f };
 
     m_Context.default_gltf_material_ptr = m_Storage.CreateResource(std::move(gltf_material));
 }

@@ -614,7 +614,7 @@ fe::pointer<Material> fe::GLTFImporter::createMaterial(GLTFImportContext& contex
     //auto ptr = context.storage.CreateResource<Material>(std::move(this_material));
     //return ptr;
 
-    return fe::pointer<resource::Material>{ 0 }; // temp
+    return context.storage.GetContext().default_gltf_material_ptr; // TODO : create material instance
 }
 
 void fe::GLTFImporter::readVector(glm::vec2& dst, const std::vector<double>& src) {
