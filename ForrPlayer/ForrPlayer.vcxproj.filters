@@ -50,6 +50,7 @@
     <ClInclude Include="Include\Forr\Graphics\Shaders\ShaderCompiler.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Shaders\ShaderReflector.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceManagementContext.hpp" />
+    <ClInclude Include="Source\Graphics\OpenGL\OpenGLRAII.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />

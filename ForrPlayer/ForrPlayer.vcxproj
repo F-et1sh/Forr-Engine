@@ -114,6 +114,7 @@
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceManager.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\Resources.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceStorage.hpp" />
+    <ClInclude Include="Source\Graphics\OpenGL\OpenGLRAII.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceCreator.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceManager.hpp" />
     <ClInclude Include="Include\Forr\Graphics\GPUTypes.hpp" />
