@@ -2,7 +2,7 @@
 
 ## 12.04.2026
 ### Goal
-    provide OpenGL backend resources destroying
+    provide OpenGL backend resources destroying ( create fe::gl::* )
     ( think about how and where create shader's UBOs )
     ( to use model id you can check the shader for name like 'model_id' while reflecting )
     ( maybe make warnings if Vulkan backend gets a shader with single uniforms or if OpenGL one gets a shader with push_constants )
