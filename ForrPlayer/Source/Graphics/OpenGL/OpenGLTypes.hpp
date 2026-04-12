@@ -33,10 +33,15 @@ namespace fe {
     struct OpenGLShaderProgram {
         GLuint program_id{};
 
-        OpenGLShaderProgram()  = default;
-        ~OpenGLShaderProgram() = default;
+        OpenGLShaderProgram() = default;
+        ~OpenGLShaderProgram() { glDeleteProgram(program_id); }
 
-        FORR_RESOURCE_BODY(OpenGLShaderProgram)
+        OpenGLShaderProgram(OpenGLShaderProgram&& other) noexcept
+            : program_id(std::exchange(other.program_id, 0)) {}
+
+        OpenGLShaderProgram(const OpenGLShaderProgram&)                = delete;
+        OpenGLShaderProgram& operator=(const OpenGLShaderProgram&)     = delete;
+        OpenGLShaderProgram& operator=(OpenGLShaderProgram&&) noexcept = default;
     };
 
     struct OpenGLMaterial {
