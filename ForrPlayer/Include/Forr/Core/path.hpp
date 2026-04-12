@@ -29,20 +29,32 @@ namespace fe {
             return m_ExecutablePath;
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getAssetsPath() const noexcept {
-            return m_AssetsPath / L"Engine";
+        FORR_FORCE_INLINE FORR_NODISCARD const std::filesystem::path& getAssetsPath() const noexcept {
+            return m_AssetsPath;
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getResourcesPath() const noexcept {
-            return this->getAssetsPath() / L"Resources";
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getEngineAssetsPath() const noexcept {
+            return m_AssetsPath / "Engine";
+        }
+
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getUserAssetsPath() const noexcept {
+            return m_AssetsPath / "User";
+        }
+
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getSharedAssetsPath() const noexcept {
+            return m_AssetsPath / "Shared";
+        }
+
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getEngineResourcesPath() const noexcept {
+            return this->getEngineAssetsPath() / L"Resources";
         }
 
         FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getModelsPath() const noexcept {
-            return this->getResourcesPath() / L"Models";
+            return this->getEngineResourcesPath() / L"Models";
         }
 
         FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getShadersPath() const noexcept {
-            return this->getResourcesPath() / L"Shaders";
+            return this->getEngineResourcesPath() / L"Shaders";
         }
 
         FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getDefaultShadersPath() const noexcept {

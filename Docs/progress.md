@@ -1,5 +1,19 @@
 # Forr-Engine Devlog
 
+## 12.04.2026
+### Goal
+    provide OpenGL backend resources destroying
+    ( think about how and where create shader's UBOs )
+    ( to use model id you can check the shader for name like 'model_id' while reflecting )
+    ( maybe make warnings if Vulkan backend gets a shader with single uniforms or if OpenGL one gets a shader with push_constants )
+    provide textures to the material
+    
+### Done
+    -
+
+### Problem
+    -
+
 ## 11.04.2026
 ### Goal
     add Engine/User folders
@@ -11,7 +25,7 @@
     provide textures to the material
     
 ### Done
-     Engine/User and Shared folders created 
+     Engine/User and Shared folders created
 
 ### Problem
     -

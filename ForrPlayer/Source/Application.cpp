@@ -70,7 +70,7 @@ void fe::Application::InitializePlatformSystem(const ApplicationDesc& desc) {
 
 void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
     std::vector<std::filesystem::path> paths{}; // temp
-    paths.emplace_back(PATH.getResourcesPath() / "Tatarstan-Flag.png");
+    paths.emplace_back(PATH.getEngineResourcesPath() / "Tatarstan-Flag.png");
     paths.emplace_back(PATH.getModelsPath() / "StatueOfLiberty/statue_of_liberty.glb");
     paths.emplace_back(PATH.getModelsPath() / "PirateRoom/PirateRoom.gltf");
 

@@ -23,17 +23,6 @@
 #include <fstream>
 
 namespace fe {
-    struct Context { // temp
-        GraphicsBackend graphics_backend{};
-
-        fe::pointer<resource::Shader>   default_gltf_vertex_shader_ptr{};
-        fe::pointer<resource::Shader>   default_gltf_fragment_shader_ptr{};
-        fe::pointer<resource::Material> default_gltf_material_ptr{};
-
-        Context()  = default;
-        ~Context() = default;
-    };
-
     class FORR_API ResourceCreator {
     public:
         ResourceCreator(ResourceManagementContext& context, ResourceStorage& storage, ResourceImporter& importer)
@@ -44,7 +33,7 @@ namespace fe {
 
         template <typename T>
         void CreateMeta(fe::pointer<T> pointer, const std::filesystem::path& resource_relative_path) {
-            std::filesystem::path resource_full_path = PATH.getResourcesPath() / resource_relative_path;
+            std::filesystem::path resource_full_path = PATH.getEngineResourcesPath() / resource_relative_path;
             std::filesystem::path metadata_path      = resource_full_path += PATH.getMetadataExtension().wstring();
 
             std::ofstream file(metadata_path);
