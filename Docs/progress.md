@@ -1,5 +1,19 @@
 # Forr-Engine Devlog
 
+## 13.04.2026
+### Goal
+    provide OpenGL backend resources destroying ( create fe::gl::* )
+    ( think about how and where create shader's UBOs )
+    ( to use model id you can check the shader for name like 'model_id' while reflecting )
+    ( maybe make warnings if Vulkan backend gets a shader with single uniforms or if OpenGL one gets a shader with push_constants )
+    provide textures to the material
+    
+### Done
+    OpenGLShaderProgram now contains fe::gl::ShaderProgram as a proxy structure
+
+### Problem
+    Feel bad. Vomit
+
 ## 12.04.2026
 ### Goal
     provide OpenGL backend resources destroying ( create fe::gl::* )
