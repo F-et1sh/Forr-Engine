@@ -116,16 +116,16 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
             auto        gpu_material_ptr = m_OpenGLResourceManager.GetGPUPointer(primitive.material_ptr);
             const auto& material         = *m_OpenGLResourceManager.GetResource(gpu_material_ptr);
 
-            const auto& shader = *m_OpenGLResourceManager.GetResource(material.shader_ptr);
+            const auto& shader = *m_OpenGLResourceManager.GetResource(material.shader_program_ptr);
 
-            glUseProgram(shader.program_id);
+            glUseProgram(shader.shader_program);
 
             glBindVertexArray(mesh.vao);
 
             glNamedBufferSubData(ubo, 0, sizeof(ShaderData), &m_ShaderData);
             glNamedBufferSubData(ubo2, 0, sizeof(glm::vec3), &material.color);
 
-            auto location = glGetUniformLocation(shader.program_id, "model_index");
+            auto location = glGetUniformLocation(shader.shader_program, "model_index");
             glUniform1i(location, model_index);
 
             glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
@@ -161,9 +161,9 @@ void fe::RendererOpenGL::InitializeGPUResources() {
         auto        gpu_material_ptr = m_OpenGLResourceManager.CreateResource(material_ptr);
         const auto& gpu_material     = m_OpenGLResourceManager.GetResource(gpu_material_ptr);
 
-        const auto& shader_program = m_OpenGLResourceManager.GetResource(gpu_material->shader_ptr);
+        const auto& shader_program = m_OpenGLResourceManager.GetResource(gpu_material->shader_program_ptr);
 
-        glUseProgram(shader_program->program_id);
+        glUseProgram(shader_program->shader_program);
 
         {
             glCreateBuffers(1, &ubo);
