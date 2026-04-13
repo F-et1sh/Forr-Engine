@@ -64,12 +64,19 @@ namespace fe::gl {
         }
     };
 
-    struct VAODestroy {
+    struct VertexArrayDestroy {
         void operator()(GLuint handle) const noexcept {
-            glDeleteProgram(handle);
+            glDeleteVertexArrays(1, &handle);
+        }
+    };
 
+    struct BufferDestroy {
+        void operator()(GLuint handle) const noexcept {
+            glDeleteBuffers(1, &handle);
         }
     };
 
     using ShaderProgram = Handle<ShaderDestroy>;
+    using VertexArray   = Handle<VertexArrayDestroy>;
+    using Buffer        = Handle<BufferDestroy>;
 } // namespace fe::gl

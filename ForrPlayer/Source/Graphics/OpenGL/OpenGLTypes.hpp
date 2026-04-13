@@ -21,7 +21,7 @@ namespace fe {
     FORR_CLASS_NONCOPYABLE(T) \
     FORR_CLASS_MOVABLE(T)
 
-    struct OpenGLTexture {
+    struct OpenGLTexture { // TODO : provide textures
         GLuint id{};
 
         OpenGLTexture()  = default;
@@ -65,9 +65,9 @@ namespace fe {
     };
 
     struct OpenGLMesh {
-        GLuint vao{};
-        GLuint vbo{};
-        GLuint ebo{};
+        fe::gl::VertexArray vao{};
+        fe::gl::Buffer      vbo{};
+        fe::gl::Buffer      ebo{};
 
         std::vector<OpenGLPrimitive> primitives{};
 

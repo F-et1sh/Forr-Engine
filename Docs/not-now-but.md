@@ -1,5 +1,8 @@
 # Forr-Engine Not now, but :
 
+# Added 14.04.2026
+- provide capacity increasing for fe::typed_pointer_storage and use it in the engine
+
 # Added 09.04.2026
 - use submodules for shaderc, not from VulkanSDK
 

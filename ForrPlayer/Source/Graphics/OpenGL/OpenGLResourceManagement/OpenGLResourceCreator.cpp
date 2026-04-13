@@ -196,19 +196,23 @@ fe::pointer<fe::OpenGLShaderProgram> fe::OpenGLResourceCreator::createShaderProg
 fe::pointer<fe::OpenGLMesh> fe::OpenGLResourceCreator::createMesh(const resource::Model::Mesh& mesh) {
     OpenGLMesh this_mesh{};
 
-    glCreateVertexArrays(1, &this_mesh.vao);
-    glBindVertexArray(this_mesh.vao);
+    GLuint vao{};
+    GLuint vbo{};
+    GLuint ebo{};
 
-    glCreateBuffers(1, &this_mesh.vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, this_mesh.vbo);
+    glCreateVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    glCreateBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     constexpr GLsizei stride = sizeof(Vertex);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*) offsetof(Vertex, position));
     glEnableVertexAttribArray(0);
 
-    glCreateBuffers(1, &this_mesh.ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this_mesh.ebo);
+    glCreateBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 
     this_mesh.primitives.reserve(mesh.primitives.size());
     for (const auto& primitive : mesh.primitives) {
@@ -241,6 +245,10 @@ fe::pointer<fe::OpenGLMesh> fe::OpenGLResourceCreator::createMesh(const resource
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    this_mesh.vao.attach(vao);
+    this_mesh.vbo.attach(vbo);
+    this_mesh.ebo.attach(ebo);
 
     auto ptr = m_OpenGLStorage.m_Meshes.create(std::move(this_mesh));
     return ptr;
