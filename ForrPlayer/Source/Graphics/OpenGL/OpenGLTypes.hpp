@@ -31,7 +31,7 @@ namespace fe {
     };
 
     struct OpenGLShaderProgram {
-        fe::gl::ShaderProgram shader_program_ptr{};
+        fe::gl::ShaderProgram shader_program{};
 
         OpenGLShaderProgram()  = default;
         ~OpenGLShaderProgram() = default;

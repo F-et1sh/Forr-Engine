@@ -10,6 +10,7 @@
     
 ### Done
     OpenGLShaderProgram now contains fe::gl::ShaderProgram as a proxy structure
+    OpenGL Shader Program destroyed correctly
 
 ### Problem
     Feel bad. Vomit

@@ -30,7 +30,7 @@ namespace fe::gl {
 
         Handle& operator=(Handle&& other) noexcept {
             if (this != &other) {
-                this->attach(other.device, other.handle);
+                this->attach(other.handle);
                 other.handle = 0; // NOT other.reset()
             }
             return *this;
@@ -61,6 +61,13 @@ namespace fe::gl {
     struct ShaderDestroy {
         void operator()(GLuint handle) const noexcept {
             glDeleteProgram(handle);
+        }
+    };
+
+    struct VAODestroy {
+        void operator()(GLuint handle) const noexcept {
+            glDeleteProgram(handle);
+
         }
     };
 

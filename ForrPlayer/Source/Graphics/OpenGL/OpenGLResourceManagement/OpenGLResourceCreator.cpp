@@ -137,7 +137,7 @@ fe::pointer<fe::OpenGLMaterial> fe::OpenGLResourceCreator::CreateResource(const 
     auto fragment_shader = m_ResourceManager.GetResource(material.fragment_shader_ptr);
 
     this_material.color      = material.color;
-    this_material.shader_ptr = this->createShaderProgram({ vertex_shader, fragment_shader });
+    this_material.shader_program_ptr = this->createShaderProgram({ vertex_shader, fragment_shader });
 
     auto ptr = m_OpenGLStorage.m_Materials.create(std::move(this_material));
     return ptr;
@@ -145,7 +145,7 @@ fe::pointer<fe::OpenGLMaterial> fe::OpenGLResourceCreator::CreateResource(const 
 
 fe::pointer<fe::OpenGLShaderProgram> fe::OpenGLResourceCreator::createShaderProgram(std::vector<resource::Shader*> shaders) {
     OpenGLShaderProgram this_shader_program{};
-    this_shader_program.program_id = glCreateProgram();
+    GLuint              shader_program = glCreateProgram();
 
     for (size_t i = 0; i < shaders.size(); i++) {
         const auto& shader = shaders[i];
@@ -178,14 +178,16 @@ fe::pointer<fe::OpenGLShaderProgram> fe::OpenGLResourceCreator::createShaderProg
             fe::logging::error("Unified -> OpenGL. Failed to compile a shader\nMessage : %s", message);
         }
         else {
-            glAttachShader(this_shader_program.program_id, opengl_shader);
+            glAttachShader(shader_program, opengl_shader);
         }
 
         glDeleteShader(opengl_shader);
     }
 
-    glLinkProgram(this_shader_program.program_id);
-    glValidateProgram(this_shader_program.program_id);
+    glLinkProgram(shader_program);
+    glValidateProgram(shader_program);
+
+    this_shader_program.shader_program.attach(shader_program);
 
     auto ptr = m_OpenGLStorage.m_Shaders.create(std::move(this_shader_program));
     return ptr;
