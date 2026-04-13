@@ -102,6 +102,7 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
 
     // TODO : wtf ?
     // Meshes also can have thier own transform, but only models can
+    // Use resource::Model::Node::local/global_matrix
 
     auto        gpu_ptr = m_OpenGLResourceManager.GetGPUPointer(command.model_ptr);
     const auto& model   = *m_OpenGLResourceManager.GetResource(gpu_ptr);
