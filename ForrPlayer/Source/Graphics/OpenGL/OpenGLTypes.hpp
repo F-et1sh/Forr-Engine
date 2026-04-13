@@ -14,7 +14,7 @@
 #pragma once
 #include "Core/pointer.hpp"
 #include "ResourceManagement/Resources.hpp"
-#include <glad/gl.h>
+#include "OpenGLRAII.hpp"
 
 namespace fe {
 #define FORR_RESOURCE_BODY(T) \
@@ -31,23 +31,18 @@ namespace fe {
     };
 
     struct OpenGLShaderProgram {
-        GLuint program_id{};
+        fe::gl::ShaderProgram shader_program_ptr{};
 
-        OpenGLShaderProgram() = default;
-        ~OpenGLShaderProgram() { glDeleteProgram(program_id); }
+        OpenGLShaderProgram()  = default;
+        ~OpenGLShaderProgram() = default;
 
-        OpenGLShaderProgram(OpenGLShaderProgram&& other) noexcept
-            : program_id(std::exchange(other.program_id, 0)) {}
-
-        OpenGLShaderProgram(const OpenGLShaderProgram&)                = delete;
-        OpenGLShaderProgram& operator=(const OpenGLShaderProgram&)     = delete;
-        OpenGLShaderProgram& operator=(OpenGLShaderProgram&&) noexcept = default;
+        FORR_RESOURCE_BODY(OpenGLShaderProgram)
     };
 
     struct OpenGLMaterial {
-        fe::pointer<OpenGLShaderProgram> shader_ptr{};
-
         glm::vec3 color{};
+
+        fe::pointer<OpenGLShaderProgram> shader_program_ptr{};
 
         OpenGLMaterial()  = default;
         ~OpenGLMaterial() = default;

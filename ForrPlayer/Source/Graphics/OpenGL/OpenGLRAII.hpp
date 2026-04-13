@@ -17,20 +17,18 @@
 
 namespace fe::gl {
     template <typename DestroyFn>
-    class OpenGLHandle {
+    class Handle {
     public:
-        OpenGLHandle() = default;
-        explicit OpenGLHandle(GLuint handle) noexcept : handle(handle) {}
+        Handle() = default;
+        explicit Handle(GLuint handle) noexcept : handle(handle) {}
 
-        ~OpenGLHandle() { this->reset(); }
+        ~Handle() { this->reset(); }
 
-        FORR_CLASS_NONCOPYABLE(OpenGLHandle)
+        FORR_CLASS_NONCOPYABLE(Handle)
 
-        OpenGLHandle(OpenGLHandle&& other) noexcept : handle(other.handle) {
-            other.handle = 0;
-        }
+        Handle(Handle&& other) noexcept : handle(other.handle) { other.handle = 0; }
 
-        OpenGLHandle& operator=(OpenGLHandle&& other) noexcept {
+        Handle& operator=(Handle&& other) noexcept {
             if (this != &other) {
                 this->attach(other.device, other.handle);
                 other.handle = 0; // NOT other.reset()
@@ -41,22 +39,20 @@ namespace fe::gl {
         void reset() noexcept {
             if (handle) {
                 DestroyFn{}(handle);
-
                 handle = 0;
             }
         }
 
         void attach(GLuint handle) noexcept {
             if (this->handle != handle) {
-
                 this->reset();
-
                 this->handle = handle;
             }
         }
 
         FORR_NODISCARD GLuint get() const noexcept { return handle; }
-                              operator GLuint() const noexcept { return handle; }
+
+        operator GLuint() const noexcept { return handle; }
 
     protected:
         GLuint handle{};
@@ -68,5 +64,5 @@ namespace fe::gl {
         }
     };
 
-    using ShaderProgram = OpenGLHandle<ShaderDestroy>;
+    using ShaderProgram = Handle<ShaderDestroy>;
 } // namespace fe::gl
