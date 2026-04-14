@@ -8,6 +8,7 @@
     
 ### Done
     RAII provided for OpenGL backend
+    Material now using std::vector<uint8_t> buffer instead of glm::vec3
 
 ### Problem
     -
