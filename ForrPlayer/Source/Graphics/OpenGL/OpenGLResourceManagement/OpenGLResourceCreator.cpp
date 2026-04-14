@@ -136,7 +136,6 @@ fe::pointer<fe::OpenGLMaterial> fe::OpenGLResourceCreator::CreateResource(const 
     auto vertex_shader   = m_ResourceManager.GetResource(material.vertex_shader_ptr);
     auto fragment_shader = m_ResourceManager.GetResource(material.fragment_shader_ptr);
 
-    this_material.color      = material.color;
     this_material.shader_program_ptr = this->createShaderProgram({ vertex_shader, fragment_shader });
 
     auto ptr = m_OpenGLStorage.m_Materials.create(std::move(this_material));

@@ -115,16 +115,17 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
 
         for (const auto& primitive : mesh.primitives) {
             auto        gpu_material_ptr = m_OpenGLResourceManager.GetGPUPointer(primitive.material_ptr);
-            const auto& material         = *m_OpenGLResourceManager.GetResource(gpu_material_ptr);
+            const auto& gpu_material     = *m_OpenGLResourceManager.GetResource(gpu_material_ptr);
+            const auto& material         = m_ResourceManager.GetResource(primitive.material_ptr);
 
-            const auto& shader = *m_OpenGLResourceManager.GetResource(material.shader_program_ptr);
+            const auto& shader = *m_OpenGLResourceManager.GetResource(gpu_material.shader_program_ptr);
 
             glUseProgram(shader.shader_program);
 
             glBindVertexArray(mesh.vao);
 
             glNamedBufferSubData(ubo, 0, sizeof(ShaderData), &m_ShaderData);
-            glNamedBufferSubData(ubo2, 0, sizeof(glm::vec3), &material.color);
+            glNamedBufferSubData(ubo2, 0, sizeof(glm::vec3), material->buffer.data());
 
             auto location = glGetUniformLocation(shader.shader_program, "model_index");
             glUniform1i(location, model_index);
@@ -188,7 +189,9 @@ void fe::RendererOpenGL::InitializeGPUResources() {
 
         glUseProgram(0);
 
-        fe::logging::info("Loaded material's color : %f %f %f", material.color.x, material.color.y, material.color.z);
+        assert(material.buffer.data() != nullptr);
+
+        //fe::logging::info("Loaded material's color : %f %f %f", material.color.x, material.color.y, material.color.z);
     });
 
     m_ResourceManager.RunForEach<resource::Model>([&](const resource::Model&       model,
