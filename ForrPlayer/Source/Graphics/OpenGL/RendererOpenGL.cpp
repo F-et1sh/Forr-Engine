@@ -80,8 +80,6 @@ void fe::RendererOpenGL::SetClearColor(float red, float green, float blue, float
 void fe::RendererOpenGL::BeginFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //m_Shader.bind();
-
     { // temp
         if (glfwGetKey(m_GLFWwindow, GLFW_KEY_A))
             m_Camera.translate(glm::vec3(1.0f, 0.0f, 0.0f));
@@ -142,9 +140,6 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
 }
 
 void fe::RendererOpenGL::EndFrame() {
-
-    //m_Shader.unbind();
-
     glfwSwapBuffers(m_GLFWwindow);
 
     m_I = 0;

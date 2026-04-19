@@ -1,5 +1,19 @@
 # Forr-Engine Devlog
 
+## 19.04.2026
+### Goal
+    move UBO creating from Renderer to material or shader creating
+    remove ShaderData from Renderer
+    devide UBO/SSBO and push_constants in fe::resource::Material
+    provide push_constants/uniforms for pushing indices to draw the models
+    provide the same for Vulkan backend
+    
+### Done
+    -
+
+### Problem
+    -
+
 ## 18.04.2026
 ### Goal
     provide push_constants/uniforms for pushing indices to draw the models
