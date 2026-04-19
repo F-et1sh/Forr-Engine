@@ -36,8 +36,6 @@ namespace fe {
     private:
         ResourceManager& m_ResourceManager;
 
-        //Shader m_Shader;
-
         IPlatformSystem& m_PlatformSystem;
         IWindow&         m_PrimaryWindow;
 
