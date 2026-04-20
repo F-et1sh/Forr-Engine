@@ -41,43 +41,25 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
     glViewport(0, 0, m_PrimaryWindow.getWidth(), m_PrimaryWindow.getHeight());
     glEnable(GL_DEPTH_TEST);
 
-    //std::filesystem::path shader_path = PATH.getShadersPath() / "default";
-    //m_Shader.LoadShader(shader_path);
+    { // temp
+        m_Camera.setType(Camera::Type::LOOKAT);
+        m_Camera.setPosition(glm::vec3(0.0f, 0.0f, -4.5f));
+        m_Camera.setRotation(glm::vec3(0.0f));
+        m_Camera.setFlipY(false);
 
-    //std::filesystem::path vertex_shader_path   = PATH.getShadersPath() / L"default3.vert";
-    //std::filesystem::path fragment_shader_path = PATH.getShadersPath() / L"default2.frag";
+        float speed  = 0.15f;
+        float fov    = 60.0f;
+        float aspect = (float) m_PrimaryWindow.getWidth() / (float) m_PrimaryWindow.getHeight();
+        float znear  = 1.0f;
+        float zfar   = 1000.0f;
+        m_Camera.setPerspective(fov, aspect, znear, zfar);
+        m_Camera.setMovementSpeed(speed);
+    }
 
-    //m_Shader.LoadShader(vertex_shader_path, fragment_shader_path);
-
-    m_Camera.setType(Camera::Type::LOOKAT);
-    m_Camera.setPosition(glm::vec3(0.0f, 0.0f, -4.5f));
-    m_Camera.setRotation(glm::vec3(0.0f));
-    m_Camera.setFlipY(false);
-
-    float speed  = 0.15f;
-    float fov    = 60.0f;
-    float aspect = (float) m_PrimaryWindow.getWidth() / (float) m_PrimaryWindow.getHeight();
-    float znear  = 1.0f;
-    float zfar   = 1000.0f;
-    m_Camera.setPerspective(fov, aspect, znear, zfar);
-    m_Camera.setMovementSpeed(speed);
-
-    //m_Shader.bind();
-
-    //glfwSetInputMode(m_GLFWwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    GLuint opengl_scene_data_ssbo{};
-
-    glCreateBuffers(1, &opengl_scene_data_ssbo);
-    glNamedBufferStorage(opengl_scene_data_ssbo, sizeof(m_ShaderData), &m_ShaderData, GL_DYNAMIC_STORAGE_BIT);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, opengl_scene_data_ssbo);
-
-    m_SceneSSBO.attach(opengl_scene_data_ssbo);
+    this->createSceneDataSSBO();
 }
 
 fe::RendererOpenGL::~RendererOpenGL() {
-    //glDeleteBuffers(1, &ubo);
-    //glDeleteBuffers(1, &ubo2);
     glFinish();
 }
 
@@ -100,8 +82,8 @@ void fe::RendererOpenGL::BeginFrame() {
             m_Camera.translate(glm::vec3(0.0f, 0.0f, -1.0f));
     }
 
-    m_ShaderData.projection_matrix = m_Camera.getPerspectiveMatrix();
-    m_ShaderData.view_matrix       = m_Camera.getViewMatrix();
+    m_SceneData.projection_matrix = m_Camera.getPerspectiveMatrix();
+    m_SceneData.view_matrix       = m_Camera.getViewMatrix();
 }
 
 void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
@@ -113,8 +95,7 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
     auto        gpu_ptr = m_OpenGLResourceManager.GetGPUPointer(command.model_ptr);
     const auto& model   = *m_OpenGLResourceManager.GetResource(gpu_ptr);
 
-    size_t model_index               = m_I;
-    m_ShaderData.model_matrices[m_I] = command.transform;
+    m_SceneData.model_matrices[m_MeshIndex] = command.transform;
 
     for (auto mesh_pointer : model.pointers_mesh) {
         const auto& mesh = *m_OpenGLResourceManager.GetResource(mesh_pointer);
@@ -130,12 +111,10 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
 
             glBindVertexArray(mesh.vao);
 
-            glNamedBufferSubData(m_SceneSSBO, 0, sizeof(m_ShaderData), &m_ShaderData);
-
-            //glNamedBufferSubData(ubo2, 0, sizeof(glm::vec3), material->buffer.data());
+            glNamedBufferSubData(m_SceneSSBO, 0, sizeof(m_SceneData), &m_SceneData);
 
             auto location = glGetUniformLocation(shader.shader_program, "model_index");
-            glUniform1i(location, model_index);
+            glUniform1i(location, m_MeshIndex);
 
             glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
 
@@ -145,13 +124,13 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
         }
     }
 
-    m_I++;
+    m_MeshIndex++;
 }
 
 void fe::RendererOpenGL::EndFrame() {
     glfwSwapBuffers(m_GLFWwindow);
 
-    m_I = 0;
+    m_MeshIndex = 0;
 }
 
 void fe::RendererOpenGL::InitializeGPUResources() {
@@ -164,38 +143,7 @@ void fe::RendererOpenGL::InitializeGPUResources() {
 
     m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material&       material,
                                                          fe::pointer<resource::Material> material_ptr) {
-        auto        gpu_material_ptr = m_OpenGLResourceManager.CreateResource(material_ptr);
-        const auto& gpu_material     = m_OpenGLResourceManager.GetResource(gpu_material_ptr);
-
-        //const auto& shader_program = m_OpenGLResourceManager.GetResource(gpu_material->shader_program_ptr);
-
-        //glUseProgram(shader_program->shader_program);
-
-        //{
-        //    glCreateBuffers(1, &ubo);
-        //    glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
-
-        //    ShaderData shader_data{};
-        //    shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
-        //    shader_data.view_matrix       = m_Camera.getViewMatrix();
-        //    //shader_data.model_matrix      = glm::mat4(1.0f);
-
-        //    glNamedBufferData(ubo, sizeof(shader_data), &shader_data, GL_DYNAMIC_DRAW);
-
-        //    {
-        //        glCreateBuffers(1, &ubo2);
-        //        glBindBufferBase(GL_UNIFORM_BUFFER, 1, ubo2);
-
-        //        glm::vec3 color{ 1.0f, 1.0f, 1.0f };
-        //        glNamedBufferData(ubo2, sizeof(glm::vec3), &color, GL_DYNAMIC_DRAW);
-        //    }
-        //}
-
-        //glUseProgram(0);
-
-        //assert(material.buffer.data() != nullptr);
-
-        //fe::logging::info("Loaded material's color : %f %f %f", material.color.x, material.color.y, material.color.z);
+        m_OpenGLResourceManager.CreateResource(material_ptr);
     });
 
     m_ResourceManager.RunForEach<resource::Model>([&](const resource::Model&       model,
@@ -204,4 +152,14 @@ void fe::RendererOpenGL::InitializeGPUResources() {
 
         fe::logging::info("Loaded model's mesh count %i", model.meshes.size());
     });
+}
+
+void fe::RendererOpenGL::createSceneDataSSBO() {
+    GLuint opengl_scene_data_ssbo{};
+
+    glCreateBuffers(1, &opengl_scene_data_ssbo);
+    glNamedBufferStorage(opengl_scene_data_ssbo, sizeof(m_SceneData), &m_SceneData, GL_DYNAMIC_STORAGE_BIT);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, opengl_scene_data_ssbo);
+
+    m_SceneSSBO.attach(opengl_scene_data_ssbo);
 }

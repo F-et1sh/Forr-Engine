@@ -24,8 +24,9 @@ namespace fe {
 } // namespace fe
 
 void fe::ShaderReflector::Reflect(resource::Shader& shader, bool& is_valid) {
-    SpvReflectShaderModule module{};
+    is_valid = false;
 
+    SpvReflectShaderModule module{};
     spvReflectCreateShaderModule(shader.source_code.size() * sizeof(uint32_t), shader.source_code.data(), &module);
 
     uint32_t count{};
@@ -43,18 +44,15 @@ void fe::ShaderReflector::Reflect(resource::Shader& shader, bool& is_valid) {
         auto& block = binding->block;
 
         parseMember(shader, block);
-    }
 
-    spvReflectDestroyShaderModule(&module);
+        constexpr static std::string_view global_scene_data_name = "SceneData";
 
-    for (const auto& [name, _] : shader.properties) { // TODO : improve this checking
-        if (name == "SceneData") {
+        if (std::string_view(block.type_description->type_name) == global_scene_data_name) { // TODO : improve this checking
             is_valid = true;
-            return;
         }
     }
 
-    is_valid = false;
+    spvReflectDestroyShaderModule(&module);
 }
 
 namespace fe {
