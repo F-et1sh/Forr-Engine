@@ -8,6 +8,11 @@
     provide push_constants/uniforms for pushing indices to draw the models
     provide the same for Vulkan backend
     
+    ( maybe you'll need to provide caching shader properties ( vertex and fragment ) in material )
+    ( create a helper for gpu/cpu resource - it's unreal to manage )
+    
+    remove GPUResourceLookupTable and create 
+
 ### Done
     removed UBO creating. using SSBO now
     scene data moved to renderer

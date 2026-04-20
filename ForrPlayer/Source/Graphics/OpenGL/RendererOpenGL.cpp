@@ -103,17 +103,19 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
         for (const auto& primitive : mesh.primitives) {
             auto        gpu_material_ptr = m_OpenGLResourceManager.GetGPUPointer(primitive.material_ptr);
             const auto& gpu_material     = *m_OpenGLResourceManager.GetResource(gpu_material_ptr);
-            const auto& material         = m_ResourceManager.GetResource(primitive.material_ptr);
+            const auto& material         = *m_ResourceManager.GetResource(primitive.material_ptr);
 
-            const auto& shader = *m_OpenGLResourceManager.GetResource(gpu_material.shader_program_ptr);
+            const auto& gpu_shader          = *m_OpenGLResourceManager.GetResource(gpu_material.shader_program_ptr);
+            const auto& cpu_vertex_shader   = *m_ResourceManager.GetResource(material.vertex_shader_ptr);
+            const auto& cpu_fragment_shader = *m_ResourceManager.GetResource(material.fragment_shader_ptr);
 
-            glUseProgram(shader.shader_program);
+            glUseProgram(gpu_shader.shader_program);
 
             glBindVertexArray(mesh.vao);
 
             glNamedBufferSubData(m_SceneSSBO, 0, sizeof(m_SceneData), &m_SceneData);
 
-            auto location = glGetUniformLocation(shader.shader_program, "model_index");
+            auto location = glGetUniformLocation(gpu_shader.shader_program, "model_index");
             glUniform1i(location, m_MeshIndex);
 
             glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
