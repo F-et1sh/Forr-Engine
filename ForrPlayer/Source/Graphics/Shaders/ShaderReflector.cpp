@@ -13,6 +13,8 @@
 #include "pch.hpp"
 #include "Graphics/Shaders/ShaderReflector.hpp"
 
+#include <array>
+
 #define SPIRV_REFLECT_USE_SYSTEM_SPIRV_H
 #include "spirv_reflect.h"
 
@@ -34,7 +36,7 @@ void fe::ShaderReflector::Reflect(resource::Shader& shader, bool& is_valid) {
 
     std::vector<SpvReflectDescriptorBinding*> bindings(count);
     spvReflectEnumerateDescriptorBindings(&module, &count, bindings.data());
-
+    
     for (auto* binding : bindings) {
         if (binding->descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER &&
             binding->descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
@@ -44,12 +46,6 @@ void fe::ShaderReflector::Reflect(resource::Shader& shader, bool& is_valid) {
         auto& block = binding->block;
 
         parseMember(shader, block);
-
-        constexpr static std::string_view global_scene_data_name = "SceneData";
-
-        if (std::string_view(block.type_description->type_name) == global_scene_data_name) { // TODO : improve this checking
-            is_valid = true;
-        }
     }
 
     spvReflectDestroyShaderModule(&module);
@@ -59,12 +55,12 @@ namespace fe {
     Shader::Property::Type convertType(const SpvReflectTypeDescription* type) {
         if (type->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) {
             // clang-format off
-        switch (type->traits.numeric.vector.component_count) {
-            case 1: return Shader::Property::Type::FLOAT;
-            case 2: return Shader::Property::Type::VEC2;
-            case 3: return Shader::Property::Type::VEC3;
-            case 4: return Shader::Property::Type::VEC4;
-        }
+            switch (type->traits.numeric.vector.component_count) {
+                case 1: return Shader::Property::Type::FLOAT;
+                case 2: return Shader::Property::Type::VEC2;
+                case 3: return Shader::Property::Type::VEC3;
+                case 4: return Shader::Property::Type::VEC4;
+            }
             // clang-format on
         }
 

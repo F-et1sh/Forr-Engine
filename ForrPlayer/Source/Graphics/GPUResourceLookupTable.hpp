@@ -82,8 +82,8 @@ namespace fe {
         }
 
     private:
-        std::unordered_map<fe::pointer<resource::Texture>, uint64_t> m_Textures{};
-        std::unordered_map<fe::pointer<resource::Model>, uint64_t>   m_Models{};
+        std::unordered_map<fe::pointer<resource::Texture>, uint64_t>  m_Textures{};
+        std::unordered_map<fe::pointer<resource::Model>, uint64_t>    m_Models{};
         std::unordered_map<fe::pointer<resource::Material>, uint64_t> m_Materials{};
     };
 } // namespace fe

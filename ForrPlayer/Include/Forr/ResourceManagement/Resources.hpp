@@ -30,7 +30,7 @@ namespace fe::resource {
 #define FORR_RESOURCE_BODY(T) \
     FORR_CLASS_NONCOPYABLE(T) \
     FORR_CLASS_MOVABLE(T)     \
-    GUID guid{};
+    GUID guid{}; // for future serialization
 
     struct FORR_API Texture {
         enum class ColorSpace {
