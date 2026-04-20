@@ -9,8 +9,7 @@
     provide the same for Vulkan backend
     
 ### Done
-    removed UBO creating
-    using SSBO now
+    removed UBO creating. using SSBO now
 
 ### Problem
     -
