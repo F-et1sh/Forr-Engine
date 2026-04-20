@@ -58,7 +58,7 @@ fe::pointer<fe::resource::Shader> fe::ShaderImporter::Import(ResourceStorage& st
     ShaderReflector::Reflect(shader, is_valid);
 
     if (!is_valid) {
-        fe::logging::error("While reflection. Shader was invalid\nPath : %s", resource_full_path.string().c_str());
+        fe::logging::error("Shader hasn't enough members ( check SceneData SSBO )\nPath : %s", resource_full_path.string().c_str());
         return {};
     }
 
