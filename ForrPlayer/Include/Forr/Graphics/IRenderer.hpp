@@ -42,6 +42,15 @@ namespace fe {
         ~DrawMeshCommand() = default;
     };
 
+    struct GlobalSceneData {
+        glm::mat4 projection_matrix{};
+        glm::mat4 view_matrix{};
+        glm::mat4 model_matrices[32];
+
+        GlobalSceneData()  = default;
+        ~GlobalSceneData() = default;
+    };
+
     // if you want to add some variable here, use static method IRenderer::Create()
     // the member should be assigned to the devired class, not here
     class FORR_API IRenderer {

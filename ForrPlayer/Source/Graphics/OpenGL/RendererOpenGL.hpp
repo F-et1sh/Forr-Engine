@@ -34,6 +34,9 @@ namespace fe {
         void InitializeGPUResources() override;
 
     private:
+        void createSceneDataSSBO();
+
+    private:
         ResourceManager& m_ResourceManager;
 
         IPlatformSystem& m_PlatformSystem;
@@ -43,10 +46,10 @@ namespace fe {
 
         OpenGLResourceManager m_OpenGLResourceManager{ m_ResourceManager };
 
-        Camera     m_Camera{};     // temp
-        ShaderData m_ShaderData{}; // temp
-        size_t     m_I{};          // temp
+        Camera m_Camera{}; // temp
 
-        fe::gl::Buffer m_SceneSSBO{}; // temp
+        size_t          m_MeshIndex{};
+        GlobalSceneData m_SceneData{};
+        fe::gl::Buffer  m_SceneSSBO{};
     };
 } // namespace fe

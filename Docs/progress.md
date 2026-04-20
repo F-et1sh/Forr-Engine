@@ -10,6 +10,7 @@
     
 ### Done
     removed UBO creating. using SSBO now
+    scene data moved to renderer
 
 ### Problem
     -
