@@ -54,7 +54,13 @@ fe::pointer<fe::resource::Shader> fe::ShaderImporter::Import(ResourceStorage& st
     const auto& resource_management_context = storage.GetContext();
     ShaderCompiler::Compile(shader.source_code, source_code, shader.type, resource_management_context.graphics_backend);
 
-    ShaderReflector::Reflect(shader);
+    bool is_valid{};
+    ShaderReflector::Reflect(shader, is_valid);
+
+    if (!is_valid) {
+        fe::logging::error("While reflection. Shader was invalid\nPath : %s", resource_full_path.string().c_str());
+        return {};
+    }
 
     auto ptr = storage.CreateResource(std::move(shader));
     return ptr;

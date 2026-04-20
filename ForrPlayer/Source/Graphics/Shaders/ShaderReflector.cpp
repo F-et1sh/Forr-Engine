@@ -23,10 +23,10 @@ namespace fe {
     static void                   parseMember(resource::Shader& shader, const SpvReflectBlockVariable& block);
 } // namespace fe
 
-void fe::ShaderReflector::Reflect(resource::Shader& shader) {
+void fe::ShaderReflector::Reflect(resource::Shader& shader, bool& is_valid) {
     SpvReflectShaderModule module{};
 
-    spvReflectCreateShaderModule(shader.source_code.size(), shader.source_code.data(), &module);
+    spvReflectCreateShaderModule(shader.source_code.size() * sizeof(uint32_t), shader.source_code.data(), &module);
 
     uint32_t count{};
     spvReflectEnumerateDescriptorBindings(&module, &count, nullptr);
@@ -46,6 +46,15 @@ void fe::ShaderReflector::Reflect(resource::Shader& shader) {
     }
 
     spvReflectDestroyShaderModule(&module);
+
+    for (const auto& [name, _] : shader.properties) { // TODO : improve this checking
+        if (name == "SceneData") {
+            is_valid = true;
+            return;
+        }
+    }
+
+    is_valid = false;
 }
 
 namespace fe {

@@ -19,7 +19,7 @@ namespace fe {
         ShaderReflector()  = default;
         ~ShaderReflector() = default;
 
-        static void Reflect(resource::Shader& shader);
+        static void Reflect(resource::Shader& shader, bool& is_valid);
 
     private:
     };

@@ -2,11 +2,11 @@
 
 layout (location = 0) in vec3 a_Position;
 
-layout (binding = 0) uniform UBO {
+layout (std430, binding = 0) readonly buffer SceneData {
 	mat4 projection_matrix;
 	mat4 view_matrix;
 	mat4 model_matrices[32];
-} ubo;
+} scene_data;
 
 #ifdef FORR_USE_OPENGL
 layout (location = 0) uniform int model_index;
@@ -18,8 +18,8 @@ layout(push_constant) uniform PushConstants {
 
 void main() {
 #ifdef FORR_USE_OPENGL
-	gl_Position = ubo.projection_matrix * ubo.view_matrix * ubo.model_matrices[model_index] * vec4(a_Position.xyz, 1.0f);
+	gl_Position = scene_data.projection_matrix * scene_data.view_matrix * scene_data.model_matrices[model_index] * vec4(a_Position.xyz, 1.0f);
 #else
-	gl_Position = ubo.projection_matrix * ubo.view_matrix * ubo.model_matrices[constants.index] * vec4(a_Position.xyz, 1.0f);
+	gl_Position = scene_data.projection_matrix * scene_data.view_matrix * scene_data.model_matrices[constants.index] * vec4(a_Position.xyz, 1.0f);
 #endif
 }

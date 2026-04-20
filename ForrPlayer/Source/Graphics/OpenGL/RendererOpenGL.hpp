@@ -46,5 +46,7 @@ namespace fe {
         Camera     m_Camera{};     // temp
         ShaderData m_ShaderData{}; // temp
         size_t     m_I{};          // temp
+
+        fe::gl::Buffer m_SceneSSBO{}; // temp
     };
 } // namespace fe
