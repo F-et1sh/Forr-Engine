@@ -37,7 +37,6 @@ namespace fe::resource {
             LINEAR,
             SRGB
         };
-
         enum class InternalFormat {
             RGBA8,
             RGB8,
@@ -46,14 +45,12 @@ namespace fe::resource {
             SRGB8_ALPHA8,
             SRGB8
         };
-
         enum class DataFormat {
             RGBA,
             RGB,
             RG,
             RED
         };
-
         enum class MinFilter {
             NEAREST,
             LINEAR,
@@ -62,18 +59,15 @@ namespace fe::resource {
             NEAREST_MIPMAP_LINEAR,
             LINEAR_MIPMAP_LINEAR
         };
-
         enum class MagFilter {
             NEAREST,
             LINEAR,
         };
-
         enum class Wrap {
             CLAMP_TO_EDGE,
             MIRRORED_REPEAT,
             REPEAT
         };
-
         enum class Target {
             TEXTURE_2D,
             TEXTURE_3D,
@@ -110,7 +104,6 @@ namespace fe::resource {
             FRAGMENT
             // add more later...
         };
-
         struct FORR_API Property {
         public:
             enum class Type {
@@ -265,6 +258,8 @@ namespace fe::resource {
         std::vector<Skin>      skins{};
         std::vector<Mesh>      meshes{};
         std::vector<Animation> animations{};
+
+        GPUHandle<resource::Model> gpu_handle{};
 
         Model()  = default;
         ~Model() = default;

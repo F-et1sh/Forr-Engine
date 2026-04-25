@@ -24,4 +24,16 @@ namespace fe {
     enum class FORR_API PlatformBackend {
         GLFW
     };
+
+    // GPU handle to be put in CPU resource
+    // this is needed for GPU resource managers
+    template <typename T>
+    struct GPUHandle {
+        size_t index{};
+
+        GPUHandle()  = default;
+        ~GPUHandle() = default;
+
+        explicit GPUHandle(size_t index) : index(index) {}
+    };
 } // namespace fe

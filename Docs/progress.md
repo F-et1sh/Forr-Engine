@@ -1,5 +1,24 @@
 # Forr-Engine Devlog
 
+## 26.04.2026
+### Goal
+    devide UBO/SSBO and push_constants in fe::resource::Material
+    provide push_constants/uniforms for pushing indices to draw the models
+    provide the same for Vulkan backend
+    
+    ( maybe you'll need to provide caching shader properties ( vertex and fragment ) in material )
+    ( create a helper for gpu/cpu resource - it's unreal to manage )
+    
+    remove GPUResourceLookupTable and put some GPUHandle to the resource
+
+### Done
+    GPUResourceLookupTable has removed
+    GPUHandle<> added
+
+
+### Problem
+    -
+
 ## 22.04.2026
 ### Goal
     devide UBO/SSBO and push_constants in fe::resource::Material

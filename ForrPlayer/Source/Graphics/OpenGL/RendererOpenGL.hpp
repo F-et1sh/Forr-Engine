@@ -35,6 +35,8 @@ namespace fe {
 
     private:
         void createSceneDataSSBO();
+        void increaseMeshIndex() noexcept { m_MeshIndex++; }
+        void resetMeshIndex() noexcept { m_MeshIndex = 0; }
 
     private:
         ResourceManager& m_ResourceManager;
