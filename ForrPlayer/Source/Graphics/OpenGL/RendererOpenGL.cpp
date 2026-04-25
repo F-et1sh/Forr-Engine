@@ -13,9 +13,6 @@
 #include "pch.hpp"
 #include "RendererOpenGL.hpp"
 
-static unsigned int ubo{};  // temp
-static unsigned int ubo2{}; // temp
-
 fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
                                    IPlatformSystem&    platform_system,
                                    size_t              primary_window_index,
@@ -87,58 +84,21 @@ void fe::RendererOpenGL::BeginFrame() {
 }
 
 void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
+    const auto& model = m_ResourceManager.GetResource(command.model_ptr);
+    //const auto& gpu_model = m_OpenGLResourceManager.GetResource(model->gpu_handle); // TODO : this must work
 
-    // TODO : wtf ?
-    // Meshes also can have thier own transform, but only models can
-    // Use resource::Model::Node::local/global_matrix
-
-    auto        gpu_ptr = m_OpenGLResourceManager.GetGPUPointer(command.model_ptr);
-    const auto& model   = *m_OpenGLResourceManager.GetResource(gpu_ptr);
-
-    m_SceneData.model_matrices[m_MeshIndex] = command.transform;
-
-    for (auto mesh_pointer : model.pointers_mesh) {
-        const auto& mesh = *m_OpenGLResourceManager.GetResource(mesh_pointer);
-
-        for (const auto& primitive : mesh.primitives) {
-            auto        gpu_material_ptr = m_OpenGLResourceManager.GetGPUPointer(primitive.material_ptr);
-            const auto& gpu_material     = *m_OpenGLResourceManager.GetResource(gpu_material_ptr);
-            const auto& material         = *m_ResourceManager.GetResource(primitive.material_ptr);
-
-            const auto& gpu_shader          = *m_OpenGLResourceManager.GetResource(gpu_material.shader_program_ptr);
-            const auto& cpu_vertex_shader   = *m_ResourceManager.GetResource(material.vertex_shader_ptr);
-            const auto& cpu_fragment_shader = *m_ResourceManager.GetResource(material.fragment_shader_ptr);
-
-            glUseProgram(gpu_shader.shader_program);
-
-            glBindVertexArray(mesh.vao);
-
-            glNamedBufferSubData(m_SceneSSBO, 0, sizeof(m_SceneData), &m_SceneData);
-
-            auto location = glGetUniformLocation(gpu_shader.shader_program, "model_index");
-            glUniform1i(location, m_MeshIndex);
-
-            glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
-
-            glBindVertexArray(0);
-
-            glUseProgram(0);
-        }
-    }
-
-    m_MeshIndex++;
+    this->increaseMeshIndex();
 }
 
 void fe::RendererOpenGL::EndFrame() {
     glfwSwapBuffers(m_GLFWwindow);
-
-    m_MeshIndex = 0;
+    this->resetMeshIndex();
 }
 
 void fe::RendererOpenGL::InitializeGPUResources() {
     m_ResourceManager.RunForEach<resource::Texture>([&](const resource::Texture&       texture,
                                                         fe::pointer<resource::Texture> texture_ptr) {
-        m_OpenGLResourceManager.CreateResource(texture_ptr);
+        m_OpenGLResourceManager.CreateResource(texture);
 
         fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
     });
