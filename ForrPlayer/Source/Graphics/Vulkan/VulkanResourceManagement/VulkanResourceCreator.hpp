@@ -11,7 +11,6 @@
 ===============================================*/
 
 #include "Graphics/Vulkan/VulkanContext.hpp"
-#include "VulkanResourceStorage.hpp"
 
 namespace fe {
     class VulkanResourceCreator {

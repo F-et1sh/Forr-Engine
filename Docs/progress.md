@@ -14,7 +14,8 @@
 ### Done
     GPUResourceLookupTable has removed
     GPUHandle<> added
-
+    IMPORT_INSTANCE -> IMPORTER_INSTANCE
+    GPU resource management of OpenGL is rewrote
 
 ### Problem
     -

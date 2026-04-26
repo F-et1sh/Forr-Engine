@@ -40,7 +40,8 @@ namespace fe {
     };
 
     struct OpenGLMaterial {
-        fe::pointer<OpenGLShaderProgram> shader_program_ptr{};
+        GPUHandle<OpenGLShaderProgram> shader_program_handle{};
+        // std::vector<uint8_t> buffer{}; - take this from the CPU material ( fe::resource::Material )
 
         OpenGLMaterial()  = default;
         ~OpenGLMaterial() = default;
@@ -53,8 +54,6 @@ namespace fe {
 
         uint32_t index_offset{};
         uint32_t index_count{};
-
-        fe::pointer<resource::Material> material_ptr{};
 
         OpenGLPrimitive()  = default;
         ~OpenGLPrimitive() = default;
@@ -75,23 +74,27 @@ namespace fe {
         FORR_RESOURCE_BODY(OpenGLMesh)
     };
 
-    struct OpenGLModel {
-        std::vector<fe::pointer<OpenGLMesh>>    pointers_mesh{};
-        std::vector<fe::pointer<OpenGLTexture>> pointers_texture{};
-
-        OpenGLModel()  = default;
-        ~OpenGLModel() = default;
-
-        FORR_RESOURCE_BODY(OpenGLModel)
-    };
-
     template <typename T>
     concept opengl_resource_t =
         (std::is_same_v<T, OpenGLTexture>) ||
         (std::is_same_v<T, OpenGLMesh>) ||
         (std::is_same_v<T, OpenGLShaderProgram>) ||
-        (std::is_same_v<T, OpenGLMaterial>) ||
-        (std::is_same_v<T, OpenGLModel>);
+        (std::is_same_v<T, OpenGLMaterial>);
+
+    template <typename T>
+    struct GPUResourceTraits;
+
+#define GPU_RESOURCE_TRAITS_INSTANCE(CPU_TYPE, GPU_TYPE) \
+    template <>                                          \
+    struct GPUResourceTraits<CPU_TYPE> {                 \
+        using type = GPU_TYPE;                           \
+    };
+
+    GPU_RESOURCE_TRAITS_INSTANCE(resource::Texture, OpenGLTexture)
+    GPU_RESOURCE_TRAITS_INSTANCE(resource::Model::Mesh, OpenGLMesh)
+    //GPU_RESOURCE_TRAITS_INSTANCE(resource::Shader, OpenGLShaderProgram) // this mustn't work because 'resource::Shader' is a single shader and 'OpenGLShaderProgram' is a program, which contains at least 2 shaders
+    GPU_RESOURCE_TRAITS_INSTANCE(OpenGLShaderProgram, OpenGLShaderProgram) // this needs to use 'GPUHandle<OpenGLShaderProgram>' in GPU side
+    GPU_RESOURCE_TRAITS_INSTANCE(resource::Material, OpenGLMaterial)
 
 #undef FORR_RESOURCE_BODY
 } // namespace fe
