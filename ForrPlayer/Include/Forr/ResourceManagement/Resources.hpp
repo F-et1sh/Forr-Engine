@@ -138,6 +138,8 @@ namespace fe::resource {
 
     struct FORR_API Material {
     public:
+        GPUHandle<Material> gpu_handle{};
+        
         fe::pointer<fe::resource::Shader> vertex_shader_ptr{};
         fe::pointer<fe::resource::Shader> fragment_shader_ptr{};
         // add more later...
@@ -153,7 +155,7 @@ namespace fe::resource {
     struct FORR_API Model {
         struct FORR_API Mesh {
             struct FORR_API Primitive {
-                fe::pointer<fe::resource::Material> material_ptr{};
+                fe::pointer<Material> material_ptr{};
 
                 RenderMode render_mode{ RenderMode::TRIANGLES }; // triangles by default
 
@@ -164,6 +166,8 @@ namespace fe::resource {
                 Primitive()  = default;
                 ~Primitive() = default;
             };
+
+            GPUHandle<Mesh> gpu_handle{};
 
             std::string name{};
 
@@ -258,8 +262,6 @@ namespace fe::resource {
         std::vector<Skin>      skins{};
         std::vector<Mesh>      meshes{};
         std::vector<Animation> animations{};
-
-        GPUHandle<resource::Model> gpu_handle{};
 
         Model()  = default;
         ~Model() = default;

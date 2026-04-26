@@ -18,7 +18,7 @@
 #include "Importers/ShaderImporter.hpp"
 #include "Importers/MaterialImporter.hpp"
 
-#define IMPORT_INSTANCE(T, T_IMPORTER)                                                                     \
+#define IMPORTER_INSTANCE(T, T_IMPORTER)                                                                   \
     template <>                                                                                            \
     fe::pointer<T> fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_full_path) { \
         return T_IMPORTER::Import(m_Storage, resource_full_path);                                          \
@@ -44,9 +44,9 @@ void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_
     }
 }
 
-IMPORT_INSTANCE(fe::resource::Texture, fe::TextureImporter)
-IMPORT_INSTANCE(fe::resource::Model, fe::GLTFImporter)
-IMPORT_INSTANCE(fe::resource::Shader, fe::ShaderImporter)
-IMPORT_INSTANCE(fe::resource::Material, fe::MaterialImporter)
+IMPORTER_INSTANCE(fe::resource::Texture, fe::TextureImporter)
+IMPORTER_INSTANCE(fe::resource::Model, fe::GLTFImporter)
+IMPORTER_INSTANCE(fe::resource::Shader, fe::ShaderImporter)
+IMPORTER_INSTANCE(fe::resource::Material, fe::MaterialImporter)
 
-#undef IMPORT_INSTANCE
+#undef IMPORTER_INSTANCE

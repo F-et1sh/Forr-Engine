@@ -16,7 +16,6 @@
 #include "Graphics/Vulkan/VulkanContext.hpp"
 
 #include "VulkanResourceCreator.hpp"
-#include "Graphics/GPUResourceLookupTable.hpp"
 
 namespace fe {
     template <typename T>

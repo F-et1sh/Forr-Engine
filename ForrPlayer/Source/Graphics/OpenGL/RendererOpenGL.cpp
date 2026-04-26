@@ -84,8 +84,35 @@ void fe::RendererOpenGL::BeginFrame() {
 }
 
 void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
-    const auto& model = m_ResourceManager.GetResource(command.model_ptr);
-    //const auto& gpu_model = m_OpenGLResourceManager.GetResource(model->gpu_handle); // TODO : this must work
+    const auto& model = *m_ResourceManager.GetResource(command.model_ptr);
+
+    for (const auto& mesh : model.meshes) {
+        const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(mesh.gpu_handle);
+
+        for (size_t i = 0; i < mesh.primitives.size(); i++) {
+            const auto& primitive        = mesh.primitives[i];
+            const auto& opengl_primitive = opengl_mesh.primitives[i];
+
+            const auto& material              = *m_ResourceManager.GetResource(primitive.material_ptr);
+            const auto& opengl_material       = m_OpenGLResourceManager.GetResource(material.gpu_handle);
+            const auto& opengl_shader_program = m_OpenGLResourceManager.GetResource(opengl_material.shader_program_handle);
+
+            glUseProgram(opengl_shader_program.shader_program);
+
+            glBindVertexArray(opengl_mesh.vao);
+
+            glNamedBufferSubData(m_SceneSSBO, 0, sizeof(m_SceneData), &m_SceneData);
+
+            auto location = glGetUniformLocation(opengl_shader_program.shader_program, "model_index");
+            glUniform1i(location, m_MeshIndex);
+
+            glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
+
+            glBindVertexArray(0);
+
+            glUseProgram(0);
+        }
+    }
 
     this->increaseMeshIndex();
 }
@@ -96,21 +123,18 @@ void fe::RendererOpenGL::EndFrame() {
 }
 
 void fe::RendererOpenGL::InitializeGPUResources() {
-    m_ResourceManager.RunForEach<resource::Texture>([&](const resource::Texture&       texture,
-                                                        fe::pointer<resource::Texture> texture_ptr) {
+    m_ResourceManager.RunForEach<resource::Texture>([&](resource::Texture& texture) {
         m_OpenGLResourceManager.CreateResource(texture);
 
         fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
     });
 
-    m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material&       material,
-                                                         fe::pointer<resource::Material> material_ptr) {
-        m_OpenGLResourceManager.CreateResource(material_ptr);
+    m_ResourceManager.RunForEach<resource::Material>([&](resource::Material& material) {
+        m_OpenGLResourceManager.CreateResource(material);
     });
 
-    m_ResourceManager.RunForEach<resource::Model>([&](const resource::Model&       model,
-                                                      fe::pointer<resource::Model> model_ptr) {
-        m_OpenGLResourceManager.CreateResource(model_ptr);
+    m_ResourceManager.RunForEach<resource::Model>([&](resource::Model& model) {
+        m_OpenGLResourceManager.CreateResource(model);
 
         fe::logging::info("Loaded model's mesh count %i", model.meshes.size());
     });
