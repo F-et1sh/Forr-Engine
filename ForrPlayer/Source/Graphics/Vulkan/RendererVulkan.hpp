@@ -29,7 +29,7 @@
 #include "VulkanTypes.hpp"
 
 #include "Graphics/Camera.hpp"
-#include "VulkanResourceManagement/VulkanResourceManager.hpp"
+#include "VulkanResourceManager.hpp"
 
 namespace fe {
     class RendererVulkan : public IRenderer {

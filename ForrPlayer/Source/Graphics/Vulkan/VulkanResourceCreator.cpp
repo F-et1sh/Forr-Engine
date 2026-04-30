@@ -3,7 +3,7 @@
     Forr Engine
 
     File : VulkanResourceCreator.cpp
-    Role : creates Vulkan resources from unified ones
+    Role : GPU Resource Manager ( for Vulkan )
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.

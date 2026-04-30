@@ -26,10 +26,6 @@ fe::Application::Application(const ApplicationDesc& desc) {
         }
         i++;
     });
-
-    m_ResourceManager->RunForEach<resource::Material>([&](fe::pointer<resource::Material> material_ptr, const resource::Material& material) {
-        // ...
-    });
 }
 
 void fe::Application::Run() {

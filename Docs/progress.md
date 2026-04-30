@@ -7,6 +7,7 @@
 
 ### Done
     OpenGLResourceManager finalized
+    OpenGL renderer fixed
 
 ### Problem
     -

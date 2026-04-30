@@ -97,11 +97,12 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
             const auto& opengl_material       = m_OpenGLResourceManager.GetResource(material.gpu_handle);
             const auto& opengl_shader_program = m_OpenGLResourceManager.GetResource(opengl_material.shader_program_handle);
 
+            m_SceneData.model_matrices[m_MeshIndex] = command.transform; // TODO : check "Docs/not-now-but.md" 30.04.2026 - add sorting
+            glNamedBufferSubData(m_SceneSSBO, 0, sizeof(m_SceneData), &m_SceneData);
+
             glUseProgram(opengl_shader_program.shader_program);
 
             glBindVertexArray(opengl_mesh.vao);
-
-            glNamedBufferSubData(m_SceneSSBO, 0, sizeof(m_SceneData), &m_SceneData);
 
             auto location = glGetUniformLocation(opengl_shader_program.shader_program, "model_index");
             glUniform1i(location, m_MeshIndex);
@@ -109,7 +110,6 @@ void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
             glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
 
             glBindVertexArray(0);
-
             glUseProgram(0);
         }
     }

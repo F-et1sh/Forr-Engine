@@ -25,9 +25,7 @@ namespace fe {
     static void                   parseMember(resource::Shader& shader, const SpvReflectBlockVariable& block);
 } // namespace fe
 
-void fe::ShaderReflector::Reflect(resource::Shader& shader, bool& is_valid) {
-    is_valid = false;
-
+void fe::ShaderReflector::Reflect(resource::Shader& shader, const std::filesystem::path& resource_full_path) {
     SpvReflectShaderModule module{};
     spvReflectCreateShaderModule(shader.source_code.size() * sizeof(uint32_t), shader.source_code.data(), &module);
 
@@ -36,7 +34,9 @@ void fe::ShaderReflector::Reflect(resource::Shader& shader, bool& is_valid) {
 
     std::vector<SpvReflectDescriptorBinding*> bindings(count);
     spvReflectEnumerateDescriptorBindings(&module, &count, bindings.data());
-    
+
+    bool is_scene_data_ssbo_found = false;
+
     for (auto* binding : bindings) {
         if (binding->descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER &&
             binding->descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
@@ -46,9 +46,21 @@ void fe::ShaderReflector::Reflect(resource::Shader& shader, bool& is_valid) {
         auto& block = binding->block;
 
         parseMember(shader, block);
+
+        if (std::string_view(binding->type_description->type_name) == "SceneData") {
+            is_scene_data_ssbo_found = true;
+
+            if (binding->descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
+                fe::logging::warning("SceneData structure found but it is not SSBO. Path : %s", resource_full_path.string().c_str());
+            }
+        }
     }
 
     spvReflectDestroyShaderModule(&module);
+
+    if (!is_scene_data_ssbo_found) {
+        fe::logging::warning("SceneData SSBO is not found. Path : %s", resource_full_path.string().c_str());
+    }
 }
 
 namespace fe {

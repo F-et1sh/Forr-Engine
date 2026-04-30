@@ -225,8 +225,8 @@ fe::GPUHandle<Model::Mesh> fe::OpenGLResourceManager::createMesh(resource::Model
 }
 
 fe::GPUHandle<fe::OpenGLShaderProgram> fe::OpenGLResourceManager::createShaderProgram(OpenGLMaterial& opengl_material, std::vector<resource::Shader*> shaders) {
-    OpenGLShaderProgram opengl_shader_program{};
-    GLuint              shader_program = glCreateProgram();
+    OpenGLShaderProgram opengl_shader_program_raii{};
+    GLuint              opengl_shader_program = glCreateProgram();
 
     for (size_t i = 0; i < shaders.size(); i++) {
         const auto& shader = shaders[i];
@@ -259,12 +259,16 @@ fe::GPUHandle<fe::OpenGLShaderProgram> fe::OpenGLResourceManager::createShaderPr
             fe::logging::error("Unified -> OpenGL. Failed to compile a shader\nMessage : %s", message);
         }
         else {
-            glAttachShader(shader_program, opengl_shader);
+            glAttachShader(opengl_shader_program, opengl_shader);
         }
 
         glDeleteShader(opengl_shader);
     }
-    opengl_shader_program.shader_program.attach(shader_program);
 
-    return GPUHandle<OpenGLShaderProgram>(this->storeResource(opengl_material.shader_program_handle, opengl_shader_program, m_StorageShaderPrograms));
+    glLinkProgram(opengl_shader_program);
+    glValidateProgram(opengl_shader_program);
+
+    opengl_shader_program_raii.shader_program.attach(opengl_shader_program);
+
+    return GPUHandle<OpenGLShaderProgram>(this->storeResource(opengl_material.shader_program_handle, opengl_shader_program_raii, m_StorageShaderPrograms));
 }

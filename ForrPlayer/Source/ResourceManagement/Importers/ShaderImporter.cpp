@@ -54,13 +54,7 @@ fe::pointer<fe::resource::Shader> fe::ShaderImporter::Import(ResourceStorage& st
     const auto& resource_management_context = storage.GetContext();
     ShaderCompiler::Compile(shader.source_code, source_code, shader.type, resource_management_context.graphics_backend);
 
-    bool is_valid{};
-    ShaderReflector::Reflect(shader, is_valid);
-
-    if (!is_valid) {
-        fe::logging::error("Shader hasn't enough members ( check SceneData SSBO )\nPath : %s", resource_full_path.string().c_str());
-        return {};
-    }
+    ShaderReflector::Reflect(shader, resource_full_path);
 
     auto ptr = storage.CreateResource(std::move(shader));
     return ptr;

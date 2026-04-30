@@ -1,5 +1,9 @@
 # Forr-Engine Not now, but :
 
+# Added 30.04.2026
+- provide sorting and passing meshes aka draw commands, not hierarchy-based system like now.
+    "Tea in a cup does NOT belong to that cup - it is a separate object"
+
 # Added 14.04.2026
 - provide capacity increasing for fe::typed_pointer_storage and use it in the engine
 
