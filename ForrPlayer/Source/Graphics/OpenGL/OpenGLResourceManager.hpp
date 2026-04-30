@@ -31,7 +31,7 @@ namespace fe {
         // here used 'typename T' instead of 'resource::resource_t T' because this function can be called by GPU types too
         // for example : 'typename T = OpenGLShaderProgram', which is called by 'OpenGLMaterial'
         template <typename T>
-        const typename GPUResourceTraits<T>::type& GetResource(GPUHandle<T> handle) const;
+        const typename OpenGLResourceTraits<T>::type& GetResource(GPUHandle<T> handle) const;
 
     private: // here functions, which used like helpers to create some resources that don't have thier own CPU realization.
              // The functions return 'GPUHandle<>' but you DON'T have to set 'GPUHandle<> gpu_handle' in the resources, the functions does it by themselves

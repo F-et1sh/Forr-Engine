@@ -39,6 +39,13 @@
     <ClInclude Include="Include\Forr\Graphics\Shaders\ShaderReflector.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceManagementContext.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLRAII.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceManager.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VKTools.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanContext.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanRAII.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanSwapchain.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanTypes.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -69,20 +76,12 @@
     <ClCompile Include="Source\ResourceManagement\Importers\ShaderImporter.cpp" />
     <ClCompile Include="Source\Graphics\Shaders\ShaderCompiler.cpp" />
     <ClCompile Include="Source\Graphics\Shaders\ShaderReflector.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManager.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\Importers\README.md" />
-    <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceCreator.cpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceCreator.hpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceManager.cpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceManager.hpp" />
-    <None Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
-    <None Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
-    <None Include="Source\Graphics\Vulkan\VKTools.hpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanContext.hpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanRAII.hpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanSwapchain.hpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanTypes.hpp" />
+    <None Include="Source\Graphics\Vulkan\VulkanResourceCreator.cpp" />
+    <None Include="Source\Graphics\Vulkan\VulkanResourceCreator.hpp" />
   </ItemGroup>
 </Project>

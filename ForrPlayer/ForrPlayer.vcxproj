@@ -120,14 +120,14 @@
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLTypes.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\Shader.hpp" />
-    <None Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceCreator.hpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanTypes.hpp" />
-    <None Include="Source\Graphics\Vulkan\VKTools.hpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanRAII.hpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanContext.hpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceManager.hpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanSwapchain.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
+    <None Include="Source\Graphics\Vulkan\VulkanResourceCreator.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanTypes.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VKTools.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanRAII.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanContext.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceManager.hpp" />
+    <ClInclude Include="Source\Graphics\Vulkan\VulkanSwapchain.hpp" />
     <ClInclude Include="Source\Platform\GLFW\PlatformSystemGLFW.hpp" />
     <ClInclude Include="Source\Platform\GLFW\WindowGLFW.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\GLTFImporter.hpp" />
@@ -174,10 +174,10 @@
     <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManager.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\RendererOpenGL.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
-    <None Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceCreator.cpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\VulkanResourceManager.cpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
+    <None Include="Source\Graphics\Vulkan\VulkanResourceCreator.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManager.cpp" />
+    <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="Source\Layer.cpp" />
     <ClCompile Include="Source\logging.cpp" />
     <ClCompile Include="Source\path.cpp" />
@@ -193,9 +193,6 @@
     <ClCompile Include="Source\ResourceManagement\Importers\TextureImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceManager.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Source\Graphics\Vulkan\VulkanResourceManagement\Importers\README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

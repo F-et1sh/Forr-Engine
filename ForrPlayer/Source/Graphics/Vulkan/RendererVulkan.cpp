@@ -53,113 +53,112 @@ void fe::RendererVulkan::SetClearColor(float red, float green, float blue, float
 }
 
 void fe::RendererVulkan::Draw(DrawMeshCommand command) {
-    { // temp
-        auto glfw_window = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
+    //{ // temp
+    //    auto glfw_window = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
 
-        float speed = 0.1f;
+    //    float speed = 0.1f;
 
-        if (glfwGetKey(glfw_window, GLFW_KEY_A))
-            m_Camera.translate(glm::vec3(speed, 0.0f, 0.0f));
-        else if (glfwGetKey(glfw_window, GLFW_KEY_D))
-            m_Camera.translate(glm::vec3(-speed, 0.0f, 0.0f));
+    //    if (glfwGetKey(glfw_window, GLFW_KEY_A))
+    //        m_Camera.translate(glm::vec3(speed, 0.0f, 0.0f));
+    //    else if (glfwGetKey(glfw_window, GLFW_KEY_D))
+    //        m_Camera.translate(glm::vec3(-speed, 0.0f, 0.0f));
 
-        if (glfwGetKey(glfw_window, GLFW_KEY_W))
-            m_Camera.translate(glm::vec3(0.0f, 0.0f, speed));
-        else if (glfwGetKey(glfw_window, GLFW_KEY_S))
-            m_Camera.translate(glm::vec3(0.0f, 0.0f, -speed));
-    }
+    //    if (glfwGetKey(glfw_window, GLFW_KEY_W))
+    //        m_Camera.translate(glm::vec3(0.0f, 0.0f, speed));
+    //    else if (glfwGetKey(glfw_window, GLFW_KEY_S))
+    //        m_Camera.translate(glm::vec3(0.0f, 0.0f, -speed));
+    //}
 
-    auto        gpu_ptr      = m_VulkanResourceManager.GetGPUPointer(command.model_ptr);
-    const auto& vulkan_model = *m_VulkanResourceManager.GetResource(gpu_ptr);
+    //auto        gpu_ptr      = m_VulkanResourceManager.GetGPUPointer(command.model_ptr);
+    //const auto& vulkan_model = *m_VulkanResourceManager.GetResource(gpu_ptr);
 
-    static ShaderData shader_data{};
-    shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
-    shader_data.view_matrix       = m_Camera.getViewMatrix();
+    //static ShaderData shader_data{};
+    //shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
+    //shader_data.view_matrix       = m_Camera.getViewMatrix();
 
-    uint32_t i = 0;
-    if (vulkan_model.pointers_mesh.size() != 8) {
-        i = 1;
-    }
+    //uint32_t i = 0;
+    //if (vulkan_model.pointers_mesh.size() != 8) {
+    //    i = 1;
+    //}
 
-    shader_data.model_matrices[i] = command.transform;
+    //shader_data.model_matrices[i] = command.transform;
 
-    memcpy(m_UniformBuffers[m_CurrentFrame].mapped, &shader_data, sizeof(ShaderData));
+    //memcpy(m_UniformBuffers[m_CurrentFrame].mapped, &shader_data, sizeof(ShaderData));
 
-    if (command.mesh_index != ~0) {
-        auto        mesh_pointer = vulkan_model.pointers_mesh[command.mesh_index];
-        const auto& mesh         = *m_VulkanResourceManager.GetResource(mesh_pointer);
+    //if (command.mesh_index != ~0) {
+    //    auto        mesh_pointer = vulkan_model.pointers_mesh[command.mesh_index];
+    //    const auto& mesh         = *m_VulkanResourceManager.GetResource(mesh_pointer);
 
-        //const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame]; // temp
-        //{ // temp
+    //    //const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame]; // temp
+    //    //{ // temp
 
-        //    VkDeviceSize offsets[1]{ 0 };
+    //    //    VkDeviceSize offsets[1]{ 0 };
 
-        //    VkBuffer vertex_buffer_raw = mesh.vertex_buffer.buffer;
-        //    vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
+    //    //    VkBuffer vertex_buffer_raw = mesh.vertex_buffer.buffer;
+    //    //    vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
 
-        //    VkBuffer index_buffer_raw = mesh.index_buffer.buffer;
-        //    vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
+    //    //    VkBuffer index_buffer_raw = mesh.index_buffer.buffer;
+    //    //    vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
 
-        //    //vkCmdPushConstants(command_buffer, m_PipelineLayout, )
-        //}
+    //    //    //vkCmdPushConstants(command_buffer, m_PipelineLayout, )
+    //    //}
 
-        for (const auto& primitive : mesh.primitives) {
+    //    for (const auto& primitive : mesh.primitives) {
 
-            if (primitive.index_count > 0) {
+    //        if (primitive.index_count > 0) {
 
-                // TODO : bind material ( provide materials )
+    //            // TODO : bind material ( provide materials )
 
-                // TODO : do not find vertex and index buffers multiple times
-                this->DrawPrimitive(mesh.vertex_buffer, mesh.index_buffer, primitive.index_offset, primitive.index_count, i);
+    //            // TODO : do not find vertex and index buffers multiple times
+    //            this->DrawPrimitive(mesh.vertex_buffer, mesh.index_buffer, primitive.index_offset, primitive.index_count, i);
 
-                //vkCmdDrawIndexed(command_buffer, primitive.index_count, 1, primitive.index_offset, 0, 0); // temp
-            }
-            else {
-                // TODO : provide this if it is needed
-            }
-        }
-    }
-    else {
-        for (auto mesh_pointer : vulkan_model.pointers_mesh) {
-            const auto& mesh = *m_VulkanResourceManager.GetResource(mesh_pointer);
+    //            //vkCmdDrawIndexed(command_buffer, primitive.index_count, 1, primitive.index_offset, 0, 0); // temp
+    //        }
+    //        else {
+    //            // TODO : provide this if it is needed
+    //        }
+    //    }
+    //}
+    //else {
+    //    for (auto mesh_pointer : vulkan_model.pointers_mesh) {
+    //        const auto& mesh = *m_VulkanResourceManager.GetResource(mesh_pointer);
 
-            //const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame]; // temp
-            //{ // temp
+    //        //const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame]; // temp
+    //        //{ // temp
 
-            //    VkDeviceSize offsets[1]{ 0 };
+    //        //    VkDeviceSize offsets[1]{ 0 };
 
-            //    VkBuffer vertex_buffer_raw = mesh.vertex_buffer.buffer;
-            //    vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
+    //        //    VkBuffer vertex_buffer_raw = mesh.vertex_buffer.buffer;
+    //        //    vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
 
-            //    VkBuffer index_buffer_raw = mesh.index_buffer.buffer;
-            //    vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
+    //        //    VkBuffer index_buffer_raw = mesh.index_buffer.buffer;
+    //        //    vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
 
-            //    //vkCmdPushConstants(command_buffer, m_PipelineLayout, )
-            //}
+    //        //    //vkCmdPushConstants(command_buffer, m_PipelineLayout, )
+    //        //}
 
-            for (const auto& primitive : mesh.primitives) {
+    //        for (const auto& primitive : mesh.primitives) {
 
-                if (primitive.index_count > 0) {
+    //            if (primitive.index_count > 0) {
 
-                    // TODO : bind material ( provide materials )
+    //                // TODO : bind material ( provide materials )
 
-                    // TODO : do not find vertex and index buffers multiple times
-                    this->DrawPrimitive(mesh.vertex_buffer, mesh.index_buffer, primitive.index_offset, primitive.index_count, i);
+    //                // TODO : do not find vertex and index buffers multiple times
+    //                this->DrawPrimitive(mesh.vertex_buffer, mesh.index_buffer, primitive.index_offset, primitive.index_count, i);
 
-                    //vkCmdDrawIndexed(command_buffer, primitive.index_count, 1, primitive.index_offset, 0, 0); // temp
-                }
-                else {
-                    // TODO : provide this if it is needed
-                }
-            }
-        }
-    }
+    //                //vkCmdDrawIndexed(command_buffer, primitive.index_count, 1, primitive.index_offset, 0, 0); // temp
+    //            }
+    //            else {
+    //                // TODO : provide this if it is needed
+    //            }
+    //        }
+    //    }
+    //}
 }
 
 void fe::RendererVulkan::InitializeGPUResources() {
-    m_ResourceManager.RunForEach<resource::Texture>([&](const resource::Texture&       texture,
-                                                        fe::pointer<resource::Texture> texture_ptr) {
-        m_VulkanResourceManager.CreateResource(texture_ptr);
+    m_ResourceManager.RunForEach<resource::Texture>([&](resource::Texture& texture) {
+        m_VulkanResourceManager.CreateResource(texture);
 
         fe::logging::info("VULKAN. Loaded texture's size : %i %i", texture.width, texture.height);
     });
@@ -168,9 +167,8 @@ void fe::RendererVulkan::InitializeGPUResources() {
         // ...
     });
 
-    m_ResourceManager.RunForEach<resource::Model>([&](const resource::Model&       model,
-                                                      fe::pointer<resource::Model> model_ptr) {
-        m_VulkanResourceManager.CreateResource(model_ptr);
+    m_ResourceManager.RunForEach<resource::Model>([&](resource::Model& model) {
+        m_VulkanResourceManager.CreateResource(model);
 
         fe::logging::info("VULKAN. Loaded model's mesh count %i", model.meshes.size());
     });

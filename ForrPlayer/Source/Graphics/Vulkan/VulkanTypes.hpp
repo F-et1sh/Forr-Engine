@@ -99,14 +99,14 @@ namespace fe {
         FORR_CLASS_MOVABLE(VulkanMesh)
     };
 
-    struct VulkanModel {
-        std::vector<fe::pointer<VulkanMesh>>    pointers_mesh{};
-        std::vector<fe::pointer<VulkanTexture>> pointers_texture{};
+    template <typename T>
+    struct VulkanResourceTraits;
 
-        VulkanModel()  = default;
-        ~VulkanModel() = default;
-
-        FORR_CLASS_NONCOPYABLE(VulkanModel)
-        FORR_CLASS_MOVABLE(VulkanModel)
+#define VULKAN_RESOURCE_TRAITS_INSTANCE(CPU_TYPE, GPU_TYPE) \
+    template <>                                             \
+    struct VulkanResourceTraits<CPU_TYPE> {                 \
+        using type = GPU_TYPE;                              \
     };
+
+    VULKAN_RESOURCE_TRAITS_INSTANCE(resource::Model::Mesh, VulkanMesh)
 } // namespace fe
