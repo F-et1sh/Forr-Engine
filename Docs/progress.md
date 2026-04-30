@@ -1,5 +1,16 @@
 # Forr-Engine Devlog
 
+## 30.04.2026
+### Goal
+    devide UBO/SSBO and push_constants in fe::resource::Material
+    provide the same for Vulkan backend
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 26.04.2026
 ### Goal
     devide UBO/SSBO and push_constants in fe::resource::Material
