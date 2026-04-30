@@ -2,11 +2,11 @@
 
 ## 30.04.2026
 ### Goal
+    provide new GPU resource management for Vulkan
     devide UBO/SSBO and push_constants in fe::resource::Material
-    provide the same for Vulkan backend
 
 ### Done
-    -
+    OpenGLResourceManager finalized
 
 ### Problem
     -

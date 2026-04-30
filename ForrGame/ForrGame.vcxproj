@@ -135,7 +135,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Code\main.cpp" />
-    <ClCompile Include="Code\test_other.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
