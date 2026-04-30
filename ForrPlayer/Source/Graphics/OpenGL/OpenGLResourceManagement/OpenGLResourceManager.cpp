@@ -44,19 +44,19 @@ template<>
 const fe::OpenGLMaterial& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Material> handle) const {
     return m_StorageMaterials[handle.index];
 }
-template fe::OpenGLMaterial& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Material> handle)const;
+template const fe::OpenGLMaterial& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Material> handle)const;
 
 template<>
 const fe::OpenGLShaderProgram& fe::OpenGLResourceManager::GetResource(GPUHandle<OpenGLShaderProgram> handle) const {
     return m_StorageShaderPrograms[handle.index];
 }
-template fe::OpenGLShaderProgram& fe::OpenGLResourceManager::GetResource(GPUHandle<OpenGLShaderProgram> handle)const;
+template const fe::OpenGLShaderProgram& fe::OpenGLResourceManager::GetResource(GPUHandle<OpenGLShaderProgram> handle)const;
 
 template<>
 const fe::OpenGLMesh& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Model::Mesh> handle) const {
     return m_StorageMeshes[handle.index];
 }
-template fe::OpenGLMesh& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Model::Mesh> handle)const;
+template const fe::OpenGLMesh& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Model::Mesh> handle)const;
 
 
 ///
