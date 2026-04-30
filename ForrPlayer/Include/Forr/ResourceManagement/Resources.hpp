@@ -74,6 +74,8 @@ namespace fe::resource {
             // TODO : add more
         };
 
+        GPUHandle<Texture> gpu_handle{};
+
         uint8_t      components{};
         unsigned int width{};
         unsigned int height{};
@@ -139,7 +141,7 @@ namespace fe::resource {
     struct FORR_API Material {
     public:
         GPUHandle<Material> gpu_handle{};
-        
+
         fe::pointer<fe::resource::Shader> vertex_shader_ptr{};
         fe::pointer<fe::resource::Shader> fragment_shader_ptr{};
         // add more later...

@@ -115,8 +115,7 @@
     <ClInclude Include="Include\Forr\ResourceManagement\Resources.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceStorage.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLRAII.hpp" />
-    <None Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceCreator.hpp" />
-    <ClInclude Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceManager.hpp" />
+    <ClInclude Include="Source\Graphics\OpenGL\OpenGLResourceManager.hpp" />
     <ClInclude Include="Include\Forr\Graphics\GPUTypes.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLTypes.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
@@ -172,8 +171,7 @@
     <ClCompile Include="Source\Graphics\Camera.cpp" />
     <ClCompile Include="Source\Application.cpp" />
     <ClCompile Include="Source\Graphics\IRenderer.cpp" />
-    <None Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceCreator.cpp" />
-    <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManagement\OpenGLResourceManager.cpp" />
+    <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManager.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\RendererOpenGL.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
     <None Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
