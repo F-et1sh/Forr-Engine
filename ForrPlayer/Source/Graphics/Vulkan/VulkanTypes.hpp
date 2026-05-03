@@ -67,6 +67,21 @@ namespace fe {
         FORR_CLASS_MOVABLE(VulkanUniformBuffer)
     };
 
+    // there is no difference between 'VulkanUniformBuffer' and this structure
+    struct VulkanStorageBuffer {
+        fe::vk::DeviceMemory memory{};
+        fe::vk::Buffer       buffer{};
+
+        VkDescriptorSet descriptor_set{};
+        uint8_t*        mapped{};
+
+        VulkanStorageBuffer()  = default;
+        ~VulkanStorageBuffer() = default;
+
+        FORR_CLASS_NONCOPYABLE(VulkanStorageBuffer)
+        FORR_CLASS_MOVABLE(VulkanStorageBuffer)
+    };
+
     struct VulkanTexture { // TODO : provide textures
 
         VulkanTexture()  = default;

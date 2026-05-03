@@ -3,7 +3,7 @@
     Forr Engine
 
     File : RendererVulkn.cpp
-    Role : OpenGL Renderer implementation
+    Role : vulkan Renderer implementation
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -38,7 +38,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     this->InitializeRenderPass();
     this->InitializePipelineCache();
     this->InitializeFramebuffers();
-    this->InitializeUniformBuffer();
+    this->InitializeStorageBuffer();
     this->InitializeDescriptors();
     this->InitializePipeline();
 }
@@ -52,108 +52,157 @@ void fe::RendererVulkan::SetClearColor(float red, float green, float blue, float
     m_Context.clear_color = { red, green, blue, alpha }; // clear_color
 }
 
+void fe::RendererVulkan::BeginFrame() {
+    std::array<VkFence, 1> fences{ m_WaitFences[m_CurrentFrame] };
+
+    vkWaitForFences(m_Device, fences.size(), fences.data(), VK_TRUE, UINT64_MAX);
+    VK_CHECK_RESULT(vkResetFences(m_Device, fences.size(), fences.data()));
+
+    m_ImageIndex = 0;
+
+    VkResult result = vkAcquireNextImageKHR(m_Device, m_Context.swapchain, UINT64_MAX, m_PresentCompleteSemaphores[m_CurrentFrame], VK_NULL_HANDLE, &m_ImageIndex);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        this->resizeWindow();
+        return;
+    }
+    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        fe::logging::error("Failed to acquire the next swapchain image");
+        return;
+    }
+
+    vkResetCommandBuffer(m_CommandBuffers[m_CurrentFrame], 0);
+
+    VkCommandBufferBeginInfo command_buffer_begin_info{};
+    command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    VkClearValue clear_values[2]{};
+    clear_values[0].color        = { m_Context.clear_color };
+    clear_values[1].depthStencil = { 1.0f, 0 };
+
+    VkRenderPassBeginInfo render_pass_begin_info{};
+    render_pass_begin_info.sType                    = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    render_pass_begin_info.renderPass               = m_RenderPass;
+    render_pass_begin_info.renderArea.offset.x      = 0;
+    render_pass_begin_info.renderArea.offset.y      = 0;
+    render_pass_begin_info.renderArea.extent.width  = m_Context.swapchain_extent.width;
+    render_pass_begin_info.renderArea.extent.height = m_Context.swapchain_extent.height;
+    render_pass_begin_info.clearValueCount          = 2;
+    render_pass_begin_info.pClearValues             = clear_values;
+    render_pass_begin_info.framebuffer              = m_Framebuffers[m_ImageIndex];
+
+    const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
+    VK_CHECK_RESULT(vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info));
+
+    vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+
+    VkViewport viewport{};
+    viewport.width    = (float) m_Context.swapchain_extent.width;
+    viewport.height   = (float) m_Context.swapchain_extent.height;
+    viewport.minDepth = (float) 0.0f;
+    viewport.maxDepth = (float) 1.0f;
+    vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.extent.width  = m_Context.swapchain_extent.width;
+    scissor.extent.height = m_Context.swapchain_extent.height;
+    scissor.offset.x      = 0;
+    scissor.offset.y      = 0;
+    vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+
+    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_StorageBuffers[m_CurrentFrame].descriptor_set, 0, nullptr);
+
+    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline);
+
+    { // temp
+        auto glfw_window = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
+
+        float speed = 0.1f;
+
+        if (glfwGetKey(glfw_window, GLFW_KEY_A))
+            m_Camera.translate(glm::vec3(speed, 0.0f, 0.0f));
+        else if (glfwGetKey(glfw_window, GLFW_KEY_D))
+            m_Camera.translate(glm::vec3(-speed, 0.0f, 0.0f));
+
+        if (glfwGetKey(glfw_window, GLFW_KEY_W))
+            m_Camera.translate(glm::vec3(0.0f, 0.0f, speed));
+        else if (glfwGetKey(glfw_window, GLFW_KEY_S))
+            m_Camera.translate(glm::vec3(0.0f, 0.0f, -speed));
+    }
+
+    m_SceneData.projection_matrix = m_Camera.getPerspectiveMatrix();
+    m_SceneData.view_matrix       = m_Camera.getViewMatrix();
+}
+
 void fe::RendererVulkan::Draw(DrawMeshCommand command) {
-    //{ // temp
-    //    auto glfw_window = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
+    const auto& model = *m_ResourceManager.GetResource(command.model_ptr);
 
-    //    float speed = 0.1f;
+    for (const auto& mesh : model.meshes) {
+        const auto& vulkan_mesh = m_VulkanResourceManager.GetResource(mesh.gpu_handle);
 
-    //    if (glfwGetKey(glfw_window, GLFW_KEY_A))
-    //        m_Camera.translate(glm::vec3(speed, 0.0f, 0.0f));
-    //    else if (glfwGetKey(glfw_window, GLFW_KEY_D))
-    //        m_Camera.translate(glm::vec3(-speed, 0.0f, 0.0f));
+        for (size_t i = 0; i < mesh.primitives.size(); i++) {
+            const auto& primitive        = mesh.primitives[i];
+            const auto& vulkan_primitive = vulkan_mesh.primitives[i];
 
-    //    if (glfwGetKey(glfw_window, GLFW_KEY_W))
-    //        m_Camera.translate(glm::vec3(0.0f, 0.0f, speed));
-    //    else if (glfwGetKey(glfw_window, GLFW_KEY_S))
-    //        m_Camera.translate(glm::vec3(0.0f, 0.0f, -speed));
-    //}
+            const auto& material = *m_ResourceManager.GetResource(primitive.material_ptr);
 
-    //auto        gpu_ptr      = m_VulkanResourceManager.GetGPUPointer(command.model_ptr);
-    //const auto& vulkan_model = *m_VulkanResourceManager.GetResource(gpu_ptr);
+            memcpy(m_StorageBuffers[m_CurrentFrame].mapped, &m_SceneData, sizeof(ShaderData));
 
-    //static ShaderData shader_data{};
-    //shader_data.projection_matrix = m_Camera.getPerspectiveMatrix();
-    //shader_data.view_matrix       = m_Camera.getViewMatrix();
+            this->DrawPrimitive(vulkan_mesh.vertex_buffer, vulkan_mesh.index_buffer, vulkan_primitive.index_offset, vulkan_primitive.index_count);
+        }
+    }
+    
+    m_SceneData.model_matrices[m_MeshIndex] = command.transform;
 
-    //uint32_t i = 0;
-    //if (vulkan_model.pointers_mesh.size() != 8) {
-    //    i = 1;
-    //}
+    this->increaseMeshIndex();
+}
 
-    //shader_data.model_matrices[i] = command.transform;
+void fe::RendererVulkan::EndFrame() {
+    const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
 
-    //memcpy(m_UniformBuffers[m_CurrentFrame].mapped, &shader_data, sizeof(ShaderData));
+    vkCmdEndRenderPass(command_buffer);
 
-    //if (command.mesh_index != ~0) {
-    //    auto        mesh_pointer = vulkan_model.pointers_mesh[command.mesh_index];
-    //    const auto& mesh         = *m_VulkanResourceManager.GetResource(mesh_pointer);
+    VK_CHECK_RESULT(vkEndCommandBuffer(command_buffer));
 
-    //    //const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame]; // temp
-    //    //{ // temp
+    VkPipelineStageFlags wait_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
-    //    //    VkDeviceSize offsets[1]{ 0 };
+    std::array<VkSemaphore, 1> wait_semaphores{ m_PresentCompleteSemaphores[m_CurrentFrame] };
+    std::array<VkSemaphore, 1> signal_semaphores{ m_RenderCompleteSemaphores[m_ImageIndex] };
 
-    //    //    VkBuffer vertex_buffer_raw = mesh.vertex_buffer.buffer;
-    //    //    vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
+    VkSubmitInfo submit_info{};
+    submit_info.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.pWaitDstStageMask  = &wait_stage_mask;
+    submit_info.pCommandBuffers    = &command_buffer;
+    submit_info.commandBufferCount = 1;
 
-    //    //    VkBuffer index_buffer_raw = mesh.index_buffer.buffer;
-    //    //    vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
+    submit_info.pWaitSemaphores    = wait_semaphores.data();
+    submit_info.waitSemaphoreCount = wait_semaphores.size();
 
-    //    //    //vkCmdPushConstants(command_buffer, m_PipelineLayout, )
-    //    //}
+    submit_info.pSignalSemaphores    = signal_semaphores.data();
+    submit_info.signalSemaphoreCount = signal_semaphores.size();
 
-    //    for (const auto& primitive : mesh.primitives) {
+    VK_CHECK_RESULT(vkQueueSubmit(m_Context.queue_graphics, 1, &submit_info, m_WaitFences[m_CurrentFrame]));
 
-    //        if (primitive.index_count > 0) {
+    VkPresentInfoKHR present_info{};
+    present_info.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    present_info.waitSemaphoreCount = 1;
+    present_info.pWaitSemaphores    = signal_semaphores.data();
+    present_info.swapchainCount     = 1;
+    present_info.pSwapchains        = &m_Context.swapchain;
+    present_info.pImageIndices      = &m_ImageIndex;
 
-    //            // TODO : bind material ( provide materials )
+    VkResult result = vkQueuePresentKHR(m_Context.queue_graphics, &present_info);
 
-    //            // TODO : do not find vertex and index buffers multiple times
-    //            this->DrawPrimitive(mesh.vertex_buffer, mesh.index_buffer, primitive.index_offset, primitive.index_count, i);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+        this->resizeWindow();
+    }
+    else if (result != VK_SUCCESS) {
+        fe::logging::error("Failed to present the image to the swapchain");
+        return;
+    }
 
-    //            //vkCmdDrawIndexed(command_buffer, primitive.index_count, 1, primitive.index_offset, 0, 0); // temp
-    //        }
-    //        else {
-    //            // TODO : provide this if it is needed
-    //        }
-    //    }
-    //}
-    //else {
-    //    for (auto mesh_pointer : vulkan_model.pointers_mesh) {
-    //        const auto& mesh = *m_VulkanResourceManager.GetResource(mesh_pointer);
+    m_CurrentFrame = (m_CurrentFrame + 1) % VulkanContext::max_concurrent_frames;
 
-    //        //const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame]; // temp
-    //        //{ // temp
-
-    //        //    VkDeviceSize offsets[1]{ 0 };
-
-    //        //    VkBuffer vertex_buffer_raw = mesh.vertex_buffer.buffer;
-    //        //    vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
-
-    //        //    VkBuffer index_buffer_raw = mesh.index_buffer.buffer;
-    //        //    vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
-
-    //        //    //vkCmdPushConstants(command_buffer, m_PipelineLayout, )
-    //        //}
-
-    //        for (const auto& primitive : mesh.primitives) {
-
-    //            if (primitive.index_count > 0) {
-
-    //                // TODO : bind material ( provide materials )
-
-    //                // TODO : do not find vertex and index buffers multiple times
-    //                this->DrawPrimitive(mesh.vertex_buffer, mesh.index_buffer, primitive.index_offset, primitive.index_count, i);
-
-    //                //vkCmdDrawIndexed(command_buffer, primitive.index_count, 1, primitive.index_offset, 0, 0); // temp
-    //            }
-    //            else {
-    //                // TODO : provide this if it is needed
-    //            }
-    //        }
-    //    }
-    //}
+    this->resetMeshIndex();
 }
 
 void fe::RendererVulkan::InitializeGPUResources() {
@@ -473,17 +522,16 @@ void fe::RendererVulkan::InitializeFramebuffers() {
     }
 }
 
-void fe::RendererVulkan::InitializeUniformBuffer() {
+void fe::RendererVulkan::InitializeStorageBuffer() {
     VkBufferCreateInfo buffer_create_info{};
     buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     buffer_create_info.size  = sizeof(ShaderData);
-    buffer_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    buffer_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 
     for (size_t i = 0; i < VulkanContext::max_concurrent_frames; i++) {
-
         VkBuffer buffer_raw{};
         VK_CHECK_RESULT(vkCreateBuffer(m_Device, &buffer_create_info, nullptr, &buffer_raw));
-        m_UniformBuffers[i].buffer.attach(m_Device, buffer_raw);
+        m_StorageBuffers[i].buffer.attach(m_Device, buffer_raw);
 
         VkMemoryRequirements memory_requirements{};
         vkGetBufferMemoryRequirements(m_Device, buffer_raw, &memory_requirements);
@@ -495,13 +543,13 @@ void fe::RendererVulkan::InitializeUniformBuffer() {
 
         VkDeviceMemory memory_raw{};
         VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memory_allocate_info, nullptr, &memory_raw));
-        m_UniformBuffers[i].memory.attach(m_Device, memory_raw);
+        m_StorageBuffers[i].memory.attach(m_Device, memory_raw);
 
         constexpr static VkDeviceSize     offset = 0;
         constexpr static VkMemoryMapFlags flags  = 0;
 
         VK_CHECK_RESULT(vkBindBufferMemory(m_Device, buffer_raw, memory_raw, offset));
-        VK_CHECK_RESULT(vkMapMemory(m_Device, memory_raw, offset, sizeof(ShaderData), flags, (void**) &m_UniformBuffers[i].mapped));
+        VK_CHECK_RESULT(vkMapMemory(m_Device, memory_raw, offset, sizeof(ShaderData), flags, (void**) &m_StorageBuffers[i].mapped));
     }
 }
 
@@ -593,7 +641,7 @@ void fe::RendererVulkan::InitializePipeline() {
     std::array<VkPipelineShaderStageCreateInfo, 2> shader_stages_create_info{};
 
     // vertex shader
-    fe::vk::ShaderModule vertex_shader_module = this->createShaderModule(PATH.getShadersPath() / "default.vert.spv");
+    fe::vk::ShaderModule vertex_shader_module = this->createShaderModule(PATH.getDefaultShadersPath() / "gLTF" / "shader.vert.spv");
 
     shader_stages_create_info[0].sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shader_stages_create_info[0].stage  = VK_SHADER_STAGE_VERTEX_BIT;
@@ -603,7 +651,7 @@ void fe::RendererVulkan::InitializePipeline() {
     assert(shader_stages_create_info[0].module != VK_NULL_HANDLE);
 
     // fragment shader
-    fe::vk::ShaderModule fragment_shader_module = this->createShaderModule(PATH.getShadersPath() / "default.frag.spv");
+    fe::vk::ShaderModule fragment_shader_module = this->createShaderModule(PATH.getDefaultShadersPath() / "gLTF" / "shader.frag.spv");
 
     shader_stages_create_info[1].sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shader_stages_create_info[1].stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -955,7 +1003,7 @@ void fe::RendererVulkan::VKSetupQueues() {
 
 void fe::RendererVulkan::VKSetupDescriptorSetLayout() {
     VkDescriptorSetLayoutBinding layout_binding{};
-    layout_binding.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    layout_binding.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     layout_binding.descriptorCount = 1;
     layout_binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
 
@@ -971,7 +1019,7 @@ void fe::RendererVulkan::VKSetupDescriptorSetLayout() {
 
 void fe::RendererVulkan::VKSetupDescriptorPool() {
     VkDescriptorPoolSize descriptor_pool_size[1];
-    descriptor_pool_size[0].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_pool_size[0].type            = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     descriptor_pool_size[0].descriptorCount = VulkanContext::max_concurrent_frames;
 
     VkDescriptorPoolCreateInfo descriptor_pool_create_info{};
@@ -995,17 +1043,17 @@ void fe::RendererVulkan::VKSetupDescriptorSets() {
         descriptor_set_allocate_info.descriptorSetCount = 1;
         descriptor_set_allocate_info.pSetLayouts        = &descriptor_set_layout_raw;
 
-        VK_CHECK_RESULT(vkAllocateDescriptorSets(m_Device, &descriptor_set_allocate_info, &m_UniformBuffers[i].descriptor_set));
+        VK_CHECK_RESULT(vkAllocateDescriptorSets(m_Device, &descriptor_set_allocate_info, &m_StorageBuffers[i].descriptor_set));
 
         VkDescriptorBufferInfo descriptor_buffer_info{};
-        descriptor_buffer_info.buffer = m_UniformBuffers[i].buffer;
+        descriptor_buffer_info.buffer = m_StorageBuffers[i].buffer;
         descriptor_buffer_info.range  = sizeof(ShaderData);
 
         VkWriteDescriptorSet write_descriptor_set{};
         write_descriptor_set.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        write_descriptor_set.dstSet          = m_UniformBuffers[i].descriptor_set;
+        write_descriptor_set.dstSet          = m_StorageBuffers[i].descriptor_set;
         write_descriptor_set.descriptorCount = 1;
-        write_descriptor_set.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        write_descriptor_set.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         write_descriptor_set.pBufferInfo     = &descriptor_buffer_info;
         write_descriptor_set.dstBinding      = 0;
 
@@ -1177,69 +1225,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL fe::RendererVulkan::debugUtilsMessageCallback(VkD
     return VK_FALSE;
 }
 
-void fe::RendererVulkan::BeginFrame() {
-    std::array<VkFence, 1> fences{ m_WaitFences[m_CurrentFrame] };
-
-    vkWaitForFences(m_Device, fences.size(), fences.data(), VK_TRUE, UINT64_MAX);
-    VK_CHECK_RESULT(vkResetFences(m_Device, fences.size(), fences.data()));
-
-    m_ImageIndex = 0;
-
-    VkResult result = vkAcquireNextImageKHR(m_Device, m_Context.swapchain, UINT64_MAX, m_PresentCompleteSemaphores[m_CurrentFrame], VK_NULL_HANDLE, &m_ImageIndex);
-    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        this->resizeWindow();
-        return;
-    }
-    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        fe::logging::error("Failed to acquire the next swapchain image");
-        return;
-    }
-
-    vkResetCommandBuffer(m_CommandBuffers[m_CurrentFrame], 0);
-
-    VkCommandBufferBeginInfo command_buffer_begin_info{};
-    command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-    VkClearValue clear_values[2]{};
-    clear_values[0].color        = { m_Context.clear_color };
-    clear_values[1].depthStencil = { 1.0f, 0 };
-
-    VkRenderPassBeginInfo render_pass_begin_info{};
-    render_pass_begin_info.sType                    = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    render_pass_begin_info.renderPass               = m_RenderPass;
-    render_pass_begin_info.renderArea.offset.x      = 0;
-    render_pass_begin_info.renderArea.offset.y      = 0;
-    render_pass_begin_info.renderArea.extent.width  = m_Context.swapchain_extent.width;
-    render_pass_begin_info.renderArea.extent.height = m_Context.swapchain_extent.height;
-    render_pass_begin_info.clearValueCount          = 2;
-    render_pass_begin_info.pClearValues             = clear_values;
-    render_pass_begin_info.framebuffer              = m_Framebuffers[m_ImageIndex];
-
-    const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
-    VK_CHECK_RESULT(vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info));
-
-    vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-
-    VkViewport viewport{};
-    viewport.width    = (float) m_Context.swapchain_extent.width;
-    viewport.height   = (float) m_Context.swapchain_extent.height;
-    viewport.minDepth = (float) 0.0f;
-    viewport.maxDepth = (float) 1.0f;
-    vkCmdSetViewport(command_buffer, 0, 1, &viewport);
-
-    VkRect2D scissor{};
-    scissor.extent.width  = m_Context.swapchain_extent.width;
-    scissor.extent.height = m_Context.swapchain_extent.height;
-    scissor.offset.x      = 0;
-    scissor.offset.y      = 0;
-    vkCmdSetScissor(command_buffer, 0, 1, &scissor);
-
-    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_UniformBuffers[m_CurrentFrame].descriptor_set, 0, nullptr);
-
-    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline);
-}
-
-void fe::RendererVulkan::DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer, uint32_t index_offset, uint32_t index_count, uint32_t i_temp) {
+void fe::RendererVulkan::DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer, uint32_t index_offset, uint32_t index_count) {
     const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
 
     VkDeviceSize offsets[1]{ 0 };
@@ -1250,55 +1236,8 @@ void fe::RendererVulkan::DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, 
     VkBuffer index_buffer_raw = index_buffer.buffer;
     vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
 
-    uint32_t constants = i_temp;
+    uint32_t constants = m_MeshIndex;
     vkCmdPushConstants(command_buffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(uint32_t), &constants);
 
     vkCmdDrawIndexed(command_buffer, index_count, 1, index_offset, 0, 0);
-}
-
-void fe::RendererVulkan::EndFrame() {
-    const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
-
-    vkCmdEndRenderPass(command_buffer);
-
-    VK_CHECK_RESULT(vkEndCommandBuffer(command_buffer));
-
-    VkPipelineStageFlags wait_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-
-    std::array<VkSemaphore, 1> wait_semaphores{ m_PresentCompleteSemaphores[m_CurrentFrame] };
-    std::array<VkSemaphore, 1> signal_semaphores{ m_RenderCompleteSemaphores[m_ImageIndex] };
-
-    VkSubmitInfo submit_info{};
-    submit_info.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submit_info.pWaitDstStageMask  = &wait_stage_mask;
-    submit_info.pCommandBuffers    = &command_buffer;
-    submit_info.commandBufferCount = 1;
-
-    submit_info.pWaitSemaphores    = wait_semaphores.data();
-    submit_info.waitSemaphoreCount = wait_semaphores.size();
-
-    submit_info.pSignalSemaphores    = signal_semaphores.data();
-    submit_info.signalSemaphoreCount = signal_semaphores.size();
-
-    VK_CHECK_RESULT(vkQueueSubmit(m_Context.queue_graphics, 1, &submit_info, m_WaitFences[m_CurrentFrame]));
-
-    VkPresentInfoKHR present_info{};
-    present_info.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    present_info.waitSemaphoreCount = 1;
-    present_info.pWaitSemaphores    = signal_semaphores.data();
-    present_info.swapchainCount     = 1;
-    present_info.pSwapchains        = &m_Context.swapchain;
-    present_info.pImageIndices      = &m_ImageIndex;
-
-    VkResult result = vkQueuePresentKHR(m_Context.queue_graphics, &present_info);
-
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-        this->resizeWindow();
-    }
-    else if (result != VK_SUCCESS) {
-        fe::logging::error("Failed to present the image to the swapchain");
-        return;
-    }
-
-    m_CurrentFrame = (m_CurrentFrame + 1) % VulkanContext::max_concurrent_frames;
 }

@@ -1,5 +1,16 @@
 # Forr-Engine Devlog
 
+## 03.05.2026
+### Goal
+    provide new GPU resource management for Vulkan
+    provide materials for Vulkan
+
+### Done
+    new GPU resource manager provided for Vulkan
+
+### Problem
+    -
+
 ## 30.04.2026
 ### Goal
     provide new GPU resource management for Vulkan

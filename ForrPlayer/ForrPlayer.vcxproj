@@ -121,7 +121,6 @@
     <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\Shader.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanResourceCreator.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanTypes.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VKTools.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanRAII.hpp" />
@@ -175,7 +174,6 @@
     <ClCompile Include="Source\Graphics\OpenGL\RendererOpenGL.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
-    <None Include="Source\Graphics\Vulkan\VulkanResourceCreator.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManager.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="Source\Layer.cpp" />
