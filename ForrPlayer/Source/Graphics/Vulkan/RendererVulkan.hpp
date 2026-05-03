@@ -98,9 +98,9 @@ namespace fe {
         // - create framebuffers
         void InitializeFramebuffers();
 
-        // Create Vulkan uniform buffer :
-        // - create uniform buffer
-        void InitializeUniformBuffer();
+        // Create Vulkan storage buffer :
+        // - create storage buffer
+        void InitializeStorageBuffer();
 
         // Create Vulkan descriptor objects
         // - create descriptor set layout
@@ -139,11 +139,13 @@ namespace fe {
                                                                         void*                                       user_data);
 
     private:
-        void DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer, uint32_t index_offset, uint32_t index_count, uint32_t i_temp);
+        void DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer, uint32_t index_offset, uint32_t index_count);
 
     private: // Others
         void configureCamera();
         void resizeWindow();
+        void increaseMeshIndex() noexcept { m_MeshIndex++; }
+        void resetMeshIndex() noexcept { m_MeshIndex = 0; }
 
     private:
         RendererDesc m_Description{};
@@ -181,7 +183,7 @@ namespace fe {
 
         std::vector<fe::vk::Framebuffer> m_Framebuffers{};
 
-        std::array<VulkanUniformBuffer, VulkanContext::max_concurrent_frames> m_UniformBuffers{};
+        std::array<VulkanStorageBuffer, VulkanContext::max_concurrent_frames> m_StorageBuffers{};
 
         fe::vk::DescriptorPool      m_DescriptorPool{};
         fe::vk::DescriptorSetLayout m_DescriptorSetLayout{};
@@ -200,5 +202,8 @@ namespace fe {
         fe::vk::CommandPool m_CommandPool{};
 
         uint32_t m_ImageIndex{};
+
+        size_t          m_MeshIndex{};
+        GlobalSceneData m_SceneData{};
     };
 } // namespace fe
