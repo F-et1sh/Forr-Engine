@@ -1,4 +1,15 @@
-# Forr-Engine Devlog
+﻿# Forr-Engine Devlog
+
+## 12.05.2026
+### Goal
+    provide materials for Vulkan
+
+### Done
+    ForrAI pet-project
+    planning
+
+### Problem
+    -
 
 ## 03.05.2026
 ### Goal
