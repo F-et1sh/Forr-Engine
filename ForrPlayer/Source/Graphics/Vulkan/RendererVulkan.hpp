@@ -89,10 +89,6 @@ namespace fe {
         // - create render pass
         void InitializeRenderPass();
 
-        // Create Vulkan pipeline cache :
-        // - create pipeline cache
-        void InitializePipelineCache();
-
         // Create Vulkan framebuffers :
         // - do nothing if dynamic renderer enabled ( VulkanContext::use_dynamic_rendering )
         // - create framebuffers
@@ -117,6 +113,7 @@ namespace fe {
         void VKCreateDevice(bool use_swapchain = true, VkQueueFlags requested_queue_types = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
         void VKCreateCommandPool(VkCommandPoolCreateFlags create_flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
         void VKSetupQueues();
+        void VKSetupDescriptorSetLayout();
         void VKSetupDescriptorPool();
         void VKSetupDescriptorSets();
 
@@ -129,10 +126,6 @@ namespace fe {
                                                                         VkDebugUtilsMessageTypeFlagsEXT             message_type,
                                                                         const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
                                                                         void*                                       user_data);
-
-    private:
-        void DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer, uint32_t index_offset, uint32_t index_count);
-
     private: // Others
         void configureCamera();
         void resizeWindow();
@@ -176,6 +169,7 @@ namespace fe {
         std::array<VulkanStorageBuffer, VulkanContext::max_concurrent_frames> m_StorageBuffers{};
 
         fe::vk::DescriptorPool m_DescriptorPool{};
+        fe::vk::DescriptorSetLayout m_DescriptorSetLayout{};
 
         Camera m_Camera{}; // temp
 

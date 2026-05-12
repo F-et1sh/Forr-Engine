@@ -3,6 +3,7 @@
 ## 12.05.2026
 ### Goal
     provide materials for Vulkan
+    provide FrameData
 
 ### Done
     ForrAI pet-project
@@ -10,6 +11,7 @@
     ( pipeline cache removed - keep in mind )
     VulkanMaterial added
     VulkanMaterial creation provided
+    pipeline creation moved to materials - all works correctly
 
 ### Problem
     -
