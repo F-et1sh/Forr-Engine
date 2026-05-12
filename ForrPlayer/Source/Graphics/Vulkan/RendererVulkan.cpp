@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -212,8 +212,8 @@ void fe::RendererVulkan::InitializeGPUResources() {
         fe::logging::info("VULKAN. Loaded texture's size : %i %i", texture.width, texture.height);
     });
 
-    m_ResourceManager.RunForEach<resource::Material>([&](const resource::Material& material) { // TODO : provide materials
-        // ...
+    m_ResourceManager.RunForEach<resource::Material>([&](resource::Material& material) {
+        m_VulkanResourceManager.CreateResource(material);
     });
 
     m_ResourceManager.RunForEach<resource::Model>([&](resource::Model& model) {

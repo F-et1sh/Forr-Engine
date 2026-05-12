@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -28,6 +28,18 @@ namespace fe {
 
         FORR_CLASS_NONCOPYABLE(VulkanImage)
         FORR_CLASS_MOVABLE(VulkanImage)
+    };
+
+    struct VulkanMaterial {
+        fe::vk::Pipeline            pipeline{};
+        fe::vk::PipelineLayout      pipeline_layout{};
+        fe::vk::DescriptorSetLayout descriptor_set_layout{};
+
+        VulkanMaterial()  = default;
+        ~VulkanMaterial() = default;
+
+        FORR_CLASS_NONCOPYABLE(VulkanMaterial)
+        FORR_CLASS_MOVABLE(VulkanMaterial)
     };
 
     struct VulkanVertexBuffer {

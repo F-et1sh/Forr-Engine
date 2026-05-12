@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -41,7 +41,7 @@ namespace fe {
 
     struct OpenGLMaterial {
         GPUHandle<OpenGLShaderProgram> shader_program_handle{};
-        // std::vector<uint8_t> buffer{}; - take this from the CPU material ( fe::resource::Material )
+        // std::vector<uint8_t> buffer{}; - take this from the CPU material ( fe::resource::Material ) when drawing
 
         OpenGLMaterial()  = default;
         ~OpenGLMaterial() = default;

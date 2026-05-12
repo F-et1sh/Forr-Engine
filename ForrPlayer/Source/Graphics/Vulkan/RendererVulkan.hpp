@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -179,17 +179,11 @@ namespace fe {
 
         fe::vk::RenderPass m_RenderPass{};
 
-        fe::vk::PipelineCache m_PipelineCache{};
-
         std::vector<fe::vk::Framebuffer> m_Framebuffers{};
 
         std::array<VulkanStorageBuffer, VulkanContext::max_concurrent_frames> m_StorageBuffers{};
 
-        fe::vk::DescriptorPool      m_DescriptorPool{};
-        fe::vk::DescriptorSetLayout m_DescriptorSetLayout{};
-
-        fe::vk::PipelineLayout m_PipelineLayout{};
-        fe::vk::Pipeline       m_Pipeline{};
+        fe::vk::DescriptorPool m_DescriptorPool{};
 
         Camera m_Camera{}; // temp
 
