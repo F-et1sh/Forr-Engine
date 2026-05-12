@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -30,6 +30,8 @@ namespace fe {
 
         // here used 'typename T' instead of 'resource::resource_t T' because this function can be called by GPU types too
         // for example : 'typename T = OpenGLShaderProgram', which is called by 'OpenGLMaterial'
+        // 
+        // If you getting error E0493 - you forgot to add your GPU resource to OpenGLResourceTraits
         template <typename T>
         const typename OpenGLResourceTraits<T>::type& GetResource(GPUHandle<T> handle) const;
 

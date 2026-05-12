@@ -56,17 +56,11 @@ template void fe::VulkanResourceManager::CreateResource(Texture& texture);
 
 ///
 
-//template<>
-//const fe::VulkanMaterial& fe::VulkanResourceManager::GetResource(GPUHandle<resource::Material> handle) const {
-//    return m_StorageMaterials[handle.index];
-//}
-//template const fe::VulkanMaterial& fe::VulkanResourceManager::GetResource(GPUHandle<resource::Material> handle)const;
-//
-//template<>
-//const fe::VulkanShaderProgram& fe::VulkanResourceManager::GetResource(GPUHandle<VulkanShaderProgram> handle) const {
-//    return m_StorageShaderPrograms[handle.index];
-//}
-//template const fe::VulkanShaderProgram& fe::VulkanResourceManager::GetResource(GPUHandle<VulkanShaderProgram> handle)const;
+template <>
+const fe::VulkanMaterial& fe::VulkanResourceManager::GetResource(GPUHandle<resource::Material> handle) const {
+    return m_StorageMaterials[handle.index];
+}
+template const fe::VulkanMaterial& fe::VulkanResourceManager::GetResource(GPUHandle<resource::Material> handle) const;
 
 template <>
 const fe::VulkanMesh& fe::VulkanResourceManager::GetResource(GPUHandle<resource::Model::Mesh> handle) const {
@@ -254,15 +248,15 @@ fe::GPUHandle<Model::Mesh> fe::VulkanResourceManager::createMesh(resource::Model
 }
 
 VkDescriptorSetLayout fe::VulkanResourceManager::createDescriptorSetLayout() {
-    VkDescriptorSetLayoutBinding layout_binding{};
-    layout_binding.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    layout_binding.descriptorCount = 1;
-    layout_binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
+    VkDescriptorSetLayoutBinding binding{};
+    binding.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    binding.descriptorCount = 1;
+    binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
 
     VkDescriptorSetLayoutCreateInfo descriptor_layout_create_info{};
     descriptor_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     descriptor_layout_create_info.bindingCount = 1;
-    descriptor_layout_create_info.pBindings    = &layout_binding;
+    descriptor_layout_create_info.pBindings    = &binding;
 
     VkDescriptorSetLayout descriptor_set_layout_raw{};
     VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Context.device, &descriptor_layout_create_info, nullptr, &descriptor_set_layout_raw));

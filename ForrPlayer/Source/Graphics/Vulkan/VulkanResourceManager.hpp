@@ -30,6 +30,8 @@ namespace fe {
         void CreateResource(T& resource);
 
         // here used 'typename T' instead of 'resource::resource_t T' because this function can be called by GPU types too
+        //
+        // If you getting error E0493 - you forgot to add your GPU resource to VulkanResourceTraits
         template <typename T>
         const typename VulkanResourceTraits<T>::type& GetResource(GPUHandle<T> handle) const;
 

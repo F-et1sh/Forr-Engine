@@ -36,7 +36,6 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     this->InitializeSynchronizationPrimitives();
     this->InitializeDepthStencil();
     this->InitializeRenderPass();
-    this->InitializePipelineCache();
     this->InitializeFramebuffers();
     this->InitializeStorageBuffer();
     this->InitializeDescriptors();
@@ -108,9 +107,8 @@ void fe::RendererVulkan::BeginFrame() {
     scissor.offset.y      = 0;
     vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
-    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_StorageBuffers[m_CurrentFrame].descriptor_set, 0, nullptr);
-
-    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline);
+    // descriptor sets binding
+    // pipeline binding
 
     { // temp
         auto glfw_window = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
@@ -142,14 +140,31 @@ void fe::RendererVulkan::Draw(DrawMeshCommand command) {
             const auto& primitive        = mesh.primitives[i];
             const auto& vulkan_primitive = vulkan_mesh.primitives[i];
 
-            const auto& material = *m_ResourceManager.GetResource(primitive.material_ptr);
+            const auto& material        = *m_ResourceManager.GetResource(primitive.material_ptr);
+            const auto& vulkan_material = m_VulkanResourceManager.GetResource(material.gpu_handle);
+
+            const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
+
+            vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline_layout, 0, 1, &m_StorageBuffers[m_CurrentFrame].descriptor_set, 0, nullptr);
+            vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline);
 
             memcpy(m_StorageBuffers[m_CurrentFrame].mapped, &m_SceneData, sizeof(ShaderData));
 
-            this->DrawPrimitive(vulkan_mesh.vertex_buffer, vulkan_mesh.index_buffer, vulkan_primitive.index_offset, vulkan_primitive.index_count);
+            VkDeviceSize offsets[1]{ 0 };
+
+            VkBuffer vertex_buffer_raw = vulkan_mesh.vertex_buffer.buffer;
+            vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
+
+            VkBuffer index_buffer_raw = vulkan_mesh.index_buffer.buffer;
+            vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
+
+            uint32_t constants = m_MeshIndex;
+            vkCmdPushConstants(command_buffer, vulkan_material.pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(uint32_t), &constants);
+
+            vkCmdDrawIndexed(command_buffer, vulkan_primitive.index_count, 1, vulkan_primitive.index_offset, 0, 0);
         }
     }
-    
+
     m_SceneData.model_matrices[m_MeshIndex] = command.transform;
 
     this->increaseMeshIndex();
@@ -479,18 +494,6 @@ void fe::RendererVulkan::InitializeRenderPass() {
     m_Context.render_pass = render_pass; // render pass
 }
 
-void fe::RendererVulkan::InitializePipelineCache() {
-    VkPipelineCacheCreateInfo pipeline_cache_create_info{};
-    pipeline_cache_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-
-    VkPipelineCache pipeline_cache{};
-    VK_CHECK_RESULT(vkCreatePipelineCache(m_Device, &pipeline_cache_create_info, nullptr, &pipeline_cache));
-    m_PipelineCache.attach(m_Device, pipeline_cache);
-
-    // === SETUP CONTEXT ===
-    m_Context.pipeline_cache = pipeline_cache; // pipeline cache
-}
-
 void fe::RendererVulkan::InitializeFramebuffers() {
     // if dynamic rendering enabled there is no need in render pass
     if (m_Context.use_dynamic_rendering) return;
@@ -556,124 +559,6 @@ void fe::RendererVulkan::InitializeDescriptors() {
     this->VKSetupDescriptorSetLayout();
     this->VKSetupDescriptorPool();
     this->VKSetupDescriptorSets();
-}
-
-void fe::RendererVulkan::InitializePipeline() {
-    this->VKSetupPipelineLayout();
-
-    VkGraphicsPipelineCreateInfo graphics_pipeline_create_info{};
-    graphics_pipeline_create_info.sType      = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    graphics_pipeline_create_info.layout     = m_PipelineLayout;
-    graphics_pipeline_create_info.renderPass = m_RenderPass;
-
-    VkPipelineInputAssemblyStateCreateInfo input_assembly_state_create_info{};
-    input_assembly_state_create_info.sType    = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    input_assembly_state_create_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-
-    VkPipelineRasterizationStateCreateInfo rasterization_state_create_info{};
-    rasterization_state_create_info.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    rasterization_state_create_info.polygonMode             = VK_POLYGON_MODE_FILL;
-    rasterization_state_create_info.cullMode                = VK_CULL_MODE_NONE;
-    rasterization_state_create_info.frontFace               = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-    rasterization_state_create_info.depthClampEnable        = VK_FALSE;
-    rasterization_state_create_info.rasterizerDiscardEnable = VK_FALSE;
-    rasterization_state_create_info.depthBiasEnable         = VK_FALSE;
-    rasterization_state_create_info.lineWidth               = 1.0f;
-
-    VkPipelineColorBlendAttachmentState color_blend_attachment_state{};
-    color_blend_attachment_state.colorWriteMask = 0xf;
-    color_blend_attachment_state.blendEnable    = VK_FALSE;
-
-    VkPipelineColorBlendStateCreateInfo color_blend_state_create_info{};
-    color_blend_state_create_info.sType           = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    color_blend_state_create_info.attachmentCount = 1;
-    color_blend_state_create_info.pAttachments    = &color_blend_attachment_state;
-
-    VkPipelineViewportStateCreateInfo viewport_state_create_info{};
-    viewport_state_create_info.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    viewport_state_create_info.viewportCount = 1;
-    viewport_state_create_info.scissorCount  = 1;
-
-    std::vector<VkDynamicState> dynamic_state_enables{};
-    dynamic_state_enables.push_back(VK_DYNAMIC_STATE_VIEWPORT);
-    dynamic_state_enables.push_back(VK_DYNAMIC_STATE_SCISSOR);
-
-    VkPipelineDynamicStateCreateInfo dynamic_state_create_info{};
-    dynamic_state_create_info.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamic_state_create_info.pDynamicStates    = dynamic_state_enables.data();
-    dynamic_state_create_info.dynamicStateCount = static_cast<uint32_t>(dynamic_state_enables.size());
-
-    VkPipelineDepthStencilStateCreateInfo depth_stencil_state_create_info{};
-    depth_stencil_state_create_info.sType                 = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depth_stencil_state_create_info.depthTestEnable       = VK_TRUE;
-    depth_stencil_state_create_info.depthWriteEnable      = VK_TRUE;
-    depth_stencil_state_create_info.depthCompareOp        = VK_COMPARE_OP_LESS_OR_EQUAL;
-    depth_stencil_state_create_info.depthBoundsTestEnable = VK_FALSE;
-    depth_stencil_state_create_info.back.failOp           = VK_STENCIL_OP_KEEP;
-    depth_stencil_state_create_info.back.passOp           = VK_STENCIL_OP_KEEP;
-    depth_stencil_state_create_info.back.compareOp        = VK_COMPARE_OP_ALWAYS;
-    depth_stencil_state_create_info.stencilTestEnable     = VK_FALSE;
-    depth_stencil_state_create_info.front                 = depth_stencil_state_create_info.back;
-
-    VkPipelineMultisampleStateCreateInfo multisample_state_create_info{};
-    multisample_state_create_info.sType                = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multisample_state_create_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-    VkVertexInputBindingDescription vertex_input_binding_description{};
-    vertex_input_binding_description.binding   = 0;
-    vertex_input_binding_description.stride    = sizeof(Vertex);
-    vertex_input_binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-    std::array<VkVertexInputAttributeDescription, 1> vertex_input_attributs{};
-    vertex_input_attributs[0].binding  = 0;
-    vertex_input_attributs[0].location = 0;
-    vertex_input_attributs[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
-    vertex_input_attributs[0].offset   = offsetof(Vertex, position);
-
-    VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info{};
-    vertex_input_state_create_info.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertex_input_state_create_info.vertexBindingDescriptionCount   = 1;
-    vertex_input_state_create_info.pVertexBindingDescriptions      = &vertex_input_binding_description;
-    vertex_input_state_create_info.vertexAttributeDescriptionCount = vertex_input_attributs.size();
-    vertex_input_state_create_info.pVertexAttributeDescriptions    = vertex_input_attributs.data();
-
-    std::array<VkPipelineShaderStageCreateInfo, 2> shader_stages_create_info{};
-
-    // vertex shader
-    fe::vk::ShaderModule vertex_shader_module = this->createShaderModule(PATH.getDefaultShadersPath() / "gLTF" / "shader.vert.spv");
-
-    shader_stages_create_info[0].sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shader_stages_create_info[0].stage  = VK_SHADER_STAGE_VERTEX_BIT;
-    shader_stages_create_info[0].module = vertex_shader_module;
-    shader_stages_create_info[0].pName  = "main";
-
-    assert(shader_stages_create_info[0].module != VK_NULL_HANDLE);
-
-    // fragment shader
-    fe::vk::ShaderModule fragment_shader_module = this->createShaderModule(PATH.getDefaultShadersPath() / "gLTF" / "shader.frag.spv");
-
-    shader_stages_create_info[1].sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shader_stages_create_info[1].stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-    shader_stages_create_info[1].module = fragment_shader_module;
-    shader_stages_create_info[1].pName  = "main";
-
-    assert(shader_stages_create_info[1].module != VK_NULL_HANDLE);
-
-    graphics_pipeline_create_info.stageCount = static_cast<uint32_t>(shader_stages_create_info.size());
-    graphics_pipeline_create_info.pStages    = shader_stages_create_info.data();
-
-    graphics_pipeline_create_info.pVertexInputState   = &vertex_input_state_create_info;
-    graphics_pipeline_create_info.pInputAssemblyState = &input_assembly_state_create_info;
-    graphics_pipeline_create_info.pRasterizationState = &rasterization_state_create_info;
-    graphics_pipeline_create_info.pColorBlendState    = &color_blend_state_create_info;
-    graphics_pipeline_create_info.pMultisampleState   = &multisample_state_create_info;
-    graphics_pipeline_create_info.pViewportState      = &viewport_state_create_info;
-    graphics_pipeline_create_info.pDepthStencilState  = &depth_stencil_state_create_info;
-    graphics_pipeline_create_info.pDynamicState       = &dynamic_state_create_info;
-
-    VkPipeline pipeline_raw{};
-    VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_Device, m_PipelineCache, 1, &graphics_pipeline_create_info, nullptr, &pipeline_raw));
-    m_Pipeline.attach(m_Device, pipeline_raw); // pipeline
 }
 
 void fe::RendererVulkan::VKCreateInstance() {
@@ -1000,6 +885,22 @@ void fe::RendererVulkan::VKSetupQueues() {
     vkGetDeviceQueue(m_Device, m_Context.queue_family_indices.transfer, queue_index, &m_Context.queue_transfer);
 }
 
+void fe::RendererVulkan::VKSetupDescriptorSetLayout() {
+    VkDescriptorSetLayoutBinding binding{};
+    binding.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    binding.descriptorCount = 1;
+    binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
+
+    VkDescriptorSetLayoutCreateInfo descriptor_layout_create_info{};
+    descriptor_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    descriptor_layout_create_info.bindingCount = 1;
+    descriptor_layout_create_info.pBindings    = &binding;
+
+    VkDescriptorSetLayout descriptor_set_layout_raw{};
+    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptor_layout_create_info, nullptr, &descriptor_set_layout_raw));
+    m_DescriptorSetLayout.attach(m_Device, descriptor_set_layout_raw);
+}
+
 void fe::RendererVulkan::VKSetupDescriptorPool() {
     VkDescriptorPoolSize descriptor_pool_size[1];
     descriptor_pool_size[0].type            = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -1149,21 +1050,4 @@ VKAPI_ATTR VkBool32 VKAPI_CALL fe::RendererVulkan::debugUtilsMessageCallback(VkD
     }
 
     return VK_FALSE;
-}
-
-void fe::RendererVulkan::DrawPrimitive(const VulkanVertexBuffer& vertex_buffer, const VulkanIndexBuffer& index_buffer, uint32_t index_offset, uint32_t index_count) {
-    const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
-
-    VkDeviceSize offsets[1]{ 0 };
-
-    VkBuffer vertex_buffer_raw = vertex_buffer.buffer;
-    vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
-
-    VkBuffer index_buffer_raw = index_buffer.buffer;
-    vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
-
-    uint32_t constants = m_MeshIndex;
-    vkCmdPushConstants(command_buffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(uint32_t), &constants);
-
-    vkCmdDrawIndexed(command_buffer, index_count, 1, index_offset, 0, 0);
 }
