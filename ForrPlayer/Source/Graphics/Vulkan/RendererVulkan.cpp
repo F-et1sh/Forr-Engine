@@ -40,7 +40,6 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     this->InitializeFramebuffers();
     this->InitializeStorageBuffer();
     this->InitializeDescriptors();
-    this->InitializePipeline();
 }
 
 fe::RendererVulkan::~RendererVulkan() {
@@ -1001,22 +1000,6 @@ void fe::RendererVulkan::VKSetupQueues() {
     vkGetDeviceQueue(m_Device, m_Context.queue_family_indices.transfer, queue_index, &m_Context.queue_transfer);
 }
 
-void fe::RendererVulkan::VKSetupDescriptorSetLayout() {
-    VkDescriptorSetLayoutBinding layout_binding{};
-    layout_binding.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    layout_binding.descriptorCount = 1;
-    layout_binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
-
-    VkDescriptorSetLayoutCreateInfo descriptor_layout_create_info{};
-    descriptor_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    descriptor_layout_create_info.bindingCount = 1;
-    descriptor_layout_create_info.pBindings    = &layout_binding;
-
-    VkDescriptorSetLayout descriptor_set_layout_raw{};
-    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptor_layout_create_info, nullptr, &descriptor_set_layout_raw));
-    m_DescriptorSetLayout.attach(m_Device, descriptor_set_layout_raw);
-}
-
 void fe::RendererVulkan::VKSetupDescriptorPool() {
     VkDescriptorPoolSize descriptor_pool_size[1];
     descriptor_pool_size[0].type            = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -1059,27 +1042,6 @@ void fe::RendererVulkan::VKSetupDescriptorSets() {
 
         vkUpdateDescriptorSets(m_Device, 1, &write_descriptor_set, 0, nullptr);
     }
-}
-
-void fe::RendererVulkan::VKSetupPipelineLayout() {
-    VkDescriptorSetLayout descriptor_set_layout_raw[] = { m_DescriptorSetLayout };
-
-    VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
-    pipeline_layout_create_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipeline_layout_create_info.setLayoutCount = 1;
-    pipeline_layout_create_info.pSetLayouts    = descriptor_set_layout_raw;
-
-    VkPushConstantRange push_constant{};
-    push_constant.offset     = 0;
-    push_constant.size       = sizeof(uint32_t); // index
-    push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-    pipeline_layout_create_info.pPushConstantRanges    = &push_constant;
-    pipeline_layout_create_info.pushConstantRangeCount = 1;
-
-    VkPipelineLayout pipeline_layout_raw{};
-    VK_CHECK_RESULT(vkCreatePipelineLayout(m_Device, &pipeline_layout_create_info, nullptr, &pipeline_layout_raw));
-    m_PipelineLayout.attach(m_Device, pipeline_layout_raw);
 }
 
 std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::getQueueFamilyInfos(bool use_swapchain, VkQueueFlags requested_queue_types) {
@@ -1153,42 +1115,6 @@ std::vector<VkDeviceQueueCreateInfo> fe::RendererVulkan::getQueueFamilyInfos(boo
     }
 
     return queue_create_infos;
-}
-
-fe::vk::ShaderModule fe::RendererVulkan::createShaderModule(const std::filesystem::path& path) {
-    size_t shader_size{};
-    char*  shader_code{};
-
-    std::ifstream is(path, std::ios::binary | std::ios::in | std::ios::ate);
-
-    if (is.is_open()) {
-        shader_size = is.tellg();
-        is.seekg(0, std::ios::beg);
-        shader_code = new char[shader_size];
-        is.read(shader_code, shader_size);
-        is.close();
-        assert(shader_size > 0);
-    }
-    if (shader_code) {
-        VkShaderModuleCreateInfo shader_module_create_info{};
-        shader_module_create_info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        shader_module_create_info.codeSize = shader_size;
-        shader_module_create_info.pCode    = (uint32_t*) shader_code;
-
-        fe::vk::ShaderModule shader_module{};
-
-        VkShaderModule shader_module_raw{};
-        VK_CHECK_RESULT(vkCreateShaderModule(m_Device, &shader_module_create_info, nullptr, &shader_module_raw));
-        shader_module.attach(m_Device, shader_module_raw);
-
-        delete[] shader_code;
-
-        return std::move(shader_module);
-    }
-
-    fe::logging::error("Failed to open shader file. Path : %s", path.string().c_str());
-
-    return fe::vk::ShaderModule{ m_Device, VK_NULL_HANDLE };
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL fe::RendererVulkan::debugUtilsMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
