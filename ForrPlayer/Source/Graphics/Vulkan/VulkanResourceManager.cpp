@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -19,7 +19,9 @@ using namespace fe::resource;
 
 template <>
 void fe::VulkanResourceManager::CreateResource(Material& material) {
+    VulkanMaterial vulkan_material{};
     
+    this->storeResource(material.gpu_handle, vulkan_material, m_StorageMaterials);
 }
 template void fe::VulkanResourceManager::CreateResource(Material& material);
 

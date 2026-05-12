@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -53,9 +53,8 @@ namespace fe {
         VulkanContext&   m_Context;
         ResourceManager& m_ResourceManager;
 
-        //std::vector<VulkanMaterial>      m_StorageMaterials{};
-        //std::vector<VulkanShaderProgram> m_StorageShaderPrograms{};
-        std::vector<VulkanMesh>    m_StorageMeshes{};
-        std::vector<VulkanTexture> m_StorageTextures{};
+        std::vector<VulkanMaterial> m_StorageMaterials{};
+        std::vector<VulkanMesh>     m_StorageMeshes{};
+        std::vector<VulkanTexture>  m_StorageTextures{};
     };
 } // namespace fe

@@ -7,6 +7,8 @@
 ### Done
     ForrAI pet-project
     planning
+    ( pipeline cache removed - keep in mind )
+    VulkanMaterial added
 
 ### Problem
     -
