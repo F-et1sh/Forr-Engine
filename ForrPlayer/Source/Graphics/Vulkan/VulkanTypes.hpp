@@ -31,9 +31,9 @@ namespace fe {
     };
 
     struct VulkanMaterial {
-        fe::vk::Pipeline            pipeline{};
-        fe::vk::PipelineLayout      pipeline_layout{};
         fe::vk::DescriptorSetLayout descriptor_set_layout{};
+        fe::vk::PipelineLayout      pipeline_layout{};
+        fe::vk::Pipeline            pipeline{};
 
         VulkanMaterial()  = default;
         ~VulkanMaterial() = default;

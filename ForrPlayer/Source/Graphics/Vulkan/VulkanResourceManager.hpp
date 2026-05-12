@@ -33,11 +33,12 @@ namespace fe {
         template <typename T>
         const typename VulkanResourceTraits<T>::type& GetResource(GPUHandle<T> handle) const;
 
-    private: // here functions, which used like helpers to create some resources that don't have thier own CPU realization.
-             // The functions return 'GPUHandle<>' but you DON'T have to set 'GPUHandle<> gpu_handle' in the resources, the functions does it by themselves
-
+    private:
         fe::GPUHandle<fe::resource::Model::Mesh> createMesh(resource::Model::Mesh& mesh);
-        //GPUHandle<VulkanShaderProgram>           createShaderProgram(VulkanMaterial& Vulkan_material, std::vector<resource::Shader*> shaders);
+        VkDescriptorSetLayout                    createDescriptorSetLayout();
+        VkPipelineLayout                         createPipelineLayout(const std::vector<VkDescriptorSetLayout>& descriptor_set_layouts_raw);
+        VkPipeline                               createPipeline(VkPipelineLayout pipeline_layout_raw, const resource::Material& material);
+        fe::vk::ShaderModule                     createShaderModule(fe::pointer<fe::resource::Shader> shader_ptr);
 
     private:
         // this function returns the index of the resource ( GPUHandle<>::index )

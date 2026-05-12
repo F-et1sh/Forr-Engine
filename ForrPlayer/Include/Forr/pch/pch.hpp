@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -11,6 +11,8 @@
 ===============================================*/
 
 #pragma once
+
+#include <array>
 
 #include "Core/attributes.hpp"
 #include "Core/custom_allocators.hpp"
