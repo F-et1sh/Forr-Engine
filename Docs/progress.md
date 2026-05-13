@@ -1,5 +1,18 @@
 ﻿# Forr-Engine Devlog
 
+## 14.05.2026
+### Goal
+    decide what I have to use : MeshProxy? How to create sorting
+    provide sorting for Vulkan/OpenGL
+    provide FrameData
+    create different materials
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 13.05.2026
 ### Goal
     provide std::vector<DrawCommand> m_RenderQueue{} for RendererVulkan
