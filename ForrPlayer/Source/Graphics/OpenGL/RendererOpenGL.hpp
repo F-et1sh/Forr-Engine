@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -28,7 +28,7 @@ namespace fe {
         void SetClearColor(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
 
         void BeginFrame() override;
-        void Draw(DrawMeshCommand command) override;
+        void Draw(const DrawCommand& command) override;
         void EndFrame() override;
 
         void InitializeGPUResources() override;

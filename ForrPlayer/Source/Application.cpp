@@ -1,4 +1,4 @@
-#include "pch.hpp"
+﻿#include "pch.hpp"
 #include "Application.hpp"
 
 fe::Application::Application(const ApplicationDesc& desc) {
@@ -32,23 +32,25 @@ void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
         m_Renderer->BeginFrame();
 
-        { // temp
-            DrawMeshCommand command{};
-            command.model_ptr  = m_Object.mesh_component.model_ptr;
-            command.mesh_index = m_Object.mesh_component.mesh_id;
-            command.transform  = m_Object.transform_component.transform;
+        //{ // temp
+        //    DrawCommand command{};
+        //    command.transform  = m_Object.transform_component.transform;
+        //    
 
-            m_Object.transform_component.transform = glm::rotate(m_Object.transform_component.transform, 0.01f, glm::vec3(0, 1, 0));
+        //    command.model_ptr  = m_Object.mesh_component.model_ptr;
+        //    command.mesh_index = m_Object.mesh_component.mesh_id;
 
-            m_Renderer->Draw(command);
+        //    m_Object.transform_component.transform = glm::rotate(m_Object.transform_component.transform, 0.01f, glm::vec3(0, 1, 0));
 
-            DrawMeshCommand command2{};
-            command2.model_ptr  = m_Object2.mesh_component.model_ptr;
-            command2.mesh_index = m_Object2.mesh_component.mesh_id;
-            command2.transform  = m_Object2.transform_component.transform;
+        //    m_Renderer->Draw(command);
 
-            m_Renderer->Draw(command2);
-        }
+        //    DrawCommand command2{};
+        //    command2.model_ptr  = m_Object2.mesh_component.model_ptr;
+        //    command2.mesh_index = m_Object2.mesh_component.mesh_id;
+        //    command2.transform  = m_Object2.transform_component.transform;
+
+        //    m_Renderer->Draw(command2);
+        //}
 
         m_Renderer->EndFrame();
 

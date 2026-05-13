@@ -130,44 +130,8 @@ void fe::RendererVulkan::BeginFrame() {
     m_SceneData.view_matrix       = m_Camera.getViewMatrix();
 }
 
-void fe::RendererVulkan::Draw(DrawMeshCommand command) {
-    const auto& model = *m_ResourceManager.GetResource(command.model_ptr);
-
-    for (const auto& mesh : model.meshes) {
-        const auto& vulkan_mesh = m_VulkanResourceManager.GetResource(mesh.gpu_handle);
-
-        for (size_t i = 0; i < mesh.primitives.size(); i++) {
-            const auto& primitive        = mesh.primitives[i];
-            const auto& vulkan_primitive = vulkan_mesh.primitives[i];
-
-            const auto& material        = *m_ResourceManager.GetResource(primitive.material_ptr);
-            const auto& vulkan_material = m_VulkanResourceManager.GetResource(material.gpu_handle);
-
-            const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
-
-            vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline_layout, 0, 1, &m_StorageBuffers[m_CurrentFrame].descriptor_set, 0, nullptr);
-            vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline);
-
-            memcpy(m_StorageBuffers[m_CurrentFrame].mapped, &m_SceneData, sizeof(ShaderData));
-
-            VkDeviceSize offsets[1]{ 0 };
-
-            VkBuffer vertex_buffer_raw = vulkan_mesh.vertex_buffer.buffer;
-            vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
-
-            VkBuffer index_buffer_raw = vulkan_mesh.index_buffer.buffer;
-            vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
-
-            uint32_t constants = m_MeshIndex;
-            vkCmdPushConstants(command_buffer, vulkan_material.pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(uint32_t), &constants);
-
-            vkCmdDrawIndexed(command_buffer, vulkan_primitive.index_count, 1, vulkan_primitive.index_offset, 0, 0);
-        }
-    }
-
-    m_SceneData.model_matrices[m_MeshIndex] = command.transform;
-
-    this->increaseMeshIndex();
+void fe::RendererVulkan::Draw(const DrawCommand& command) {
+    m_RenderQueue.emplace_back(command);
 }
 
 void fe::RendererVulkan::EndFrame() {

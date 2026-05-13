@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -83,36 +83,36 @@ void fe::RendererOpenGL::BeginFrame() {
     m_SceneData.view_matrix       = m_Camera.getViewMatrix();
 }
 
-void fe::RendererOpenGL::Draw(DrawMeshCommand command) {
-    const auto& model = *m_ResourceManager.GetResource(command.model_ptr);
+void fe::RendererOpenGL::Draw(const DrawCommand& command) {
+    //const auto& model = *m_ResourceManager.GetResource(command.model_ptr);
 
-    for (const auto& mesh : model.meshes) {
-        const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(mesh.gpu_handle);
+    //for (const auto& mesh : model.meshes) {
+    //    const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(mesh.gpu_handle);
 
-        for (size_t i = 0; i < mesh.primitives.size(); i++) {
-            const auto& primitive        = mesh.primitives[i];
-            const auto& opengl_primitive = opengl_mesh.primitives[i];
+    //    for (size_t i = 0; i < mesh.primitives.size(); i++) {
+    //        const auto& primitive        = mesh.primitives[i];
+    //        const auto& opengl_primitive = opengl_mesh.primitives[i];
 
-            const auto& material              = *m_ResourceManager.GetResource(primitive.material_ptr);
-            const auto& opengl_material       = m_OpenGLResourceManager.GetResource(material.gpu_handle);
-            const auto& opengl_shader_program = m_OpenGLResourceManager.GetResource(opengl_material.shader_program_handle);
+    //        const auto& material              = *m_ResourceManager.GetResource(primitive.material_ptr);
+    //        const auto& opengl_material       = m_OpenGLResourceManager.GetResource(material.gpu_handle);
+    //        const auto& opengl_shader_program = m_OpenGLResourceManager.GetResource(opengl_material.shader_program_handle);
 
-            m_SceneData.model_matrices[m_MeshIndex] = command.transform; // TODO : check "Docs/not-now-but.md" 30.04.2026 - add sorting
-            glNamedBufferSubData(m_SceneSSBO, 0, sizeof(m_SceneData), &m_SceneData);
+    //        m_SceneData.model_matrices[m_MeshIndex] = command.transform; // TODO : check "Docs/not-now-but.md" 30.04.2026 - add sorting
+    //        glNamedBufferSubData(m_SceneSSBO, 0, sizeof(m_SceneData), &m_SceneData);
 
-            glUseProgram(opengl_shader_program.shader_program);
+    //        glUseProgram(opengl_shader_program.shader_program);
 
-            glBindVertexArray(opengl_mesh.vao);
+    //        glBindVertexArray(opengl_mesh.vao);
 
-            auto location = glGetUniformLocation(opengl_shader_program.shader_program, "model_index");
-            glUniform1i(location, m_MeshIndex);
+    //        auto location = glGetUniformLocation(opengl_shader_program.shader_program, "model_index");
+    //        glUniform1i(location, m_MeshIndex);
 
-            glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
+    //        glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
 
-            glBindVertexArray(0);
-            glUseProgram(0);
-        }
-    }
+    //        glBindVertexArray(0);
+    //        glUseProgram(0);
+    //    }
+    //}
 
     this->increaseMeshIndex();
 }
