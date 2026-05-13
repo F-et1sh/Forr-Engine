@@ -46,6 +46,7 @@
     <ClInclude Include="Source\Graphics\Vulkan\VulkanRAII.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanSwapchain.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanTypes.hpp" />
+    <ClInclude Include="Include\Forr\ECS\Systems\RendererSystem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />

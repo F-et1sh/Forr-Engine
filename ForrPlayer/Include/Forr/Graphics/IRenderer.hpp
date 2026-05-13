@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -31,15 +31,17 @@ namespace fe {
         ~RendererDesc() = default;
     };
 
-    struct DrawMeshCommand { // TODO : create DrawCommands.hpp
+    struct DrawCommand {
     public:
-        fe::pointer<resource::Model> model_ptr{};
-        uint32_t                     mesh_index = ~0; // ~0 means that renderer has to draw all meshes
+        GPUHandle<resource::Model::Mesh> mesh_handle{};
+        GPUHandle<resource::Material>    material_handle{};
+
+        uint64_t sort_key{};
 
         glm::mat4 transform{};
 
-        DrawMeshCommand()  = default;
-        ~DrawMeshCommand() = default;
+        DrawCommand()  = default;
+        ~DrawCommand() = default;
     };
 
     struct GlobalSceneData {
@@ -67,9 +69,9 @@ namespace fe {
                                    float blue  = 1.0f,
                                    float alpha = 1.0f) = 0;
 
-        virtual void BeginFrame()                  = 0;
-        virtual void Draw(DrawMeshCommand command) = 0;
-        virtual void EndFrame()                    = 0;
+        virtual void BeginFrame()                     = 0;
+        virtual void Draw(const DrawCommand& command) = 0;
+        virtual void EndFrame()                       = 0;
 
         // TODO : remove this. It should work other way
         virtual void InitializeGPUResources() = 0;

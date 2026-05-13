@@ -51,7 +51,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(SolutionDir)ThirdParty\glfw\include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\glm\include;$(SolutionDir)ThirdParty\stb\include;$(SolutionDir)ThirdParty\tinygltf\include;$(SolutionDir)ThirdParty\MikkTSpace\include;$(SolutionDir)ThirdParty\SPIRV-Reflect\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(SolutionDir)ThirdParty\glfw\include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\glm\include;$(SolutionDir)ThirdParty\stb\include;$(SolutionDir)ThirdParty\tinygltf\include;$(SolutionDir)ThirdParty\MikkTSpace\include;$(SolutionDir)ThirdParty\SPIRV-Reflect\include;$(SolutionDir)ThirdParty\entt\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
     </ClCompile>
@@ -75,7 +75,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(SolutionDir)ThirdParty\glfw\include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\glm\include;$(SolutionDir)ThirdParty\stb\include;$(SolutionDir)ThirdParty\tinygltf\include;$(SolutionDir)ThirdParty\MikkTSpace\include;$(SolutionDir)ThirdParty\SPIRV-Reflect\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(SolutionDir)ThirdParty\glfw\include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\glm\include;$(SolutionDir)ThirdParty\stb\include;$(SolutionDir)ThirdParty\tinygltf\include;$(SolutionDir)ThirdParty\MikkTSpace\include;$(SolutionDir)ThirdParty\SPIRV-Reflect\include;$(SolutionDir)ThirdParty\entt\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
     </ClCompile>
@@ -99,6 +99,7 @@
     <ClInclude Include="Include\Forr\Core\pointer.hpp" />
     <ClInclude Include="Include\Forr\Core\types.hpp" />
     <ClInclude Include="Include\Forr\ECS\Components.hpp" />
+    <ClInclude Include="Include\Forr\ECS\Systems\RendererSystem.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Camera.hpp" />
     <ClInclude Include="Include\Forr\Graphics\IRenderer.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Shaders\ShaderCompiler.hpp" />

@@ -40,7 +40,7 @@ namespace fe {
         void SetClearColor(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
 
         void BeginFrame() override;
-        void Draw(DrawMeshCommand command) override;
+        void Draw(const DrawCommand& command) override;
         void EndFrame() override;
 
         void InitializeGPUResources() override;
@@ -176,6 +176,8 @@ namespace fe {
         bool m_IsWindowResized{}; // temp
 
         uint32_t m_CurrentFrame{};
+
+        std::vector<DrawCommand> m_RenderQueue{};
 
         VulkanResourceManager m_VulkanResourceManager{ m_Context, m_ResourceManager };
 
