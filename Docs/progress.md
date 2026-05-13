@@ -1,5 +1,18 @@
 ﻿# Forr-Engine Devlog
 
+## 13.05.2026
+### Goal
+    provide std::vector<DrawCommand> m_RenderQueue{} for RendererVulkan
+    provide sorting for Vulkan/OpenGL
+    provide FrameData
+    create different materials
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 12.05.2026
 ### Goal
     provide materials for Vulkan
@@ -11,7 +24,7 @@
     ( pipeline cache removed - keep in mind )
     VulkanMaterial added
     VulkanMaterial creation provided
-    pipeline creation moved to materials - all works correctly
+    pipeline creation moved to materials - everything works correctly
 
 ### Problem
     -
