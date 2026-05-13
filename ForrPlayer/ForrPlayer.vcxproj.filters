@@ -80,5 +80,6 @@
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManager.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
+    <ClCompile Include="Source\ECS\Systems\RendererSystem.cpp" />
   </ItemGroup>
 </Project>
