@@ -2,7 +2,7 @@
 
     Forr Engine
 
-    File : RendererSystem.cpp
+    File : RenderSystem.cpp
     Role : renderer system. Without EnTT for now
 
     Copyright (C) 2026 Farrakh
@@ -11,9 +11,9 @@
 ===============================================*/
 
 #include "pch.hpp"
-#include "ECS/Systems/RendererSystem.hpp"
+#include "ECS/Systems/RenderSystem.hpp"
 
-void fe::RendererSystem::Update() {
+void fe::RenderSystem::Update() {
     auto view = m_Registry.get().view<const TransformComponent, const MeshComponent>();
 
     // temp

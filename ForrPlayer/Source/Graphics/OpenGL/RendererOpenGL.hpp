@@ -22,7 +22,10 @@
 namespace fe {
     class RendererOpenGL : public IRenderer {
     public:
-        RendererOpenGL(const RendererDesc& desc, IPlatformSystem& platform_system, size_t primary_window_index, ResourceManager& resource_manager);
+        RendererOpenGL(const RendererDesc& desc,
+                       IPlatformSystem&    platform_system,
+                       size_t              primary_window_index,
+                       ResourceManager&    resource_manager);
         ~RendererOpenGL();
 
         void SetClearColor(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
