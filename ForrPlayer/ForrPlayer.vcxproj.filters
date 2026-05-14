@@ -46,7 +46,7 @@
     <ClInclude Include="Source\Graphics\Vulkan\VulkanRAII.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanSwapchain.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanTypes.hpp" />
-    <ClInclude Include="Include\Forr\ECS\Systems\RendererSystem.hpp" />
+    <ClInclude Include="Include\Forr\ECS\Systems\RenderSystem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -80,6 +80,6 @@
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManager.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
-    <ClCompile Include="Source\ECS\Systems\RendererSystem.cpp" />
+    <ClCompile Include="Source\ECS\Systems\RenderSystem.cpp" />
   </ItemGroup>
 </Project>

@@ -2,7 +2,7 @@
 
     Forr Engine
 
-    File : RendererSystem.hpp
+    File : RenderSystem.hpp
     Role : renderer system. Without EnTT for now
 
     Copyright (C) 2026 Farrakh
@@ -15,11 +15,16 @@
 #include "Graphics/IRenderer.hpp"
 
 namespace fe {
-    class RendererSystem {
+    struct DrawCommandEntry {
+        DrawCommandEntry()  = default;
+        ~DrawCommandEntry() = default;
+    };
+
+    class RenderSystem {
     public:
-        RendererSystem(entt::registry& registry, IRenderer& renderer, ResourceManager& resource_manager)
+        RenderSystem(entt::registry& registry, IRenderer& renderer, ResourceManager& resource_manager)
             : m_Registry(registry), m_Renderer(renderer), m_ResourceManager(resource_manager) {}
-        ~RendererSystem() = default;
+        ~RenderSystem() = default;
 
         void Update();
 
@@ -28,5 +33,7 @@ namespace fe {
         std::reference_wrapper<IRenderer>      m_Renderer; // testing std::reference_wrapper<>
         ResourceManager&                       m_ResourceManager;
         std::vector<DrawCommand>               m_DrawCommands{};
+
+        //std::vector<>
     };
 } // namespace fe

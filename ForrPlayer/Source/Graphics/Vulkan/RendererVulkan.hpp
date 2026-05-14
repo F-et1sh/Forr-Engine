@@ -34,7 +34,10 @@
 namespace fe {
     class RendererVulkan : public IRenderer {
     public:
-        RendererVulkan(const RendererDesc& desc, IPlatformSystem& platform_system, size_t primary_window_index, ResourceManager& resource_manager);
+        RendererVulkan(const RendererDesc& desc,
+                       IPlatformSystem&    platform_system,
+                       size_t              primary_window_index,
+                       ResourceManager&    resource_manager);
         ~RendererVulkan();
 
         void SetClearColor(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
@@ -126,6 +129,7 @@ namespace fe {
                                                                         VkDebugUtilsMessageTypeFlagsEXT             message_type,
                                                                         const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
                                                                         void*                                       user_data);
+
     private: // Others
         void configureCamera();
         void resizeWindow();
@@ -168,7 +172,7 @@ namespace fe {
 
         std::array<VulkanStorageBuffer, VulkanContext::max_concurrent_frames> m_StorageBuffers{};
 
-        fe::vk::DescriptorPool m_DescriptorPool{};
+        fe::vk::DescriptorPool      m_DescriptorPool{};
         fe::vk::DescriptorSetLayout m_DescriptorSetLayout{};
 
         Camera m_Camera{}; // temp
