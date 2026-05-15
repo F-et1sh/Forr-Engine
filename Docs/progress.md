@@ -1,5 +1,17 @@
 ﻿# Forr-Engine Devlog
 
+## 16.05.2026
+### Goal
+    provide sorting for Vulkan/OpenGL
+    provide FrameData ( already done, just move it into a struct )
+    create different materials
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 15.05.2026
 ### Goal
     provide sorting for Vulkan/OpenGL
@@ -9,6 +21,7 @@
 ### Done
     RenderSystem progressed
     adding ECS
+    rendering done
 
 ### Problem
     -
