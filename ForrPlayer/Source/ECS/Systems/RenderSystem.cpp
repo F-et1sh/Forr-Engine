@@ -13,21 +13,50 @@
 #include "pch.hpp"
 #include "ECS/Systems/RenderSystem.hpp"
 
+struct fe::RenderSystem::Impl {
+    ResourceManager&                       m_ResourceManager;
+    std::reference_wrapper<entt::registry> m_Registry; // testing std::reference_wrapper<>
+    std::reference_wrapper<IRenderer>      m_Renderer; // testing std::reference_wrapper<>
+
+    std::vector<DrawCommand>     m_DrawCommands{};
+    std::vector<RenderMeshEntry> m_RenderMeshEntries{};
+
+    std::unordered_map<fe::pointer<resource::Model>, std::vector<RenderMeshEntry>> m_Table{};
+};
+
+fe::RenderSystem::RenderSystem(ResourceManager& resource_manager, entt::registry& registry, IRenderer& renderer) {
+    m_Impl = std::make_unique<Impl>(resource_manager, registry, renderer);
+}
+
+fe::RenderSystem::~RenderSystem() = default;
+
 void fe::RenderSystem::Update() {
-    auto view = m_Registry.get().view<const TransformComponent, const MeshComponent>();
+    auto view = m_Impl->m_Registry.get().view<const TransformComponent, const MeshComponent>();
 
     for (auto [entity, transform_component, mesh_component] : view.each()) {
-        auto it = m_Table.find(mesh_component.model_ptr);
+        auto it = m_Impl->m_Table.find(mesh_component.model_ptr);
 
-        if (it == m_Table.end())
+        if (it == m_Impl->m_Table.end())
             this->addEntry(mesh_component.model_ptr);
 
         this->addToDrawList(mesh_component.model_ptr, transform_component.transform);
     }
 }
 
+void fe::RenderSystem::PushToRenderer() {
+    for (const auto& draw_command : m_Impl->m_DrawCommands) {
+        m_Impl->m_Renderer.get().Draw(draw_command);
+    }
+
+    { // temp. reset
+        std::size_t size = m_Impl->m_DrawCommands.size();
+        m_Impl->m_DrawCommands.clear();
+        m_Impl->m_DrawCommands.reserve(size);
+    }
+}
+
 void fe::RenderSystem::addEntry(fe::pointer<resource::Model> model_ptr) {
-    auto& model = *m_ResourceManager.GetResource(model_ptr);
+    auto& model = *m_Impl->m_ResourceManager.GetResource(model_ptr);
 
     std::vector<RenderMeshEntry> enties{};
     enties.reserve(model.meshes.size());
@@ -35,9 +64,10 @@ void fe::RenderSystem::addEntry(fe::pointer<resource::Model> model_ptr) {
     for (const auto& mesh : model.meshes) {
         for (const auto& primitive : mesh.primitives) {
 
-            const auto& material = *m_ResourceManager.GetResource(primitive.material_ptr);
+            const auto& material = *m_Impl->m_ResourceManager.GetResource(primitive.material_ptr);
 
-            auto& entry           = enties.emplace_back();
+            auto& entry = enties.emplace_back();
+
             entry.index_count     = primitive.index_count;
             entry.index_offset    = primitive.index_offset;
             entry.material_handle = material.gpu_handle;
@@ -45,17 +75,20 @@ void fe::RenderSystem::addEntry(fe::pointer<resource::Model> model_ptr) {
             entry.sort_key        = 16 << material.gpu_handle.index;
         }
     }
+
+    m_Impl->m_Table.insert({ model_ptr, std::move(enties) });
 }
 
 void fe::RenderSystem::addToDrawList(fe::pointer<resource::Model> model_ptr, const glm::mat4& transform) {
-    auto it = m_Table.find(model_ptr);
-    if (it == m_Table.end()) {
+    auto it = m_Impl->m_Table.find(model_ptr);
+    if (it == m_Impl->m_Table.end()) {
         fe::logging::error("Cannot draw the model without RenderMeshEntry");
         return;
     }
 
     for (const auto& entry : it->second) {
-        auto& draw_command           = m_DrawCommands.emplace_back();
+        auto& draw_command = m_Impl->m_DrawCommands.emplace_back();
+
         draw_command.index_count     = entry.index_count;
         draw_command.index_offset    = entry.index_offset;
         draw_command.material_handle = entry.material_handle;

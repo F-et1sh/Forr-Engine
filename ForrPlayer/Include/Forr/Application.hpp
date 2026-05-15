@@ -19,6 +19,7 @@
 #include "ResourceManagement/ResourceManager.hpp"
 
 #include "ECS/Components.hpp" // temp
+#include "ECS/Systems/RenderSystem.hpp" // temp
 
 namespace fe {
     struct FORR_API ApplicationDesc {
@@ -56,10 +57,5 @@ namespace fe {
 
         size_t   m_PrimaryWindowID{};
         IWindow* m_PrimaryWindow{};
-
-        struct Object { // temp
-            TransformComponent transform_component{};
-            MeshComponent      mesh_component{};
-        } m_Object, m_Object2;
     };
 } // namespace fe

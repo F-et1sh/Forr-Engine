@@ -1,6 +1,15 @@
 ﻿#include "pch.hpp"
 #include "Application.hpp"
 
+namespace fe {
+    static entt::entity m_Object1{}; // temp
+    static entt::entity m_Object2{}; // temp
+
+    static std::unique_ptr<RenderSystem> m_RenderSystem{}; // temp
+    static entt::registry                m_Registry{};     // temp
+
+} // namespace fe
+
 fe::Application::Application(const ApplicationDesc& desc) {
     PATH.init(desc.args[0], true);
 
@@ -14,43 +23,28 @@ fe::Application::Application(const ApplicationDesc& desc) {
     m_ResourceManager->RunForEach<resource::Model>([&](fe::pointer<resource::Model> model_ptr, const resource::Model& model) { // temp
         switch (i) {
             case 0:
-                m_Object.mesh_component.model_ptr      = model_ptr;
-                m_Object.mesh_component.mesh_id        = ~0;
-                m_Object.transform_component.transform = glm::translate(glm::mat4(1.0f), glm::vec3(50, 0, 0));
+                m_Object1 = m_Registry.create();
+                m_Registry.emplace<TransformComponent>(m_Object1, glm::translate(glm::mat4(1.0f), glm::vec3(50, 0, 0)));
+                m_Registry.emplace<MeshComponent>(m_Object1, model_ptr);
                 break;
             case 1:
-                m_Object2.mesh_component.model_ptr      = model_ptr;
-                m_Object2.mesh_component.mesh_id        = ~0;
-                m_Object2.transform_component.transform = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+                m_Object2 = m_Registry.create();
+                m_Registry.emplace<TransformComponent>(m_Object2, glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)));
+                m_Registry.emplace<MeshComponent>(m_Object2, model_ptr);
                 break;
         }
         i++;
     });
+
+    m_RenderSystem = std::make_unique<RenderSystem>(*m_ResourceManager, m_Registry, *m_Renderer);
 }
 
 void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
         m_Renderer->BeginFrame();
 
-        //{ // temp
-        //    DrawCommand command{};
-        //    command.transform  = m_Object.transform_component.transform;
-        //    
-
-        //    command.model_ptr  = m_Object.mesh_component.model_ptr;
-        //    command.mesh_index = m_Object.mesh_component.mesh_id;
-
-        //    m_Object.transform_component.transform = glm::rotate(m_Object.transform_component.transform, 0.01f, glm::vec3(0, 1, 0));
-
-        //    m_Renderer->Draw(command);
-
-        //    DrawCommand command2{};
-        //    command2.model_ptr  = m_Object2.mesh_component.model_ptr;
-        //    command2.mesh_index = m_Object2.mesh_component.mesh_id;
-        //    command2.transform  = m_Object2.transform_component.transform;
-
-        //    m_Renderer->Draw(command2);
-        //}
+        m_RenderSystem->Update();
+        m_RenderSystem->PushToRenderer();
 
         m_Renderer->EndFrame();
 
