@@ -107,8 +107,6 @@ namespace fe {
         uint32_t index_offset{};
         uint32_t index_count{};
 
-        fe::pointer<resource::Material> material_ptr{};
-
         VulkanPrimitive()  = default;
         ~VulkanPrimitive() = default;
     };
