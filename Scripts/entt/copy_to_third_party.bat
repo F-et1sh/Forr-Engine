@@ -13,5 +13,5 @@
 
 @echo off
 
-xcopy /y /i /s "..\\..\\External\\entt\\single_include" "..\\..\\ThirdParty\\entt\\include" >nul
+xcopy /y /i /s "..\\..\\External\\entt\\src" "..\\..\\ThirdParty\\entt\\include" >nul
 copy "..\\..\\External\\entt\\LICENSE" "..\\..\\ThirdParty\\entt\\ENTT_LICENSE" >nul

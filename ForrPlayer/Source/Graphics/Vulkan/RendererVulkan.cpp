@@ -181,6 +181,12 @@ void fe::RendererVulkan::EndFrame() {
     m_CurrentFrame = (m_CurrentFrame + 1) % VulkanContext::max_concurrent_frames;
 
     this->resetMeshIndex();
+
+    { // temp. reset
+        std::size_t size = m_RenderQueue.size();
+        m_RenderQueue.clear();
+        m_RenderQueue.reserve(size);
+    }
 }
 
 void fe::RendererVulkan::InitializeGPUResources() {

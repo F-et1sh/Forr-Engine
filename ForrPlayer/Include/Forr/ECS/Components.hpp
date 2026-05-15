@@ -19,12 +19,18 @@ namespace fe {
     struct TransformComponent {
         glm::mat4 transform{}; // temp
 
+        TransformComponent(const glm::mat4& transform)
+            : transform(transform) {}
+
         TransformComponent()  = default;
         ~TransformComponent() = default;
     };
 
     struct MeshComponent {
         fe::pointer<resource::Model> model_ptr{};
+
+        MeshComponent(fe::pointer<resource::Model> model_ptr)
+            : model_ptr(model_ptr) {}
 
         MeshComponent()  = default;
         ~MeshComponent() = default;
