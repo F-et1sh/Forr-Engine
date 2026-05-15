@@ -99,7 +99,7 @@
     <ClInclude Include="Include\Forr\Core\pointer.hpp" />
     <ClInclude Include="Include\Forr\Core\types.hpp" />
     <ClInclude Include="Include\Forr\ECS\Components.hpp" />
-    <ClInclude Include="Include\Forr\ECS\Systems\RendererSystem.hpp" />
+    <ClInclude Include="Include\Forr\ECS\Systems\RenderSystem.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Camera.hpp" />
     <ClInclude Include="Include\Forr\Graphics\IRenderer.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Shaders\ShaderCompiler.hpp" />
@@ -164,7 +164,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Source\ECS\Systems\RendererSystem.cpp" />
+    <ClCompile Include="Source\ECS\Systems\RenderSystem.cpp" />
     <ClCompile Include="Source\Graphics\Shaders\ShaderReflector.cpp" />
     <ClCompile Include="Source\Graphics\Shaders\ShaderCompiler.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\ShaderImporter.cpp" />

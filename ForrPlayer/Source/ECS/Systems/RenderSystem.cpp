@@ -16,40 +16,51 @@
 void fe::RenderSystem::Update() {
     auto view = m_Registry.get().view<const TransformComponent, const MeshComponent>();
 
-    // temp
-    // TODO : move DrawCommand generation to another place
-    // Variants :
-    // 1.
-
     for (auto [entity, transform_component, mesh_component] : view.each()) {
-        if (mesh_component.mesh_index == ~0) {
-            const auto& model = *m_ResourceManager.GetResource(mesh_component.model_ptr);
-            for (const auto& mesh : model.meshes) {
-                for (const auto& primitive : mesh.primitives) {
-                    DrawCommand& draw_command    = m_DrawCommands.emplace_back();
-                    draw_command.index_count     = primitive.index_count;
-                    draw_command.index_offset    = primitive.index_offset;
-                    const auto& material         = *m_ResourceManager.GetResource(primitive.material_ptr);
-                    draw_command.material_handle = material.gpu_handle;
-                    draw_command.mesh_handle     = mesh.gpu_handle;
-                    draw_command.transform       = transform_component.transform;
-                    draw_command.sort_key        = draw_command.material_handle.index << 16;
-                }
-            }
+        auto it = m_Table.find(mesh_component.model_ptr);
+
+        if (it == m_Table.end())
+            this->addEntry(mesh_component.model_ptr);
+
+        this->addToDrawList(mesh_component.model_ptr, transform_component.transform);
+    }
+}
+
+void fe::RenderSystem::addEntry(fe::pointer<resource::Model> model_ptr) {
+    auto& model = *m_ResourceManager.GetResource(model_ptr);
+
+    std::vector<RenderMeshEntry> enties{};
+    enties.reserve(model.meshes.size());
+
+    for (const auto& mesh : model.meshes) {
+        for (const auto& primitive : mesh.primitives) {
+
+            const auto& material = *m_ResourceManager.GetResource(primitive.material_ptr);
+
+            auto& entry           = enties.emplace_back();
+            entry.index_count     = primitive.index_count;
+            entry.index_offset    = primitive.index_offset;
+            entry.material_handle = material.gpu_handle;
+            entry.mesh_handle     = mesh.gpu_handle;
+            entry.sort_key        = 16 << material.gpu_handle.index;
         }
-        else {
-            const auto& model = *m_ResourceManager.GetResource(mesh_component.model_ptr);
-            const auto& mesh  = model.meshes[mesh_component.mesh_index];
-            for (const auto& primitive : mesh.primitives) {
-                DrawCommand& draw_command    = m_DrawCommands.emplace_back();
-                draw_command.index_count     = primitive.index_count;
-                draw_command.index_offset    = primitive.index_offset;
-                const auto& material         = *m_ResourceManager.GetResource(primitive.material_ptr);
-                draw_command.material_handle = material.gpu_handle;
-                draw_command.mesh_handle     = mesh.gpu_handle;
-                draw_command.transform       = transform_component.transform;
-                draw_command.sort_key        = draw_command.material_handle.index << 16;
-            }
-        }
+    }
+}
+
+void fe::RenderSystem::addToDrawList(fe::pointer<resource::Model> model_ptr, const glm::mat4& transform) {
+    auto it = m_Table.find(model_ptr);
+    if (it == m_Table.end()) {
+        fe::logging::error("Cannot draw the model without RenderMeshEntry");
+        return;
+    }
+
+    for (const auto& entry : it->second) {
+        auto& draw_command           = m_DrawCommands.emplace_back();
+        draw_command.index_count     = entry.index_count;
+        draw_command.index_offset    = entry.index_offset;
+        draw_command.material_handle = entry.material_handle;
+        draw_command.mesh_handle     = entry.mesh_handle;
+        draw_command.sort_key        = entry.sort_key;
+        draw_command.transform       = transform;
     }
 }
