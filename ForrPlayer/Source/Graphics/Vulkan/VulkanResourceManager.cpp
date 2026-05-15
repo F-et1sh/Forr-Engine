@@ -241,7 +241,6 @@ fe::GPUHandle<Model::Mesh> fe::VulkanResourceManager::createMesh(resource::Model
 
         vulkan_primitive.index_count  = primitive.index_count;
         vulkan_primitive.index_offset = primitive.index_offset;
-        vulkan_primitive.material_ptr = primitive.material_ptr;
     }
 
     return GPUHandle<Model::Mesh>(this->storeResource(mesh.gpu_handle, vulkan_mesh, m_StorageMeshes));
