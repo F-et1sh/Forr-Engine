@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -29,11 +29,14 @@ namespace fe {
     // this is needed for GPU resource managers
     template <typename T>
     struct GPUHandle {
-        size_t index{};
+        std::size_t index = ~0;
 
         GPUHandle()  = default;
         ~GPUHandle() = default;
 
         explicit GPUHandle(size_t index) : index(index) {}
+
+        bool operator==(GPUHandle<T> other) const { return index == other.index; }
+        bool operator!=(GPUHandle<T> other) const { return index != other.index; }
     };
 } // namespace fe

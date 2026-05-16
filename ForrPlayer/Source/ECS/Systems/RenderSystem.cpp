@@ -14,6 +14,8 @@
 #include "ECS/Systems/RenderSystem.hpp"
 
 struct fe::RenderSystem::Impl {
+    uint32_t m_CurrentInstanceIndex{};
+
     ResourceManager&                       m_ResourceManager;
     std::reference_wrapper<entt::registry> m_Registry; // testing std::reference_wrapper<>
     std::reference_wrapper<IRenderer>      m_Renderer; // testing std::reference_wrapper<>
@@ -22,6 +24,10 @@ struct fe::RenderSystem::Impl {
     std::vector<RenderMeshEntry> m_RenderMeshEntries{};
 
     std::unordered_map<fe::pointer<resource::Model>, std::vector<RenderMeshEntry>> m_Table{};
+
+    Impl(ResourceManager& resource_manager, entt::registry& registry, IRenderer& renderer)
+        : m_ResourceManager(resource_manager), m_Registry(registry), m_Renderer(renderer) {}
+    ~Impl() = default;
 };
 
 fe::RenderSystem::RenderSystem(ResourceManager& resource_manager, entt::registry& registry, IRenderer& renderer) {
@@ -48,10 +54,12 @@ void fe::RenderSystem::PushToRenderer() {
         m_Impl->m_Renderer.get().Draw(draw_command);
     }
 
-    { // temp. reset
+    { // reset
         std::size_t size = m_Impl->m_DrawCommands.size();
         m_Impl->m_DrawCommands.clear();
         m_Impl->m_DrawCommands.reserve(size);
+
+        m_Impl->m_CurrentInstanceIndex = 0;
     }
 }
 
@@ -89,6 +97,7 @@ void fe::RenderSystem::addToDrawList(fe::pointer<resource::Model> model_ptr, con
     for (const auto& entry : it->second) {
         auto& draw_command = m_Impl->m_DrawCommands.emplace_back();
 
+        draw_command.instance_index  = m_Impl->m_CurrentInstanceIndex;
         draw_command.index_count     = entry.index_count;
         draw_command.index_offset    = entry.index_offset;
         draw_command.material_handle = entry.material_handle;
@@ -96,4 +105,6 @@ void fe::RenderSystem::addToDrawList(fe::pointer<resource::Model> model_ptr, con
         draw_command.sort_key        = entry.sort_key;
         draw_command.transform       = transform;
     }
+
+    m_Impl->m_CurrentInstanceIndex++;
 }

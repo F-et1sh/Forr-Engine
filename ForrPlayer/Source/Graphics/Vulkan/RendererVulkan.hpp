@@ -133,8 +133,7 @@ namespace fe {
     private: // Others
         void configureCamera();
         void resizeWindow();
-        void increaseMeshIndex() noexcept { m_MeshIndex++; }
-        void resetMeshIndex() noexcept { m_MeshIndex = 0; }
+        void handleRenderQueue();
 
     private:
         RendererDesc m_Description{};
@@ -160,6 +159,9 @@ namespace fe {
         uint32_t m_CurrentImageIndex{};
         uint32_t m_CurrentBuffer{};
 
+        GPUHandle<resource::Material>    m_CurrentMaterial{};
+        GPUHandle<resource::Model::Mesh> m_CurrentMesh{};
+
         std::array<fe::vk::Fence, VulkanContext::max_concurrent_frames>     m_WaitFences{};
         std::array<fe::vk::Semaphore, VulkanContext::max_concurrent_frames> m_PresentCompleteSemaphores{};
         std::vector<fe::vk::Semaphore>                                      m_RenderCompleteSemaphores{};
@@ -177,8 +179,6 @@ namespace fe {
 
         Camera m_Camera{}; // temp
 
-        bool m_IsWindowResized{}; // temp
-
         uint32_t m_CurrentFrame{};
 
         std::vector<DrawCommand> m_RenderQueue{};
@@ -189,7 +189,6 @@ namespace fe {
 
         uint32_t m_ImageIndex{};
 
-        size_t          m_MeshIndex{};
         GlobalSceneData m_SceneData{};
     };
 } // namespace fe
