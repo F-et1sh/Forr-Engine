@@ -107,9 +107,6 @@ void fe::RendererVulkan::BeginFrame() {
     scissor.offset.y      = 0;
     vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
-    // descriptor sets binding
-    // pipeline binding
-
     { // temp
         auto glfw_window = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
 
@@ -135,36 +132,7 @@ void fe::RendererVulkan::Draw(const DrawCommand& command) {
 }
 
 void fe::RendererVulkan::EndFrame() {
-    for (const auto& draw_command : m_RenderQueue) {
-        const auto& vulkan_mesh = m_VulkanResourceManager.GetResource(draw_command.mesh_handle);
-        const auto& vulkan_material = m_VulkanResourceManager.GetResource(draw_command.material_handle);
-
-        for (const auto& vulkan_primitive : vulkan_mesh.primitives) {
-            const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
-
-            vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline_layout, 0, 1, &m_StorageBuffers[m_CurrentFrame].descriptor_set, 0, nullptr);
-            vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline);
-
-            memcpy(m_StorageBuffers[m_CurrentFrame].mapped, &m_SceneData, sizeof(ShaderData));
-
-            VkDeviceSize offsets[1]{ 0 };
-
-            VkBuffer vertex_buffer_raw = vulkan_mesh.vertex_buffer.buffer;
-            vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
-
-            VkBuffer index_buffer_raw = vulkan_mesh.index_buffer.buffer;
-            vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
-
-            uint32_t constants = m_MeshIndex;
-            vkCmdPushConstants(command_buffer, vulkan_material.pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(uint32_t), &constants);
-
-            vkCmdDrawIndexed(command_buffer, vulkan_primitive.index_count, 1, vulkan_primitive.index_offset, 0, 0);
-        }
-
-        m_SceneData.model_matrices[m_MeshIndex] = draw_command.transform;
-
-        this->increaseMeshIndex();
-    }
+    this->handleRenderQueue();
 
     const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
 
@@ -211,12 +179,13 @@ void fe::RendererVulkan::EndFrame() {
 
     m_CurrentFrame = (m_CurrentFrame + 1) % VulkanContext::max_concurrent_frames;
 
-    this->resetMeshIndex();
-
-    { // temp. reset
+    { // reset
         std::size_t size = m_RenderQueue.size();
         m_RenderQueue.clear();
         m_RenderQueue.reserve(size);
+
+        m_CurrentMaterial = {};
+        m_CurrentMesh     = {};
     }
 }
 
@@ -252,12 +221,6 @@ void fe::RendererVulkan::configureCamera() {
 }
 
 void fe::RendererVulkan::resizeWindow() {
-    //if (m_PrimaryWindow.getWidth() == 0 || m_PrimaryWindow.getHeight() == 0) { // window minimized
-    //    return;
-    //}
-
-    m_IsWindowResized = true;
-
     vkDeviceWaitIdle(m_Device);
 
     m_Swapchain.CreateSwapchain();
@@ -275,6 +238,53 @@ void fe::RendererVulkan::resizeWindow() {
 
     if ((width > 0.0f) && (height > 0.0f)) {
         m_Camera.updateAspectRatio((float) width / (float) height);
+    }
+}
+
+void fe::RendererVulkan::handleRenderQueue() {
+    // soft draw commands
+    std::ranges::sort(m_RenderQueue, [](const DrawCommand& left, const DrawCommand& right) -> bool {
+        return left.sort_key < right.sort_key;
+    });
+
+    // pass SSBO
+    for (const auto& draw_command : m_RenderQueue)
+        m_SceneData.model_matrices[draw_command.instance_index] = draw_command.transform;
+    memcpy(m_StorageBuffers[m_CurrentFrame].mapped, &m_SceneData, sizeof(ShaderData));
+
+    const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
+
+    // draw
+    for (const auto& draw_command : m_RenderQueue) {
+        const auto& vulkan_material = m_VulkanResourceManager.GetResource(draw_command.material_handle);
+
+        // bind pipeline ( material )
+        if (draw_command.material_handle != m_CurrentMaterial) {
+            m_CurrentMaterial = draw_command.material_handle;
+
+            vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline);
+            vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline_layout, 0, 1, &m_StorageBuffers[m_CurrentFrame].descriptor_set, 0, nullptr);
+        }
+
+        // bind vertex and index buffers
+        if (draw_command.mesh_handle != m_CurrentMesh) {
+            m_CurrentMesh = draw_command.mesh_handle;
+
+            const auto& vulkan_mesh = m_VulkanResourceManager.GetResource(m_CurrentMesh);
+
+            VkDeviceSize offsets[1]{ 0 };
+
+            VkBuffer vertex_buffer_raw = vulkan_mesh.vertex_buffer.buffer;
+            vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
+
+            VkBuffer index_buffer_raw = vulkan_mesh.index_buffer.buffer;
+            vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
+        }
+
+        uint32_t constants = draw_command.instance_index;
+        vkCmdPushConstants(command_buffer, vulkan_material.pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(constants), &constants);
+
+        vkCmdDrawIndexed(command_buffer, draw_command.index_count, 1, draw_command.index_offset, 0, 0);
     }
 }
 

@@ -103,19 +103,9 @@ namespace fe {
         FORR_CLASS_MOVABLE(VulkanTexture)
     };
 
-    struct VulkanPrimitive {
-        uint32_t index_offset{};
-        uint32_t index_count{};
-
-        VulkanPrimitive()  = default;
-        ~VulkanPrimitive() = default;
-    };
-
     struct VulkanMesh {
         VulkanVertexBuffer vertex_buffer{};
         VulkanIndexBuffer  index_buffer{};
-
-        std::vector<VulkanPrimitive> primitives{};
 
         VulkanMesh()  = default;
         ~VulkanMesh() = default;

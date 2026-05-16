@@ -33,6 +33,8 @@ namespace fe {
 
     struct DrawCommand {
     public:
+        uint32_t instance_index{};
+
         uint32_t index_offset{};
         uint32_t index_count{};
 

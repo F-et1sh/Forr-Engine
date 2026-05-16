@@ -236,13 +236,6 @@ fe::GPUHandle<Model::Mesh> fe::VulkanResourceManager::createMesh(resource::Model
     vkDestroyBuffer(m_Context.device, staging_buffers.indices.buffer, nullptr);
     vkFreeMemory(m_Context.device, staging_buffers.indices.memory, nullptr);
 
-    for (const auto& primitive : mesh.primitives) {
-        VulkanPrimitive& vulkan_primitive = vulkan_mesh.primitives.emplace_back();
-
-        vulkan_primitive.index_count  = primitive.index_count;
-        vulkan_primitive.index_offset = primitive.index_offset;
-    }
-
     return GPUHandle<Model::Mesh>(this->storeResource(mesh.gpu_handle, vulkan_mesh, m_StorageMeshes));
 }
 
