@@ -16,6 +16,7 @@
     renamed 'model_index' in shader to 'instance_index'
     material overriding provided
     different materials created
+    GL/VK choosing provided. Bugs fixed
 
 ### Problem
     -

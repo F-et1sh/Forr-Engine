@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -20,8 +20,9 @@ fe::pointer<fe::resource::Model> fe::GLTFImporter::Import(ResourceStorage& stora
     tinygltf::TinyGLTF loader{};
     std::string        error{};
     std::string        warning{};
-    std::string        filename = resource_full_path.string();
-    bool               good     = false;
+    std::u8string      u8_path = resource_full_path.u8string();
+    std::string        filename(u8_path.begin(), u8_path.end());
+    bool               good = false;
 
     if (resource_full_path.extension() == ".gltf") {
         good = loader.LoadASCIIFromFile(&model, &error, &warning, filename);
