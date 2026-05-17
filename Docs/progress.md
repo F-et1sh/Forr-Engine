@@ -2,6 +2,20 @@
 
 ## 16.05.2026
 ### Goal
+    provide sorting for OpenGL
+    provide FrameData for Vulkan ( already done, just move it into a struct )
+    create different materials
+
+    ( rename 'model_index' in shader to 'instance_index' )
+
+### Done
+    sorting for OpenGL provided
+
+### Problem
+    -
+
+## 16.05.2026
+### Goal
     provide sorting for Vulkan/OpenGL
     provide FrameData ( already done, just move it into a struct )
     create different materials

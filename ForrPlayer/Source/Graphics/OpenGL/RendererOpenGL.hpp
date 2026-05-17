@@ -38,8 +38,7 @@ namespace fe {
 
     private:
         void createSceneDataSSBO();
-        void increaseMeshIndex() noexcept { m_MeshIndex++; }
-        void resetMeshIndex() noexcept { m_MeshIndex = 0; }
+        void handleRenderQueue();
 
     private:
         ResourceManager& m_ResourceManager;
@@ -53,8 +52,12 @@ namespace fe {
 
         Camera m_Camera{}; // temp
 
-        size_t          m_MeshIndex{};
         GlobalSceneData m_SceneData{};
         fe::gl::Buffer  m_SceneSSBO{};
+
+        GPUHandle<resource::Material>    m_CurrentMaterial{};
+        GPUHandle<resource::Model::Mesh> m_CurrentMesh{};
+
+        std::vector<DrawCommand> m_RenderQueue{};
     };
 } // namespace fe

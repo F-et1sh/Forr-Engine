@@ -84,42 +84,25 @@ void fe::RendererOpenGL::BeginFrame() {
 }
 
 void fe::RendererOpenGL::Draw(const DrawCommand& command) {
-    //const auto& model = *m_ResourceManager.GetResource(command.model_ptr);
-
-    //for (const auto& mesh : model.meshes) {
-    //    const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(mesh.gpu_handle);
-
-    //    for (size_t i = 0; i < mesh.primitives.size(); i++) {
-    //        const auto& primitive        = mesh.primitives[i];
-    //        const auto& opengl_primitive = opengl_mesh.primitives[i];
-
-    //        const auto& material              = *m_ResourceManager.GetResource(primitive.material_ptr);
-    //        const auto& opengl_material       = m_OpenGLResourceManager.GetResource(material.gpu_handle);
-    //        const auto& opengl_shader_program = m_OpenGLResourceManager.GetResource(opengl_material.shader_program_handle);
-
-    //        m_SceneData.model_matrices[m_MeshIndex] = command.transform; // TODO : check "Docs/not-now-but.md" 30.04.2026 - add sorting
-    //        glNamedBufferSubData(m_SceneSSBO, 0, sizeof(m_SceneData), &m_SceneData);
-
-    //        glUseProgram(opengl_shader_program.shader_program);
-
-    //        glBindVertexArray(opengl_mesh.vao);
-
-    //        auto location = glGetUniformLocation(opengl_shader_program.shader_program, "model_index");
-    //        glUniform1i(location, m_MeshIndex);
-
-    //        glDrawElements(GL_TRIANGLES, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
-
-    //        glBindVertexArray(0);
-    //        glUseProgram(0);
-    //    }
-    //}
-
-    this->increaseMeshIndex();
+    m_RenderQueue.emplace_back(command);
 }
 
 void fe::RendererOpenGL::EndFrame() {
+    this->handleRenderQueue();
+
+    glBindVertexArray(0);
+    glUseProgram(0);
+
     glfwSwapBuffers(m_GLFWwindow);
-    this->resetMeshIndex();
+
+    { // reset
+        std::size_t size = m_RenderQueue.size();
+        m_RenderQueue.clear();
+        m_RenderQueue.reserve(size);
+
+        m_CurrentMaterial = {};
+        m_CurrentMesh     = {};
+    }
 }
 
 void fe::RendererOpenGL::InitializeGPUResources() {
@@ -148,4 +131,42 @@ void fe::RendererOpenGL::createSceneDataSSBO() {
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, opengl_scene_data_ssbo);
 
     m_SceneSSBO.attach(opengl_scene_data_ssbo);
+}
+
+void fe::RendererOpenGL::handleRenderQueue() {
+    // soft draw commands
+    std::ranges::sort(m_RenderQueue, [](const DrawCommand& left, const DrawCommand& right) -> bool {
+        return left.sort_key < right.sort_key;
+    });
+
+    // pass SSBO
+    for (const auto& draw_command : m_RenderQueue)
+        m_SceneData.model_matrices[draw_command.instance_index] = draw_command.transform;
+    glNamedBufferSubData(m_SceneSSBO, 0, sizeof(m_SceneData), &m_SceneData);
+
+    // draw
+    for (const auto& draw_command : m_RenderQueue) {
+        const auto& opengl_material       = m_OpenGLResourceManager.GetResource(draw_command.material_handle);
+        const auto& opengl_shader_program = m_OpenGLResourceManager.GetResource(opengl_material.shader_program_handle);
+
+        // bind shader ( material )
+        if (draw_command.material_handle != m_CurrentMaterial) {
+            m_CurrentMaterial = draw_command.material_handle;
+
+            glUseProgram(opengl_shader_program.shader_program);
+        }
+
+        // bind vertex buffer
+        if (draw_command.mesh_handle != m_CurrentMesh) {
+            m_CurrentMesh = draw_command.mesh_handle;
+
+            const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(draw_command.mesh_handle);
+            glBindVertexArray(opengl_mesh.vao);
+        }
+
+        auto location = glGetUniformLocation(opengl_shader_program.shader_program, "model_index");
+        glUniform1i(location, draw_command.instance_index);
+
+        glDrawElements(GL_TRIANGLES, draw_command.index_count, GL_UNSIGNED_INT, (void*) draw_command.index_offset);
+    }
 }
