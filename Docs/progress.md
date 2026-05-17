@@ -1,5 +1,17 @@
 ﻿# Forr-Engine Devlog
 
+## 17.05.2026
+### Goal
+    provide shader with lighting
+    ( fix resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 16.05.2026
 ### Goal
     provide sorting for OpenGL
