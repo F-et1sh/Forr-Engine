@@ -64,6 +64,13 @@ template const fe::VulkanMaterial& fe::VulkanResourceManager::GetResource(GPUHan
 
 template <>
 const fe::VulkanMesh& fe::VulkanResourceManager::GetResource(GPUHandle<resource::Model::Mesh> handle) const {
+    if (m_StorageMeshes.size() <= handle.index) {
+        fe::logging::fatal("Out of range");
+
+        // TODO : provide fallbacks
+        // TODO : create a macro for GetResource()
+    }
+
     return m_StorageMeshes[handle.index];
 }
 template const fe::VulkanMesh& fe::VulkanResourceManager::GetResource(GPUHandle<resource::Model::Mesh> handle) const;
@@ -243,7 +250,7 @@ VkDescriptorSetLayout fe::VulkanResourceManager::createDescriptorSetLayout() {
     VkDescriptorSetLayoutBinding binding{};
     binding.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     binding.descriptorCount = 1;
-    binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
+    binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
     VkDescriptorSetLayoutCreateInfo descriptor_layout_create_info{};
     descriptor_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;

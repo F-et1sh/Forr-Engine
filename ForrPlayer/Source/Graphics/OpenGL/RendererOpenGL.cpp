@@ -69,14 +69,14 @@ void fe::RendererOpenGL::BeginFrame() {
 
     { // temp
         if (glfwGetKey(m_GLFWwindow, GLFW_KEY_A))
-            m_Camera.translate(glm::vec3(1.0f, 0.0f, 0.0f));
+            m_Camera.translate(glm::vec3(0.1f, 0.0f, 0.0f));
         else if (glfwGetKey(m_GLFWwindow, GLFW_KEY_D))
-            m_Camera.translate(glm::vec3(-1.0f, 0.0f, 0.0f));
+            m_Camera.translate(glm::vec3(-0.1f, 0.0f, 0.0f));
 
         if (glfwGetKey(m_GLFWwindow, GLFW_KEY_W))
-            m_Camera.translate(glm::vec3(0.0f, 0.0f, 1.0f));
+            m_Camera.translate(glm::vec3(0.0f, 0.0f, 0.1f));
         else if (glfwGetKey(m_GLFWwindow, GLFW_KEY_S))
-            m_Camera.translate(glm::vec3(0.0f, 0.0f, -1.0f));
+            m_Camera.translate(glm::vec3(0.0f, 0.0f, -0.1f));
     }
 
     m_SceneData.projection_matrix = m_Camera.getPerspectiveMatrix();
@@ -164,7 +164,7 @@ void fe::RendererOpenGL::handleRenderQueue() {
             glBindVertexArray(opengl_mesh.vao);
         }
 
-        auto location = glGetUniformLocation(opengl_shader_program.shader_program, "model_index");
+        auto location = glGetUniformLocation(opengl_shader_program.shader_program, "instance_index");
         glUniform1i(location, draw_command.instance_index);
 
         glDrawElements(GL_TRIANGLES, draw_command.index_count, GL_UNSIGNED_INT, (void*) draw_command.index_offset);

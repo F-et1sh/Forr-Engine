@@ -7,6 +7,7 @@
     create different materials
 
     ( rename 'model_index' in shader to 'instance_index' )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
 
 ### Done
     sorting for OpenGL provided
@@ -14,6 +15,7 @@
     ResourceLookupTable removed ( unused idk )
     renamed 'model_index' in shader to 'instance_index'
     material overriding provided
+    different materials created
 
 ### Problem
     -

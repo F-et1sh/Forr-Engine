@@ -900,7 +900,7 @@ void fe::RendererVulkan::VKSetupDescriptorSetLayout() {
     VkDescriptorSetLayoutBinding binding{};
     binding.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     binding.descriptorCount = 1;
-    binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
+    binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
     VkDescriptorSetLayoutCreateInfo descriptor_layout_create_info{};
     descriptor_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
