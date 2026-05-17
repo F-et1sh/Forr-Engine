@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -19,6 +19,7 @@
 
 namespace fe {
     struct ResourceManagerDesc {
+        // this needs to compile shaders with or without macro 'FORR_USE_OPENGL'
         GraphicsBackend graphics_backend{};
 
         ResourceManagerDesc()  = default;
@@ -27,7 +28,7 @@ namespace fe {
 
     class ResourceManager {
     public:
-        ResourceManager(ResourceManagerDesc desc);
+        ResourceManager(const ResourceManagerDesc& desc);
         ~ResourceManager() = default;
 
         void CreateDefaultResources();

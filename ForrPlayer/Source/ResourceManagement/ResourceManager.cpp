@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -13,7 +13,7 @@
 #include "pch.hpp"
 #include "ResourceManagement/ResourceManager.hpp"
 
-fe::ResourceManager::ResourceManager(ResourceManagerDesc desc) {
+fe::ResourceManager::ResourceManager(const ResourceManagerDesc& desc) {
     m_Context.graphics_backend = desc.graphics_backend;
 }
 
