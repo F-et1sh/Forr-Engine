@@ -17,6 +17,7 @@
 
 namespace fe {
     struct ResourceManagementContext {
+        // this needs to compile shaders with or without macro 'FORR_USE_OPENGL'
         GraphicsBackend graphics_backend{};
 
         fe::pointer<resource::Shader>   default_gltf_vertex_shader_ptr{};
