@@ -43,7 +43,7 @@ void fe::RenderSystem::Update() {
         auto it = m_Impl->m_Table.find(mesh_component.model_ptr);
 
         if (it == m_Impl->m_Table.end())
-            this->addEntry(mesh_component.model_ptr);
+            this->addEntry(mesh_component);
 
         this->addToDrawList(mesh_component.model_ptr, transform_component.transform);
     }
@@ -63,8 +63,8 @@ void fe::RenderSystem::PushToRenderer() {
     }
 }
 
-void fe::RenderSystem::addEntry(fe::pointer<resource::Model> model_ptr) {
-    auto& model = *m_Impl->m_ResourceManager.GetResource(model_ptr);
+void fe::RenderSystem::addEntry(const MeshComponent& mesh_component) {
+    auto& model = *m_Impl->m_ResourceManager.GetResource(mesh_component.model_ptr);
 
     std::vector<RenderMeshEntry> enties{};
     enties.reserve(model.meshes.size());
@@ -72,7 +72,9 @@ void fe::RenderSystem::addEntry(fe::pointer<resource::Model> model_ptr) {
     for (const auto& mesh : model.meshes) {
         for (const auto& primitive : mesh.primitives) {
 
-            const auto& material = *m_Impl->m_ResourceManager.GetResource(primitive.material_ptr);
+            const auto& material = *m_Impl->m_ResourceManager.GetResource(mesh_component.material_override_ptr == ~0   // if overrided material is null
+                                                                              ? primitive.material_ptr                 // select primitive's material
+                                                                              : mesh_component.material_override_ptr); // select overrided material
 
             auto& entry = enties.emplace_back();
 
@@ -84,7 +86,7 @@ void fe::RenderSystem::addEntry(fe::pointer<resource::Model> model_ptr) {
         }
     }
 
-    m_Impl->m_Table.insert({ model_ptr, std::move(enties) });
+    m_Impl->m_Table.insert({ mesh_component.model_ptr, std::move(enties) });
 }
 
 void fe::RenderSystem::addToDrawList(fe::pointer<resource::Model> model_ptr, const glm::mat4& transform) {
