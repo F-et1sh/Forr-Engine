@@ -52,7 +52,7 @@ namespace fe {
 
         Camera m_Camera{}; // temp
 
-        GlobalSceneData m_SceneData{};
+        SceneData m_SceneData{};
         fe::gl::Buffer  m_SceneSSBO{};
 
         GPUHandle<resource::Material>    m_CurrentMaterial{};

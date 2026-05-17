@@ -37,16 +37,8 @@ fe::RenderSystem::RenderSystem(ResourceManager& resource_manager, entt::registry
 fe::RenderSystem::~RenderSystem() = default;
 
 void fe::RenderSystem::Update() {
-    auto view = m_Impl->m_Registry.get().view<const TransformComponent, const MeshComponent>();
-
-    for (auto [entity, transform_component, mesh_component] : view.each()) {
-        auto it = m_Impl->m_Table.find(mesh_component.model_ptr);
-
-        if (it == m_Impl->m_Table.end())
-            this->addEntry(mesh_component);
-
-        this->addToDrawList(mesh_component.model_ptr, transform_component.transform);
-    }
+    this->handleMeshComponents();
+    this->handleLightComponents();
 }
 
 void fe::RenderSystem::PushToRenderer() {
@@ -60,6 +52,27 @@ void fe::RenderSystem::PushToRenderer() {
         m_Impl->m_DrawCommands.reserve(size);
 
         m_Impl->m_CurrentInstanceIndex = 0;
+    }
+}
+
+void fe::RenderSystem::handleMeshComponents() {
+    auto view = m_Impl->m_Registry.get().view<const TransformComponent, const MeshComponent>();
+
+    for (auto [entity, transform_component, mesh_component] : view.each()) {
+        auto it = m_Impl->m_Table.find(mesh_component.model_ptr);
+
+        if (it == m_Impl->m_Table.end())
+            this->addEntry(mesh_component);
+
+        this->addToDrawList(mesh_component.model_ptr, transform_component.transform);
+    }
+}
+
+void fe::RenderSystem::handleLightComponents() {
+    auto view = m_Impl->m_Registry.get().view<const TransformComponent, const LightComponent>();
+
+    for (auto [entity, transform_component, light_component] : view.each()) {
+        //m_Impl->m_Renderer.get().PassLight
     }
 }
 
@@ -83,7 +96,7 @@ void fe::RenderSystem::addEntry(const MeshComponent& mesh_component) {
             entry.index_offset    = primitive.index_offset;
             entry.material_handle = material.gpu_handle;
             entry.mesh_handle     = mesh.gpu_handle;
-            entry.sort_key        = 16 << material.gpu_handle.index;
+            entry.sort_key        = static_cast<uint64_t>(material.gpu_handle.index) << 16;
         }
     }
 

@@ -49,17 +49,37 @@ namespace fe {
         ~DrawCommand() = default;
     };
 
-    struct GlobalSceneData {
-        glm::mat4 projection_matrix{};
-        glm::mat4 view_matrix{};
-        glm::mat4 model_matrices[32];
+    struct GPULight {
+        uint32_t type{};
 
-        GlobalSceneData()  = default;
-        ~GlobalSceneData() = default;
+        float range{};
+        float inner_cone{};
+        float outer_cone{};
+
+        glm::vec4 position{};
+        glm::vec4 direction{};
+        glm::vec4 color_intensity{};
+    };
+
+    constexpr inline static uint64_t MAX_INSTANCES = 32;
+    constexpr inline static uint64_t MAX_LIGHTS    = 32;
+
+    struct SceneData {
+        uint32_t light_count{};
+
+        glm::mat4 projection_matrix;
+        glm::mat4 view_matrix;
+
+        glm::mat4 model_matrices[MAX_INSTANCES];
+
+        GPULight lights[MAX_LIGHTS];
+
+        SceneData()  = default;
+        ~SceneData() = default;
     };
 
     // if you want to add some variable here, use static method IRenderer::Create()
-    // the member should be assigned to the devired class, not here
+    // the member should be appended to the devired class, not here
     class FORR_API IRenderer {
     public:
         virtual ~IRenderer() = default;
