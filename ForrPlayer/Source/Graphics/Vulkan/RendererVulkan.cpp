@@ -51,14 +51,14 @@ void fe::RendererVulkan::SetClearColor(float red, float green, float blue, float
 }
 
 void fe::RendererVulkan::BeginFrame() {
-    std::array<VkFence, 1> fences{ m_WaitFences[m_CurrentFrame] };
+    std::array<VkFence, 1> fences{ m_FrameData[m_CurrentFrame].wait_fence };
 
     vkWaitForFences(m_Device, fences.size(), fences.data(), VK_TRUE, UINT64_MAX);
     VK_CHECK_RESULT(vkResetFences(m_Device, fences.size(), fences.data()));
 
     m_ImageIndex = 0;
 
-    VkResult result = vkAcquireNextImageKHR(m_Device, m_Context.swapchain, UINT64_MAX, m_PresentCompleteSemaphores[m_CurrentFrame], VK_NULL_HANDLE, &m_ImageIndex);
+    VkResult result = vkAcquireNextImageKHR(m_Device, m_Context.swapchain, UINT64_MAX, m_FrameData[m_CurrentFrame].present_complete_semaphore, VK_NULL_HANDLE, &m_ImageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         this->resizeWindow();
         return;
@@ -68,7 +68,7 @@ void fe::RendererVulkan::BeginFrame() {
         return;
     }
 
-    vkResetCommandBuffer(m_CommandBuffers[m_CurrentFrame], 0);
+    vkResetCommandBuffer(m_FrameData[m_CurrentFrame].command_buffer, 0);
 
     VkCommandBufferBeginInfo command_buffer_begin_info{};
     command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -88,7 +88,7 @@ void fe::RendererVulkan::BeginFrame() {
     render_pass_begin_info.pClearValues             = clear_values;
     render_pass_begin_info.framebuffer              = m_Framebuffers[m_ImageIndex];
 
-    const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
+    const VkCommandBuffer command_buffer = m_FrameData[m_CurrentFrame].command_buffer;
     VK_CHECK_RESULT(vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info));
 
     vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
@@ -134,7 +134,7 @@ void fe::RendererVulkan::Draw(const DrawCommand& command) {
 void fe::RendererVulkan::EndFrame() {
     this->handleRenderQueue();
 
-    const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
+    const VkCommandBuffer command_buffer = m_FrameData[m_CurrentFrame].command_buffer;
 
     vkCmdEndRenderPass(command_buffer);
 
@@ -142,7 +142,7 @@ void fe::RendererVulkan::EndFrame() {
 
     VkPipelineStageFlags wait_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
-    std::array<VkSemaphore, 1> wait_semaphores{ m_PresentCompleteSemaphores[m_CurrentFrame] };
+    std::array<VkSemaphore, 1> wait_semaphores{ m_FrameData[m_CurrentFrame].present_complete_semaphore };
     std::array<VkSemaphore, 1> signal_semaphores{ m_RenderCompleteSemaphores[m_ImageIndex] };
 
     VkSubmitInfo submit_info{};
@@ -157,7 +157,7 @@ void fe::RendererVulkan::EndFrame() {
     submit_info.pSignalSemaphores    = signal_semaphores.data();
     submit_info.signalSemaphoreCount = signal_semaphores.size();
 
-    VK_CHECK_RESULT(vkQueueSubmit(m_Context.queue_graphics, 1, &submit_info, m_WaitFences[m_CurrentFrame]));
+    VK_CHECK_RESULT(vkQueueSubmit(m_Context.queue_graphics, 1, &submit_info, m_FrameData[m_CurrentFrame].wait_fence));
 
     VkPresentInfoKHR present_info{};
     present_info.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -250,9 +250,9 @@ void fe::RendererVulkan::handleRenderQueue() {
     // pass SSBO
     for (const auto& draw_command : m_RenderQueue)
         m_SceneData.model_matrices[draw_command.instance_index] = draw_command.transform;
-    memcpy(m_StorageBuffers[m_CurrentFrame].mapped, &m_SceneData, sizeof(ShaderData));
+    memcpy(m_FrameData[m_CurrentFrame].storage_buffer.mapped, &m_SceneData, sizeof(ShaderData));
 
-    const VkCommandBuffer command_buffer = m_CommandBuffers[m_CurrentFrame];
+    const VkCommandBuffer command_buffer = m_FrameData[m_CurrentFrame].command_buffer;
 
     // draw
     for (const auto& draw_command : m_RenderQueue) {
@@ -263,7 +263,7 @@ void fe::RendererVulkan::handleRenderQueue() {
             m_CurrentMaterial = draw_command.material_handle;
 
             vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline);
-            vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline_layout, 0, 1, &m_StorageBuffers[m_CurrentFrame].descriptor_set, 0, nullptr);
+            vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline_layout, 0, 1, &m_FrameData[m_CurrentFrame].storage_buffer.descriptor_set, 0, nullptr);
         }
 
         // bind vertex and index buffers
@@ -329,9 +329,11 @@ void fe::RendererVulkan::InitializeCommandBuffers() {
     command_buffer_allocate_info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     command_buffer_allocate_info.commandPool        = m_CommandPool;
     command_buffer_allocate_info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    command_buffer_allocate_info.commandBufferCount = static_cast<uint32_t>(m_CommandBuffers.size());
+    command_buffer_allocate_info.commandBufferCount = 1; // one per frame
 
-    VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Device, &command_buffer_allocate_info, m_CommandBuffers.data()));
+    for (auto& frame : m_FrameData) {
+        VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Device, &command_buffer_allocate_info, &frame.command_buffer));
+    }
 }
 
 void fe::RendererVulkan::InitializeSynchronizationPrimitives() {
@@ -349,7 +351,7 @@ void fe::RendererVulkan::InitializeSynchronizationPrimitives() {
         auto& fence = wait_fences_raw[i];
         VK_CHECK_RESULT(vkCreateFence(m_Device, &fence_create_info, nullptr, &fence));
 
-        m_WaitFences[i].attach(m_Device, fence);
+        m_FrameData[i].wait_fence.attach(m_Device, fence);
     }
 
     ///
@@ -361,7 +363,7 @@ void fe::RendererVulkan::InitializeSynchronizationPrimitives() {
         auto& semaphore = present_complete_semaphores_raw[i];
         VK_CHECK_RESULT(vkCreateSemaphore(m_Device, &semaphore_create_info, nullptr, &semaphore));
 
-        m_PresentCompleteSemaphores[i].attach(m_Device, semaphore);
+        m_FrameData[i].present_complete_semaphore.attach(m_Device, semaphore);
     }
 
     ///
@@ -544,7 +546,7 @@ void fe::RendererVulkan::InitializeStorageBuffer() {
     for (size_t i = 0; i < VulkanContext::max_concurrent_frames; i++) {
         VkBuffer buffer_raw{};
         VK_CHECK_RESULT(vkCreateBuffer(m_Device, &buffer_create_info, nullptr, &buffer_raw));
-        m_StorageBuffers[i].buffer.attach(m_Device, buffer_raw);
+        m_FrameData[i].storage_buffer.buffer.attach(m_Device, buffer_raw);
 
         VkMemoryRequirements memory_requirements{};
         vkGetBufferMemoryRequirements(m_Device, buffer_raw, &memory_requirements);
@@ -556,13 +558,13 @@ void fe::RendererVulkan::InitializeStorageBuffer() {
 
         VkDeviceMemory memory_raw{};
         VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memory_allocate_info, nullptr, &memory_raw));
-        m_StorageBuffers[i].memory.attach(m_Device, memory_raw);
+        m_FrameData[i].storage_buffer.memory.attach(m_Device, memory_raw);
 
         constexpr static VkDeviceSize     offset = 0;
         constexpr static VkMemoryMapFlags flags  = 0;
 
         VK_CHECK_RESULT(vkBindBufferMemory(m_Device, buffer_raw, memory_raw, offset));
-        VK_CHECK_RESULT(vkMapMemory(m_Device, memory_raw, offset, sizeof(ShaderData), flags, (void**) &m_StorageBuffers[i].mapped));
+        VK_CHECK_RESULT(vkMapMemory(m_Device, memory_raw, offset, sizeof(ShaderData), flags, (void**) &m_FrameData[i].storage_buffer.mapped));
     }
 }
 
@@ -938,15 +940,15 @@ void fe::RendererVulkan::VKSetupDescriptorSets() {
         descriptor_set_allocate_info.descriptorSetCount = 1;
         descriptor_set_allocate_info.pSetLayouts        = &descriptor_set_layout_raw;
 
-        VK_CHECK_RESULT(vkAllocateDescriptorSets(m_Device, &descriptor_set_allocate_info, &m_StorageBuffers[i].descriptor_set));
+        VK_CHECK_RESULT(vkAllocateDescriptorSets(m_Device, &descriptor_set_allocate_info, &m_FrameData[i].storage_buffer.descriptor_set));
 
         VkDescriptorBufferInfo descriptor_buffer_info{};
-        descriptor_buffer_info.buffer = m_StorageBuffers[i].buffer;
+        descriptor_buffer_info.buffer = m_FrameData[i].storage_buffer.buffer;
         descriptor_buffer_info.range  = sizeof(ShaderData);
 
         VkWriteDescriptorSet write_descriptor_set{};
         write_descriptor_set.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        write_descriptor_set.dstSet          = m_StorageBuffers[i].descriptor_set;
+        write_descriptor_set.dstSet          = m_FrameData[i].storage_buffer.descriptor_set;
         write_descriptor_set.descriptorCount = 1;
         write_descriptor_set.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         write_descriptor_set.pBufferInfo     = &descriptor_buffer_info;

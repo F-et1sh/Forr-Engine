@@ -10,6 +10,7 @@
 
 ### Done
     sorting for OpenGL provided
+    FrameData structure for Vulkan provided
 
 ### Problem
     -
