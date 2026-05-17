@@ -20,17 +20,21 @@ fe::Application::Application(const ApplicationDesc& desc) {
 
     size_t i = 0; // temp
 
+    resource::Material interesting_material{};
+    //material.vertex_shader_ptr
+    auto interesting_material_ptr = m_ResourceManager->CreateResource<resource::Material>(interesting_material);
+
     m_ResourceManager->RunForEach<resource::Model>([&](fe::pointer<resource::Model> model_ptr, const resource::Model& model) { // temp
         switch (i) {
             case 0:
                 m_Object1 = m_Registry.create();
                 m_Registry.emplace<TransformComponent>(m_Object1, glm::translate(glm::mat4(1.0f), glm::vec3(50, 0, 0)));
-                m_Registry.emplace<MeshComponent>(m_Object1, model_ptr);
+                m_Registry.emplace<MeshComponent>(m_Object1, model_ptr, interesting_material_ptr);
                 break;
             case 1:
                 m_Object2 = m_Registry.create();
                 m_Registry.emplace<TransformComponent>(m_Object2, glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)));
-                m_Registry.emplace<MeshComponent>(m_Object2, model_ptr);
+                m_Registry.emplace<MeshComponent>(m_Object2, model_ptr, interesting_material_ptr);
                 break;
         }
         i++;

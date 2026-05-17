@@ -39,7 +39,7 @@ namespace fe {
         void PushToRenderer();
 
     private:
-        void addEntry(fe::pointer<resource::Model> model_ptr);
+        void addEntry(const MeshComponent& mesh_component);
         void addToDrawList(fe::pointer<resource::Model> model_ptr, const glm::mat4& transform);
 
     private:

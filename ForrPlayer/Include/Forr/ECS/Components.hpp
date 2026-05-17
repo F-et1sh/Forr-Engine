@@ -28,9 +28,10 @@ namespace fe {
 
     struct MeshComponent {
         fe::pointer<resource::Model> model_ptr{};
+        fe::pointer<resource::Material> material_override_ptr{ ~0 };
 
-        MeshComponent(fe::pointer<resource::Model> model_ptr)
-            : model_ptr(model_ptr) {}
+        MeshComponent(fe::pointer<resource::Model> model_ptr, fe::pointer<resource::Material> material_override_ptr) 
+            : model_ptr(model_ptr), material_override_ptr(material_override_ptr) {}
 
         MeshComponent()  = default;
         ~MeshComponent() = default;

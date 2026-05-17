@@ -224,11 +224,9 @@ void fe::RendererVulkan::resizeWindow() {
     vkDeviceWaitIdle(m_Device);
 
     m_Swapchain.CreateSwapchain();
-
+    
     this->InitializeDepthStencil();
-
     this->InitializeFramebuffers();
-
     this->InitializeSynchronizationPrimitives();
 
     vkDeviceWaitIdle(m_Device);
