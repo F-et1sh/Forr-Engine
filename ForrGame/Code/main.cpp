@@ -15,7 +15,21 @@
 
 int main(int argc, char* argv[]) {
     fe::ApplicationDesc desc{};
-    for (int i = 0; i < argc; i++) desc.args.emplace_back(argv[i]);
+
+    fe::GraphicsBackend selected_backend = fe::GraphicsBackend::OpenGL;
+
+    for (int i = 0; i < argc; i++) {
+        std::string arg = argv[i];
+        desc.args.emplace_back(arg.c_str());
+
+        if (arg == "-OpenGL" || arg == "-opengl") {
+            selected_backend = fe::GraphicsBackend::OpenGL;
+        }
+        else if (arg == "-Vulkan" || arg == "-vulkan") {
+            selected_backend = fe::GraphicsBackend::Vulkan;
+        }
+    }
+
     desc.application_name                  = "ForrGame";
     desc.primary_window_desc.width         = 800;
     desc.primary_window_desc.height        = 600;
