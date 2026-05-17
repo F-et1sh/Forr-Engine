@@ -4,6 +4,7 @@
 namespace fe {
     static entt::entity m_Object1{}; // temp
     static entt::entity m_Object2{}; // temp
+    static entt::entity m_Light{};   // temp
 
     static std::unique_ptr<RenderSystem> m_RenderSystem{}; // temp
     static entt::registry                m_Registry{};     // temp
@@ -43,6 +44,10 @@ fe::Application::Application(const ApplicationDesc& desc) {
         }
         i++;
     });
+
+    m_Light = m_Registry.create();
+    m_Registry.emplace<TransformComponent>(m_Light);
+    m_Registry.emplace<LightComponent>(m_Light);
 
     m_Renderer->InitializeGPUResources();
 

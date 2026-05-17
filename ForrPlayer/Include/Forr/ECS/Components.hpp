@@ -38,4 +38,12 @@ namespace fe {
         MeshComponent()  = default;
         ~MeshComponent() = default;
     };
+
+    struct LightComponent {
+        float     intensity = 1.0f;
+        glm::vec3 color{ 1.0f, 1.0f, 1.0f };
+
+        LightComponent()  = default;
+        ~LightComponent() = default;
+    };
 } // namespace fe
