@@ -12,6 +12,7 @@
     sorting for OpenGL provided
     FrameData structure for Vulkan provided
     ResourceLookupTable removed ( unused idk )
+    renamed 'model_index' in shader to 'instance_index'
 
 ### Problem
     -

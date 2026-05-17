@@ -9,17 +9,17 @@ layout (std430, binding = 0) readonly buffer SceneData {
 } scene_data;
 
 #ifdef FORR_USE_OPENGL
-layout (location = 0) uniform int model_index;
+layout (location = 0) uniform int instance_index;
 #else
 layout(push_constant) uniform PushConstants {
-	int index;
+	int instance_index;
 } constants;
 #endif
 
 void main() {
 #ifdef FORR_USE_OPENGL
-	gl_Position = scene_data.projection_matrix * scene_data.view_matrix * scene_data.model_matrices[model_index] * vec4(a_Position.xyz, 1.0f);
+	gl_Position = scene_data.projection_matrix * scene_data.view_matrix * scene_data.model_matrices[instance_index] * vec4(a_Position.xyz, 1.0f);
 #else
-	gl_Position = scene_data.projection_matrix * scene_data.view_matrix * scene_data.model_matrices[constants.index] * vec4(a_Position.xyz, 1.0f);
+	gl_Position = scene_data.projection_matrix * scene_data.view_matrix * scene_data.model_matrices[constants.instance_index] * vec4(a_Position.xyz, 1.0f);
 #endif
 }
