@@ -136,59 +136,53 @@ namespace fe {
         void handleRenderQueue();
 
     private:
-        RendererDesc m_Description{};
+        struct FrameData {
+            // here used VkCommandBuffer, which is not RAII because its memory is going to be freed by command pool, which is already a RAII wrapper
+            VkCommandBuffer command_buffer{};
 
-        ResourceManager& m_ResourceManager;
+            fe::vk::Fence     wait_fence{};
+            fe::vk::Semaphore present_complete_semaphore{};
+
+            VulkanStorageBuffer storage_buffer{};
+
+            FrameData()  = default;
+            ~FrameData() = default;
+        };
 
         IPlatformSystem& m_PlatformSystem;
         IWindow&         m_PrimaryWindow;
+        ResourceManager& m_ResourceManager;
 
         VulkanContext m_Context{};
 
+        VkPhysicalDevice m_PhysicalDevice{};
         fe::vk::Instance m_Instance{};
-        VkPhysicalDevice m_PhysicalDevice{}; // not RAII. doesn't need to be destroyed
-
-        fe::vk::Device m_Device{};
-
-        // VkCommandBuffer is not RAII because its memory is going to be freed by command pool,
-        // which has RAII wrapper
-        std::array<VkCommandBuffer, VulkanContext::max_concurrent_frames> m_CommandBuffers{};
-
-        VulkanSwapchain m_Swapchain{ m_Description, m_Context, m_PrimaryWindow };
-
-        uint32_t m_CurrentImageIndex{};
-        uint32_t m_CurrentBuffer{};
-
-        GPUHandle<resource::Material>    m_CurrentMaterial{};
-        GPUHandle<resource::Model::Mesh> m_CurrentMesh{};
-
-        std::array<fe::vk::Fence, VulkanContext::max_concurrent_frames>     m_WaitFences{};
-        std::array<fe::vk::Semaphore, VulkanContext::max_concurrent_frames> m_PresentCompleteSemaphores{};
-        std::vector<fe::vk::Semaphore>                                      m_RenderCompleteSemaphores{};
-
-        VulkanImage m_DepthStencil{};
-
-        fe::vk::RenderPass m_RenderPass{};
-
-        std::vector<fe::vk::Framebuffer> m_Framebuffers{};
-
-        std::array<VulkanStorageBuffer, VulkanContext::max_concurrent_frames> m_StorageBuffers{};
-
-        fe::vk::DescriptorPool      m_DescriptorPool{};
-        fe::vk::DescriptorSetLayout m_DescriptorSetLayout{};
-
-        Camera m_Camera{}; // temp
-
-        uint32_t m_CurrentFrame{};
-
-        std::vector<DrawCommand> m_RenderQueue{};
+        fe::vk::Device   m_Device{};
 
         VulkanResourceManager m_VulkanResourceManager{ m_Context, m_ResourceManager };
 
-        fe::vk::CommandPool m_CommandPool{};
+        RendererDesc                     m_Description{};
+        VulkanSwapchain                  m_Swapchain{ m_Description, m_Context, m_PrimaryWindow };
+        fe::vk::RenderPass               m_RenderPass{};
+        std::vector<fe::vk::Framebuffer> m_Framebuffers{};
+        VulkanImage                      m_DepthStencil{};
 
+        fe::vk::CommandPool         m_CommandPool{};
+        fe::vk::DescriptorPool      m_DescriptorPool{};
+        fe::vk::DescriptorSetLayout m_DescriptorSetLayout{};
+
+        std::array<FrameData, VulkanContext::max_concurrent_frames> m_FrameData{};
+        std::vector<fe::vk::Semaphore>                              m_RenderCompleteSemaphores{};
+
+        GlobalSceneData                  m_SceneData{};
+        Camera                           m_Camera{};
+        std::vector<DrawCommand>         m_RenderQueue{};
+        GPUHandle<resource::Material>    m_CurrentMaterial{};
+        GPUHandle<resource::Model::Mesh> m_CurrentMesh{};
+
+        uint32_t m_CurrentImageIndex{};
+        uint32_t m_CurrentBuffer{};
+        uint32_t m_CurrentFrame{};
         uint32_t m_ImageIndex{};
-
-        GlobalSceneData m_SceneData{};
     };
 } // namespace fe
