@@ -72,9 +72,10 @@ void fe::RenderSystem::addEntry(const MeshComponent& mesh_component) {
     for (const auto& mesh : model.meshes) {
         for (const auto& primitive : mesh.primitives) {
 
-            const auto& material = *m_Impl->m_ResourceManager.GetResource(mesh_component.material_override_ptr == ~0   // if overrided material is null
-                                                                              ? primitive.material_ptr                 // select primitive's material
-                                                                              : mesh_component.material_override_ptr); // select overrided material
+            const auto& material = *m_Impl->m_ResourceManager.GetResource(
+                mesh_component.material_override_ptr.packed() == ~0 // if overrided material is null
+                    ? primitive.material_ptr                        // ( TRUE )  select primitive's material
+                    : mesh_component.material_override_ptr);        // ( FALSE ) select overrided material
 
             auto& entry = enties.emplace_back();
 
