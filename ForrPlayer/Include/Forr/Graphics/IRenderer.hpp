@@ -65,14 +65,14 @@ namespace fe {
     constexpr inline static uint64_t MAX_LIGHTS    = 32;
 
     struct SceneData {
-        uint32_t light_count{};
+        //uint32_t light_count{};
 
         glm::mat4 projection_matrix;
         glm::mat4 view_matrix;
 
         glm::mat4 model_matrices[MAX_INSTANCES];
 
-        GPULight lights[MAX_LIGHTS];
+        //GPULight lights[MAX_LIGHTS];
 
         SceneData()  = default;
         ~SceneData() = default;

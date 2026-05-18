@@ -248,7 +248,7 @@ void fe::RendererVulkan::handleRenderQueue() {
     // pass SSBO
     for (const auto& draw_command : m_RenderQueue)
         m_SceneData.model_matrices[draw_command.instance_index] = draw_command.transform;
-    memcpy(m_FrameData[m_CurrentFrame].storage_buffer.mapped, &m_SceneData, sizeof(ShaderData));
+    memcpy(m_FrameData[m_CurrentFrame].storage_buffer.mapped, &m_SceneData, sizeof(SceneData));
 
     const VkCommandBuffer command_buffer = m_FrameData[m_CurrentFrame].command_buffer;
 
@@ -538,7 +538,7 @@ void fe::RendererVulkan::InitializeFramebuffers() {
 void fe::RendererVulkan::InitializeStorageBuffer() {
     VkBufferCreateInfo buffer_create_info{};
     buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    buffer_create_info.size  = sizeof(ShaderData);
+    buffer_create_info.size  = sizeof(SceneData);
     buffer_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 
     for (size_t i = 0; i < VulkanContext::max_concurrent_frames; i++) {
@@ -562,7 +562,7 @@ void fe::RendererVulkan::InitializeStorageBuffer() {
         constexpr static VkMemoryMapFlags flags  = 0;
 
         VK_CHECK_RESULT(vkBindBufferMemory(m_Device, buffer_raw, memory_raw, offset));
-        VK_CHECK_RESULT(vkMapMemory(m_Device, memory_raw, offset, sizeof(ShaderData), flags, (void**) &m_FrameData[i].storage_buffer.mapped));
+        VK_CHECK_RESULT(vkMapMemory(m_Device, memory_raw, offset, sizeof(SceneData), flags, (void**) &m_FrameData[i].storage_buffer.mapped));
     }
 }
 
@@ -942,7 +942,7 @@ void fe::RendererVulkan::VKSetupDescriptorSets() {
 
         VkDescriptorBufferInfo descriptor_buffer_info{};
         descriptor_buffer_info.buffer = m_FrameData[i].storage_buffer.buffer;
-        descriptor_buffer_info.range  = sizeof(ShaderData);
+        descriptor_buffer_info.range  = sizeof(SceneData);
 
         VkWriteDescriptorSet write_descriptor_set{};
         write_descriptor_set.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
