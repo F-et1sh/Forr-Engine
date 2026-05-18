@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -40,14 +40,6 @@ namespace fe {
 
     using Index = uint32_t; // convert all to uint32_t ( at least for now )
 
-    struct ShaderData {
-        glm::mat4 projection_matrix{};
-        glm::mat4 view_matrix{};
-        glm::mat4 model_matrices[32];
-
-        ShaderData()  = default;
-        ~ShaderData() = default;
-    };
     //#pragma pack(pop) // pack(push, 1) // disabled for now
 
     enum class RenderMode {
