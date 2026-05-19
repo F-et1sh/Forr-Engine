@@ -21,89 +21,78 @@
 using namespace fe::resource;
 
 namespace fe { // this functions are not a part of fe::ShaderReflector, because they're using spirv_reflect's structures that cannot be in headers
-    static Shader::Property::Type convertType(const SpvReflectTypeDescription* type);
-    static void                   parseMember(resource::Shader& shader, const SpvReflectBlockVariable& block);
+    static Shader::DescriptorType convertType(SpvReflectDescriptorType type);
 } // namespace fe
 
 void fe::ShaderReflector::Reflect(resource::Shader& shader, const std::filesystem::path& resource_full_path) {
     SpvReflectShaderModule module{};
     spvReflectCreateShaderModule(shader.source_code.size() * sizeof(uint32_t), shader.source_code.data(), &module);
 
-    uint32_t count{};
-    spvReflectEnumerateDescriptorBindings(&module, &count, nullptr);
+    // read bindings
+    uint32_t bindings_count{};
+    spvReflectEnumerateDescriptorBindings(&module, &bindings_count, nullptr);
+    std::vector<SpvReflectDescriptorBinding*> bindings(bindings_count);
+    spvReflectEnumerateDescriptorBindings(&module, &bindings_count, bindings.data());
 
-    std::vector<SpvReflectDescriptorBinding*> bindings(count);
-    spvReflectEnumerateDescriptorBindings(&module, &count, bindings.data());
+    // read sets
+    uint32_t sets_count{};
+    spvReflectEnumerateDescriptorSets(&module, &sets_count, nullptr);
+    std::vector<SpvReflectDescriptorSet*> sets(sets_count);
+    spvReflectEnumerateDescriptorSets(&module, &sets_count, sets.data());
 
-    bool is_scene_data_ssbo_found = false;
+    for (auto* set : sets) {
+        auto& descriptor_set_layout_data = shader.descriptor_sets.emplace_back();
 
-    for (auto* binding : bindings) {
-        if (binding->descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER &&
-            binding->descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
-            continue;
-        }
+        descriptor_set_layout_data.index = set->set;
+        descriptor_set_layout_data.bindings.reserve(set->binding_count);
 
-        //binding->descriptor_type
+        for (auto* binding : bindings) {
+            auto& this_binding = descriptor_set_layout_data.bindings.emplace_back();
 
-        auto& block = binding->block;
+            this_binding.index = binding->binding;
+            this_binding.type  = convertType(binding->descriptor_type);
+            this_binding.count = binding->count;
 
-        parseMember(shader, block);
+            if (!binding->block.member_count) continue;
 
-        if (std::string_view(binding->type_description->type_name) == "SceneData") {
-            is_scene_data_ssbo_found = true;
+            this_binding.size = binding->block.size;
+            this_binding.members.reserve(binding->block.member_count);
 
-            if (binding->descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
-                fe::logging::warning("SceneData structure found but it is not SSBO. Path : %s", resource_full_path.string().c_str());
+            for (uint32_t i = 0; i < binding->block.member_count; i++) {
+                auto& member = binding->block.members[i];
+
+                this_binding.members.push_back(Shader::BlockMember{ member.offset, member.size, member.padded_size });
             }
+
+            this_binding.members.shrink_to_fit();
         }
+
+        descriptor_set_layout_data.bindings.shrink_to_fit();
     }
 
     spvReflectDestroyShaderModule(&module);
-
-    if (!is_scene_data_ssbo_found) {
-        fe::logging::warning("SceneData SSBO is not found. Path : %s", resource_full_path.string().c_str());
-    }
 }
 
 namespace fe {
-    Shader::Property::Type convertType(const SpvReflectTypeDescription* type) {
-        if (type->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) {
-            // clang-format off
-            switch (type->traits.numeric.vector.component_count) {
-                case 1: return Shader::Property::Type::FLOAT;
-                case 2: return Shader::Property::Type::VEC2;
-                case 3: return Shader::Property::Type::VEC3;
-                case 4: return Shader::Property::Type::VEC4;
-            }
-            // clang-format on
+    Shader::DescriptorType convertType(SpvReflectDescriptorType type) {
+        // clang-format off
+        switch (type) {
+            case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLER                : return Shader::DescriptorType::SAMPLER                ; break;
+            case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : return Shader::DescriptorType::COMBINED_IMAGE_SAMPLER ; break;
+            case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE          : return Shader::DescriptorType::SAMPLED_IMAGE          ; break;
+            case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE          : return Shader::DescriptorType::STORAGE_IMAGE          ; break;
+            case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER   : return Shader::DescriptorType::UNIFORM_TEXEL_BUFFER   ; break;
+            case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER   : return Shader::DescriptorType::STORAGE_TEXEL_BUFFER   ; break;
+            case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER         : return Shader::DescriptorType::UNIFORM_BUFFER         ; break;
+            case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER         : return Shader::DescriptorType::STORAGE_BUFFER         ; break;
+            case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : return Shader::DescriptorType::UNIFORM_BUFFER_DYNAMIC ; break;
+            case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : return Shader::DescriptorType::STORAGE_BUFFER_DYNAMIC ; break;
+            case SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT       : return Shader::DescriptorType::INPUT_ATTACHMENT       ; break;
+            default:
+                assert(false);
         }
+        // clang-format on
 
-        if (type->type_flags & SPV_REFLECT_TYPE_FLAG_INT) {
-            return Shader::Property::Type::INT;
-        }
-
-        if (type->traits.numeric.matrix.column_count > 0) {
-            return Shader::Property::Type::MAT4;
-        }
-
-        return Shader::Property::Type::FLOAT;
-    }
-
-    void parseMember(resource::Shader& shader, const SpvReflectBlockVariable& block) {
-        for (uint32_t i = 0; i < block.member_count; i++) {
-            const auto& member = block.members[i];
-
-            if (member.member_count > 0) { // parse structs
-                parseMember(shader, member);
-            }
-            else {
-                Shader::Property property{};
-                property.offset = member.offset;
-                property.size   = member.size;
-                property.type   = convertType(member.type_description);
-
-                shader.properties.insert({ member.name, property });
-            }
-        }
+        return Shader::DescriptorType::SAMPLER;
     }
 } // namespace fe

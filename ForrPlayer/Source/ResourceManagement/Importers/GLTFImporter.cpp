@@ -58,6 +58,10 @@ fe::pointer<fe::resource::Model> fe::GLTFImporter::Import(ResourceStorage& stora
     GLTFImporter::loadMaterials(context);
     GLTFImporter::loadMeshes(context);
     GLTFImporter::loadAnimations(context);
+    
+    // TODO : try adding std::vector<>::shrink_to_fit()
+
+
 
     auto ptr = storage.CreateResource<resource::Model>(std::move(this_model));
     return ptr;
