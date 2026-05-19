@@ -920,14 +920,25 @@ void fe::RendererVulkan::VKSetupQueues() {
 
 void fe::RendererVulkan::VKSetupDescriptorSetLayout() {
     VkDescriptorSetLayoutBinding binding{};
+    binding.binding         = 0;
     binding.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    binding.descriptorCount = 1;
+    binding.descriptorCount = 100'000;
     binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    VkDescriptorBindingFlags flags = VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT |
+                                     VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
+                                     VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+
+    VkDescriptorSetLayoutBindingFlagsCreateInfo extended_info{};
+    extended_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+    extended_info.bindingCount  = 1;
+    extended_info.pBindingFlags = &flags;
 
     VkDescriptorSetLayoutCreateInfo descriptor_layout_create_info{};
     descriptor_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     descriptor_layout_create_info.bindingCount = 1;
     descriptor_layout_create_info.pBindings    = &binding;
+    descriptor_layout_create_info.pNext        = &extended_info;
 
     VkDescriptorSetLayout descriptor_set_layout_raw{};
     VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptor_layout_create_info, nullptr, &descriptor_set_layout_raw));
