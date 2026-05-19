@@ -929,16 +929,16 @@ void fe::RendererVulkan::VKSetupDescriptorSetLayout() {
                                      VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
                                      VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
 
-    VkDescriptorSetLayoutBindingFlagsCreateInfo extended_info{};
-    extended_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-    extended_info.bindingCount  = 1;
-    extended_info.pBindingFlags = &flags;
+    VkDescriptorSetLayoutBindingFlagsCreateInfo descriptor_set_layout_binding_flags_create_info{};
+    descriptor_set_layout_binding_flags_create_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+    descriptor_set_layout_binding_flags_create_info.bindingCount  = 1;
+    descriptor_set_layout_binding_flags_create_info.pBindingFlags = &flags;
 
     VkDescriptorSetLayoutCreateInfo descriptor_layout_create_info{};
     descriptor_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     descriptor_layout_create_info.bindingCount = 1;
     descriptor_layout_create_info.pBindings    = &binding;
-    descriptor_layout_create_info.pNext        = &extended_info;
+    descriptor_layout_create_info.pNext        = &descriptor_set_layout_binding_flags_create_info;
 
     VkDescriptorSetLayout descriptor_set_layout_raw{};
     VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptor_layout_create_info, nullptr, &descriptor_set_layout_raw));
@@ -946,15 +946,16 @@ void fe::RendererVulkan::VKSetupDescriptorSetLayout() {
 }
 
 void fe::RendererVulkan::VKSetupDescriptorPool() {
-    VkDescriptorPoolSize descriptor_pool_size[1];
-    descriptor_pool_size[0].type            = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    descriptor_pool_size[0].descriptorCount = VulkanContext::max_concurrent_frames;
+    VkDescriptorPoolSize pool_size{};
+    pool_size.type            = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+    pool_size.descriptorCount = 100'000;
 
     VkDescriptorPoolCreateInfo descriptor_pool_create_info{};
     descriptor_pool_create_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    descriptor_pool_create_info.maxSets       = m_Context.max_concurrent_frames;
     descriptor_pool_create_info.poolSizeCount = 1;
-    descriptor_pool_create_info.pPoolSizes    = descriptor_pool_size;
-    descriptor_pool_create_info.maxSets       = VulkanContext::max_concurrent_frames;
+    descriptor_pool_create_info.pPoolSizes    = &pool_size;
+    descriptor_pool_create_info.flags         = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
 
     VkDescriptorPool descriptor_pool_raw{};
     VK_CHECK_RESULT(vkCreateDescriptorPool(m_Device, &descriptor_pool_create_info, nullptr, &descriptor_pool_raw));
@@ -965,11 +966,18 @@ void fe::RendererVulkan::VKSetupDescriptorSets() {
     for (size_t i = 0; i < VulkanContext::max_concurrent_frames; i++) {
         VkDescriptorSetLayout descriptor_set_layout_raw = m_DescriptorSetLayout;
 
+        uint32_t                                           max_binding_count = 100'000;
+        VkDescriptorSetVariableDescriptorCountAllocateInfo descriptor_set_variable_descriptor_count_allocate_info{};
+        descriptor_set_variable_descriptor_count_allocate_info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+        descriptor_set_variable_descriptor_count_allocate_info.descriptorSetCount = 1;
+        descriptor_set_variable_descriptor_count_allocate_info.pDescriptorCounts  = &max_binding_count;
+
         VkDescriptorSetAllocateInfo descriptor_set_allocate_info{};
         descriptor_set_allocate_info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         descriptor_set_allocate_info.descriptorPool     = m_DescriptorPool;
         descriptor_set_allocate_info.descriptorSetCount = 1;
         descriptor_set_allocate_info.pSetLayouts        = &descriptor_set_layout_raw;
+        descriptor_set_allocate_info.pNext              = &descriptor_set_variable_descriptor_count_allocate_info;
 
         VK_CHECK_RESULT(vkAllocateDescriptorSets(m_Device, &descriptor_set_allocate_info, &m_FrameData[i].storage_buffer.descriptor_set));
 
@@ -980,10 +988,10 @@ void fe::RendererVulkan::VKSetupDescriptorSets() {
         VkWriteDescriptorSet write_descriptor_set{};
         write_descriptor_set.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         write_descriptor_set.dstSet          = m_FrameData[i].storage_buffer.descriptor_set;
+        write_descriptor_set.dstBinding      = 0;
         write_descriptor_set.descriptorCount = 1;
         write_descriptor_set.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         write_descriptor_set.pBufferInfo     = &descriptor_buffer_info;
-        write_descriptor_set.dstBinding      = 0;
 
         vkUpdateDescriptorSets(m_Device, 1, &write_descriptor_set, 0, nullptr);
     }

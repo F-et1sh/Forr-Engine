@@ -175,7 +175,7 @@ namespace fe {
         std::array<FrameData, VulkanContext::max_concurrent_frames> m_FrameData{};
         std::vector<fe::vk::Semaphore>                              m_RenderCompleteSemaphores{};
 
-        SceneData                  m_SceneData{};
+        SceneData                        m_SceneData{};
         Camera                           m_Camera{};
         std::vector<DrawCommand>         m_RenderQueue{};
         GPUHandle<resource::Material>    m_CurrentMaterial{};

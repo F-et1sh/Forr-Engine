@@ -118,7 +118,7 @@ void fe::RenderSystem::addToDrawList(fe::pointer<resource::Model> model_ptr, con
         draw_command.index_offset    = entry.index_offset;
         draw_command.material_handle = entry.material_handle;
         draw_command.mesh_handle     = entry.mesh_handle;
-        draw_command.sort_key        = entry.sort_key;
+        draw_command.sort_key        = static_cast<uint64_t>(entry.sort_key) << 0; // TODO : sort by how far the object is
         draw_command.transform       = transform;
     }
 

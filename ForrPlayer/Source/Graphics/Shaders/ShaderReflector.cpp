@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -20,7 +20,7 @@
 
 using namespace fe::resource;
 
-namespace fe {
+namespace fe { // this functions are not a part of fe::ShaderReflector, because they're using spirv_reflect's structures that cannot be in headers
     static Shader::Property::Type convertType(const SpvReflectTypeDescription* type);
     static void                   parseMember(resource::Shader& shader, const SpvReflectBlockVariable& block);
 } // namespace fe
@@ -42,6 +42,8 @@ void fe::ShaderReflector::Reflect(resource::Shader& shader, const std::filesyste
             binding->descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
             continue;
         }
+
+        //binding->descriptor_type
 
         auto& block = binding->block;
 
