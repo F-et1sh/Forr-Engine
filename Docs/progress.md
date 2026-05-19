@@ -1,5 +1,20 @@
 ﻿# Forr-Engine Devlog
 
+## 20.05.2026
+### Goal
+    finish providing bindless rendering
+    provide RenderPacket
+    provide normals pushing to shader ( it's in gLTF )
+    provide shader with lighting
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 19.05.2026
 ### Goal
     provide bindless rendering
@@ -14,6 +29,7 @@
     features for bindless rendering has adding provided
     bindless descriptor set layout initialization configured
     shader reflection's got better
+    devided scene's and material's descriptor sets
 
 ### Problem
     -

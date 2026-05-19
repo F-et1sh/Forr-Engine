@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -39,6 +39,14 @@ fe::pointer<fe::resource::Shader> fe::ShaderImporter::Import(ResourceStorage& st
 
     source_code.resize(file_size);
     file.read((char*) &source_code[0], file_size);
+
+    // remove BOM characters
+    if (source_code.size() >= 3 &&
+        (unsigned char) source_code[0] == 0xEF &&
+        (unsigned char) source_code[1] == 0xBB &&
+        (unsigned char) source_code[2] == 0xBF) {
+        source_code = source_code.substr(3);
+    }
 
     if (resource_full_path.extension() == PATH.getVertexShaderExtension()) {
         shader.type = Shader::Type::VERTEX;
