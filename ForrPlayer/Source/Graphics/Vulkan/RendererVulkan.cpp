@@ -224,7 +224,7 @@ void fe::RendererVulkan::resizeWindow() {
     vkDeviceWaitIdle(m_Device);
 
     m_Swapchain.CreateSwapchain();
-    
+
     this->InitializeDepthStencil();
     this->InitializeFramebuffers();
     this->InitializeSynchronizationPrimitives();
@@ -299,8 +299,7 @@ void fe::RendererVulkan::InitializeBase() {
 }
 
 void fe::RendererVulkan::InitializeDevice() {
-
-    // TODO : Add enabled features adding
+    this->VKSetupFeatures();
 
     this->VKSetupQueueFamilyProperties();
     this->VKSetupSupportedExtensions();
@@ -784,6 +783,29 @@ void fe::RendererVulkan::VKSetupDepthStencilFormat() {
         if (!found)
             fe::logging::error("Failed to find suitable depth format");
     }
+}
+
+void fe::RendererVulkan::VKSetupFeatures() {
+    // === SETUP CONTEXT ===
+
+    if (m_Context.api_version <= VK_VERSION_1_1)
+        m_Context.enabled_physical_device_extensions.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+
+    auto& descriptor_indexing_features = m_Context.enabled_physical_device_descriptor_indexing_features;
+
+    descriptor_indexing_features       = {}; // reset before setting
+    descriptor_indexing_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+
+    // for bindless
+    descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing    = VK_TRUE;
+    descriptor_indexing_features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
+    descriptor_indexing_features.descriptorBindingPartiallyBound              = VK_TRUE;
+    descriptor_indexing_features.runtimeDescriptorArray                       = VK_TRUE;
+    descriptor_indexing_features.shaderStorageImageArrayNonUniformIndexing    = VK_TRUE;
+    descriptor_indexing_features.descriptorBindingStorageImageUpdateAfterBind = VK_TRUE;
+
+    // configure physical_device_create_next_chain
+    m_Context.physical_device_create_next_chain = &descriptor_indexing_features;
 }
 
 void fe::RendererVulkan::VKSetupQueueFamilyProperties() {

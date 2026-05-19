@@ -1,5 +1,47 @@
 ﻿# Forr-Engine Devlog
 
+## 19.05.2026
+### Goal
+    provide bindless rendering
+    provide RenderPacket
+    provide normals pushing to shader ( it's in gLTF )
+    provide shader with lighting
+    ( fix resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    features for bindless rendering has adding provided
+
+### Problem
+    -
+
+## 18.05.2026
+### Goal
+    provide normals pushing to shader ( it's in gLTF )
+    provide shader with lighting
+    ( fix resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+    provide RenderPacket :
+    ```hpp
+    struct RenderPacket {
+        CameraData camera;
+        std::vector<GPULight> visible_lights;
+        std::vector<RenderCommand> draw_calls; 
+    };
+    
+    class IRenderer {
+    public:
+        virtual void SubmitFrame(const RenderPacket& packet) = 0;
+    };
+    ```
+
+### Done
+    ( check stash )
+
+### Problem
+    -
+
 ## 17.05.2026
 ### Goal
     provide normals pushing to shader ( it's in gLTF )

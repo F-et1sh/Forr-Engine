@@ -111,6 +111,7 @@ namespace fe {
         void VKCreateInstance();
         void VKChoosePhysicalDevice();
         void VKSetupDepthStencilFormat();
+        void VKSetupFeatures();
         void VKSetupQueueFamilyProperties();
         void VKSetupSupportedExtensions();
         void VKCreateDevice(bool use_swapchain = true, VkQueueFlags requested_queue_types = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
