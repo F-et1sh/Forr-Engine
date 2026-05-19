@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -54,6 +54,9 @@ namespace fe {
         std::vector<std::string> enabled_instance_extensions{};
 
         std::vector<VkLayerSettingEXT> enabled_layer_settings{};
+
+        // this structure is a bunch of enabled descriptor indexing features
+        VkPhysicalDeviceDescriptorIndexingFeatures enabled_physical_device_descriptor_indexing_features{};
 
         void* physical_device_create_next_chain{}; // TODO : this is unused for now. Add adding extra features in the future
 
