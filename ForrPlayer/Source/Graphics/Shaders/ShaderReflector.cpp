@@ -28,12 +28,6 @@ void fe::ShaderReflector::Reflect(resource::Shader& shader, const std::filesyste
     SpvReflectShaderModule module{};
     spvReflectCreateShaderModule(shader.source_code.size() * sizeof(uint32_t), shader.source_code.data(), &module);
 
-    // read bindings
-    uint32_t bindings_count{};
-    spvReflectEnumerateDescriptorBindings(&module, &bindings_count, nullptr);
-    std::vector<SpvReflectDescriptorBinding*> bindings(bindings_count);
-    spvReflectEnumerateDescriptorBindings(&module, &bindings_count, bindings.data());
-
     // read sets
     uint32_t sets_count{};
     spvReflectEnumerateDescriptorSets(&module, &sets_count, nullptr);
@@ -46,28 +40,30 @@ void fe::ShaderReflector::Reflect(resource::Shader& shader, const std::filesyste
         descriptor_set_layout_data.index = set->set;
         descriptor_set_layout_data.bindings.reserve(set->binding_count);
 
-        for (auto* binding : bindings) {
+        for (uint32_t i = 0; i < set->binding_count; i++) {
+            auto* binding      = set->bindings[i];
             auto& this_binding = descriptor_set_layout_data.bindings.emplace_back();
 
-            this_binding.index = binding->binding;
-            this_binding.type  = convertType(binding->descriptor_type);
-            this_binding.count = binding->count;
+            this_binding.index           = binding->binding;
+            this_binding.descriptor_type = convertType(binding->descriptor_type);
+            this_binding.is_array        = (binding->array.dims_count > 0);
+
+            if (this_binding.is_array) { // bindless
+                uint32_t reflected_count = binding->array.dims[0];
+                this_binding.count       = (reflected_count == 0) ? 100'000 : reflected_count;
+            }
+            else this_binding.count = 1;
 
             if (!binding->block.member_count) continue;
 
             this_binding.size = binding->block.size;
             this_binding.members.reserve(binding->block.member_count);
 
-            for (uint32_t i = 0; i < binding->block.member_count; i++) {
-                auto& member = binding->block.members[i];
-
+            for (uint32_t member_i = 0; member_i < binding->block.member_count; member_i++) {
+                auto& member = binding->block.members[member_i];
                 this_binding.members.push_back(Shader::BlockMember{ member.offset, member.size, member.padded_size });
             }
-
-            this_binding.members.shrink_to_fit();
         }
-
-        descriptor_set_layout_data.bindings.shrink_to_fit();
     }
 
     spvReflectDestroyShaderModule(&module);

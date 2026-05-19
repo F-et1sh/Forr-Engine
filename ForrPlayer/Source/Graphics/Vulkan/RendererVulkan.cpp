@@ -612,7 +612,7 @@ void fe::RendererVulkan::VKCreateInstance() {
     }
 
     if constexpr (true /* m_ShaderDir == "slang" */) {
-        if constexpr (m_Context.api_version < VK_API_VERSION_1_1) { // this is hardcoded for now. It will always be false
+        if constexpr (m_Context.api_version < VK_API_VERSION_1_1) { // this is hardcoded for now. It will be false always
             //m_Context.api_version = VK_API_VERSION_1_1;
         }
 

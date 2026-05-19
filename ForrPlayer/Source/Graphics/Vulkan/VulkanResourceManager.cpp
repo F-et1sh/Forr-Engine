@@ -247,17 +247,50 @@ fe::GPUHandle<Model::Mesh> fe::VulkanResourceManager::createMesh(resource::Model
 }
 
 VkDescriptorSetLayout fe::VulkanResourceManager::createDescriptorSetLayout(const Material& material) {
-    //material.vertex_shader_ptr
+    const auto& vertex_shader = *m_ResourceManager.GetResource(material.vertex_shader_ptr);
 
-    VkDescriptorSetLayoutBinding binding{};
-    binding.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    binding.descriptorCount = 1;
-    binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    std::vector<VkDescriptorSetLayoutBinding> bindings{};
+    std::vector<VkDescriptorBindingFlags> binding_flags{};
+
+    const auto& reflected_set = vertex_shader.descriptor_sets[1]; // material's descriptor set
+    
+    bindings.reserve(reflected_set.bindings.size());
+    binding_flags.reserve(reflected_set.bindings.size());
+
+    for (std::size_t i = 0; i < reflected_set.bindings.size(); i++) {
+        const auto& reflected_binding = reflected_set.bindings[i];
+
+        auto& this_binding           = bindings.emplace_back();
+        this_binding.binding         = reflected_binding.index;
+        this_binding.descriptorCount = reflected_binding.count;
+        this_binding.descriptorType  = this->toVkDescriptorType(reflected_binding.descriptor_type);
+        this_binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+        auto& flags = binding_flags.emplace_back();
+
+        if (reflected_binding.is_array) {
+            flags |= VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+            flags |= VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+
+            if (i == reflected_set.bindings.size() - 1) {
+                flags |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+            }
+        }
+        else
+            flags |= VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+    }
+
+    VkDescriptorSetLayoutBindingFlagsCreateInfo descriptor_set_layout_binding_flags_create_info{};
+    descriptor_set_layout_binding_flags_create_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+    descriptor_set_layout_binding_flags_create_info.bindingCount  = binding_flags.size();
+    descriptor_set_layout_binding_flags_create_info.pBindingFlags = binding_flags.data();
 
     VkDescriptorSetLayoutCreateInfo descriptor_layout_create_info{};
     descriptor_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    descriptor_layout_create_info.bindingCount = 1;
-    descriptor_layout_create_info.pBindings    = &binding;
+    descriptor_layout_create_info.flags        = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT; 
+    descriptor_layout_create_info.bindingCount = bindings.size();
+    descriptor_layout_create_info.pBindings    = bindings.data();
+    descriptor_layout_create_info.pNext        = &descriptor_set_layout_binding_flags_create_info;
 
     VkDescriptorSetLayout descriptor_set_layout_raw{};
     VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Context.device, &descriptor_layout_create_info, nullptr, &descriptor_set_layout_raw));
@@ -418,4 +451,26 @@ fe::vk::ShaderModule fe::VulkanResourceManager::createShaderModule(fe::pointer<f
     shader_module.attach(m_Context.device, shader_module_raw);
 
     return std::move(shader_module);
+}
+
+VkDescriptorType fe::VulkanResourceManager::toVkDescriptorType(Shader::DescriptorType descriptor_type) const {
+    // clang-format off
+    switch (descriptor_type) {
+        case Shader::DescriptorType::SAMPLER               : return VK_DESCRIPTOR_TYPE_SAMPLER               ; break;
+        case Shader::DescriptorType::COMBINED_IMAGE_SAMPLER: return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; break;
+        case Shader::DescriptorType::SAMPLED_IMAGE         : return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE         ; break;
+        case Shader::DescriptorType::STORAGE_IMAGE         : return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE         ; break;
+        case Shader::DescriptorType::UNIFORM_TEXEL_BUFFER  : return VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER  ; break;
+        case Shader::DescriptorType::STORAGE_TEXEL_BUFFER  : return VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER  ; break;
+        case Shader::DescriptorType::UNIFORM_BUFFER        : return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        ; break;
+        case Shader::DescriptorType::STORAGE_BUFFER        : return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER        ; break;
+        case Shader::DescriptorType::UNIFORM_BUFFER_DYNAMIC: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC; break;
+        case Shader::DescriptorType::STORAGE_BUFFER_DYNAMIC: return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC; break;
+        case Shader::DescriptorType::INPUT_ATTACHMENT      : return VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT      ; break;
+        default:
+            assert(false);
+    }
+    // clang-format on
+
+    return VK_DESCRIPTOR_TYPE_SAMPLER;
 }
