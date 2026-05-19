@@ -37,7 +37,7 @@ namespace fe {
 
     private:
         fe::GPUHandle<fe::resource::Model::Mesh> createMesh(resource::Model::Mesh& mesh);
-        VkDescriptorSetLayout                    createDescriptorSetLayout();
+        VkDescriptorSetLayout                    createDescriptorSetLayout(const resource::Material& material);
         VkPipelineLayout                         createPipelineLayout(const std::vector<VkDescriptorSetLayout>& descriptor_set_layouts_raw);
         VkPipeline                               createPipeline(VkPipelineLayout pipeline_layout_raw, const resource::Material& material);
         fe::vk::ShaderModule                     createShaderModule(fe::pointer<fe::resource::Shader> shader_ptr);

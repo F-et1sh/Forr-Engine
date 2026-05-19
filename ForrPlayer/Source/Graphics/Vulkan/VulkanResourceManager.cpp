@@ -22,7 +22,7 @@ void fe::VulkanResourceManager::CreateResource(Material& material) {
     VulkanMaterial vulkan_material{};
 
     VkDescriptorSetLayout descriptor_set_layout_raw{};
-    descriptor_set_layout_raw = this->createDescriptorSetLayout();
+    descriptor_set_layout_raw = this->createDescriptorSetLayout(material);
     vulkan_material.descriptor_set_layout.attach(m_Context.device, descriptor_set_layout_raw);
 
     VkPipelineLayout pipeline_layout_raw{};
@@ -246,7 +246,9 @@ fe::GPUHandle<Model::Mesh> fe::VulkanResourceManager::createMesh(resource::Model
     return GPUHandle<Model::Mesh>(this->storeResource(mesh.gpu_handle, vulkan_mesh, m_StorageMeshes));
 }
 
-VkDescriptorSetLayout fe::VulkanResourceManager::createDescriptorSetLayout() {
+VkDescriptorSetLayout fe::VulkanResourceManager::createDescriptorSetLayout(const Material& material) {
+    //material.vertex_shader_ptr
+
     VkDescriptorSetLayoutBinding binding{};
     binding.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     binding.descriptorCount = 1;

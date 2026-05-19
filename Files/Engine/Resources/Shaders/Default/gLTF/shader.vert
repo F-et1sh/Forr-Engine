@@ -3,9 +3,9 @@
 layout (location = 0) in vec3 a_Position;
 
 layout (std430, binding = 0) readonly buffer SceneData {
-	mat4 projection_matrix;
-	mat4 view_matrix;
-	mat4 model_matrices[32];
+mat4 projection_matrix;
+mat4 view_matrix;
+mat4 model_matrices[32];
 } scene_data;
 
 #ifdef FORR_USE_OPENGL
