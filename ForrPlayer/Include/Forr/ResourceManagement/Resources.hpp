@@ -134,11 +134,13 @@ namespace fe::resource {
         };
 
         struct Binding {
-            DescriptorType type{};
+            DescriptorType descriptor_type{};
 
             uint32_t index{};
             uint32_t count{};
             uint32_t size{};
+
+            bool is_array{};
 
             std::vector<BlockMember> members{};
 

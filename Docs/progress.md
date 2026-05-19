@@ -3,7 +3,7 @@
 ## 19.05.2026
 ### Goal
     provide bindless rendering
-    devide scene's and material's descriptor set layouts
+    devide scene's and material's descriptor sets
     provide RenderPacket
     provide normals pushing to shader ( it's in gLTF )
     provide shader with lighting

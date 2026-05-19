@@ -42,6 +42,8 @@ namespace fe {
         VkPipeline                               createPipeline(VkPipelineLayout pipeline_layout_raw, const resource::Material& material);
         fe::vk::ShaderModule                     createShaderModule(fe::pointer<fe::resource::Shader> shader_ptr);
 
+        VkDescriptorType toVkDescriptorType(resource::Shader::DescriptorType descriptor_type) const;
+
     private:
         // this function returns the index of the resource ( GPUHandle<>::index )
         // you DON'T have to set 'GPUHandle<> gpu_handle' in the resources by yourself, the function does it by itself
