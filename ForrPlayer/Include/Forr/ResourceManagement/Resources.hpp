@@ -103,34 +103,62 @@ namespace fe::resource {
     public:
         enum class Type {
             VERTEX,
-            FRAGMENT
-            // add more later...
+            FRAGMENT,
+            COMPUTE
         };
-        struct FORR_API Property {
-        public:
-            enum class Type {
-                FLOAT,
-                VEC2,
-                VEC3,
-                VEC4,
-                MAT4,
-                INT,
-                UINT,
-                SAMPLER2D
-            };
 
+        enum class DescriptorType {
+            SAMPLER,
+            COMBINED_IMAGE_SAMPLER,
+            SAMPLED_IMAGE,
+            STORAGE_IMAGE,
+            UNIFORM_TEXEL_BUFFER,
+            STORAGE_TEXEL_BUFFER,
+            UNIFORM_BUFFER,
+            STORAGE_BUFFER,
+            UNIFORM_BUFFER_DYNAMIC,
+            STORAGE_BUFFER_DYNAMIC,
+            INPUT_ATTACHMENT
+        };
+
+        struct BlockMember {
             uint32_t offset{};
             uint32_t size{};
-            uint32_t count{};
-            Type     type{};
+            uint32_t padded_size{};
 
-            Property()  = default;
-            ~Property() = default;
+            BlockMember(uint32_t offset, uint32_t size, uint32_t padded_size)
+                : offset(offset), size(size), padded_size(padded_size) {}
+
+            BlockMember()  = default;
+            ~BlockMember() = default;
         };
 
-        Type                                      type{};
-        std::vector<uint32_t>                     source_code{};
-        std::unordered_map<std::string, Property> properties{};
+        struct Binding {
+            DescriptorType type{};
+
+            uint32_t index{};
+            uint32_t count{};
+            uint32_t size{};
+
+            std::vector<BlockMember> members{};
+
+            Binding()  = default;
+            ~Binding() = default;
+        };
+
+        struct DescriptorSetLayoutData {
+            uint32_t             index{};
+            std::vector<Binding> bindings{};
+
+            DescriptorSetLayoutData()  = default;
+            ~DescriptorSetLayoutData() = default;
+        };
+
+        Type                  type{};
+        std::vector<uint32_t> source_code{};
+
+        std::vector<DescriptorSetLayoutData> descriptor_sets{};
+        std::vector<BlockMember>             push_constants{};
 
         Shader()  = default;
         ~Shader() = default;

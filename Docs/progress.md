@@ -13,6 +13,7 @@
 ### Done
     features for bindless rendering has adding provided
     bindless descriptor set layout initialization configured
+    shader reflection's got better
 
 ### Problem
     -
