@@ -789,7 +789,7 @@ void fe::RendererVulkan::VKSetupFeatures() {
     // === SETUP CONTEXT ===
 
     if (m_Context.api_version <= VK_VERSION_1_1)
-        m_Context.enabled_physical_device_extensions.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+        m_Context.enabled_physical_device_extensions.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME); // enabled_physical_device_extensions
 
     auto& descriptor_indexing_features = m_Context.enabled_physical_device_descriptor_indexing_features;
 
@@ -797,15 +797,16 @@ void fe::RendererVulkan::VKSetupFeatures() {
     descriptor_indexing_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
 
     // for bindless
-    descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing    = VK_TRUE;
-    descriptor_indexing_features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
-    descriptor_indexing_features.descriptorBindingPartiallyBound              = VK_TRUE;
-    descriptor_indexing_features.runtimeDescriptorArray                       = VK_TRUE;
-    descriptor_indexing_features.shaderStorageImageArrayNonUniformIndexing    = VK_TRUE;
-    descriptor_indexing_features.descriptorBindingStorageImageUpdateAfterBind = VK_TRUE;
+    descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing     = VK_TRUE;
+    descriptor_indexing_features.descriptorBindingSampledImageUpdateAfterBind  = VK_TRUE;
+    descriptor_indexing_features.descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
+    descriptor_indexing_features.descriptorBindingPartiallyBound               = VK_TRUE;
+    descriptor_indexing_features.descriptorBindingVariableDescriptorCount      = VK_TRUE;
+    descriptor_indexing_features.runtimeDescriptorArray                        = VK_TRUE;
+    descriptor_indexing_features.shaderStorageImageArrayNonUniformIndexing     = VK_TRUE;
+    descriptor_indexing_features.descriptorBindingStorageImageUpdateAfterBind  = VK_TRUE;
 
-    // configure physical_device_create_next_chain
-    m_Context.physical_device_create_next_chain = &descriptor_indexing_features;
+    m_Context.physical_device_create_next_chain = &descriptor_indexing_features; // physical_device_create_next_chain
 }
 
 void fe::RendererVulkan::VKSetupQueueFamilyProperties() {
@@ -936,18 +937,20 @@ void fe::RendererVulkan::VKSetupDescriptorSetLayout() {
 
     VkDescriptorSetLayoutCreateInfo descriptor_layout_create_info{};
     descriptor_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    descriptor_layout_create_info.flags        = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
     descriptor_layout_create_info.bindingCount = 1;
     descriptor_layout_create_info.pBindings    = &binding;
     descriptor_layout_create_info.pNext        = &descriptor_set_layout_binding_flags_create_info;
 
+    // === SETUP CONTEXT ===
     VkDescriptorSetLayout descriptor_set_layout_raw{};
     VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptor_layout_create_info, nullptr, &descriptor_set_layout_raw));
-    m_DescriptorSetLayout.attach(m_Device, descriptor_set_layout_raw);
+    m_Context.global_descriptor_set_layout.attach(m_Device, descriptor_set_layout_raw); // global_descriptor_set_layout
 }
 
 void fe::RendererVulkan::VKSetupDescriptorPool() {
     VkDescriptorPoolSize pool_size{};
-    pool_size.type            = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+    pool_size.type            = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     pool_size.descriptorCount = 100'000;
 
     VkDescriptorPoolCreateInfo descriptor_pool_create_info{};
@@ -964,7 +967,7 @@ void fe::RendererVulkan::VKSetupDescriptorPool() {
 
 void fe::RendererVulkan::VKSetupDescriptorSets() {
     for (size_t i = 0; i < VulkanContext::max_concurrent_frames; i++) {
-        VkDescriptorSetLayout descriptor_set_layout_raw = m_DescriptorSetLayout;
+        VkDescriptorSetLayout descriptor_set_layout_raw = m_Context.global_descriptor_set_layout;
 
         uint32_t                                           max_binding_count = 100'000;
         VkDescriptorSetVariableDescriptorCountAllocateInfo descriptor_set_variable_descriptor_count_allocate_info{};

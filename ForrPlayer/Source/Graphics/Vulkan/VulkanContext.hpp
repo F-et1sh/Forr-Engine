@@ -58,7 +58,7 @@ namespace fe {
         // this structure is a bunch of enabled descriptor indexing features
         VkPhysicalDeviceDescriptorIndexingFeatures enabled_physical_device_descriptor_indexing_features{};
 
-        void* physical_device_create_next_chain{}; // TODO : this is unused for now. Add adding extra features in the future
+        void* physical_device_create_next_chain{};
 
         std::vector<VkQueueFamilyProperties> queue_family_properties{};
 
@@ -85,9 +85,11 @@ namespace fe {
 
         VkFormat depth_format{ VK_FORMAT_UNDEFINED };
 
-        VkPipelineCache pipeline_cache{};
+        VkPipelineCache pipeline_cache{}; // unused for now
 
         std::vector<VkFramebuffer> framebuffers{}; // can be removed
+
+        fe::vk::DescriptorSetLayout global_descriptor_set_layout{};
 
         VulkanContext()  = default;
         ~VulkanContext() = default;

@@ -1,4 +1,4 @@
-#version 460
+﻿#version 460
 layout(location = 0) out vec4 fragColor;
 
 layout (std430, binding = 0) readonly buffer SceneData {
@@ -6,6 +6,10 @@ layout (std430, binding = 0) readonly buffer SceneData {
 	mat4 view_matrix;
 	mat4 model_matrices[32];
 } scene_data;
+
+layout (std430, set = 1, binding = 0) readonly buffer MaterialData {
+mat4 some_data[];
+} material_data;
 
 layout (location = 0) in vec3 v_LocalPos;
 layout (location = 1) in vec3 v_WorldPos;

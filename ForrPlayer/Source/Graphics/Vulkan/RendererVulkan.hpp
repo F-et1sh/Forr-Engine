@@ -154,11 +154,11 @@ namespace fe {
         IWindow&         m_PrimaryWindow;
         ResourceManager& m_ResourceManager;
 
-        VulkanContext m_Context{};
-
         VkPhysicalDevice m_PhysicalDevice{};
         fe::vk::Instance m_Instance{};
         fe::vk::Device   m_Device{};
+
+        VulkanContext m_Context{};
 
         VulkanResourceManager m_VulkanResourceManager{ m_Context, m_ResourceManager };
 
@@ -170,7 +170,6 @@ namespace fe {
 
         fe::vk::CommandPool         m_CommandPool{};
         fe::vk::DescriptorPool      m_DescriptorPool{};
-        fe::vk::DescriptorSetLayout m_DescriptorSetLayout{};
 
         std::array<FrameData, VulkanContext::max_concurrent_frames> m_FrameData{};
         std::vector<fe::vk::Semaphore>                              m_RenderCompleteSemaphores{};

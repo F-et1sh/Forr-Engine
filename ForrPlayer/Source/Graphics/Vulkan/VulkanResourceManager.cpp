@@ -26,7 +26,7 @@ void fe::VulkanResourceManager::CreateResource(Material& material) {
     vulkan_material.descriptor_set_layout.attach(m_Context.device, descriptor_set_layout_raw);
 
     VkPipelineLayout pipeline_layout_raw{};
-    pipeline_layout_raw = this->createPipelineLayout({ descriptor_set_layout_raw });
+    pipeline_layout_raw = this->createPipelineLayout({ m_Context.global_descriptor_set_layout, descriptor_set_layout_raw });
     vulkan_material.pipeline_layout.attach(m_Context.device, pipeline_layout_raw);
 
     VkPipeline pipeline_raw{};
