@@ -6,11 +6,12 @@
     provide RenderPacket
     provide normals pushing to shader ( it's in gLTF )
     provide shader with lighting
-    ( fix resizing for GL/VK )
+    ( fix window resizing for GL/VK )
     ( do not create GPU resources if they're already created --> InitializeGPUResources() )
 
 ### Done
     features for bindless rendering has adding provided
+    bindless descriptor set layout initialization configured
 
 ### Problem
     -
