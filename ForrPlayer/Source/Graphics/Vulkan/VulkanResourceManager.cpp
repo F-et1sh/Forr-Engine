@@ -26,7 +26,7 @@ void fe::VulkanResourceManager::CreateResource(Material& material) {
     vulkan_material.descriptor_set_layout.attach(m_Context.device, descriptor_set_layout_raw);
 
     VkPipelineLayout pipeline_layout_raw{};
-    pipeline_layout_raw = this->createPipelineLayout({ m_Context.global_descriptor_set_layout, descriptor_set_layout_raw });
+    pipeline_layout_raw = this->createPipelineLayout({ m_Context.global_descriptor_set_layout });
     vulkan_material.pipeline_layout.attach(m_Context.device, pipeline_layout_raw);
 
     VkPipeline pipeline_raw{};
@@ -252,33 +252,33 @@ VkDescriptorSetLayout fe::VulkanResourceManager::createDescriptorSetLayout(const
     std::vector<VkDescriptorSetLayoutBinding> bindings{};
     std::vector<VkDescriptorBindingFlags> binding_flags{};
 
-    const auto& reflected_set = vertex_shader.descriptor_sets[1]; // material's descriptor set
-    
-    bindings.reserve(reflected_set.bindings.size());
-    binding_flags.reserve(reflected_set.bindings.size());
+    //const auto& reflected_set = vertex_shader.descriptor_sets[1]; // material's descriptor set
+    //
+    //bindings.reserve(reflected_set.bindings.size());
+    //binding_flags.reserve(reflected_set.bindings.size());
 
-    for (std::size_t i = 0; i < reflected_set.bindings.size(); i++) {
-        const auto& reflected_binding = reflected_set.bindings[i];
+    //for (std::size_t i = 0; i < reflected_set.bindings.size(); i++) {
+    //    const auto& reflected_binding = reflected_set.bindings[i];
 
-        auto& this_binding           = bindings.emplace_back();
-        this_binding.binding         = reflected_binding.index;
-        this_binding.descriptorCount = reflected_binding.count;
-        this_binding.descriptorType  = this->toVkDescriptorType(reflected_binding.descriptor_type);
-        this_binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    //    auto& this_binding           = bindings.emplace_back();
+    //    this_binding.binding         = reflected_binding.index;
+    //    this_binding.descriptorCount = reflected_binding.count;
+    //    this_binding.descriptorType  = this->toVkDescriptorType(reflected_binding.descriptor_type);
+    //    this_binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-        auto& flags = binding_flags.emplace_back();
+    //    auto& flags = binding_flags.emplace_back();
 
-        if (reflected_binding.is_array) {
-            flags |= VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
-            flags |= VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+    //    if (reflected_binding.is_array) {
+    //        flags |= VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+    //        flags |= VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
 
-            if (i == reflected_set.bindings.size() - 1) {
-                flags |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
-            }
-        }
-        else
-            flags |= VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
-    }
+    //        if (i == reflected_set.bindings.size() - 1) {
+    //            flags |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+    //        }
+    //    }
+    //    else
+    //        flags |= VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+    //}
 
     VkDescriptorSetLayoutBindingFlagsCreateInfo descriptor_set_layout_binding_flags_create_info{};
     descriptor_set_layout_binding_flags_create_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;

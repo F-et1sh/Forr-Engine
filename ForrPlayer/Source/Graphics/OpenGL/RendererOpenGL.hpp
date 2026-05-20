@@ -31,8 +31,7 @@ namespace fe {
         void SetClearColor(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
 
         void BeginFrame() override;
-        void Draw(const DrawCommand& command) override;
-        void EndFrame() override;
+        void EndFrame(const RenderPacket& render_packet) override;
 
         void InitializeGPUResources() override;
 
@@ -52,8 +51,7 @@ namespace fe {
 
         Camera m_Camera{}; // temp
 
-        SceneData m_SceneData{};
-        fe::gl::Buffer  m_SceneSSBO{};
+        fe::gl::Buffer m_SceneSSBO{};
 
         GPUHandle<resource::Material>    m_CurrentMaterial{};
         GPUHandle<resource::Model::Mesh> m_CurrentMesh{};

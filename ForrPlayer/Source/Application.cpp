@@ -9,6 +9,8 @@ namespace fe {
     static std::unique_ptr<RenderSystem> m_RenderSystem{}; // temp
     static entt::registry                m_Registry{};     // temp
 
+    static RenderPacket m_RenderPacket{}; // temp
+
 } // namespace fe
 
 fe::Application::Application(const ApplicationDesc& desc) {
@@ -51,17 +53,19 @@ fe::Application::Application(const ApplicationDesc& desc) {
 
     m_Renderer->InitializeGPUResources();
 
-    m_RenderSystem = std::make_unique<RenderSystem>(*m_ResourceManager, m_Registry, *m_Renderer);
+    m_RenderSystem = std::make_unique<RenderSystem>(*m_ResourceManager, m_Registry, *m_Renderer, m_RenderPacket);
 }
 
 void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
+        m_RenderPacket.draw_commands.clear();
+        m_RenderPacket.object_transforms.clear();
+
         m_Renderer->BeginFrame();
 
         m_RenderSystem->Update();
-        m_RenderSystem->PushToRenderer();
 
-        m_Renderer->EndFrame();
+        m_Renderer->EndFrame(m_RenderPacket);
 
         m_PrimaryWindow->PollEvents();
     }

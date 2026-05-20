@@ -38,5 +38,8 @@ namespace fe {
 
         bool operator==(GPUHandle<T> other) const { return index == other.index; }
         bool operator!=(GPUHandle<T> other) const { return index != other.index; }
+
+        bool operator<(GPUHandle<T> other) const { return index < other.index; }
+        bool operator>(GPUHandle<T> other) const { return index > other.index; }
     };
 } // namespace fe
