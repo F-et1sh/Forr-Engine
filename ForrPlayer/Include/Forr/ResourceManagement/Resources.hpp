@@ -99,7 +99,7 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Texture)
     };
 
-    struct FORR_API Shader {
+    struct FORR_API Shader { // TODO : provide names for block members to use it in GUI
     public:
         enum class Type {
             VERTEX,

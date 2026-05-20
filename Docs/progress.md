@@ -2,7 +2,6 @@
 
 ## 20.05.2026
 ### Goal
-    finish providing bindless rendering
     provide RenderPacket
     provide normals pushing to shader ( it's in gLTF )
     provide shader with lighting
