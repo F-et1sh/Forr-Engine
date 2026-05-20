@@ -19,19 +19,19 @@ struct fe::RenderSystem::Impl {
     ResourceManager&                       m_ResourceManager;
     std::reference_wrapper<entt::registry> m_Registry; // testing std::reference_wrapper<>
     std::reference_wrapper<IRenderer>      m_Renderer; // testing std::reference_wrapper<>
+    RenderPacket&                          m_RenderPacket;
 
-    std::vector<DrawCommand>     m_DrawCommands{};
     std::vector<RenderMeshEntry> m_RenderMeshEntries{};
 
     std::unordered_map<fe::pointer<resource::Model>, std::vector<RenderMeshEntry>> m_Table{};
 
-    Impl(ResourceManager& resource_manager, entt::registry& registry, IRenderer& renderer)
-        : m_ResourceManager(resource_manager), m_Registry(registry), m_Renderer(renderer) {}
+    Impl(ResourceManager& resource_manager, entt::registry& registry, IRenderer& renderer, RenderPacket& render_packet)
+        : m_ResourceManager(resource_manager), m_Registry(registry), m_Renderer(renderer), m_RenderPacket(render_packet) {}
     ~Impl() = default;
 };
 
-fe::RenderSystem::RenderSystem(ResourceManager& resource_manager, entt::registry& registry, IRenderer& renderer) {
-    m_Impl = std::make_unique<Impl>(resource_manager, registry, renderer);
+fe::RenderSystem::RenderSystem(ResourceManager& resource_manager, entt::registry& registry, IRenderer& renderer, RenderPacket& render_packet) {
+    m_Impl = std::make_unique<Impl>(resource_manager, registry, renderer, render_packet);
 }
 
 fe::RenderSystem::~RenderSystem() = default;
@@ -39,20 +39,15 @@ fe::RenderSystem::~RenderSystem() = default;
 void fe::RenderSystem::Update() {
     this->handleMeshComponents();
     this->handleLightComponents();
-}
 
-void fe::RenderSystem::PushToRenderer() {
-    for (const auto& draw_command : m_Impl->m_DrawCommands) {
-        m_Impl->m_Renderer.get().Draw(draw_command);
-    }
+    std::ranges::sort(m_Impl->m_RenderPacket.draw_commands, [](const DrawCommand& a, const DrawCommand& b) {
+        if (a.material_handle != b.material_handle)
+            return a.material_handle < b.material_handle;
+        return a.mesh_handle < b.mesh_handle;
+    });
 
-    { // reset
-        std::size_t size = m_Impl->m_DrawCommands.size();
-        m_Impl->m_DrawCommands.clear();
-        m_Impl->m_DrawCommands.reserve(size);
-
-        m_Impl->m_CurrentInstanceIndex = 0;
-    }
+    // reset
+    m_Impl->m_CurrentInstanceIndex = 0;
 }
 
 void fe::RenderSystem::handleMeshComponents() {
@@ -105,21 +100,19 @@ void fe::RenderSystem::addEntry(const MeshComponent& mesh_component) {
 
 void fe::RenderSystem::addToDrawList(fe::pointer<resource::Model> model_ptr, const glm::mat4& transform) {
     auto it = m_Impl->m_Table.find(model_ptr);
-    if (it == m_Impl->m_Table.end()) {
-        fe::logging::error("Cannot draw the model without RenderMeshEntry");
-        return;
-    }
+    if (it == m_Impl->m_Table.end()) return;
+
+    m_Impl->m_RenderPacket.object_transforms.push_back(transform);
 
     for (const auto& entry : it->second) {
-        auto& draw_command = m_Impl->m_DrawCommands.emplace_back();
+        auto& draw_command = m_Impl->m_RenderPacket.draw_commands.emplace_back();
 
         draw_command.instance_index  = m_Impl->m_CurrentInstanceIndex;
         draw_command.index_count     = entry.index_count;
         draw_command.index_offset    = entry.index_offset;
         draw_command.material_handle = entry.material_handle;
         draw_command.mesh_handle     = entry.mesh_handle;
-        draw_command.sort_key        = static_cast<uint64_t>(entry.sort_key) << 0; // TODO : sort by how far the object is
-        draw_command.transform       = transform;
+        draw_command.sort_key        = entry.sort_key;
     }
 
     m_Impl->m_CurrentInstanceIndex++;

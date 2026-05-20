@@ -43,8 +43,7 @@ namespace fe {
         void SetClearColor(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
 
         void BeginFrame() override;
-        void Draw(const DrawCommand& command) override;
-        void EndFrame() override;
+        void EndFrame(const RenderPacket& render_packet) override;
 
         void InitializeGPUResources() override;
 
@@ -134,7 +133,7 @@ namespace fe {
     private: // Others
         void configureCamera();
         void resizeWindow();
-        void handleRenderQueue();
+        void handleRenderQueue(const RenderPacket& render_packet);
 
     private:
         struct FrameData {
@@ -174,9 +173,7 @@ namespace fe {
         std::array<FrameData, VulkanContext::max_concurrent_frames> m_FrameData{};
         std::vector<fe::vk::Semaphore>                              m_RenderCompleteSemaphores{};
 
-        SceneData                        m_SceneData{};
         Camera                           m_Camera{};
-        std::vector<DrawCommand>         m_RenderQueue{};
         GPUHandle<resource::Material>    m_CurrentMaterial{};
         GPUHandle<resource::Model::Mesh> m_CurrentMesh{};
 

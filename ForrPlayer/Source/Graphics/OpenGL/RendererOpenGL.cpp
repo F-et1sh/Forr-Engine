@@ -66,28 +66,9 @@ void fe::RendererOpenGL::SetClearColor(float red, float green, float blue, float
 
 void fe::RendererOpenGL::BeginFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    { // temp
-        if (glfwGetKey(m_GLFWwindow, GLFW_KEY_A))
-            m_Camera.translate(glm::vec3(0.1f, 0.0f, 0.0f));
-        else if (glfwGetKey(m_GLFWwindow, GLFW_KEY_D))
-            m_Camera.translate(glm::vec3(-0.1f, 0.0f, 0.0f));
-
-        if (glfwGetKey(m_GLFWwindow, GLFW_KEY_W))
-            m_Camera.translate(glm::vec3(0.0f, 0.0f, 0.1f));
-        else if (glfwGetKey(m_GLFWwindow, GLFW_KEY_S))
-            m_Camera.translate(glm::vec3(0.0f, 0.0f, -0.1f));
-    }
-
-    m_SceneData.projection_matrix = m_Camera.getPerspectiveMatrix();
-    m_SceneData.view_matrix       = m_Camera.getViewMatrix();
 }
 
-void fe::RendererOpenGL::Draw(const DrawCommand& command) {
-    m_RenderQueue.emplace_back(command);
-}
-
-void fe::RendererOpenGL::EndFrame() {
+void fe::RendererOpenGL::EndFrame(const RenderPacket& render_packet) {
     this->handleRenderQueue();
 
     glBindVertexArray(0);
@@ -124,49 +105,49 @@ void fe::RendererOpenGL::InitializeGPUResources() {
 }
 
 void fe::RendererOpenGL::createSceneDataSSBO() {
-    GLuint opengl_scene_data_ssbo{};
+    /*GLuint opengl_scene_data_ssbo{};
 
     glCreateBuffers(1, &opengl_scene_data_ssbo);
     glNamedBufferStorage(opengl_scene_data_ssbo, sizeof(m_SceneData), &m_SceneData, GL_DYNAMIC_STORAGE_BIT);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, opengl_scene_data_ssbo);
 
-    m_SceneSSBO.attach(opengl_scene_data_ssbo);
+    m_SceneSSBO.attach(opengl_scene_data_ssbo);*/
 }
 
 void fe::RendererOpenGL::handleRenderQueue() {
-    // soft draw commands
-    std::ranges::sort(m_RenderQueue, [](const DrawCommand& left, const DrawCommand& right) -> bool {
-        return left.sort_key < right.sort_key;
-    });
+    //// soft draw commands
+    //std::ranges::sort(m_RenderQueue, [](const DrawCommand& left, const DrawCommand& right) -> bool {
+    //    return left.sort_key < right.sort_key;
+    //});
 
-    // pass SSBO
-    for (const auto& draw_command : m_RenderQueue)
-        m_SceneData.model_matrices[draw_command.instance_index] = draw_command.transform;
-    glNamedBufferSubData(m_SceneSSBO, 0, sizeof(m_SceneData), &m_SceneData);
+    //// pass SSBO
+    //for (const auto& draw_command : m_RenderQueue)
+    //    m_SceneData.model_matrices[draw_command.instance_index] = draw_command.transform;
+    //glNamedBufferSubData(m_SceneSSBO, 0, sizeof(m_SceneData), &m_SceneData);
 
-    // draw
-    for (const auto& draw_command : m_RenderQueue) {
-        const auto& opengl_material       = m_OpenGLResourceManager.GetResource(draw_command.material_handle);
-        const auto& opengl_shader_program = m_OpenGLResourceManager.GetResource(opengl_material.shader_program_handle);
+    //// draw
+    //for (const auto& draw_command : m_RenderQueue) {
+    //    const auto& opengl_material       = m_OpenGLResourceManager.GetResource(draw_command.material_handle);
+    //    const auto& opengl_shader_program = m_OpenGLResourceManager.GetResource(opengl_material.shader_program_handle);
 
-        // bind shader ( material )
-        if (draw_command.material_handle != m_CurrentMaterial) {
-            m_CurrentMaterial = draw_command.material_handle;
+    //    // bind shader ( material )
+    //    if (draw_command.material_handle != m_CurrentMaterial) {
+    //        m_CurrentMaterial = draw_command.material_handle;
 
-            glUseProgram(opengl_shader_program.shader_program);
-        }
+    //        glUseProgram(opengl_shader_program.shader_program);
+    //    }
 
-        // bind vertex buffer
-        if (draw_command.mesh_handle != m_CurrentMesh) {
-            m_CurrentMesh = draw_command.mesh_handle;
+    //    // bind vertex buffer
+    //    if (draw_command.mesh_handle != m_CurrentMesh) {
+    //        m_CurrentMesh = draw_command.mesh_handle;
 
-            const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(draw_command.mesh_handle);
-            glBindVertexArray(opengl_mesh.vao);
-        }
+    //        const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(draw_command.mesh_handle);
+    //        glBindVertexArray(opengl_mesh.vao);
+    //    }
 
-        auto location = glGetUniformLocation(opengl_shader_program.shader_program, "instance_index");
-        glUniform1i(location, draw_command.instance_index);
+    //    auto location = glGetUniformLocation(opengl_shader_program.shader_program, "instance_index");
+    //    glUniform1i(location, draw_command.instance_index);
 
-        glDrawElements(GL_TRIANGLES, draw_command.index_count, GL_UNSIGNED_INT, (void*) draw_command.index_offset);
-    }
+    //    glDrawElements(GL_TRIANGLES, draw_command.index_count, GL_UNSIGNED_INT, (void*) draw_command.index_offset);
+    //}
 }

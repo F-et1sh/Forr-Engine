@@ -9,7 +9,7 @@
     ( do not create GPU resources if they're already created --> InitializeGPUResources() )
 
 ### Done
-    -
+    RenderPacket provided
 
 ### Problem
     -

@@ -38,6 +38,20 @@ namespace fe {
         ~Vertex() = default;
     };
 
+    struct GPULight {
+        //uint32_t type{};
+
+        //float range{};
+        //float inner_cone{};
+        //float outer_cone{};
+
+        glm::vec4 position{};
+        glm::vec4 direction{};
+        glm::vec4 color_intensity{};
+    };
+
+    constexpr static inline std::size_t MAX_LIGHTS_COUNT = 1024;
+
     using Index = uint32_t; // convert all to uint32_t ( at least for now )
 
     //#pragma pack(pop) // pack(push, 1) // disabled for now
