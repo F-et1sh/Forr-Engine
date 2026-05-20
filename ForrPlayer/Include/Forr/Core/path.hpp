@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -33,40 +33,40 @@ namespace fe {
             return m_AssetsPath;
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getEngineAssetsPath() const noexcept {
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getEngineAssetsPath() const {
             return m_AssetsPath / "Engine";
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getUserAssetsPath() const noexcept {
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getUserAssetsPath() const {
             return m_AssetsPath / "User";
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getSharedAssetsPath() const noexcept {
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getSharedAssetsPath() const {
             return m_AssetsPath / "Shared";
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getEngineResourcesPath() const noexcept {
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getEngineResourcesPath() const {
             return this->getEngineAssetsPath() / L"Resources";
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getModelsPath() const noexcept {
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getModelsPath() const {
             return this->getEngineResourcesPath() / L"Models";
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getShadersPath() const noexcept {
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getShadersPath() const {
             return this->getEngineResourcesPath() / L"Shaders";
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getDefaultShadersPath() const noexcept {
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getDefaultShadersPath() const {
             return this->getShadersPath() / L"Default";
         }
 
         //
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getMetadataExtension() const noexcept { return L".forr_meta"; }
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getMaterialExtension() const noexcept { return L".forr_material"; }
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getVertexShaderExtension() const noexcept { return L".vert"; }
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getFragmentShaderExtension() const noexcept { return L".frag"; }
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getMetadataExtension() const { return L".forr_meta"; }
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getMaterialExtension() const { return L".forr_material"; }
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getVertexShaderExtension() const { return L".vert"; }
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getFragmentShaderExtension() const { return L".frag"; }
 
     private:
         PathManager()  = default;
