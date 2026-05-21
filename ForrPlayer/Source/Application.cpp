@@ -54,10 +54,22 @@ fe::Application::Application(const ApplicationDesc& desc) {
     m_Renderer->InitializeGPUResources();
 
     m_RenderSystem = std::make_unique<RenderSystem>(*m_ResourceManager, m_Registry, *m_Renderer, m_RenderPacket);
+
+    auto& light0    = m_RenderPacket.lights.emplace_back();
+    light0.position = glm::vec4(5, 0, 2, 1);
+    auto& light1    = m_RenderPacket.lights.emplace_back();
+    light1.position = glm::vec4(-5, 0, -2, 1);
 }
+
+size_t t{};
 
 void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
+        for (std::size_t i = 0; i < m_RenderPacket.lights.size(); i++) {
+            auto& light = m_RenderPacket.lights[i];
+            light.position.x = glm::sin(t * 0.01f) * 15;
+        }
+
         m_RenderPacket.draw_commands.clear();
         m_RenderPacket.object_transforms.clear();
 
@@ -68,6 +80,8 @@ void fe::Application::Run() {
         m_Renderer->EndFrame(m_RenderPacket);
 
         m_PrimaryWindow->PollEvents();
+
+        t++;
     }
 }
 

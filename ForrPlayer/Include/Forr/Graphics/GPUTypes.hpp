@@ -50,8 +50,6 @@ namespace fe {
         glm::vec4 color_intensity{};
     };
 
-    constexpr static inline std::size_t MAX_LIGHTS_COUNT = 1024;
-
     using Index = uint32_t; // convert all to uint32_t ( at least for now )
 
     //#pragma pack(pop) // pack(push, 1) // disabled for now

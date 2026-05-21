@@ -98,7 +98,7 @@ namespace fe {
 
         // Create Vulkan storage buffer :
         // - create storage buffer
-        void InitializeStorageBuffer();
+        void InitializeStorageBuffers();
 
         // Create Vulkan descriptor objects
         // - create descriptor set layout
@@ -143,8 +143,8 @@ namespace fe {
             fe::vk::Fence     wait_fence{};
             fe::vk::Semaphore present_complete_semaphore{};
 
-            VulkanStorageBuffer storage_buffer{};
-
+            VulkanShaderBuffer storage_buffer{};
+            
             FrameData()  = default;
             ~FrameData() = default;
         };
@@ -167,8 +167,8 @@ namespace fe {
         std::vector<fe::vk::Framebuffer> m_Framebuffers{};
         VulkanImage                      m_DepthStencil{};
 
-        fe::vk::CommandPool         m_CommandPool{};
-        fe::vk::DescriptorPool      m_DescriptorPool{};
+        fe::vk::CommandPool    m_CommandPool{};
+        fe::vk::DescriptorPool m_DescriptorPool{};
 
         std::array<FrameData, VulkanContext::max_concurrent_frames> m_FrameData{};
         std::vector<fe::vk::Semaphore>                              m_RenderCompleteSemaphores{};
