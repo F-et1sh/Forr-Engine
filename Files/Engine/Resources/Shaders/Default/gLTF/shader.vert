@@ -1,6 +1,8 @@
 ﻿#version 450 core
 layout (location = 0) in vec3 a_Position;
 
+layout(location = 0) out vec4 i_Position;
+
 layout (std430, set = 0, binding = 0) readonly buffer SceneData {
 mat4 projection_matrix;
 mat4 view_matrix;
@@ -19,6 +21,7 @@ void main() {
 #ifdef FORR_USE_OPENGL
 	gl_Position = scene_data.projection_matrix * scene_data.view_matrix * scene_data.model_matrices[instance_index] * vec4(a_Position.xyz, 1.0f);
 #else
-	gl_Position = scene_data.projection_matrix * scene_data.view_matrix * scene_data.model_matrices[constants.instance_index] * vec4(a_Position.xyz, 1.0f);
+	i_Position = scene_data.model_matrices[constants.instance_index] * vec4(a_Position.xyz, 1.0f);
+	gl_Position = scene_data.projection_matrix * scene_data.view_matrix * i_Position;
 #endif
 }

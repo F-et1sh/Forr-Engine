@@ -48,6 +48,7 @@ namespace fe {
     struct RenderPacket {
         std::vector<glm::mat4>   object_transforms{}; 
         std::vector<DrawCommand> draw_commands{};
+        std::vector<GPULight>    lights{};
 
         glm::mat4 projection_matrix{};
         glm::mat4 view_matrix{};

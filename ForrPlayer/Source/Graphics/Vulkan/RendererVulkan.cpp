@@ -37,7 +37,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     this->InitializeDepthStencil();
     this->InitializeRenderPass();
     this->InitializeFramebuffers();
-    this->InitializeStorageBuffer();
+    this->InitializeStorageBuffers();
     this->InitializeDescriptors();
 }
 
@@ -226,20 +226,29 @@ void fe::RendererVulkan::handleRenderQueue(const RenderPacket& render_packet) {
             m_Camera.translate(glm::vec3(0.0f, 0.0f, speed));
         else if (glfwGetKey(glfw_window, GLFW_KEY_S))
             m_Camera.translate(glm::vec3(0.0f, 0.0f, -speed));
-    }
 
-    auto* gpu_ptr = static_cast<uint8_t*>(m_FrameData[m_CurrentFrame].storage_buffer.mapped);
+        auto* gpu_ptr = static_cast<uint8_t*>(m_FrameData[m_CurrentFrame].storage_buffer.bindings[0].mapped);
 
-    struct GPUCamera {
-        glm::mat4 p;
-        glm::mat4 v;
-    } cam{ m_Camera.getPerspectiveMatrix(), m_Camera.getViewMatrix() };
-    memcpy(gpu_ptr, &cam, sizeof(cam));
-    gpu_ptr += sizeof(cam);
+        struct GPUCamera {
+            glm::mat4 p;
+            glm::mat4 v;
+        } cam{ m_Camera.getPerspectiveMatrix(), m_Camera.getViewMatrix() };
+        memcpy(gpu_ptr, &cam, sizeof(cam));
+        gpu_ptr += sizeof(cam);
 
-    if (!render_packet.object_transforms.empty()) {
-        size_t bytes_to_copy = render_packet.object_transforms.size() * sizeof(glm::mat4);
-        memcpy(gpu_ptr, render_packet.object_transforms.data(), bytes_to_copy);
+        if (!render_packet.object_transforms.empty()) {
+            size_t bytes_to_copy = render_packet.object_transforms.size() * sizeof(glm::mat4);
+            memcpy(gpu_ptr, render_packet.object_transforms.data(), bytes_to_copy);
+        }
+
+        auto*    lights_ptr   = static_cast<uint8_t*>(m_FrameData[m_CurrentFrame].storage_buffer.bindings[1].mapped);
+        uint32_t lights_count = render_packet.lights.size();
+        memcpy(lights_ptr, &lights_count, sizeof(lights_count));
+        lights_ptr += 16;
+        if (!render_packet.lights.empty()) {
+            size_t bytes_to_copy = render_packet.lights.size() * sizeof(GPULight);
+            memcpy(lights_ptr, render_packet.lights.data(), bytes_to_copy);
+        }
     }
 
     const VkCommandBuffer command_buffer = m_FrameData[m_CurrentFrame].command_buffer;
@@ -526,20 +535,20 @@ void fe::RendererVulkan::InitializeFramebuffers() {
     }
 }
 
-void fe::RendererVulkan::InitializeStorageBuffer() {
-    size_t fixed_size = sizeof(glm::mat4) * 2;
-    size_t array_size = MAX_LIGHTS_COUNT * sizeof(GPULight);
-    size_t total_size = fixed_size + array_size;
+void fe::RendererVulkan::InitializeStorageBuffers() {
+    constexpr static size_t binding0_size = sizeof(glm::mat4) * 2 + sizeof(glm::mat4) * 100'000;
+    constexpr static size_t binding1_size = sizeof(GPULight) * 100'000;
 
-    VkBufferCreateInfo buffer_create_info{};
-    buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    buffer_create_info.size  = total_size;
-    buffer_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    // TODO : move into a helper-function
+    auto initialize_binding = [&](std::size_t frame_data_i, std::size_t binding_i, std::size_t buffer_size) {
+        VkBufferCreateInfo buffer_create_info{};
+        buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_create_info.size  = buffer_size;
+        buffer_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 
-    for (size_t i = 0; i < VulkanContext::max_concurrent_frames; i++) {
         VkBuffer buffer_raw{};
         VK_CHECK_RESULT(vkCreateBuffer(m_Device, &buffer_create_info, nullptr, &buffer_raw));
-        m_FrameData[i].storage_buffer.buffer.attach(m_Device, buffer_raw);
+        m_FrameData[frame_data_i].storage_buffer.bindings[binding_i].buffer.attach(m_Device, buffer_raw);
 
         VkMemoryRequirements memory_requirements{};
         vkGetBufferMemoryRequirements(m_Device, buffer_raw, &memory_requirements);
@@ -551,13 +560,20 @@ void fe::RendererVulkan::InitializeStorageBuffer() {
 
         VkDeviceMemory memory_raw{};
         VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memory_allocate_info, nullptr, &memory_raw));
-        m_FrameData[i].storage_buffer.memory.attach(m_Device, memory_raw);
+        m_FrameData[frame_data_i].storage_buffer.bindings[binding_i].memory.attach(m_Device, memory_raw);
 
         constexpr static VkDeviceSize     offset = 0;
         constexpr static VkMemoryMapFlags flags  = 0;
 
         VK_CHECK_RESULT(vkBindBufferMemory(m_Device, buffer_raw, memory_raw, offset));
-        VK_CHECK_RESULT(vkMapMemory(m_Device, memory_raw, offset, VK_WHOLE_SIZE, flags, (void**) &m_FrameData[i].storage_buffer.mapped));
+        VK_CHECK_RESULT(vkMapMemory(m_Device, memory_raw, offset, VK_WHOLE_SIZE, flags, (void**) &m_FrameData[frame_data_i].storage_buffer.bindings[binding_i].mapped));
+    };
+
+    for (size_t i = 0; i < VulkanContext::max_concurrent_frames; i++) {
+        m_FrameData[i].storage_buffer.bindings.resize(2);
+
+        initialize_binding(i, 0, binding0_size);
+        initialize_binding(i, 1, binding1_size);
     }
 }
 
@@ -916,25 +932,34 @@ void fe::RendererVulkan::VKSetupQueues() {
 }
 
 void fe::RendererVulkan::VKSetupDescriptorSetLayout() {
-    VkDescriptorSetLayoutBinding binding{};
-    binding.binding         = 0;
-    binding.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    binding.descriptorCount = 1;
-    binding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    std::vector<VkDescriptorSetLayoutBinding> bindings(2);
+    std::vector<VkDescriptorBindingFlags>     binding_flags(2);
 
-    VkDescriptorBindingFlags binding_flags = VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+    bindings[0].binding         = 0;
+    bindings[0].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    bindings[0].descriptorCount = 1;
+    bindings[0].stageFlags      = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    VkDescriptorSetLayoutBindingFlagsCreateInfo descriptor_set_layout_binding_flags_create_info{};
-    descriptor_set_layout_binding_flags_create_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-    descriptor_set_layout_binding_flags_create_info.bindingCount  = 1;
-    descriptor_set_layout_binding_flags_create_info.pBindingFlags = &binding_flags;
+    binding_flags[0] = VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+
+    bindings[1].binding         = 1;
+    bindings[1].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    bindings[1].descriptorCount = 1;
+    bindings[1].stageFlags      = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    binding_flags[1] = VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+
+    VkDescriptorSetLayoutBindingFlagsCreateInfo binding_flags_create_info{};
+    binding_flags_create_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+    binding_flags_create_info.bindingCount  = binding_flags.size();
+    binding_flags_create_info.pBindingFlags = binding_flags.data();
 
     VkDescriptorSetLayoutCreateInfo descriptor_layout_create_info{};
     descriptor_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     descriptor_layout_create_info.flags        = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
-    descriptor_layout_create_info.bindingCount = 1;
-    descriptor_layout_create_info.pBindings    = &binding;
-    descriptor_layout_create_info.pNext        = &descriptor_set_layout_binding_flags_create_info;
+    descriptor_layout_create_info.bindingCount = bindings.size();
+    descriptor_layout_create_info.pBindings    = bindings.data();
+    descriptor_layout_create_info.pNext        = &binding_flags_create_info;
 
     // === SETUP CONTEXT ===
     VkDescriptorSetLayout descriptor_set_layout_raw{};
@@ -975,24 +1000,29 @@ void fe::RendererVulkan::VKSetupDescriptorSets() {
         descriptor_set_allocate_info.descriptorSetCount = 1;
         descriptor_set_allocate_info.pSetLayouts        = &descriptor_set_layout_raw;
         descriptor_set_allocate_info.pNext              = nullptr;
-        ;
 
         VK_CHECK_RESULT(vkAllocateDescriptorSets(m_Device, &descriptor_set_allocate_info, &m_FrameData[i].storage_buffer.descriptor_set));
 
-        VkDescriptorBufferInfo descriptor_buffer_info{};
-        descriptor_buffer_info.buffer = m_FrameData[i].storage_buffer.buffer;
-        descriptor_buffer_info.offset = 0;
-        descriptor_buffer_info.range  = VK_WHOLE_SIZE;
+        std::vector<VkWriteDescriptorSet>   write_descriptor_sets(2);
+        std::vector<VkDescriptorBufferInfo> descriptor_buffer_infos(2);
 
-        VkWriteDescriptorSet write_descriptor_set{};
-        write_descriptor_set.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        write_descriptor_set.dstSet          = m_FrameData[i].storage_buffer.descriptor_set;
-        write_descriptor_set.dstBinding      = 0;
-        write_descriptor_set.descriptorCount = 1;
-        write_descriptor_set.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        write_descriptor_set.pBufferInfo     = &descriptor_buffer_info;
+        auto setup_write_descriptor_set = [&](std::size_t binding_i) {
+            descriptor_buffer_infos[binding_i].buffer = m_FrameData[i].storage_buffer.bindings[binding_i].buffer;
+            descriptor_buffer_infos[binding_i].offset = 0;
+            descriptor_buffer_infos[binding_i].range  = VK_WHOLE_SIZE;
 
-        vkUpdateDescriptorSets(m_Device, 1, &write_descriptor_set, 0, nullptr);
+            write_descriptor_sets[binding_i].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            write_descriptor_sets[binding_i].dstSet          = m_FrameData[i].storage_buffer.descriptor_set;
+            write_descriptor_sets[binding_i].dstBinding      = binding_i;
+            write_descriptor_sets[binding_i].descriptorCount = 1;
+            write_descriptor_sets[binding_i].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            write_descriptor_sets[binding_i].pBufferInfo     = &descriptor_buffer_infos[binding_i];
+        };
+
+        setup_write_descriptor_set(0);
+        setup_write_descriptor_set(1);
+
+        vkUpdateDescriptorSets(m_Device, write_descriptor_sets.size(), write_descriptor_sets.data(), 0, nullptr);
     }
 }
 

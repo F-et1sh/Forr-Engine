@@ -1,5 +1,19 @@
 ﻿# Forr-Engine Devlog
 
+## 21.05.2026
+### Goal
+    provide normals pushing to shader ( it's in gLTF )
+    provide shader with lighting
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    VulkanUniformBuffer, VulkanStorageBuffer --> VulkanShaderBuffer
+    light data pushing provided
+
+### Problem
+    -
+
 ## 20.05.2026
 ### Goal
     provide RenderPacket

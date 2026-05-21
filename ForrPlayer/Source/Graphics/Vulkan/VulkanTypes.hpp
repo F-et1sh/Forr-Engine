@@ -65,33 +65,27 @@ namespace fe {
         FORR_CLASS_MOVABLE(VulkanIndexBuffer)
     };
 
-    struct VulkanUniformBuffer {
-        fe::vk::DeviceMemory memory{};
-        fe::vk::Buffer       buffer{};
+    struct VulkanShaderBuffer {
+        struct Binding {
+            fe::vk::DeviceMemory memory{};
+            fe::vk::Buffer       buffer{};
+            uint8_t*             mapped{};
 
-        VkDescriptorSet descriptor_set{};
-        uint8_t*        mapped{};
+            Binding()  = default;
+            ~Binding() = default;
 
-        VulkanUniformBuffer()  = default;
-        ~VulkanUniformBuffer() = default;
+            FORR_CLASS_NONCOPYABLE(Binding)
+            FORR_CLASS_MOVABLE(Binding)
+        };
 
-        FORR_CLASS_NONCOPYABLE(VulkanUniformBuffer)
-        FORR_CLASS_MOVABLE(VulkanUniformBuffer)
-    };
+        VkDescriptorSet      descriptor_set{};
+        std::vector<Binding> bindings{};
 
-    // there is no difference between 'VulkanUniformBuffer' and this structure
-    struct VulkanStorageBuffer {
-        fe::vk::DeviceMemory memory{};
-        fe::vk::Buffer       buffer{};
+        VulkanShaderBuffer()  = default;
+        ~VulkanShaderBuffer() = default;
 
-        VkDescriptorSet descriptor_set{};
-        uint8_t*        mapped{};
-
-        VulkanStorageBuffer()  = default;
-        ~VulkanStorageBuffer() = default;
-
-        FORR_CLASS_NONCOPYABLE(VulkanStorageBuffer)
-        FORR_CLASS_MOVABLE(VulkanStorageBuffer)
+        FORR_CLASS_NONCOPYABLE(VulkanShaderBuffer)
+        FORR_CLASS_MOVABLE(VulkanShaderBuffer)
     };
 
     struct VulkanTexture { // TODO : provide textures
