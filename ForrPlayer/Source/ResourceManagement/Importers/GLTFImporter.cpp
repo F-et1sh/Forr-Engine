@@ -173,6 +173,11 @@ void fe::GLTFImporter::loadTextures(GLTFImportContext& context) {
 }
 
 void fe::GLTFImporter::loadMaterials(GLTFImportContext& context) {
+    if (context.model.materials.empty()) {
+        context.materials.push_back(context.storage.GetContext().default_gltf_material_ptr); // TODO : provide default fallback material
+        return;
+    }
+    
     context.materials.resize(context.model.materials.size());
 
     for (size_t i = 0; i < context.model.materials.size(); i++) {

@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -75,7 +75,7 @@ void fe::VulkanSwapchain::SetupQueueNodeIndex() {
     m_QueueNodeIndex = m_Context.queue_family_indices.graphics;
 }
 
-void fe::VulkanSwapchain::CreateSwapchain() {
+bool fe::VulkanSwapchain::CreateSwapchain() {
     VkSwapchainKHR old_swapchain = m_Swapchain;
 
     VkSurfaceCapabilitiesKHR surface_capabilities{};
@@ -95,16 +95,8 @@ void fe::VulkanSwapchain::CreateSwapchain() {
     }
     else {
         swapchain_extent = surface_capabilities.currentExtent;
-
-        if (swapchain_extent.width != m_PrimaryWindow.getWidth() ||
-            swapchain_extent.height != m_PrimaryWindow.getHeight()) {
-
-            fe::logging::warning("Problem with resolution. Swapchain extent is %ix%i but window extent is %ix%i",
-                                 swapchain_extent.width,
-                                 swapchain_extent.height,
-                                 m_PrimaryWindow.getWidth(),
-                                 m_PrimaryWindow.getHeight());
-        }
+        m_PrimaryWindow.setResolution(swapchain_extent.width, swapchain_extent.height);
+        return false;
     }
 
     m_Extent = swapchain_extent; // set swapchain extent
@@ -236,4 +228,6 @@ void fe::VulkanSwapchain::CreateSwapchain() {
         VK_CHECK_RESULT(vkCreateImageView(m_Context.device, &color_attachment_view, nullptr, &image_views[i]));
         m_ImageViews[i].attach(m_Context.device, image_views[i]);
     }
+
+    return true;
 }
