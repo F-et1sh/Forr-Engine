@@ -1,5 +1,18 @@
 ﻿# Forr-Engine Devlog
 
+## 22.05.2026
+### Goal
+    provide normals pushing to shader ( it's in gLTF )
+    provide shader with lighting
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    Suzanne added. Trying to fix window resizing
+
+### Problem
+    -
+
 ## 21.05.2026
 ### Goal
     provide normals pushing to shader ( it's in gLTF )

@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -32,7 +32,7 @@ namespace fe {
         void CreateSurface();
         void SetupSurfaceColorFormat();
         void SetupQueueNodeIndex();
-        void CreateSwapchain();
+        bool CreateSwapchain();
 
         FORR_NODISCARD const std::vector<fe::vk::ImageView>& getImageViews() const { return m_ImageViews; }
 

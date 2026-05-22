@@ -195,7 +195,7 @@ void fe::RendererVulkan::configureCamera() {
 void fe::RendererVulkan::resizeWindow() {
     vkDeviceWaitIdle(m_Device);
 
-    m_Swapchain.CreateSwapchain();
+    if (!m_Swapchain.CreateSwapchain()) return;
 
     this->InitializeDepthStencil();
     this->InitializeFramebuffers();
