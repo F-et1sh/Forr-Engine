@@ -195,7 +195,7 @@ void fe::RendererVulkan::configureCamera() {
 void fe::RendererVulkan::resizeWindow() {
     vkDeviceWaitIdle(m_Device);
 
-    if (!m_Swapchain.CreateSwapchain()) return;
+    m_Swapchain.CreateSwapchain();
 
     this->InitializeDepthStencil();
     this->InitializeFramebuffers();
@@ -215,7 +215,7 @@ void fe::RendererVulkan::handleRenderQueue(const RenderPacket& render_packet) {
     { // temp
         auto glfw_window = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
 
-        float speed = 0.1f;
+        float speed = 0.025f;
 
         if (glfwGetKey(glfw_window, GLFW_KEY_A))
             m_Camera.translate(glm::vec3(speed, 0.0f, 0.0f));
