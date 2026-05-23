@@ -1,5 +1,18 @@
 ﻿# Forr-Engine Devlog
 
+## 23.05.2026
+### Goal
+    provide vertex normals pushing to the shader ( it's in gLTF )
+    provide shader with lighting
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 22.05.2026
 ### Goal
     provide normals pushing to shader ( it's in gLTF )
