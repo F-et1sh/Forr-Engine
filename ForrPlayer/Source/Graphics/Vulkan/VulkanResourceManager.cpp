@@ -188,7 +188,7 @@ fe::GPUHandle<Model::Mesh> fe::VulkanResourceManager::createMesh(resource::Model
 
     /// submit
 
-    // there is no RAII because it is going to be freed by freeing m_CommandPool
+    // there is no RAII because it is going to be freed by freeing fe::RendererVulkan::m_CommandPool
     VkCommandBuffer copy_command_buffer{};
 
     VkCommandBufferAllocateInfo command_buffer_allocate_info{};
@@ -381,11 +381,16 @@ VkPipeline fe::VulkanResourceManager::createPipeline(VkPipelineLayout pipeline_l
     vertex_input_binding_description.stride    = sizeof(Vertex);
     vertex_input_binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-    std::array<VkVertexInputAttributeDescription, 1> vertex_input_attributs{};
-    vertex_input_attributs[0].binding  = 0;
+    std::array<VkVertexInputAttributeDescription, 2> vertex_input_attributs{};
     vertex_input_attributs[0].location = 0;
+    vertex_input_attributs[0].binding  = 0;
     vertex_input_attributs[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
     vertex_input_attributs[0].offset   = offsetof(Vertex, position);
+
+    vertex_input_attributs[1].location = 1;
+    vertex_input_attributs[1].binding  = 0;
+    vertex_input_attributs[1].format   = VK_FORMAT_R32G32B32_SFLOAT;
+    vertex_input_attributs[1].offset   = offsetof(Vertex, normal);
 
     VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info{};
     vertex_input_state_create_info.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

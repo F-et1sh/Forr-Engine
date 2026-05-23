@@ -2,7 +2,7 @@
 layout(location = 0) out vec4 fragColor;
 
 layout(location = 0) in vec4 i_Position;
-layout(location = 1) in vec4 i_Normal;
+layout(location = 1) in vec3 i_Normal;
 
 struct GPULight {
 	//uint32_t type;

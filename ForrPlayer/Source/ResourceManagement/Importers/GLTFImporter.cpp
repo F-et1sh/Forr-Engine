@@ -81,9 +81,8 @@ void fe::GLTFImporter::loadNodes(GLTFImportContext& context) {
         fe::GLTFImporter::readVector(this_node.translation, node.translation);
         if (!node.matrix.empty()) {
             glm::mat4 m(1.0f);
-            for (int i = 0; i < 16; i++) {
+            for (int i = 0; i < 16; i++)
                 m[i / 4][i % 4] = node.matrix[i];
-            }
             this_node.local_matrix = m;
         }
         else {
@@ -263,11 +262,12 @@ void fe::GLTFImporter::loadVertices(GLTFImportContext& context, Vertices& this_v
         auto& vertex    = this_vertices[i];
         vertex.position = positions[i];
 
-        // TODO : support this
+        if (i < normals.size()) {
+            vertex.normal = normals[i];
+        }
 
-        //if (i < normals.size()) {
-        //    v.normal = normals[i];
-        //}
+        // TODO : support this
+        
         //if (i < tangents.size()) {
         //    v.tangent = tangents[i];
         //}

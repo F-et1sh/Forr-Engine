@@ -8,7 +8,7 @@
     ( do not create GPU resources if they're already created --> InitializeGPUResources() )
 
 ### Done
-    -
+    normals provided. light provided
 
 ### Problem
     -

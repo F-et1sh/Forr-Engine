@@ -32,7 +32,7 @@ namespace fe {
         void CreateSurface();
         void SetupSurfaceColorFormat();
         void SetupQueueNodeIndex();
-        bool CreateSwapchain();
+        void CreateSwapchain();
 
         FORR_NODISCARD const std::vector<fe::vk::ImageView>& getImageViews() const { return m_ImageViews; }
 

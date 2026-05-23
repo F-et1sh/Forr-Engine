@@ -1,18 +1,36 @@
 ﻿#version 460
 layout(location = 0) out vec4 fragColor;
 
+layout (location = 0) in vec3 i_Normal;
+layout (location = 1) in vec3 v_LocalPos;
+layout (location = 2) in vec3 v_WorldPos;
+
 layout (std430, binding = 0) readonly buffer SceneData {
 	mat4 projection_matrix;
 	mat4 view_matrix;
-	mat4 model_matrices[32];
+	mat4 model_matrices[];
 } scene_data;
+
+struct GPULight {
+	//uint32_t type;
+	
+	//float range;
+	//float inner_cone;
+	//float outer_cone;
+	
+	vec4 position;
+	vec4 direction;
+	vec4 color_intensity;
+};
+
+layout (std430, set = 0, binding = 1) readonly buffer LightData {
+uint lights_count;
+GPULight lights[];
+} light_data;
 
 layout (std430, set = 1, binding = 0) readonly buffer MaterialData {
 mat4 some_data[];
 } material_data;
-
-layout (location = 0) in vec3 v_LocalPos;
-layout (location = 1) in vec3 v_WorldPos;
 
 void main() {
 	float time = scene_data.projection_matrix[0][0] * 5.0f + scene_data.view_matrix[3][0];
@@ -29,5 +47,30 @@ void main() {
 	
 	final_rgb += vec3(0.3f, 0.0f, 0.5f) * (v_LocalPos.y + 0.5f);
 	
-	fragColor = vec4(final_rgb * (1.0f + scanline * 2.0f), 1.0f);
+	vec3 surface_color = final_rgb * (1.0f + scanline * 2.0f);
+
+	vec3 accumulated_light = vec3(0.0f);
+	vec3 normal = normalize(i_Normal);
+
+	for (uint i = 0; i < light_data.lights_count; i++) {
+		GPULight light = light_data.lights[i];
+		
+		vec3 light_dir = light.position.xyz - v_WorldPos;
+		float dist = length(light_dir);
+		light_dir = normalize(light_dir);
+		
+		float dot_nl = max(dot(normal, light_dir), 0.0f);
+		
+		float attenuation = 1.0f / (1.0f + 0.1f * dist + 0.05f * dist * dist);
+		
+		vec3 light_color = light.color_intensity.rgb * light.color_intensity.a;
+		
+		accumulated_light += light_color * dot_nl * attenuation;
+	}
+	
+	vec3 ambient_light = vec3(0.05f, 0.07f, 0.1f);
+	
+	vec3 final_color = surface_color * (ambient_light + accumulated_light);
+	
+	fragColor = vec4(final_color, 1.0f);
 }
