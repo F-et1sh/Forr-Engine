@@ -177,8 +177,6 @@ namespace fe {
         GPUHandle<resource::Material>    m_CurrentMaterial{};
         GPUHandle<resource::Model::Mesh> m_CurrentMesh{};
 
-        uint32_t m_CurrentImageIndex{};
-        uint32_t m_CurrentBuffer{};
         uint32_t m_CurrentFrame{};
         uint32_t m_ImageIndex{};
     };

@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -16,11 +16,11 @@
 #include <glad/gl.h>
 
 namespace fe::gl {
-    template <typename DestroyFn>
+    template <typename DestroyFn, typename HandleT = GLuint>
     class Handle {
     public:
         Handle() = default;
-        explicit Handle(GLuint handle) noexcept : handle(handle) {}
+        explicit Handle(HandleT handle) noexcept : handle(handle) {}
 
         ~Handle() { this->reset(); }
 
@@ -43,19 +43,19 @@ namespace fe::gl {
             }
         }
 
-        void attach(GLuint handle) noexcept {
+        void attach(HandleT handle) noexcept {
             if (this->handle != handle) {
                 this->reset();
                 this->handle = handle;
             }
         }
 
-        FORR_NODISCARD GLuint get() const noexcept { return handle; }
+        FORR_NODISCARD HandleT get() const noexcept { return handle; }
 
-        operator GLuint() const noexcept { return handle; }
+        operator HandleT() const noexcept { return handle; }
 
     protected:
-        GLuint handle{};
+        HandleT handle{};
     };
 
     struct ShaderDestroy {
@@ -76,7 +76,14 @@ namespace fe::gl {
         }
     };
 
+    struct SyncDestroy {
+        void operator()(GLsync handle) const noexcept {
+            glDeleteSync(handle);
+        }
+    };
+
     using ShaderProgram = Handle<ShaderDestroy>;
     using VertexArray   = Handle<VertexArrayDestroy>;
     using Buffer        = Handle<BufferDestroy>;
+    using Sync          = Handle<SyncDestroy, GLsync>;
 } // namespace fe::gl

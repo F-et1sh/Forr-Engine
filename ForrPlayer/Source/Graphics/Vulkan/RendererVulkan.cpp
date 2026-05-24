@@ -227,18 +227,18 @@ void fe::RendererVulkan::handleRenderQueue(const RenderPacket& render_packet) {
         else if (glfwGetKey(glfw_window, GLFW_KEY_S))
             m_Camera.translate(glm::vec3(0.0f, 0.0f, -speed));
 
-        auto* gpu_ptr = static_cast<uint8_t*>(m_FrameData[m_CurrentFrame].storage_buffer.bindings[0].mapped);
+        auto* object_ptr = static_cast<uint8_t*>(m_FrameData[m_CurrentFrame].storage_buffer.bindings[0].mapped);
 
         struct GPUCamera {
             glm::mat4 p;
             glm::mat4 v;
         } cam{ m_Camera.getPerspectiveMatrix(), m_Camera.getViewMatrix() };
-        memcpy(gpu_ptr, &cam, sizeof(cam));
-        gpu_ptr += sizeof(cam);
+        memcpy(object_ptr, &cam, sizeof(cam));
+        object_ptr += sizeof(cam);
 
         if (!render_packet.object_transforms.empty()) {
             size_t bytes_to_copy = render_packet.object_transforms.size() * sizeof(glm::mat4);
-            memcpy(gpu_ptr, render_packet.object_transforms.data(), bytes_to_copy);
+            memcpy(object_ptr, render_packet.object_transforms.data(), bytes_to_copy);
         }
 
         auto*    lights_ptr   = static_cast<uint8_t*>(m_FrameData[m_CurrentFrame].storage_buffer.bindings[1].mapped);

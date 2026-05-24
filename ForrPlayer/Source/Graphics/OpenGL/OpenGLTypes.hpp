@@ -27,32 +27,37 @@ namespace fe {
         OpenGLTexture()  = default;
         ~OpenGLTexture() = default;
 
-        FORR_CLASS_NONCOPYABLE(OpenGLTexture)
         FORR_RESOURCE_BODY(OpenGLTexture)
     };
 
     // shader 'program' because it is not only vertex, only fragment or only compute shader, but combined
     struct OpenGLShaderProgram {
+        fe::gl::ShaderProgram shader_program{};
+
+        OpenGLShaderProgram()  = default;
+        ~OpenGLShaderProgram() = default;
+
+        FORR_RESOURCE_BODY(OpenGLShaderProgram)
+    };
+
+    struct OpenGLShaderBuffer {
         struct Binding {
-            fe::gl::Buffer buffer{};
             uint8_t*       mapped{};
+            fe::gl::Buffer buffer{};
             size_t         size{};
 
             Binding()  = default;
             ~Binding() = default;
 
-            FORR_CLASS_NONCOPYABLE(Binding)
             FORR_RESOURCE_BODY(Binding)
         };
 
-        fe::gl::ShaderProgram shader_program{};
-        std::vector<Binding>  bindings{};
+        std::vector<Binding> bindings{};
 
-        OpenGLShaderProgram()  = default;
-        ~OpenGLShaderProgram() = default;
+        OpenGLShaderBuffer()  = default;
+        ~OpenGLShaderBuffer() = default;
 
-        FORR_CLASS_NONCOPYABLE(OpenGLShaderProgram)
-        FORR_RESOURCE_BODY(OpenGLShaderProgram)
+        FORR_RESOURCE_BODY(OpenGLShaderBuffer)
     };
 
     struct OpenGLMaterial {
@@ -62,7 +67,6 @@ namespace fe {
         OpenGLMaterial()  = default;
         ~OpenGLMaterial() = default;
 
-        FORR_CLASS_NONCOPYABLE(OpenGLMaterial)
         FORR_RESOURCE_BODY(OpenGLMaterial)
     };
 
@@ -75,7 +79,6 @@ namespace fe {
         OpenGLPrimitive()  = default;
         ~OpenGLPrimitive() = default;
 
-        FORR_CLASS_NONCOPYABLE(OpenGLPrimitive)
         FORR_RESOURCE_BODY(OpenGLPrimitive)
     };
 
@@ -89,7 +92,6 @@ namespace fe {
         OpenGLMesh()  = default;
         ~OpenGLMesh() = default;
 
-        FORR_CLASS_NONCOPYABLE(OpenGLMesh)
         FORR_RESOURCE_BODY(OpenGLMesh)
     };
 

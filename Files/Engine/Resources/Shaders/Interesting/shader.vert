@@ -7,13 +7,38 @@ layout (location = 0) out vec3 i_Normal;
 layout (location = 1) out vec3 v_LocalPos;
 layout (location = 2) out vec3 v_WorldPos;
 
-layout (std430, binding = 0) readonly buffer SceneData {
+#define FORR_BINDING_COUNT_PER_SET 4
+
+#ifdef FORR_USE_OPENGL
+    #define FORR_LAYOUT(set_index, binding_index) layout(binding = (set_index * FORR_BINDING_COUNT_PER_SET) + binding_index)
+#else
+    #define FORR_LAYOUT(set_index, binding_index) layout(set = set_index, binding = binding_index)
+#endif
+
+struct GPULight {
+	//uint32_t type;
+	
+	//float range;
+	//float inner_cone;
+	//float outer_cone;
+	
+	vec4 position;
+	vec4 direction;
+	vec4 color_intensity;
+};
+
+FORR_LAYOUT(0, 0) readonly buffer SceneData {
 	mat4 projection_matrix;
 	mat4 view_matrix;
 	mat4 model_matrices[];
 } scene_data;
 
-layout (std430, set = 1, binding = 0) readonly buffer MaterialData {
+FORR_LAYOUT(0, 1) readonly buffer LightData {
+uint lights_count;
+GPULight lights[];
+} light_data;
+
+FORR_LAYOUT(1, 0) readonly buffer MaterialData {
 mat4 some_data[];
 } material_data;
 

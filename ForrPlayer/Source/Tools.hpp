@@ -1,9 +1,9 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
     File : Tools.hpp
-    Role : defines
+    Role : helpful defines
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -12,6 +12,7 @@
 
 #pragma once
 
+namespace fe {
 #define GLFW_CHECK_RESULT(func)                                                                              \
     {                                                                                                        \
         int result = func;                                                                                   \
@@ -27,3 +28,6 @@
             fe::logging::error("[VULKAN] Failed to call %s in file %s at line %i\nError : %i", #func, __FILE__, __LINE__, int(result)); \
         }                                                                                                                               \
     }
+
+    constexpr inline static std::size_t MAX_BINDING_COUNT_PER_SET = 4;
+} // namespace fe
