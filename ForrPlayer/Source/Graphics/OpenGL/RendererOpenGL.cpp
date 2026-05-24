@@ -53,7 +53,7 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
         m_Camera.setMovementSpeed(speed);
     }
 
-    this->createSceneDataSSBO();
+    this->InitializeStorageBuffers();
 }
 
 fe::RendererOpenGL::~RendererOpenGL() {
@@ -66,24 +66,29 @@ void fe::RendererOpenGL::SetClearColor(float red, float green, float blue, float
 
 void fe::RendererOpenGL::BeginFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if (m_FrameData[m_CurrentFrame].sync) {
+        glClientWaitSync(m_FrameData[m_CurrentFrame].sync, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+    }
 }
 
 void fe::RendererOpenGL::EndFrame(const RenderPacket& render_packet) {
-    this->handleRenderQueue();
+    this->handleRenderQueue(render_packet);
+
+    m_FrameData[m_CurrentFrame].sync.reset();
+    GLsync sync_raw = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    m_FrameData[m_CurrentFrame].sync.attach(sync_raw);
 
     glBindVertexArray(0);
     glUseProgram(0);
 
     glfwSwapBuffers(m_GLFWwindow);
 
-    { // reset
-        std::size_t size = m_RenderQueue.size();
-        m_RenderQueue.clear();
-        m_RenderQueue.reserve(size);
+    // reset
+    m_CurrentMaterial = {};
+    m_CurrentMesh     = {};
 
-        m_CurrentMaterial = {};
-        m_CurrentMesh     = {};
-    }
+    m_CurrentFrame = (m_CurrentFrame + 1) % MAX_CONCURRENT_FRAMES;
 }
 
 void fe::RendererOpenGL::InitializeGPUResources() {
@@ -104,50 +109,111 @@ void fe::RendererOpenGL::InitializeGPUResources() {
     });
 }
 
-void fe::RendererOpenGL::createSceneDataSSBO() {
-    /*GLuint opengl_scene_data_ssbo{};
+void fe::RendererOpenGL::InitializeStorageBuffers() {
+    constexpr static std::size_t object_binding_index = GetBindingIndex<0, 0>();
+    constexpr static std::size_t lights_binding_index = GetBindingIndex<0, 1>();
 
-    glCreateBuffers(1, &opengl_scene_data_ssbo);
-    glNamedBufferStorage(opengl_scene_data_ssbo, sizeof(m_SceneData), &m_SceneData, GL_DYNAMIC_STORAGE_BIT);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, opengl_scene_data_ssbo);
+    constexpr static std::size_t object_buffer_size = 16 * 1024 * 1024;
+    constexpr static std::size_t light_buffer_size  = 256 * 1024;
 
-    m_SceneSSBO.attach(opengl_scene_data_ssbo);*/
+    auto initialize_binding = [&](std::size_t frame_data_i, std::size_t binding_i, size_t size) {
+        auto& binding = m_FrameData[frame_data_i].storage_buffer.bindings[binding_i];
+
+        GLuint buffer_raw{};
+        glCreateBuffers(1, &buffer_raw);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer_raw);
+
+        GLbitfield flags = GL_MAP_WRITE_BIT |
+                           GL_MAP_PERSISTENT_BIT |
+                           GL_MAP_COHERENT_BIT;
+
+        glBufferStorage(GL_SHADER_STORAGE_BUFFER, size, nullptr, flags);
+
+        binding.size = size;
+        binding.buffer.attach(buffer_raw);
+        binding.mapped = static_cast<uint8_t*>(glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, size, flags));
+
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    };
+
+    for (size_t i = 0; i < MAX_CONCURRENT_FRAMES; i++) {
+        m_FrameData[i].storage_buffer.bindings.resize(2);
+        initialize_binding(i, object_binding_index, object_buffer_size); // Binding 0
+        initialize_binding(i, lights_binding_index, light_buffer_size);  // Binding 1
+    }
 }
 
-void fe::RendererOpenGL::handleRenderQueue() {
-    //// soft draw commands
-    //std::ranges::sort(m_RenderQueue, [](const DrawCommand& left, const DrawCommand& right) -> bool {
-    //    return left.sort_key < right.sort_key;
-    //});
+void fe::RendererOpenGL::handleRenderQueue(const RenderPacket& render_packet) {
+    constexpr static std::size_t object_binding_index = GetBindingIndex<0, 0>();
+    constexpr static std::size_t lights_binding_index = GetBindingIndex<0, 1>();
 
-    //// pass SSBO
-    //for (const auto& draw_command : m_RenderQueue)
-    //    m_SceneData.model_matrices[draw_command.instance_index] = draw_command.transform;
-    //glNamedBufferSubData(m_SceneSSBO, 0, sizeof(m_SceneData), &m_SceneData);
+    { // temp
+        auto glfw_window = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
 
-    //// draw
-    //for (const auto& draw_command : m_RenderQueue) {
-    //    const auto& opengl_material       = m_OpenGLResourceManager.GetResource(draw_command.material_handle);
-    //    const auto& opengl_shader_program = m_OpenGLResourceManager.GetResource(opengl_material.shader_program_handle);
+        float speed = 0.025f;
 
-    //    // bind shader ( material )
-    //    if (draw_command.material_handle != m_CurrentMaterial) {
-    //        m_CurrentMaterial = draw_command.material_handle;
+        if (glfwGetKey(glfw_window, GLFW_KEY_A))
+            m_Camera.translate(glm::vec3(speed, 0.0f, 0.0f));
+        else if (glfwGetKey(glfw_window, GLFW_KEY_D))
+            m_Camera.translate(glm::vec3(-speed, 0.0f, 0.0f));
 
-    //        glUseProgram(opengl_shader_program.shader_program);
-    //    }
+        if (glfwGetKey(glfw_window, GLFW_KEY_W))
+            m_Camera.translate(glm::vec3(0.0f, 0.0f, speed));
+        else if (glfwGetKey(glfw_window, GLFW_KEY_S))
+            m_Camera.translate(glm::vec3(0.0f, 0.0f, -speed));
 
-    //    // bind vertex buffer
-    //    if (draw_command.mesh_handle != m_CurrentMesh) {
-    //        m_CurrentMesh = draw_command.mesh_handle;
+        auto* object_ptr = static_cast<uint8_t*>(m_FrameData[m_CurrentFrame].storage_buffer.bindings[object_binding_index].mapped);
 
-    //        const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(draw_command.mesh_handle);
-    //        glBindVertexArray(opengl_mesh.vao);
-    //    }
+        struct GPUCamera {
+            glm::mat4 p;
+            glm::mat4 v;
+        } cam{ m_Camera.getPerspectiveMatrix(), m_Camera.getViewMatrix() };
+        memcpy(object_ptr, &cam, sizeof(cam));
+        object_ptr += sizeof(cam);
 
-    //    auto location = glGetUniformLocation(opengl_shader_program.shader_program, "instance_index");
-    //    glUniform1i(location, draw_command.instance_index);
+        if (!render_packet.object_transforms.empty()) {
+            size_t bytes_to_copy = render_packet.object_transforms.size() * sizeof(glm::mat4);
+            memcpy(object_ptr, render_packet.object_transforms.data(), bytes_to_copy);
+        }
 
-    //    glDrawElements(GL_TRIANGLES, draw_command.index_count, GL_UNSIGNED_INT, (void*) draw_command.index_offset);
-    //}
+        auto*    lights_ptr   = static_cast<uint8_t*>(m_FrameData[m_CurrentFrame].storage_buffer.bindings[lights_binding_index].mapped);
+        uint32_t lights_count = render_packet.lights.size();
+        memcpy(lights_ptr, &lights_count, sizeof(lights_count));
+        lights_ptr += 16;
+        if (!render_packet.lights.empty()) {
+            size_t bytes_to_copy = render_packet.lights.size() * sizeof(GPULight);
+            memcpy(lights_ptr, render_packet.lights.data(), bytes_to_copy);
+        }
+    }
+
+    GLuint object_buffer_raw = m_FrameData[m_CurrentFrame].storage_buffer.bindings[object_binding_index].buffer.get();
+    GLuint light_buffer_raw  = m_FrameData[m_CurrentFrame].storage_buffer.bindings[lights_binding_index].buffer.get();
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, object_binding_index, object_buffer_raw);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, lights_binding_index, light_buffer_raw);
+
+    // draw
+    for (const auto& draw_command : render_packet.draw_commands) {
+        const auto& opengl_material       = m_OpenGLResourceManager.GetResource(draw_command.material_handle);
+        const auto& opengl_shader_program = m_OpenGLResourceManager.GetResource(opengl_material.shader_program_handle);
+
+        // bind shader ( material )
+        if (draw_command.material_handle != m_CurrentMaterial) {
+            m_CurrentMaterial = draw_command.material_handle;
+
+            glUseProgram(opengl_shader_program.shader_program);
+        }
+
+        // bind vertex buffer
+        if (draw_command.mesh_handle != m_CurrentMesh) {
+            m_CurrentMesh = draw_command.mesh_handle;
+
+            const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(draw_command.mesh_handle);
+            glBindVertexArray(opengl_mesh.vao);
+        }
+
+        glUniform1i(0, draw_command.instance_index);
+
+        glDrawElements(GL_TRIANGLES, draw_command.index_count, GL_UNSIGNED_INT, (void*) draw_command.index_offset);
+    }
 }

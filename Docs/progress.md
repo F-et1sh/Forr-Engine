@@ -9,6 +9,7 @@
 
 ### Done
     OpenGLShaderProgram changed
+    lighting provided for OpenGL
 
 ### Problem
     -

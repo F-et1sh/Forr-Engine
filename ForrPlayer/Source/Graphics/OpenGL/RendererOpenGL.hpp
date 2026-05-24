@@ -11,6 +11,8 @@
 ===============================================*/
 
 #pragma once
+#include <array>
+
 #include "Graphics/IRenderer.hpp"
 #include "Graphics/Camera.hpp"
 
@@ -18,8 +20,19 @@
 
 #include <GLFW/glfw3.h>
 
+#include "Tools.hpp"
+
 namespace fe {
     class RendererOpenGL : public IRenderer {
+        constexpr inline static size_t MAX_CONCURRENT_FRAMES = 2;
+
+        // OpenGL don't have descriptors like Vulkan, so we have to collapse set and binding into one flat binding table
+        template <std::size_t set_index, std::size_t binding_index>
+        consteval inline static std::size_t GetBindingIndex() {
+            static_assert(binding_index < MAX_BINDING_COUNT_PER_SET);
+            return ((set_index * MAX_BINDING_COUNT_PER_SET) + binding_index);
+        }
+
     public:
         RendererOpenGL(const RendererDesc& desc,
                        IPlatformSystem&    platform_system,
@@ -35,10 +48,19 @@ namespace fe {
         void InitializeGPUResources() override;
 
     private:
-        void createSceneDataSSBO();
-        void handleRenderQueue();
+        void InitializeStorageBuffers();
+        void handleRenderQueue(const RenderPacket& render_packet);
 
     private:
+        struct FrameData {
+            // Vulkan fence's analog in OpenGL
+            fe::gl::Sync       sync{};
+            OpenGLShaderBuffer storage_buffer{};
+
+            FrameData()  = default;
+            ~FrameData() = default;
+        };
+
         ResourceManager& m_ResourceManager;
 
         IPlatformSystem& m_PlatformSystem;
@@ -50,11 +72,11 @@ namespace fe {
 
         Camera m_Camera{}; // temp
 
-        fe::gl::Buffer m_SceneSSBO{};
-
         GPUHandle<resource::Material>    m_CurrentMaterial{};
         GPUHandle<resource::Model::Mesh> m_CurrentMesh{};
 
-        std::vector<DrawCommand> m_RenderQueue{};
+        std::array<FrameData, MAX_CONCURRENT_FRAMES> m_FrameData{};
+
+        uint32_t m_CurrentFrame{};
     };
 } // namespace fe

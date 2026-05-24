@@ -41,7 +41,7 @@ fe::Application::Application(const ApplicationDesc& desc) {
             case 2:
                 m_Object2 = m_Registry.create();
                 m_Registry.emplace<TransformComponent>(m_Object2, glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)));
-                m_Registry.emplace<MeshComponent>(m_Object2, model_ptr, interesting_material_ptr);
+                m_Registry.emplace<MeshComponent>(m_Object2, model_ptr);
                 break;
         }
         i++;

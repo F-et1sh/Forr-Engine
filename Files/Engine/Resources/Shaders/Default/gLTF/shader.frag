@@ -1,8 +1,16 @@
 ﻿#version 450 core
 layout(location = 0) out vec4 fragColor;
 
-layout(location = 0) in vec4 i_Position;
+layout(location = 0) in vec3 i_Position;
 layout(location = 1) in vec3 i_Normal;
+
+#define FORR_BINDING_COUNT_PER_SET 4
+
+#ifdef FORR_USE_OPENGL
+    #define FORR_LAYOUT(set_index, binding_index) layout(binding = (set_index * FORR_BINDING_COUNT_PER_SET) + binding_index)
+#else
+    #define FORR_LAYOUT(set_index, binding_index) layout(set = set_index, binding = binding_index)
+#endif
 
 struct GPULight {
 	//uint32_t type;
@@ -16,21 +24,39 @@ struct GPULight {
 	vec4 color_intensity;
 };
 
-layout (std430, set = 0, binding = 1) readonly buffer LightData {
+FORR_LAYOUT(0, 0) readonly buffer SceneData {
+	mat4 projection_matrix;
+	mat4 view_matrix;
+	mat4 model_matrices[];
+} scene_data;
+
+FORR_LAYOUT(0, 1) readonly buffer LightData {
 uint lights_count;
 GPULight lights[];
 } light_data;
+
+FORR_LAYOUT(1, 0) readonly buffer MaterialData {
+mat4 some_data[];
+} material_data;
+
+#ifdef FORR_USE_OPENGL
+layout (location = 0) uniform int instance_index;
+#else
+layout(push_constant) uniform PushConstants {
+	int instance_index;
+} constants;
+#endif
 
 void main() {
     vec3 base_color = vec3(1.0, 1.0, 1.0);
     vec3 accumulated_light = vec3(0.0);
     
-    vec3 normal = normalize(i_Normal.xyz);
+    vec3 normal = normalize(i_Normal);
 
     for (uint i = 0; i < light_data.lights_count; i++) {
         GPULight light = light_data.lights[i];
         
-        vec3 light_direction = light.position.xyz - i_Position.xyz;
+        vec3 light_direction = light.position.xyz - i_Position;
         float dist = length(light_direction);
         light_direction = normalize(light_direction);
         

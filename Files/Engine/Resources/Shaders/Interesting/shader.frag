@@ -1,15 +1,17 @@
-﻿#version 460
+﻿#version 450 core
 layout(location = 0) out vec4 fragColor;
 
 layout (location = 0) in vec3 i_Normal;
 layout (location = 1) in vec3 v_LocalPos;
 layout (location = 2) in vec3 v_WorldPos;
 
-layout (std430, binding = 0) readonly buffer SceneData {
-	mat4 projection_matrix;
-	mat4 view_matrix;
-	mat4 model_matrices[];
-} scene_data;
+#define FORR_BINDING_COUNT_PER_SET 4
+
+#ifdef FORR_USE_OPENGL
+    #define FORR_LAYOUT(set_index, binding_index) layout(binding = (set_index * FORR_BINDING_COUNT_PER_SET) + binding_index)
+#else
+    #define FORR_LAYOUT(set_index, binding_index) layout(set = set_index, binding = binding_index)
+#endif
 
 struct GPULight {
 	//uint32_t type;
@@ -23,14 +25,16 @@ struct GPULight {
 	vec4 color_intensity;
 };
 
-layout (std430, set = 0, binding = 1) readonly buffer LightData {
+FORR_LAYOUT(0, 0) readonly buffer SceneData {
+	mat4 projection_matrix;
+	mat4 view_matrix;
+	mat4 model_matrices[];
+} scene_data;
+
+FORR_LAYOUT(0, 1) readonly buffer LightData {
 uint lights_count;
 GPULight lights[];
 } light_data;
-
-layout (std430, set = 1, binding = 0) readonly buffer MaterialData {
-mat4 some_data[];
-} material_data;
 
 void main() {
 	float time = scene_data.projection_matrix[0][0] * 5.0f + scene_data.view_matrix[3][0];
