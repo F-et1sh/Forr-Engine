@@ -16,7 +16,6 @@
 
 #include "OpenGLResourceManager.hpp"
 
-#include "Shader.hpp"
 #include <GLFW/glfw3.h>
 
 namespace fe {
