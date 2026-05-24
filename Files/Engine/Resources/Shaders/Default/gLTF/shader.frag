@@ -49,6 +49,14 @@ layout(push_constant) uniform PushConstants {
 
 void main() {
     vec3 base_color = vec3(1.0, 1.0, 1.0);
+
+    //if (i_Position.y > 0.15)
+    //    base_color = vec3(0.0f, 1.0f, 0.1f);
+    //else if (i_Position.y < 0.15 && i_Position.y > 0)
+    //    base_color = vec3(1.0f, 1.0f, 1.0f);
+    //else if (i_Position.y < 0)
+    //    base_color = vec3(1.0f, 0.0f, 0.1f);
+
     vec3 accumulated_light = vec3(0.0);
     
     vec3 normal = normalize(i_Normal);
