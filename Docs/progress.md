@@ -1,11 +1,25 @@
 ﻿# Forr-Engine Devlog
 
+## 24.05.2026
+### Goal
+    provide the same of OpenGL
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+    ( this all needs code review )
+
+### Done
+    OpenGLShaderProgram changed
+
+### Problem
+    -
+
 ## 23.05.2026
 ### Goal
     provide vertex normals pushing to the shader ( it's in gLTF )
     provide shader with lighting
     ( fix window resizing for GL/VK )
     ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+    ( this all needs code review )
 
 ### Done
     normals provided. light provided
