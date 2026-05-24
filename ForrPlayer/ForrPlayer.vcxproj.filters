@@ -29,7 +29,6 @@
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLResourceManager.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLTypes.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
-    <ClInclude Include="Source\Graphics\OpenGL\Shader.hpp" />
     <ClInclude Include="Source\ResourceManagement\Importers\MaterialImporter.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceCreator.hpp" />
     <ClInclude Include="Include\Forr\Core\guid.hpp" />
@@ -69,7 +68,6 @@
     <ClCompile Include="..\ThirdParty\MikkTSpace\src\mikktspace.c" />
     <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManager.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\RendererOpenGL.cpp" />
-    <ClCompile Include="Source\Graphics\OpenGL\Shader.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\MaterialImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceCreator.cpp" />
     <ClCompile Include="..\ThirdParty\SPIRV-Reflect\src\spirv_reflect.c" />

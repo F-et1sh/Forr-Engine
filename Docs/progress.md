@@ -10,6 +10,7 @@
 ### Done
     OpenGLShaderProgram changed
     lighting provided for OpenGL
+    Shader.hpp/Shader.cpp removed
 
 ### Problem
     -
