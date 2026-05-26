@@ -9,6 +9,7 @@
 
 ### Done
     texture coords pushing provided for OpenGL
+    texture coords pushing provided for Vulkan
 
 ### Problem
     -
