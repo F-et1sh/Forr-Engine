@@ -1,9 +1,11 @@
 ﻿#version 450 core
 layout (location = 0) in vec3 a_Position;
 layout (location = 1) in vec3 a_Normal;
+layout (location = 2) in vec2 a_TextureCoord;
 
-layout(location = 0) out vec3 i_Position;
-layout(location = 1) out vec3 i_Normal;
+layout (location = 0) out vec3 i_Position;
+layout (location = 1) out vec3 i_Normal;
+layout (location = 2) out vec2 i_TextureCoord;
 
 #define FORR_BINDING_COUNT_PER_SET 4
 
@@ -60,4 +62,5 @@ void main() {
 	gl_Position = scene_data.projection_matrix * scene_data.view_matrix * position;
 	i_Position = position.xyz;
 	i_Normal = a_Normal;
+	i_TextureCoord = a_TextureCoord;
 }

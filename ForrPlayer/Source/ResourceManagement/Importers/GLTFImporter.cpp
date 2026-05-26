@@ -176,7 +176,7 @@ void fe::GLTFImporter::loadMaterials(GLTFImportContext& context) {
         context.materials.push_back(context.storage.GetContext().default_gltf_material_ptr); // TODO : provide default fallback material
         return;
     }
-    
+
     context.materials.resize(context.model.materials.size());
 
     for (size_t i = 0; i < context.model.materials.size(); i++) {
@@ -265,15 +265,17 @@ void fe::GLTFImporter::loadVertices(GLTFImportContext& context, Vertices& this_v
         if (i < normals.size()) {
             vertex.normal = normals[i];
         }
-
-        // TODO : support this
         
+        if (i < texture_coords.size()) {
+            vertex.texture_coord = texture_coords[i];
+        }
+        
+        // TODO : support this
+
         //if (i < tangents.size()) {
         //    v.tangent = tangents[i];
         //}
-        //if (i < texture_coords.size()) {
-        //    v.texture_coord = texture_coords[i];
-        //}
+        //
         //if (i < joints.size()) {
         //    v.joints = joints[i];
         //}

@@ -38,7 +38,7 @@ fe::Application::Application(const ApplicationDesc& desc) {
                 m_Registry.emplace<TransformComponent>(m_Object1, glm::translate(glm::mat4(1.0f), glm::vec3(50, 0, 0)));
                 m_Registry.emplace<MeshComponent>(m_Object1, model_ptr, interesting_material_ptr);
                 break;
-            case 2:
+            case 0:
                 m_Object2 = m_Registry.create();
                 m_Registry.emplace<TransformComponent>(m_Object2, glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)));
                 m_Registry.emplace<MeshComponent>(m_Object2, model_ptr);
@@ -54,35 +54,22 @@ fe::Application::Application(const ApplicationDesc& desc) {
     m_Renderer->InitializeGPUResources();
 
     m_RenderSystem = std::make_unique<RenderSystem>(*m_ResourceManager, m_Registry, *m_Renderer, m_RenderPacket);
-
-    auto& light0           = m_RenderPacket.lights.emplace_back();
-    light0.position        = glm::vec4(0.0f, 3.0f, 0.0f, 1.0f); 
-    light0.color_intensity = glm::vec4(1.0f, 0.6f, 0.3f, 10.0f);
-
-    auto& light1           = m_RenderPacket.lights.emplace_back();
-    light1.position        = glm::vec4(0.0f, -2.0f, 0.0f, 1.0f);
-    light1.color_intensity = glm::vec4(0.2f, 0.6f, 1.0f, 10.0f);
 }
 
 size_t t{};
 
 void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
-         float angle = static_cast<float>(t) * 0.02f;
+        float angle  = static_cast<float>(t) * 0.02f;
         float radius = 15.0f;
 
-        if (m_RenderPacket.lights.size() >= 2) {
-            m_RenderPacket.lights[0].position.x = glm::sin(angle) * radius;
-            m_RenderPacket.lights[0].position.y = 1.5f;
-            m_RenderPacket.lights[0].position.z = glm::cos(angle) * radius;
+        auto& light_transform = m_Registry.get<TransformComponent>(m_Light);
+        light_transform.transform = glm::translate(glm::vec3(glm::sin(angle) * radius, 1.5f, glm::cos(angle) * radius));
 
-            m_RenderPacket.lights[1].position.x = glm::sin(-angle) * radius;
-            m_RenderPacket.lights[1].position.y = -0.5f;
-            m_RenderPacket.lights[1].position.z = glm::cos(-angle) * radius;
-        }
-
+        // reset
         m_RenderPacket.draw_commands.clear();
         m_RenderPacket.object_transforms.clear();
+        m_RenderPacket.lights.clear();
 
         m_Renderer->BeginFrame();
         m_RenderSystem->Update();

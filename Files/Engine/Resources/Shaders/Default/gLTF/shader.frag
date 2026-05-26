@@ -1,8 +1,9 @@
 ﻿#version 450 core
-layout(location = 0) out vec4 fragColor;
+layout (location = 0) out vec4 fragColor;
 
-layout(location = 0) in vec3 i_Position;
-layout(location = 1) in vec3 i_Normal;
+layout (location = 0) in vec3 i_Position;
+layout (location = 1) in vec3 i_Normal;
+layout (location = 2) in vec2 i_TextureCoord;
 
 #define FORR_BINDING_COUNT_PER_SET 4
 
@@ -79,5 +80,6 @@ void main() {
     
     vec3 ambient = vec3(0.05) * base_color;
     
-    fragColor = vec4(ambient + base_color * accumulated_light, 1.0);
+    //fragColor = vec4(ambient + base_color * accumulated_light, 1.0);
+    fragColor = vec4(i_TextureCoord.x, i_TextureCoord.y, 1.0f, 1.0f);
 }

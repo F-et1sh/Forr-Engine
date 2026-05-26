@@ -8,7 +8,7 @@
     ( this all needs code review )
 
 ### Done
-    -
+    texture coords pushing provided for OpenGL
 
 ### Problem
     -
