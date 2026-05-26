@@ -381,7 +381,7 @@ VkPipeline fe::VulkanResourceManager::createPipeline(VkPipelineLayout pipeline_l
     vertex_input_binding_description.stride    = sizeof(Vertex);
     vertex_input_binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-    std::array<VkVertexInputAttributeDescription, 2> vertex_input_attributs{};
+    std::array<VkVertexInputAttributeDescription, 3> vertex_input_attributs{};
     vertex_input_attributs[0].location = 0;
     vertex_input_attributs[0].binding  = 0;
     vertex_input_attributs[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
@@ -391,6 +391,11 @@ VkPipeline fe::VulkanResourceManager::createPipeline(VkPipelineLayout pipeline_l
     vertex_input_attributs[1].binding  = 0;
     vertex_input_attributs[1].format   = VK_FORMAT_R32G32B32_SFLOAT;
     vertex_input_attributs[1].offset   = offsetof(Vertex, normal);
+
+    vertex_input_attributs[2].location = 2;
+    vertex_input_attributs[2].binding  = 0;
+    vertex_input_attributs[2].format   = VK_FORMAT_R32G32_SFLOAT;
+    vertex_input_attributs[2].offset   = offsetof(Vertex, texture_coord);
 
     VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info{};
     vertex_input_state_create_info.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

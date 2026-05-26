@@ -16,7 +16,7 @@
 int main(int argc, char* argv[]) {
     fe::ApplicationDesc desc{};
 
-    fe::GraphicsBackend selected_backend = fe::GraphicsBackend::OpenGL;
+    fe::GraphicsBackend selected_backend = fe::GraphicsBackend::Vulkan;
 
     for (int i = 0; i < argc; i++) {
         std::string_view arg = argv[i];
