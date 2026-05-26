@@ -67,7 +67,11 @@ void fe::RenderSystem::handleLightComponents() {
     auto view = m_Impl->m_Registry.get().view<const TransformComponent, const LightComponent>();
 
     for (auto [entity, transform_component, light_component] : view.each()) {
-        //m_Impl->m_Renderer.get().PassLight
+        auto& light = m_Impl->m_RenderPacket.lights.emplace_back();
+
+        light.position        = transform_component.transform * glm::vec4(1.0f);
+        light.direction       = glm::vec4(light_component.direction, 1.0f);
+        light.color_intensity = glm::vec4(light_component.color, light_component.intensity);
     }
 }
 

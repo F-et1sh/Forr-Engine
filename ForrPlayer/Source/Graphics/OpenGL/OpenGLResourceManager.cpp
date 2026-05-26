@@ -186,6 +186,9 @@ fe::GPUHandle<Model::Mesh> fe::OpenGLResourceManager::createMesh(resource::Model
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*) offsetof(Vertex, normal));
     glEnableVertexAttribArray(1);
 
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*) offsetof(Vertex, texture_coord));
+    glEnableVertexAttribArray(2);
+
     glCreateBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 

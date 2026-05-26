@@ -26,10 +26,10 @@ namespace fe {
     struct Vertex {
         glm::vec3 position{};
         glm::vec3 normal{};
-        //glm::vec2    texture_coord;
-        //glm::u16vec4 joints;
-        //glm::vec4    weights;
-        //glm::vec4    tangent;
+        glm::vec2 texture_coord{};
+        //glm::u16vec4 joints{};
+        //glm::vec4    weights{};
+        //glm::vec4    tangent{};
 
         Vertex(const glm::vec3& position, const glm::vec3& normal)
             : position(position), normal(normal) {}

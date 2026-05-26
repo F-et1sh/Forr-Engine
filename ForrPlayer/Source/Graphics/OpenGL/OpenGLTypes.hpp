@@ -21,7 +21,7 @@ namespace fe {
     FORR_CLASS_NONCOPYABLE(T) \
     FORR_CLASS_MOVABLE(T)
 
-    struct OpenGLTexture { // TODO : provide textures
+    struct OpenGLTexture {
         GLuint id{};
 
         OpenGLTexture()  = default;
