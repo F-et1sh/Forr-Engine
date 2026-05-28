@@ -38,10 +38,6 @@ uint lights_count;
 GPULight lights[];
 } light_data;
 
-FORR_LAYOUT(1, 0) readonly buffer MaterialData {
-mat4 some_data[];
-} material_data;
-
 #ifdef FORR_USE_OPENGL
 layout (location = 0) uniform int instance_index;
 #else
