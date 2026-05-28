@@ -21,8 +21,6 @@ fe::Application::Application(const ApplicationDesc& desc) {
     this->InitializePrimaryWindow(desc);
     this->InitializeRenderer(desc);
 
-    size_t i = 0; // temp
-
     auto interesting_shader_vertex_ptr   = m_ResourceManager->ImportResource<resource::Shader>(PATH.getShadersPath() / L"Interesting" / L"shader.vert");
     auto interesting_shader_fragment_ptr = m_ResourceManager->ImportResource<resource::Shader>(PATH.getShadersPath() / L"Interesting" / L"shader.frag");
 
@@ -32,19 +30,13 @@ fe::Application::Application(const ApplicationDesc& desc) {
     auto interesting_material_ptr            = m_ResourceManager->CreateResource<resource::Material>(std::move(interesting_material));
 
     m_ResourceManager->RunForEach<resource::Model>([&](fe::pointer<resource::Model> model_ptr, const resource::Model& model) { // temp
-        switch (i) {
-            case 1:
-                m_Object1 = m_Registry.create();
-                m_Registry.emplace<TransformComponent>(m_Object1, glm::translate(glm::mat4(1.0f), glm::vec3(50, 0, 0)));
-                m_Registry.emplace<MeshComponent>(m_Object1, model_ptr, interesting_material_ptr);
-                break;
-            case 0:
-                m_Object2 = m_Registry.create();
-                m_Registry.emplace<TransformComponent>(m_Object2, glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)));
-                m_Registry.emplace<MeshComponent>(m_Object2, model_ptr);
-                break;
-        }
-        i++;
+        m_Object1 = m_Registry.create();
+        m_Registry.emplace<TransformComponent>(m_Object1, glm::translate(glm::mat4(1.0f), glm::vec3(50, 0, 0)));
+        m_Registry.emplace<MeshComponent>(m_Object1, model_ptr, interesting_material_ptr);
+
+        m_Object2 = m_Registry.create();
+        m_Registry.emplace<TransformComponent>(m_Object2, glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)));
+        m_Registry.emplace<MeshComponent>(m_Object2, model_ptr);
     });
 
     m_Light = m_Registry.create();
@@ -63,7 +55,7 @@ void fe::Application::Run() {
         float angle  = static_cast<float>(t) * 0.02f;
         float radius = 15.0f;
 
-        auto& light_transform = m_Registry.get<TransformComponent>(m_Light);
+        auto& light_transform     = m_Registry.get<TransformComponent>(m_Light);
         light_transform.transform = glm::translate(glm::vec3(glm::sin(angle) * radius, 1.5f, glm::cos(angle) * radius));
 
         // reset
@@ -90,10 +82,7 @@ void fe::Application::InitializePlatformSystem(const ApplicationDesc& desc) {
 
 void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
     std::vector<std::filesystem::path> paths{}; // temp
-    paths.emplace_back(PATH.getEngineResourcesPath() / "Tatarstan-Flag.png");
-    paths.emplace_back(PATH.getModelsPath() / "StatueOfLiberty/statue_of_liberty.glb");
-    paths.emplace_back(PATH.getModelsPath() / "PirateRoom/PirateRoom.gltf");
-    paths.emplace_back(PATH.getModelsPath() / "Suzanne/Suzanne.glb");
+    paths.emplace_back(PATH.getModelsPath() / "TatarSuzanne/TatarSuzanne.gltf");
 
     ResourceManagerDesc resource_manager_desc{};
     resource_manager_desc.graphics_backend = desc.graphics_backend;

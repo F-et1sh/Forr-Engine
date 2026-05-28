@@ -307,7 +307,7 @@ VkPipelineLayout fe::VulkanResourceManager::createPipelineLayout(const std::vect
     VkPushConstantRange push_constant{};
     push_constant.offset     = 0;
     push_constant.size       = sizeof(uint32_t); // index
-    push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
     pipeline_layout_create_info.pPushConstantRanges    = &push_constant;
     pipeline_layout_create_info.pushConstantRangeCount = 1;

@@ -82,8 +82,21 @@ namespace fe::gl {
         }
     };
 
+    struct TextureDestroy {
+        void operator()(GLuint handle) const noexcept {
+            GLuint64 resident_id = glGetTextureHandleARB(handle);
+
+            if (glIsTextureHandleResidentARB(resident_id)) {
+                glMakeTextureHandleNonResidentARB(resident_id);
+            }
+            
+            glDeleteTextures(1, &handle);
+        }
+    };
+
     using ShaderProgram = Handle<ShaderDestroy>;
     using VertexArray   = Handle<VertexArrayDestroy>;
     using Buffer        = Handle<BufferDestroy>;
     using Sync          = Handle<SyncDestroy, GLsync>;
+    using Texture       = Handle<TextureDestroy>;
 } // namespace fe::gl

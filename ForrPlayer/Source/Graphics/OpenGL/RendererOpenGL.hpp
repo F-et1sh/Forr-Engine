@@ -53,7 +53,7 @@ namespace fe {
 
     private:
         struct FrameData {
-            // Vulkan fence's analog in OpenGL
+            // Vulkan fence's analogue in OpenGL
             fe::gl::Sync       sync{};
             OpenGLShaderBuffer storage_buffer{};
 

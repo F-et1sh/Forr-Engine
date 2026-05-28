@@ -44,6 +44,8 @@ template <>
 void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
     OpenGLTexture opengl_texture{};
 
+    GLuint texture_id_raw{};
+
     int min_filter{};
     int mag_filter{};
 
@@ -124,8 +126,8 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
     }
     // clang-format on
 
-    glCreateTextures(GL_TEXTURE_2D, 1, &opengl_texture.id);
-    glBindTexture(GL_TEXTURE_2D, opengl_texture.id);
+    glCreateTextures(GL_TEXTURE_2D, 1, &texture_id_raw);
+    glBindTexture(GL_TEXTURE_2D, texture_id_raw);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
@@ -136,7 +138,13 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
     glTexImage2D(GL_TEXTURE_2D, 0, internal_format, texture.width, texture.height, 0, data_format, GL_UNSIGNED_BYTE, texture.bytes.get());
 
     glGenerateMipmap(GL_TEXTURE_2D);
+
+    opengl_texture.resident_id = glGetTextureHandleARB(texture_id_raw);
+    glMakeTextureHandleResidentARB(opengl_texture.resident_id); // make resident
+
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    opengl_texture.texture.attach(texture_id_raw);
 
     this->storeResource(texture.gpu_handle, opengl_texture, m_StorageTextures);
 }
@@ -144,24 +152,23 @@ template void fe::OpenGLResourceManager::CreateResource(Texture& texture);
 
 ///
 
-template<>
+template <>
 const fe::OpenGLMaterial& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Material> handle) const {
     return m_StorageMaterials[handle.index];
 }
-template const fe::OpenGLMaterial& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Material> handle)const;
+template const fe::OpenGLMaterial& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Material> handle) const;
 
-template<>
+template <>
 const fe::OpenGLShaderProgram& fe::OpenGLResourceManager::GetResource(GPUHandle<OpenGLShaderProgram> handle) const {
     return m_StorageShaderPrograms[handle.index];
 }
-template const fe::OpenGLShaderProgram& fe::OpenGLResourceManager::GetResource(GPUHandle<OpenGLShaderProgram> handle)const;
+template const fe::OpenGLShaderProgram& fe::OpenGLResourceManager::GetResource(GPUHandle<OpenGLShaderProgram> handle) const;
 
-template<>
+template <>
 const fe::OpenGLMesh& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Model::Mesh> handle) const {
     return m_StorageMeshes[handle.index];
 }
-template const fe::OpenGLMesh& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Model::Mesh> handle)const;
-
+template const fe::OpenGLMesh& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Model::Mesh> handle) const;
 
 ///
 
@@ -231,8 +238,8 @@ fe::GPUHandle<Model::Mesh> fe::OpenGLResourceManager::createMesh(resource::Model
 }
 
 fe::GPUHandle<fe::OpenGLShaderProgram> fe::OpenGLResourceManager::createShaderProgram(OpenGLMaterial& opengl_material, std::vector<resource::Shader*> shaders) {
-    OpenGLShaderProgram opengl_shader_program_raii{};
-    GLuint              opengl_shader_program = glCreateProgram();
+    OpenGLShaderProgram opengl_shader_program{};
+    GLuint              opengl_shader_program_raw = glCreateProgram();
 
     for (size_t i = 0; i < shaders.size(); i++) {
         const auto& shader = shaders[i];
@@ -242,7 +249,7 @@ fe::GPUHandle<fe::OpenGLShaderProgram> fe::OpenGLResourceManager::createShaderPr
 
         // clang-format off
         switch (shader->type) {
-            case resource::Shader::Type::VERTEX: opengl_type = GL_VERTEX_SHADER; break;
+            case resource::Shader::Type::VERTEX  : opengl_type = GL_VERTEX_SHADER  ; break;
             case resource::Shader::Type::FRAGMENT: opengl_type = GL_FRAGMENT_SHADER; break;
         }
         // clang-format on
@@ -265,16 +272,16 @@ fe::GPUHandle<fe::OpenGLShaderProgram> fe::OpenGLResourceManager::createShaderPr
             fe::logging::error("Unified -> OpenGL. Failed to compile a shader\nMessage : %s", message);
         }
         else {
-            glAttachShader(opengl_shader_program, opengl_shader);
+            glAttachShader(opengl_shader_program_raw, opengl_shader);
         }
 
         glDeleteShader(opengl_shader);
     }
 
-    glLinkProgram(opengl_shader_program);
-    glValidateProgram(opengl_shader_program);
+    glLinkProgram(opengl_shader_program_raw);
+    glValidateProgram(opengl_shader_program_raw);
 
-    opengl_shader_program_raii.shader_program.attach(opengl_shader_program);
+    opengl_shader_program.shader_program.attach(opengl_shader_program_raw);
 
-    return GPUHandle<OpenGLShaderProgram>(this->storeResource(opengl_material.shader_program_handle, opengl_shader_program_raii, m_StorageShaderPrograms));
+    return GPUHandle<OpenGLShaderProgram>(this->storeResource(opengl_material.shader_program_handle, opengl_shader_program, m_StorageShaderPrograms));
 }

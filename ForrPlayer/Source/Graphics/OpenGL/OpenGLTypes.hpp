@@ -22,7 +22,8 @@ namespace fe {
     FORR_CLASS_MOVABLE(T)
 
     struct OpenGLTexture {
-        GLuint id{};
+        fe::gl::Texture texture{};
+        GLuint64        resident_id{};
 
         OpenGLTexture()  = default;
         ~OpenGLTexture() = default;

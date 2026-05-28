@@ -167,7 +167,7 @@ void fe::GLTFImporter::loadTextures(GLTFImportContext& context) {
     context.textures.resize(context.model.textures.size());
 
     for (size_t i = 0; i < context.model.textures.size(); i++) {
-        context.textures[i] = createTexture(context.model, i, context.storage);
+        context.textures[i] = GLTFImporter::createTexture(context.model, i, context.storage);
     }
 }
 
@@ -576,6 +576,11 @@ fe::pointer<Texture> fe::GLTFImporter::createTexture(const tinygltf::Model& mode
 fe::pointer<Material> fe::GLTFImporter::createMaterial(GLTFImportContext& context, uint32_t tinygltf_material_index) {
     const tinygltf::Material& material = context.model.materials[tinygltf_material_index];
     Material                  this_material{};
+
+    this_material.buffer.resize(8);
+    
+    std::uint64_t index = 0;
+    std::memcpy(this_material.buffer.data(), &index, sizeof(index));
 
     //    this_material.name = material.name;
     //
