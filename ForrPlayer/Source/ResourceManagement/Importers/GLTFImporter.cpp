@@ -574,13 +574,8 @@ fe::pointer<Texture> fe::GLTFImporter::createTexture(const tinygltf::Model& mode
 #undef OPAQUE
 
 fe::pointer<Material> fe::GLTFImporter::createMaterial(GLTFImportContext& context, uint32_t tinygltf_material_index) {
-    const tinygltf::Material& material = context.model.materials[tinygltf_material_index];
-    Material                  this_material{};
-
-    this_material.buffer.resize(8);
-    
-    std::uint64_t index = 0;
-    std::memcpy(this_material.buffer.data(), &index, sizeof(index));
+    //const tinygltf::Material& material = context.model.materials[tinygltf_material_index];
+    //Material                  this_material{};
 
     //    this_material.name = material.name;
     //
@@ -627,7 +622,7 @@ fe::pointer<Material> fe::GLTFImporter::createMaterial(GLTFImportContext& contex
     //auto ptr = context.storage.CreateResource<Material>(std::move(this_material));
     //return ptr;
 
-    return context.storage.GetContext().default_gltf_material_ptr; // TODO : create material instance
+    return context.storage.GetContext().default_gltf_material_ptr;
 }
 
 void fe::GLTFImporter::readVector(glm::vec2& dst, const std::vector<double>& src) {

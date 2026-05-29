@@ -41,8 +41,8 @@ void fe::RenderSystem::Update() {
     this->handleLightComponents();
 
     std::ranges::sort(m_Impl->m_RenderPacket.draw_commands, [](const DrawCommand& a, const DrawCommand& b) {
-        if (a.material_handle != b.material_handle)
-            return a.material_handle < b.material_handle;
+        if (a.material_ptr != b.material_ptr)
+            return a.material_ptr < b.material_ptr;
         return a.mesh_handle < b.mesh_handle;
     });
 
@@ -84,18 +84,15 @@ void fe::RenderSystem::addEntry(const MeshComponent& mesh_component) {
     for (const auto& mesh : model.meshes) {
         for (const auto& primitive : mesh.primitives) {
 
-            const auto& material = *m_Impl->m_ResourceManager.GetResource(
-                mesh_component.material_override_ptr.packed() == ~0 // if overrided material is null
-                    ? primitive.material_ptr                        // ( TRUE )  select primitive's material
-                    : mesh_component.material_override_ptr);        // ( FALSE ) select overrided material
-
             auto& entry = enties.emplace_back();
 
-            entry.index_count     = primitive.index_count;
-            entry.index_offset    = primitive.index_offset;
-            entry.material_handle = material.gpu_handle;
-            entry.mesh_handle     = mesh.gpu_handle;
-            entry.sort_key        = static_cast<uint64_t>(material.gpu_handle.index) << 16;
+            entry.index_count  = primitive.index_count;
+            entry.index_offset = primitive.index_offset;
+            entry.material_ptr = mesh_component.material_override_ptr.packed() == ~0 // if overrided material is null
+                                     ? primitive.material_ptr                        // ( TRUE )  select primitive's material
+                                     : mesh_component.material_override_ptr;         // ( FALSE ) select overrided material
+            entry.mesh_handle  = mesh.gpu_handle;
+            entry.sort_key     = static_cast<uint64_t>(entry.material_ptr.packed()) << 16;
         }
     }
 
@@ -111,12 +108,12 @@ void fe::RenderSystem::addToDrawList(fe::pointer<resource::Model> model_ptr, con
     for (const auto& entry : it->second) {
         auto& draw_command = m_Impl->m_RenderPacket.draw_commands.emplace_back();
 
-        draw_command.instance_index  = m_Impl->m_CurrentInstanceIndex;
-        draw_command.index_count     = entry.index_count;
-        draw_command.index_offset    = entry.index_offset;
-        draw_command.material_handle = entry.material_handle;
-        draw_command.mesh_handle     = entry.mesh_handle;
-        draw_command.sort_key        = entry.sort_key;
+        draw_command.instance_index = m_Impl->m_CurrentInstanceIndex;
+        draw_command.index_count    = entry.index_count;
+        draw_command.index_offset   = entry.index_offset;
+        draw_command.material_ptr   = entry.material_ptr;
+        draw_command.mesh_handle    = entry.mesh_handle;
+        draw_command.sort_key       = entry.sort_key;
     }
 
     m_Impl->m_CurrentInstanceIndex++;

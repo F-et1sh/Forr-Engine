@@ -255,11 +255,12 @@ void fe::RendererVulkan::handleRenderQueue(const RenderPacket& render_packet) {
 
     // draw
     for (const auto& draw_command : render_packet.draw_commands) {
-        const auto& vulkan_material = m_VulkanResourceManager.GetResource(draw_command.material_handle);
+        const auto& material        = m_ResourceManager.GetResource(draw_command.material_ptr);
+        const auto& vulkan_material = m_VulkanResourceManager.GetResource(material->gpu_handle);
 
         // bind pipeline ( material )
-        if (draw_command.material_handle != m_CurrentMaterial) {
-            m_CurrentMaterial = draw_command.material_handle;
+        if (material->gpu_handle != m_CurrentMaterial) {
+            m_CurrentMaterial = material->gpu_handle;
 
             vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline);
             vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline_layout, 0, 1, &m_FrameData[m_CurrentFrame].storage_buffer.descriptor_set, 0, nullptr);

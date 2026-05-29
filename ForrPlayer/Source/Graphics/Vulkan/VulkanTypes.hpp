@@ -119,4 +119,5 @@ namespace fe {
 
     VULKAN_RESOURCE_TRAITS_INSTANCE(resource::Model::Mesh, VulkanMesh)
     VULKAN_RESOURCE_TRAITS_INSTANCE(resource::Material, VulkanMaterial)
+    VULKAN_RESOURCE_TRAITS_INSTANCE(resource::Texture, VulkanTexture)
 } // namespace fe
