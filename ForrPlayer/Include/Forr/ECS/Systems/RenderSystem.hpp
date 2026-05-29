@@ -21,8 +21,9 @@ namespace fe {
         uint32_t index_offset{};
         uint32_t index_count{};
 
-        GPUHandle<resource::Model::Mesh> mesh_handle{};
-        GPUHandle<resource::Material>    material_handle{};
+        // TODO : change this to fe::pointer<>
+        GPUHandle<resource::Model::Mesh>    mesh_handle{};
+        fe::pointer<fe::resource::Material> material_ptr{};
 
         uint64_t sort_key{};
 

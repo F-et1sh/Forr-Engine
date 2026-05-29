@@ -9,6 +9,7 @@
 
 ### Done
     fe::OpenGLMaterial removed ( unused abstraction layer ). Now fe::resource::Material --> fe::OpenGLShaderProgram/fe::VulkanMaterial
+    textures almost done
 
 ### Problem
     -

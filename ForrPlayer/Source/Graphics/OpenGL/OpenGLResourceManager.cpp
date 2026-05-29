@@ -25,6 +25,33 @@ void fe::OpenGLResourceManager::CreateResource(Material& material) {
     opengl_shader_program.shader_program.attach(opengl_shader_program_raw);
 
     this->storeResource(material.gpu_handle, opengl_shader_program, m_StorageShaderPrograms);
+
+    opengl_shader_program.shader_buffers.bindings.reserve(vertex_shader->descriptor_sets.size());
+
+    for (auto& descriptor_set : vertex_shader->descriptor_sets) {
+
+        // basic scene data. already created in renderer
+        if (descriptor_set.index == 0) continue;
+
+        for (auto& binding : descriptor_set.bindings) {
+            auto& this_binding = opengl_shader_program.shader_buffers.bindings.emplace_back();
+
+            GLuint buffer_raw{};
+            glCreateBuffers(1, &buffer_raw);
+
+            GLbitfield flags = GL_MAP_WRITE_BIT |
+                               GL_MAP_PERSISTENT_BIT |
+                               GL_MAP_COHERENT_BIT;
+
+            glNamedBufferStorage(buffer_raw, binding.size, nullptr, flags);
+
+            this_binding.size = binding.size;
+            this_binding.buffer.attach(buffer_raw);
+            this_binding.mapped = static_cast<uint8_t*>(glMapNamedBufferRange(buffer_raw, 0, binding.size, flags));
+        }
+    }
+
+    // TODO : add for fragment shader
 }
 template void fe::OpenGLResourceManager::CreateResource(Material& material);
 
@@ -152,16 +179,20 @@ template void fe::OpenGLResourceManager::CreateResource(Texture& texture);
 
 ///
 
+// TODO : provide fallbacks
 #define GET_RESOURCE_INSTANCE(RETURN_T, HANDLE_T, STORAGE)                                     \
     template <>                                                                                \
     const RETURN_T& fe::OpenGLResourceManager::GetResource(GPUHandle<HANDLE_T> handle) const { \
+        if (STORAGE.size() <= handle.index) {                                                  \
+            fe::logging::fatal("Out of range");                                                \
+        }                                                                                      \
         return STORAGE[handle.index];                                                          \
     }                                                                                          \
     template const RETURN_T& fe::OpenGLResourceManager::GetResource(GPUHandle<HANDLE_T> handle) const;
 
 GET_RESOURCE_INSTANCE(fe::OpenGLShaderProgram, fe::resource::Material, m_StorageShaderPrograms)
-GET_RESOURCE_INSTANCE(fe::OpenGLMesh, resource::Model::Mesh, m_StorageMeshes)
-GET_RESOURCE_INSTANCE(fe::OpenGLTexture, resource::Texture, m_StorageTextures)
+GET_RESOURCE_INSTANCE(fe::OpenGLMesh, fe::resource::Model::Mesh, m_StorageMeshes)
+GET_RESOURCE_INSTANCE(fe::OpenGLTexture, fe::resource::Texture, m_StorageTextures)
 
 #undef GET_RESOURCE_INSTANCE
 

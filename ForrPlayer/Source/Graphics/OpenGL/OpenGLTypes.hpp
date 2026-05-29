@@ -31,16 +31,6 @@ namespace fe {
         FORR_RESOURCE_BODY(OpenGLTexture)
     };
 
-    // shader 'program' because it is not only vertex, only fragment or only compute shader, but combined
-    struct OpenGLShaderProgram {
-        fe::gl::ShaderProgram shader_program{};
-
-        OpenGLShaderProgram()  = default;
-        ~OpenGLShaderProgram() = default;
-
-        FORR_RESOURCE_BODY(OpenGLShaderProgram)
-    };
-
     struct OpenGLShaderBuffer {
         struct Binding {
             uint8_t*       mapped{};
@@ -59,6 +49,17 @@ namespace fe {
         ~OpenGLShaderBuffer() = default;
 
         FORR_RESOURCE_BODY(OpenGLShaderBuffer)
+    };
+
+    // shader 'program' because it is not only vertex, only fragment or only compute shader, but combined
+    struct OpenGLShaderProgram {
+        fe::gl::ShaderProgram shader_program{};
+        OpenGLShaderBuffer    shader_buffers{};
+
+        OpenGLShaderProgram()  = default;
+        ~OpenGLShaderProgram() = default;
+
+        FORR_RESOURCE_BODY(OpenGLShaderProgram)
     };
 
     struct OpenGLPrimitive {

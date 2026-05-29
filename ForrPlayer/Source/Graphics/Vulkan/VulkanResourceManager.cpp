@@ -56,25 +56,22 @@ template void fe::VulkanResourceManager::CreateResource(Texture& texture);
 
 ///
 
-template <>
-const fe::VulkanMaterial& fe::VulkanResourceManager::GetResource(GPUHandle<resource::Material> handle) const {
-    return m_StorageMaterials[handle.index];
-}
-template const fe::VulkanMaterial& fe::VulkanResourceManager::GetResource(GPUHandle<resource::Material> handle) const;
+// TODO : provide fallbacks
+#define GET_RESOURCE_INSTANCE(RETURN_T, HANDLE_T, STORAGE)                                     \
+    template <>                                                                                \
+    const RETURN_T& fe::VulkanResourceManager::GetResource(GPUHandle<HANDLE_T> handle) const { \
+        if (STORAGE.size() <= handle.index) {                                                  \
+            fe::logging::fatal("Out of range");                                                \
+        }                                                                                      \
+        return STORAGE[handle.index];                                                          \
+    }                                                                                          \
+    template const RETURN_T& fe::VulkanResourceManager::GetResource(GPUHandle<HANDLE_T> handle) const;
 
-template <>
-const fe::VulkanMesh& fe::VulkanResourceManager::GetResource(GPUHandle<resource::Model::Mesh> handle) const {
-    if (m_StorageMeshes.size() <= handle.index) {
-        fe::logging::fatal("Out of range");
+GET_RESOURCE_INSTANCE(fe::VulkanMaterial, fe::resource::Material, m_StorageMaterials)
+GET_RESOURCE_INSTANCE(fe::VulkanMesh, fe::resource::Model::Mesh, m_StorageMeshes)
+GET_RESOURCE_INSTANCE(fe::VulkanTexture, fe::resource::Texture, m_StorageTextures)
 
-        // TODO : provide fallbacks
-        // TODO : create a macro for GetResource()
-    }
-
-    return m_StorageMeshes[handle.index];
-}
-template const fe::VulkanMesh& fe::VulkanResourceManager::GetResource(GPUHandle<resource::Model::Mesh> handle) const;
-
+#undef GET_RESOURCE_INSTANCE
 ///
 
 fe::GPUHandle<Model::Mesh> fe::VulkanResourceManager::createMesh(resource::Model::Mesh& mesh) {
@@ -247,6 +244,7 @@ fe::GPUHandle<Model::Mesh> fe::VulkanResourceManager::createMesh(resource::Model
 }
 
 VkDescriptorSetLayout fe::VulkanResourceManager::createDescriptorSetLayout(const Material& material) {
+    // NOTE : why only vertex shader ?
     const auto& vertex_shader = *m_ResourceManager.GetResource(material.vertex_shader_ptr);
 
     std::vector<VkDescriptorSetLayoutBinding> bindings{};

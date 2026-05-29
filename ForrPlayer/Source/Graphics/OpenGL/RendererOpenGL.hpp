@@ -27,9 +27,16 @@ namespace fe {
         constexpr inline static size_t MAX_CONCURRENT_FRAMES = 2;
 
         // OpenGL don't have descriptors like Vulkan, so we have to collapse set and binding into one flat binding table
+        // static version
         template <std::size_t set_index, std::size_t binding_index>
         consteval inline static std::size_t GetBindingIndex() {
             static_assert(binding_index < MAX_BINDING_COUNT_PER_SET);
+            return ((set_index * MAX_BINDING_COUNT_PER_SET) + binding_index);
+        }
+        // OpenGL don't have descriptors like Vulkan, so we have to collapse set and binding into one flat binding table
+        // dynamic version
+        inline static std::size_t GetBindingIndex(std::size_t set_index, std::size_t binding_index) {
+            assert(binding_index < MAX_BINDING_COUNT_PER_SET);
             return ((set_index * MAX_BINDING_COUNT_PER_SET) + binding_index);
         }
 

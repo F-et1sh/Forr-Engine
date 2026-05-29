@@ -38,15 +38,16 @@ namespace fe {
 
         uint64_t sort_key{};
 
-        GPUHandle<resource::Model::Mesh> mesh_handle{};
-        GPUHandle<resource::Material>    material_handle{};
+        // TODO : change this to fe::pointer<>
+        GPUHandle<resource::Model::Mesh>    mesh_handle{};
+        fe::pointer<fe::resource::Material> material_ptr{};
 
-        DrawCommand() = default;
+        DrawCommand()  = default;
         ~DrawCommand() = default;
     };
 
     struct RenderPacket {
-        std::vector<glm::mat4>   object_transforms{}; 
+        std::vector<glm::mat4>   object_transforms{};
         std::vector<DrawCommand> draw_commands{};
         std::vector<GPULight>    lights{};
 

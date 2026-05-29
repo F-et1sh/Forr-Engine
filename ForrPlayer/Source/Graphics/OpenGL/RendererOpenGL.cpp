@@ -196,17 +196,28 @@ void fe::RendererOpenGL::handleRenderQueue(const RenderPacket& render_packet) {
 
     // draw
     for (const auto& draw_command : render_packet.draw_commands) {
-        const auto& opengl_shader_program = m_OpenGLResourceManager.GetResource(draw_command.material_handle);
+        const auto& material              = m_ResourceManager.GetResource(draw_command.material_ptr);
+        const auto& opengl_shader_program = m_OpenGLResourceManager.GetResource(material->gpu_handle);
 
         // bind shader ( material )
-        if (draw_command.material_handle != m_CurrentMaterial) {
-            m_CurrentMaterial = draw_command.material_handle;
+        if (material->gpu_handle != m_CurrentMaterial) {
+            m_CurrentMaterial = material->gpu_handle;
 
             glUseProgram(opengl_shader_program.shader_program);
 
-            
+            const auto& material_bindings = opengl_shader_program.shader_buffers.bindings;
+            for (std::size_t i = 0; i < material_bindings.size(); i++) {
+                const auto&       binding       = material_bindings[i];
+                const std::size_t binding_index = GetBindingIndex(1, i);
 
-            const std::size_t material_binding_index = GetBindingIndex<1, 0>();
+                auto* ptr = static_cast<uint8_t*>(binding.mapped);
+                if (!material->buffer.empty()) {
+                    size_t bytes_to_copy = material->buffer.size() * sizeof(uint8_t);
+                    memcpy(ptr, material->buffer.data(), bytes_to_copy);
+                }
+                GLuint buffer_raw = binding.buffer.get();
+                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_index, buffer_raw);
+            }
         }
 
         // bind vertex buffer

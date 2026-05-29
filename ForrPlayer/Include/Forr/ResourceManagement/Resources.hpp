@@ -176,6 +176,15 @@ namespace fe::resource {
         fe::pointer<fe::resource::Shader> fragment_shader_ptr{};
         // add more later...
 
+        struct Sampler {
+            std::size_t          offset{};
+            fe::pointer<Texture> texture_ptr{};
+
+            Sampler()  = default;
+            ~Sampler() = default;
+        };
+
+        std::vector<Sampler> samplers{};
         std::vector<uint8_t> buffer{};
 
         Material()  = default;
