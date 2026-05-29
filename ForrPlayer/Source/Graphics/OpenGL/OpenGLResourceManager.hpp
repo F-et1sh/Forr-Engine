@@ -30,7 +30,7 @@ namespace fe {
 
         // here used 'typename T' instead of 'resource::resource_t T' because this function can be called by GPU types too
         // for example : 'typename T = OpenGLShaderProgram', which is called by 'OpenGLMaterial'
-        // 
+        //
         // If you getting error E0493 - you forgot to add your GPU resource to OpenGLResourceTraits
         template <typename T>
         const typename OpenGLResourceTraits<T>::type& GetResource(GPUHandle<T> handle) const;
@@ -39,13 +39,15 @@ namespace fe {
              // The functions return 'GPUHandle<>' but you DON'T have to set 'GPUHandle<> gpu_handle' in the resources, the functions does it by themselves
 
         fe::GPUHandle<fe::resource::Model::Mesh> createMesh(resource::Model::Mesh& mesh);
-        GPUHandle<OpenGLShaderProgram>           createShaderProgram(OpenGLMaterial& opengl_material, std::vector<resource::Shader*> shaders);
+
+    private: // helpers
+        GLuint createShaderProgramRaw(std::vector<resource::Shader*> shaders);
 
     private:
         // this function returns the index of the resource ( GPUHandle<>::index )
-        // you DON'T have to set 'GPUHandle<> gpu_handle' in the resources by yourself, the function does it by itself
-        template <typename T, typename GPU_T>
-        size_t storeResource(GPUHandle<T>& gpu_handle_dst, GPU_T& gpu_resource, std::vector<GPU_T>& storage) {
+        // you DON'T have to set 'GPUHandle<> gpu_handle' in the resource manually, the function does it by itself
+        template <typename CPU_T, typename GPU_T>
+        size_t storeResource(GPUHandle<CPU_T>& gpu_handle_dst, GPU_T& gpu_resource, std::vector<GPU_T>& storage) {
             storage.emplace_back(std::move(gpu_resource));
             gpu_handle_dst.index = storage.size() - 1;
             return gpu_handle_dst.index;
@@ -54,7 +56,6 @@ namespace fe {
     private:
         ResourceManager& m_ResourceManager;
 
-        std::vector<OpenGLMaterial>      m_StorageMaterials{};
         std::vector<OpenGLShaderProgram> m_StorageShaderPrograms{};
         std::vector<OpenGLMesh>          m_StorageMeshes{};
         std::vector<OpenGLTexture>       m_StorageTextures{};

@@ -61,16 +61,6 @@ namespace fe {
         FORR_RESOURCE_BODY(OpenGLShaderBuffer)
     };
 
-    struct OpenGLMaterial {
-        GPUHandle<OpenGLShaderProgram> shader_program_handle{};
-        // std::vector<uint8_t> buffer{}; - take this from the CPU material ( fe::resource::Material ) when drawing
-
-        OpenGLMaterial()  = default;
-        ~OpenGLMaterial() = default;
-
-        FORR_RESOURCE_BODY(OpenGLMaterial)
-    };
-
     struct OpenGLPrimitive {
         GLenum render_mode{};
 
@@ -100,8 +90,7 @@ namespace fe {
     concept opengl_resource_t =
         (std::is_same_v<T, OpenGLTexture>) ||
         (std::is_same_v<T, OpenGLMesh>) ||
-        (std::is_same_v<T, OpenGLShaderProgram>) ||
-        (std::is_same_v<T, OpenGLMaterial>);
+        (std::is_same_v<T, OpenGLShaderProgram>);
 
     template <typename T>
     struct OpenGLResourceTraits;
@@ -115,8 +104,7 @@ namespace fe {
     OPENGL_RESOURCE_TRAITS_INSTANCE(resource::Texture, OpenGLTexture)
     OPENGL_RESOURCE_TRAITS_INSTANCE(resource::Model::Mesh, OpenGLMesh)
     //OPENGL_RESOURCE_TRAITS_INSTANCE(resource::Shader, OpenGLShaderProgram) // this mustn't work because 'resource::Shader' is a single shader and 'OpenGLShaderProgram' is a program, which contains at least 2 shaders
-    OPENGL_RESOURCE_TRAITS_INSTANCE(OpenGLShaderProgram, OpenGLShaderProgram) // this needs to use 'GPUHandle<OpenGLShaderProgram>' in GPU side
-    OPENGL_RESOURCE_TRAITS_INSTANCE(resource::Material, OpenGLMaterial)
+    OPENGL_RESOURCE_TRAITS_INSTANCE(resource::Material, OpenGLShaderProgram)
 
 #undef FORR_RESOURCE_BODY
 } // namespace fe

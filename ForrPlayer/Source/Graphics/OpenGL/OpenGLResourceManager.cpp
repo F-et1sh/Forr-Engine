@@ -17,14 +17,14 @@ using namespace fe::resource;
 
 template <>
 void fe::OpenGLResourceManager::CreateResource(Material& material) {
-    OpenGLMaterial opengl_material{};
-
     auto vertex_shader   = m_ResourceManager.GetResource(material.vertex_shader_ptr);
     auto fragment_shader = m_ResourceManager.GetResource(material.fragment_shader_ptr);
 
-    this->createShaderProgram(opengl_material, { vertex_shader, fragment_shader });
+    OpenGLShaderProgram opengl_shader_program{};
+    GLuint              opengl_shader_program_raw = this->createShaderProgramRaw({ vertex_shader, fragment_shader });
+    opengl_shader_program.shader_program.attach(opengl_shader_program_raw);
 
-    this->storeResource(material.gpu_handle, opengl_material, m_StorageMaterials);
+    this->storeResource(material.gpu_handle, opengl_shader_program, m_StorageShaderPrograms);
 }
 template void fe::OpenGLResourceManager::CreateResource(Material& material);
 
@@ -152,23 +152,18 @@ template void fe::OpenGLResourceManager::CreateResource(Texture& texture);
 
 ///
 
-template <>
-const fe::OpenGLMaterial& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Material> handle) const {
-    return m_StorageMaterials[handle.index];
-}
-template const fe::OpenGLMaterial& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Material> handle) const;
+#define GET_RESOURCE_INSTANCE(RETURN_T, HANDLE_T, STORAGE)                                     \
+    template <>                                                                                \
+    const RETURN_T& fe::OpenGLResourceManager::GetResource(GPUHandle<HANDLE_T> handle) const { \
+        return STORAGE[handle.index];                                                          \
+    }                                                                                          \
+    template const RETURN_T& fe::OpenGLResourceManager::GetResource(GPUHandle<HANDLE_T> handle) const;
 
-template <>
-const fe::OpenGLShaderProgram& fe::OpenGLResourceManager::GetResource(GPUHandle<OpenGLShaderProgram> handle) const {
-    return m_StorageShaderPrograms[handle.index];
-}
-template const fe::OpenGLShaderProgram& fe::OpenGLResourceManager::GetResource(GPUHandle<OpenGLShaderProgram> handle) const;
+GET_RESOURCE_INSTANCE(fe::OpenGLShaderProgram, fe::resource::Material, m_StorageShaderPrograms)
+GET_RESOURCE_INSTANCE(fe::OpenGLMesh, resource::Model::Mesh, m_StorageMeshes)
+GET_RESOURCE_INSTANCE(fe::OpenGLTexture, resource::Texture, m_StorageTextures)
 
-template <>
-const fe::OpenGLMesh& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Model::Mesh> handle) const {
-    return m_StorageMeshes[handle.index];
-}
-template const fe::OpenGLMesh& fe::OpenGLResourceManager::GetResource(GPUHandle<resource::Model::Mesh> handle) const;
+#undef GET_RESOURCE_INSTANCE
 
 ///
 
@@ -237,9 +232,8 @@ fe::GPUHandle<Model::Mesh> fe::OpenGLResourceManager::createMesh(resource::Model
     return GPUHandle<Model::Mesh>(this->storeResource(mesh.gpu_handle, opengl_mesh, m_StorageMeshes));
 }
 
-fe::GPUHandle<fe::OpenGLShaderProgram> fe::OpenGLResourceManager::createShaderProgram(OpenGLMaterial& opengl_material, std::vector<resource::Shader*> shaders) {
-    OpenGLShaderProgram opengl_shader_program{};
-    GLuint              opengl_shader_program_raw = glCreateProgram();
+GLuint fe::OpenGLResourceManager::createShaderProgramRaw(std::vector<resource::Shader*> shaders) {
+    GLuint opengl_shader_program_raw = glCreateProgram();
 
     for (size_t i = 0; i < shaders.size(); i++) {
         const auto& shader = shaders[i];
@@ -281,7 +275,5 @@ fe::GPUHandle<fe::OpenGLShaderProgram> fe::OpenGLResourceManager::createShaderPr
     glLinkProgram(opengl_shader_program_raw);
     glValidateProgram(opengl_shader_program_raw);
 
-    opengl_shader_program.shader_program.attach(opengl_shader_program_raw);
-
-    return GPUHandle<OpenGLShaderProgram>(this->storeResource(opengl_material.shader_program_handle, opengl_shader_program, m_StorageShaderPrograms));
+    return opengl_shader_program_raw;
 }

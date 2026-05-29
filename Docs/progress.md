@@ -1,5 +1,18 @@
 ﻿# Forr-Engine Devlog
 
+## 29.05.2026
+### Goal
+    provide textures
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+    ( this all needs code review )
+
+### Done
+    fe::OpenGLMaterial removed ( unused abstraction layer ). Now fe::resource::Material --> fe::OpenGLShaderProgram/fe::VulkanMaterial
+
+### Problem
+    -
+
 ## 28.05.2026
 ### Goal
     provide textures
