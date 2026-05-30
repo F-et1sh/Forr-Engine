@@ -102,10 +102,10 @@ namespace fe {
         using type = GPU_TYPE;                              \
     };
 
-    OPENGL_RESOURCE_TRAITS_INSTANCE(resource::Texture, OpenGLTexture)
     OPENGL_RESOURCE_TRAITS_INSTANCE(resource::Model::Mesh, OpenGLMesh)
     //OPENGL_RESOURCE_TRAITS_INSTANCE(resource::Shader, OpenGLShaderProgram) // this mustn't work because 'resource::Shader' is a single shader and 'OpenGLShaderProgram' is a program, which contains at least 2 shaders
     OPENGL_RESOURCE_TRAITS_INSTANCE(resource::Material, OpenGLShaderProgram)
+    OPENGL_RESOURCE_TRAITS_INSTANCE(resource::Texture, OpenGLTexture)
 
 #undef FORR_RESOURCE_BODY
 } // namespace fe

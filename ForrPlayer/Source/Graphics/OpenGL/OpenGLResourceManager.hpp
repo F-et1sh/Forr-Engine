@@ -21,19 +21,21 @@ namespace fe {
             : m_ResourceManager(resource_manager) {}
         ~OpenGLResourceManager() = default;
 
-        // this function won't return you 'GPUHandle<>'
-        // you passing 'T&', which is not 'const' -> it sets 'GPUHandle<>' of the resource inside
-        // Why : for example, 'fe::resource::Model' does not have 'GPUHandle<Model> gpu_handle' in it
-        // instead, it has 'std::vector<Mesh>', which has 'GPUHandle<Mesh> gpu_handle' in it]
-        template <resource::resource_t T>
-        void CreateResource(T& resource);
+        /*
+          this function won't return you 'GPUHandle<>'
+          you passing 'T&', which is not 'const' -> it sets 'GPUHandle<>' of the resource inside
+          Why : for example, 'fe::resource::Model' does not have 'GPUHandle<Model> gpu_handle' in it
+          instead, it has 'std::vector<Mesh>', which has 'GPUHandle<Mesh> gpu_handle' in it
+        */
+        ///@{
+        void CreateResource(resource::Model& model);
+        void CreateResource(resource::Material& material);
+        void CreateResource(resource::Texture& texture);
+        ///@}
 
-        // here used 'typename T' instead of 'resource::resource_t T' because this function can be called by GPU types too
-        // for example : 'typename T = OpenGLShaderProgram', which is called by 'OpenGLMaterial'
-        //
-        // If you getting error E0493 - you forgot to add your GPU resource to OpenGLResourceTraits
-        template <typename T>
-        const typename OpenGLResourceTraits<T>::type& GetResource(GPUHandle<T> handle) const;
+        const OpenGLMesh&          GetResource(GPUHandle<resource::Model::Mesh> handle) const;
+        const OpenGLShaderProgram& GetResource(GPUHandle<resource::Material> handle) const;
+        const OpenGLTexture&       GetResource(GPUHandle<resource::Texture> handle) const;
 
     private: // here functions, which used like helpers to create some resources that don't have thier own CPU realization.
              // The functions return 'GPUHandle<>' but you DON'T have to set 'GPUHandle<> gpu_handle' in the resources, the functions does it by themselves

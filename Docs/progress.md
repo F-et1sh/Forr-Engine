@@ -1,5 +1,18 @@
 ﻿# Forr-Engine Devlog
 
+## 30.05.2026
+### Goal
+    provide textures
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+    ( this all needs code review )
+
+### Done
+    fe::resource::Material::Sampler added
+
+### Problem
+    GL_ARB_bindless_texture is not allowed. Needs to be switched from GLSL to Slang
+
 ## 29.05.2026
 ### Goal
     provide textures

@@ -184,7 +184,17 @@ namespace fe::resource {
             ~Sampler() = default;
         };
 
+        // this is needed to assign textures' data to the passing buffer
+        // it works like this :
+        // 
+        // buffer : [ data, data, null, data, null ]
+        // samplers : [ offset 2, texture_ptr 0, offset 4, texture_ptr 2 ]
+        // 
+        // then, in GPU resource manager, while creating analogue of this material,
+        // it takes every sampler from 'samplers', creates its GPU analogue and assigns
+        // it to the 'buffer' of this material, according to 'offset' of the sampler
         std::vector<Sampler> samplers{};
+        // this buffer contains all raw data you pass to the shader
         std::vector<uint8_t> buffer{};
 
         Material()  = default;

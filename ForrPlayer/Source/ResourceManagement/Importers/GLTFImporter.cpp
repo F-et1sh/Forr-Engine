@@ -265,11 +265,11 @@ void fe::GLTFImporter::loadVertices(GLTFImportContext& context, Vertices& this_v
         if (i < normals.size()) {
             vertex.normal = normals[i];
         }
-        
+
         if (i < texture_coords.size()) {
             vertex.texture_coord = texture_coords[i];
         }
-        
+
         // TODO : support this
 
         //if (i < tangents.size()) {
@@ -574,8 +574,8 @@ fe::pointer<Texture> fe::GLTFImporter::createTexture(const tinygltf::Model& mode
 #undef OPAQUE
 
 fe::pointer<Material> fe::GLTFImporter::createMaterial(GLTFImportContext& context, uint32_t tinygltf_material_index) {
-    //const tinygltf::Material& material = context.model.materials[tinygltf_material_index];
-    //Material                  this_material{};
+    const tinygltf::Material& material = context.model.materials[tinygltf_material_index];
+    Material                  this_material{};
 
     //    this_material.name = material.name;
     //
@@ -619,10 +619,17 @@ fe::pointer<Material> fe::GLTFImporter::createMaterial(GLTFImportContext& contex
     //    this_material.emissive_texture.texture_ptr   = context.GetTexture(material.emissiveTexture.index);
     //    this_material.emissive_texture.texture_coord = material.emissiveTexture.texCoord;
 
-    //auto ptr = context.storage.CreateResource<Material>(std::move(this_material));
-    //return ptr;
+    // std::size_t offset{};
 
-    return context.storage.GetContext().default_gltf_material_ptr;
+    // test
+    this_material.buffer.resize(sizeof(GPUPBRMaterial));
+
+    auto& this_base_color_sampler = this_material.samplers.emplace_back();
+    this_base_color_sampler.offset      = 0;
+    this_base_color_sampler.texture_ptr = context.GetTexture(material.pbrMetallicRoughness.baseColorTexture.index);
+
+    auto ptr = context.storage.CreateResource<Material>(std::move(this_material));
+    return ptr;
 }
 
 void fe::GLTFImporter::readVector(glm::vec2& dst, const std::vector<double>& src) {

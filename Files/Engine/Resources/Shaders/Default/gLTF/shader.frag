@@ -1,8 +1,7 @@
 ﻿#version 450 core
 #extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_NV_gpu_shader5 : enable
-#extension GL_ARB_bindless_texture : require
-#extension GL_ARB_gpu_shader_int64 : require
+#extension GL_ARB_bindless_texture : enable
 
 layout (location = 0) out vec4 fragColor;
 
@@ -31,7 +30,7 @@ struct GPULight {
 };
 
 struct PBRMaterial {
-    uint64_t base_color_texture_handle;
+    uvec2 base_color_texture_handle;
 };
 
 FORR_LAYOUT(0, 0) readonly buffer SceneData {
@@ -65,7 +64,7 @@ void main() {
 		constants.instance_index;
 #endif
 
-    uint64_t handle = material_data.materials[index].base_color_texture_handle;
+    uvec2 handle = material_data.materials[index].base_color_texture_handle;
     
     sampler2D tex = sampler2D(handle); 
     fragColor = texture(tex, i_TextureCoord);

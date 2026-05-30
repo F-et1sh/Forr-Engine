@@ -36,10 +36,12 @@ namespace fe {
 
         explicit GPUHandle(size_t index) : index(index) {}
 
-        bool operator==(GPUHandle<T> other) const { return index == other.index; }
-        bool operator!=(GPUHandle<T> other) const { return index != other.index; }
+        bool operator==(GPUHandle<T> other) const noexcept { return index == other.index; }
+        bool operator!=(GPUHandle<T> other) const noexcept { return index != other.index; }
 
-        bool operator<(GPUHandle<T> other) const { return index < other.index; }
-        bool operator>(GPUHandle<T> other) const { return index > other.index; }
+        operator bool() const noexcept { return index != ~0; }
+
+        bool operator<(GPUHandle<T> other) const noexcept { return index < other.index; }
+        bool operator>(GPUHandle<T> other) const noexcept { return index > other.index; }
     };
 } // namespace fe

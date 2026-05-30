@@ -15,7 +15,6 @@
 
 using namespace fe::resource;
 
-template <>
 void fe::OpenGLResourceManager::CreateResource(Material& material) {
     auto vertex_shader   = m_ResourceManager.GetResource(material.vertex_shader_ptr);
     auto fragment_shader = m_ResourceManager.GetResource(material.fragment_shader_ptr);
@@ -23,8 +22,6 @@ void fe::OpenGLResourceManager::CreateResource(Material& material) {
     OpenGLShaderProgram opengl_shader_program{};
     GLuint              opengl_shader_program_raw = this->createShaderProgramRaw({ vertex_shader, fragment_shader });
     opengl_shader_program.shader_program.attach(opengl_shader_program_raw);
-
-    this->storeResource(material.gpu_handle, opengl_shader_program, m_StorageShaderPrograms);
 
     opengl_shader_program.shader_buffers.bindings.reserve(vertex_shader->descriptor_sets.size());
 
@@ -52,22 +49,30 @@ void fe::OpenGLResourceManager::CreateResource(Material& material) {
     }
 
     // TODO : add for fragment shader
+
+    for (const auto& sampler : material.samplers) {
+        auto& texture = *m_ResourceManager.GetResource(sampler.texture_ptr);
+        if (!texture.gpu_handle)
+            this->CreateResource(texture);
+        const auto& opengl_texture = this->GetResource(texture.gpu_handle);
+
+        if (!material.buffer.empty())
+            std::memcpy(&material.buffer[sampler.offset], &opengl_texture.resident_id, sizeof(uint64_t));
+    }
+
+    this->storeResource(material.gpu_handle, opengl_shader_program, m_StorageShaderPrograms);
 }
-template void fe::OpenGLResourceManager::CreateResource(Material& material);
 
 ///
 
-template <>
 void fe::OpenGLResourceManager::CreateResource(Model& model) {
     for (auto& mesh : model.meshes) {
         this->createMesh(mesh);
     }
 }
-template void fe::OpenGLResourceManager::CreateResource(Model& model);
 
 ///
 
-template <>
 void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
     OpenGLTexture opengl_texture{};
 
@@ -175,20 +180,15 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
 
     this->storeResource(texture.gpu_handle, opengl_texture, m_StorageTextures);
 }
-template void fe::OpenGLResourceManager::CreateResource(Texture& texture);
-
-///
 
 // TODO : provide fallbacks
 #define GET_RESOURCE_INSTANCE(RETURN_T, HANDLE_T, STORAGE)                                     \
-    template <>                                                                                \
     const RETURN_T& fe::OpenGLResourceManager::GetResource(GPUHandle<HANDLE_T> handle) const { \
         if (STORAGE.size() <= handle.index) {                                                  \
             fe::logging::fatal("Out of range");                                                \
         }                                                                                      \
         return STORAGE[handle.index];                                                          \
-    }                                                                                          \
-    template const RETURN_T& fe::OpenGLResourceManager::GetResource(GPUHandle<HANDLE_T> handle) const;
+    }
 
 GET_RESOURCE_INSTANCE(fe::OpenGLShaderProgram, fe::resource::Material, m_StorageShaderPrograms)
 GET_RESOURCE_INSTANCE(fe::OpenGLMesh, fe::resource::Model::Mesh, m_StorageMeshes)
@@ -198,7 +198,7 @@ GET_RESOURCE_INSTANCE(fe::OpenGLTexture, fe::resource::Texture, m_StorageTexture
 
 ///
 
-fe::GPUHandle<Model::Mesh> fe::OpenGLResourceManager::createMesh(resource::Model::Mesh& mesh) {
+fe::GPUHandle<fe::resource::Model::Mesh> fe::OpenGLResourceManager::createMesh(resource::Model::Mesh& mesh) {
     OpenGLMesh opengl_mesh{};
 
     GLuint vao{};
