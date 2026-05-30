@@ -38,7 +38,7 @@ namespace fe {
         ~Vertex() = default;
     };
 
-    struct GPULight {
+    struct alignas(16) GPULight {
         //uint32_t type{};
 
         //float range{};
@@ -48,6 +48,12 @@ namespace fe {
         glm::vec4 position{};
         glm::vec4 direction{};
         glm::vec4 color_intensity{};
+    };
+
+    // this structure only helps to calculate offsets while loading glTF model
+    // you don't have to create structures like this, if you want to create your own material
+    struct alignas(16) GPUPBRMaterial {
+        std::uint64_t base_color_texture_handle{};
     };
 
     using Index = uint32_t; // convert all to uint32_t ( at least for now )
