@@ -21,12 +21,10 @@ namespace fe {
             : m_ResourceManager(resource_manager) {}
         ~OpenGLResourceManager() = default;
 
-        /*
-          this function won't return you 'GPUHandle<>'
-          you passing 'T&', which is not 'const' -> it sets 'GPUHandle<>' of the resource inside
-          Why : for example, 'fe::resource::Model' does not have 'GPUHandle<Model> gpu_handle' in it
-          instead, it has 'std::vector<Mesh>', which has 'GPUHandle<Mesh> gpu_handle' in it
-        */
+        // this function won't return you 'GPUHandle<>'
+        // you passing 'T&', which is not 'const' -> it sets 'GPUHandle<>' of the resource inside
+        // Why : for example, 'fe::resource::Model' does not have 'GPUHandle<Model> gpu_handle' in it
+        // instead, it has 'std::vector<Mesh>', which has 'GPUHandle<Mesh> gpu_handle' in it
         ///@{
         void CreateResource(resource::Model& model);
         void CreateResource(resource::Material& material);

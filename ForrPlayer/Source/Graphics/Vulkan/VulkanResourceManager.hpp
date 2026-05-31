@@ -25,15 +25,16 @@ namespace fe {
         // this function won't return you 'GPUHandle<>'
         // you passing 'T&', which is not 'const' -> it sets 'GPUHandle<>' of the resource inside
         // Why : for example, 'fe::resource::Model' does not have 'GPUHandle<Model> gpu_handle' in it
-        // instead, it has 'std::vector<Mesh>', which has 'GPUHandle<Mesh> gpu_handle' in it]
-        template <resource::resource_t T>
-        void CreateResource(T& resource);
+        // instead, it has 'std::vector<Mesh>', which has 'GPUHandle<Mesh> gpu_handle' in it
+        ///@{
+        void CreateResource(resource::Model& model);
+        void CreateResource(resource::Material& material);
+        void CreateResource(resource::Texture& texture);
+        ///@}
 
-        // here used 'typename T' instead of 'resource::resource_t T' because this function can be called by GPU types too
-        //
-        // If you getting error E0493 - you forgot to add your GPU resource to VulkanResourceTraits
-        template <typename T>
-        const typename VulkanResourceTraits<T>::type& GetResource(GPUHandle<T> handle) const;
+        const VulkanMesh&     GetResource(GPUHandle<resource::Model::Mesh> handle) const;
+        const VulkanMaterial& GetResource(GPUHandle<resource::Material> handle) const;
+        const VulkanTexture&  GetResource(GPUHandle<resource::Texture> handle) const;
 
     private:
         fe::GPUHandle<fe::resource::Model::Mesh> createMesh(resource::Model::Mesh& mesh);
