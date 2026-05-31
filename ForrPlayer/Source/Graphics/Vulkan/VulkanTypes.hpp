@@ -107,17 +107,4 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(VulkanMesh)
         FORR_CLASS_MOVABLE(VulkanMesh)
     };
-
-    template <typename T>
-    struct VulkanResourceTraits;
-
-#define VULKAN_RESOURCE_TRAITS_INSTANCE(CPU_TYPE, GPU_TYPE) \
-    template <>                                             \
-    struct VulkanResourceTraits<CPU_TYPE> {                 \
-        using type = GPU_TYPE;                              \
-    };
-
-    VULKAN_RESOURCE_TRAITS_INSTANCE(resource::Model::Mesh, VulkanMesh)
-    VULKAN_RESOURCE_TRAITS_INSTANCE(resource::Material, VulkanMaterial)
-    VULKAN_RESOURCE_TRAITS_INSTANCE(resource::Texture, VulkanTexture)
 } // namespace fe

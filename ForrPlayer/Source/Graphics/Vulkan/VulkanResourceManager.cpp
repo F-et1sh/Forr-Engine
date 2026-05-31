@@ -17,7 +17,6 @@
 
 using namespace fe::resource;
 
-template <>
 void fe::VulkanResourceManager::CreateResource(Material& material) {
     VulkanMaterial vulkan_material{};
 
@@ -35,44 +34,31 @@ void fe::VulkanResourceManager::CreateResource(Material& material) {
 
     this->storeResource(material.gpu_handle, vulkan_material, m_StorageMaterials);
 }
-template void fe::VulkanResourceManager::CreateResource(Material& material);
 
-///
-
-template <>
 void fe::VulkanResourceManager::CreateResource(Model& model) {
     for (auto& mesh : model.meshes) {
         this->createMesh(mesh);
     }
 }
-template void fe::VulkanResourceManager::CreateResource(Model& model);
 
-///
-
-template <>
 void fe::VulkanResourceManager::CreateResource(Texture& texture) {
+    
 }
-template void fe::VulkanResourceManager::CreateResource(Texture& texture);
-
-///
 
 // TODO : provide fallbacks
 #define GET_RESOURCE_INSTANCE(RETURN_T, HANDLE_T, STORAGE)                                     \
-    template <>                                                                                \
     const RETURN_T& fe::VulkanResourceManager::GetResource(GPUHandle<HANDLE_T> handle) const { \
         if (STORAGE.size() <= handle.index) {                                                  \
             fe::logging::fatal("Out of range");                                                \
         }                                                                                      \
         return STORAGE[handle.index];                                                          \
-    }                                                                                          \
-    template const RETURN_T& fe::VulkanResourceManager::GetResource(GPUHandle<HANDLE_T> handle) const;
+    }
 
 GET_RESOURCE_INSTANCE(fe::VulkanMaterial, fe::resource::Material, m_StorageMaterials)
 GET_RESOURCE_INSTANCE(fe::VulkanMesh, fe::resource::Model::Mesh, m_StorageMeshes)
 GET_RESOURCE_INSTANCE(fe::VulkanTexture, fe::resource::Texture, m_StorageTextures)
 
 #undef GET_RESOURCE_INSTANCE
-///
 
 fe::GPUHandle<Model::Mesh> fe::VulkanResourceManager::createMesh(resource::Model::Mesh& mesh) {
     VulkanMesh vulkan_mesh{};
@@ -248,7 +234,7 @@ VkDescriptorSetLayout fe::VulkanResourceManager::createDescriptorSetLayout(const
     const auto& vertex_shader = *m_ResourceManager.GetResource(material.vertex_shader_ptr);
 
     std::vector<VkDescriptorSetLayoutBinding> bindings{};
-    std::vector<VkDescriptorBindingFlags> binding_flags{};
+    std::vector<VkDescriptorBindingFlags>     binding_flags{};
 
     //const auto& reflected_set = vertex_shader.descriptor_sets[1]; // material's descriptor set
     //
@@ -285,7 +271,7 @@ VkDescriptorSetLayout fe::VulkanResourceManager::createDescriptorSetLayout(const
 
     VkDescriptorSetLayoutCreateInfo descriptor_layout_create_info{};
     descriptor_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    descriptor_layout_create_info.flags        = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT; 
+    descriptor_layout_create_info.flags        = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
     descriptor_layout_create_info.bindingCount = bindings.size();
     descriptor_layout_create_info.pBindings    = bindings.data();
     descriptor_layout_create_info.pNext        = &descriptor_set_layout_binding_flags_create_info;

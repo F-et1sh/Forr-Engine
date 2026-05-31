@@ -63,15 +63,11 @@ void fe::OpenGLResourceManager::CreateResource(Material& material) {
     this->storeResource(material.gpu_handle, opengl_shader_program, m_StorageShaderPrograms);
 }
 
-///
-
 void fe::OpenGLResourceManager::CreateResource(Model& model) {
     for (auto& mesh : model.meshes) {
         this->createMesh(mesh);
     }
 }
-
-///
 
 void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
     OpenGLTexture opengl_texture{};
@@ -195,8 +191,6 @@ GET_RESOURCE_INSTANCE(fe::OpenGLMesh, fe::resource::Model::Mesh, m_StorageMeshes
 GET_RESOURCE_INSTANCE(fe::OpenGLTexture, fe::resource::Texture, m_StorageTextures)
 
 #undef GET_RESOURCE_INSTANCE
-
-///
 
 fe::GPUHandle<fe::resource::Model::Mesh> fe::OpenGLResourceManager::createMesh(resource::Model::Mesh& mesh) {
     OpenGLMesh opengl_mesh{};
