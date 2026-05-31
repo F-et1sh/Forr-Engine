@@ -9,6 +9,7 @@
 
 ### Done
     VulkanResourceManager reviewed like OpenGLResourceManager before
+    VulkanTexture is not empty now
 
 ### Problem
     -
@@ -18,10 +19,10 @@
     provide textures
     ( fix window resizing for GL/VK )
     ( do not create GPU resources if they're already created --> InitializeGPUResources() )
-    ( this all needs code review )
 
 ### Done
     fe::resource::Material::Sampler added
+    here done a lot of things that wasn't written
 
 ### Problem
     GL_ARB_bindless_texture is not allowed. Needs to be switched from GLSL to Slang
