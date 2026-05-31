@@ -32,6 +32,8 @@ void fe::VulkanResourceManager::CreateResource(Material& material) {
     pipeline_raw = this->createPipeline(pipeline_layout_raw, material);
     vulkan_material.pipeline.attach(m_Context.device, pipeline_raw);
 
+    // TODO : material.buffer
+
     this->storeResource(material.gpu_handle, vulkan_material, m_StorageMaterials);
 }
 
@@ -42,7 +44,11 @@ void fe::VulkanResourceManager::CreateResource(Model& model) {
 }
 
 void fe::VulkanResourceManager::CreateResource(Texture& texture) {
-    
+    VulkanTexture vulkan_texture{};
+
+
+
+    this->storeResource(texture.gpu_handle, vulkan_texture, m_StorageTextures);
 }
 
 // TODO : provide fallbacks

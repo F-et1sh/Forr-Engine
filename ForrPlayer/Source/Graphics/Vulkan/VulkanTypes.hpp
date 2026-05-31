@@ -88,7 +88,17 @@ namespace fe {
         FORR_CLASS_MOVABLE(VulkanShaderBuffer)
     };
 
-    struct VulkanTexture { // TODO : provide textures
+    struct VulkanTexture {
+        VkImageLayout image_layout{};
+
+        uint32_t width{};
+        uint32_t height{};
+        uint32_t mip_levels{};
+
+        vk::DeviceMemory device_memory{};
+        vk::Sampler      sampler{};
+        vk::Image        image{};
+        vk::ImageView    view{};
 
         VulkanTexture()  = default;
         ~VulkanTexture() = default;
