@@ -92,6 +92,7 @@ namespace fe::resource {
 
         std::unique_ptr<unsigned char[]> bytes{};
         //fe::ArenaMarker offset{}; // TODO : think about using this instead of std::unique_ptr<>
+        std::size_t size{};
 
         Texture()  = default;
         ~Texture() = default;

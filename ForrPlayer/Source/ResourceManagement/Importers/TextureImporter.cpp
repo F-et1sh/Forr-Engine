@@ -57,6 +57,7 @@ fe::pointer<Texture> fe::TextureImporter::Import(ResourceStorage& storage, const
 
     size_t buffer_size = width * height * components;
     texture.bytes      = std::make_unique<unsigned char[]>(buffer_size);
+    texture.size       = buffer_size;
 
     // bytes are already checked that it is not nullptr
     std::copy(bytes, bytes + buffer_size, texture.bytes.get());
