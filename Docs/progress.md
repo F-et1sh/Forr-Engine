@@ -1,5 +1,18 @@
 ﻿# Forr-Engine Devlog
 
+## 02.06.2026
+### Goal
+    provide texture's concept to Vulkan ( don't push to the shader, CPU only )
+    chnage GLSL to Slang
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    Trying to create fe::VulkanTexture by fe::resource::Texture
+
+### Problem
+    Tired. I'll leave this for tomorrow
+
 ## 31.05.2026
 ### Goal
     provide texture's concept to Vulkan ( don't push to the shader, CPU only )
