@@ -30,7 +30,7 @@ namespace fe {
         void CreateResource(resource::Model& model);
         void CreateResource(resource::Material& material);
         void CreateResource(resource::Texture& texture);
-        ///@}
+        ///@} <-- This does not work. What is wrong with MS Visual Studio 2022 ?
 
         const VulkanMesh&     GetResource(GPUHandle<resource::Model::Mesh> handle) const;
         const VulkanMaterial& GetResource(GPUHandle<resource::Material> handle) const;

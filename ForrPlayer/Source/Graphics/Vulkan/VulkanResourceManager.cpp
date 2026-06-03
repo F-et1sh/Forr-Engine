@@ -15,6 +15,9 @@
 
 #include "Graphics/Vulkan/VKTools.hpp"
 
+#define VMA_IMPLEMENTATION
+#include <vma/vk_mem_alloc.h>
+
 using namespace fe::resource;
 
 void fe::VulkanResourceManager::CreateResource(Material& material) {
@@ -43,300 +46,309 @@ void fe::VulkanResourceManager::CreateResource(Model& model) {
     }
 }
 
-void fe::VulkanResourceManager::CreateResource(Texture& texture) {
-    VulkanTexture vulkan_texture{};
+void fe::VulkanResourceManager::CreateResource(Texture& texture){
+    VmaAllocator allocator{};
 
-    VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+    VmaAllocationCreateInfo allocInfo{};
+    allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
 
-    vulkan_texture.width      = texture.width;
-    vulkan_texture.height     = texture.height;
-    vulkan_texture.mip_levels = texture.mip_levels.size();
+    VkBuffer      buffer;
+    VmaAllocation allocation;
+    vmaCreateBuffer(allocator, nullptr, &allocInfo, &buffer, &allocation, nullptr);
 
-    VkBool32 use_staging = true;
+    //VulkanTexture vulkan_texture{};
 
-    bool force_linear_tiling = false;
-    if (force_linear_tiling) {
-        VkFormatProperties format_properties{};
-        vkGetPhysicalDeviceFormatProperties(m_Context.physical_device, format, &format_properties);
-        use_staging = !(format_properties.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
-    }
+    //VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
 
-    VkMemoryAllocateInfo memory_allocate_info{};
-    memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    VkMemoryRequirements memory_requirements{};
+    //vulkan_texture.width      = texture.width;
+    //vulkan_texture.height     = texture.height;
+    //vulkan_texture.mip_levels = texture.mip_levels.size();
 
-    if (use_staging) {
-        vk::Buffer       staging_buffer{};
-        vk::DeviceMemory staging_memory{};
+    //VkBool32 use_staging = true;
 
-        VkBufferCreateInfo buffer_create_info{};
-        buffer_create_info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        buffer_create_info.size        = texture.size;
-        buffer_create_info.usage       = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    //bool force_linear_tiling = false;
+    //if (force_linear_tiling) {
+    //    VkFormatProperties format_properties{};
+    //    vkGetPhysicalDeviceFormatProperties(m_Context.physical_device, format, &format_properties);
+    //    use_staging = !(format_properties.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+    //}
 
-        VkBuffer staging_buffer_raw{};
-        VK_CHECK_RESULT(vkCreateBuffer(m_Context.device, &buffer_create_info, nullptr, &staging_buffer_raw));
-        staging_buffer.attach(m_Context.device, staging_buffer_raw);
+    //VkMemoryAllocateInfo memory_allocate_info{};
+    //memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    //VkMemoryRequirements memory_requirements{};
 
-        vkGetBufferMemoryRequirements(m_Context.device, staging_buffer, &memory_requirements);
-        memory_allocate_info.allocationSize  = memory_requirements.size;
-        memory_allocate_info.memoryTypeIndex = fe::getMemoryType(m_Context, memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    //if (use_staging) {
+    //    vk::Buffer       staging_buffer{};
+    //    vk::DeviceMemory staging_memory{};
 
-        VkDeviceMemory staging_memory_raw{};
-        VK_CHECK_RESULT(vkAllocateMemory(m_Context.device, &memory_allocate_info, nullptr, &staging_memory_raw));
-        staging_memory.attach(m_Context.device, staging_memory_raw);
+    //    VkBufferCreateInfo buffer_create_info{};
+    //    buffer_create_info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    //    buffer_create_info.size        = texture.size;
+    //    buffer_create_info.usage       = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    //    buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        VK_CHECK_RESULT(vkBindBufferMemory(m_Context.device, staging_buffer, staging_memory, 0));
+    //    VkBuffer staging_buffer_raw{};
+    //    VK_CHECK_RESULT(vkCreateBuffer(m_Context.device, &buffer_create_info, nullptr, &staging_buffer_raw));
+    //    staging_buffer.attach(m_Context.device, staging_buffer_raw);
 
-        uint8_t* data{};
-        VK_CHECK_RESULT(vkMapMemory(m_Context.device, staging_memory, 0, memory_requirements.size, 0, (void**) &data));
-        memcpy(data, texture.bytes.get(), texture.size);
-        vkUnmapMemory(m_Context.device, staging_memory);
+    //    vkGetBufferMemoryRequirements(m_Context.device, staging_buffer, &memory_requirements);
+    //    memory_allocate_info.allocationSize  = memory_requirements.size;
+    //    memory_allocate_info.memoryTypeIndex = fe::getMemoryType(m_Context, memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-        std::vector<VkBufferImageCopy> buffer_copy_regions{};
-        buffer_copy_regions.reserve(texture.mip_levels.size());
-        uint32_t offset = 0;
+    //    VkDeviceMemory staging_memory_raw{};
+    //    VK_CHECK_RESULT(vkAllocateMemory(m_Context.device, &memory_allocate_info, nullptr, &staging_memory_raw));
+    //    staging_memory.attach(m_Context.device, staging_memory_raw);
 
-        for (uint32_t i = 0; i < texture.mip_levels.size(); i++) {
-            VkBufferImageCopy buffer_copy_region{};
-            buffer_copy_region.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-            buffer_copy_region.imageSubresource.mipLevel       = i;
-            buffer_copy_region.imageSubresource.baseArrayLayer = 0;
-            buffer_copy_region.imageSubresource.layerCount     = 1;
-            buffer_copy_region.imageExtent.width               = texture.mip_levels[i].width;
-            buffer_copy_region.imageExtent.height              = texture.mip_levels[i].height;
-            buffer_copy_region.imageExtent.depth               = 1;
-            buffer_copy_region.bufferOffset                    = texture.mip_levels[i].offset;
+    //    VK_CHECK_RESULT(vkBindBufferMemory(m_Context.device, staging_buffer, staging_memory, 0));
 
-            buffer_copy_regions.emplace_back(buffer_copy_region);
-        }
+    //    uint8_t* data{};
+    //    VK_CHECK_RESULT(vkMapMemory(m_Context.device, staging_memory, 0, memory_requirements.size, 0, (void**) &data));
+    //    memcpy(data, texture.bytes.get(), texture.size);
+    //    vkUnmapMemory(m_Context.device, staging_memory);
 
-        VkImageCreateInfo image_create_info{};
-        image_create_info.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        image_create_info.imageType     = VK_IMAGE_TYPE_2D;
-        image_create_info.format        = format;
-        image_create_info.mipLevels     = vulkan_texture.mip_levels;
-        image_create_info.arrayLayers   = 1;
-        image_create_info.samples       = VK_SAMPLE_COUNT_1_BIT;
-        image_create_info.tiling        = VK_IMAGE_TILING_OPTIMAL;
-        image_create_info.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;
-        image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        image_create_info.extent        = { vulkan_texture.width, vulkan_texture.height, 1 };
-        image_create_info.usage         = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    //    std::vector<VkBufferImageCopy> buffer_copy_regions{};
+    //    buffer_copy_regions.reserve(texture.mip_levels.size());
+    //    uint32_t offset = 0;
 
-        VkImage image_raw{};
-        VK_CHECK_RESULT(vkCreateImage(m_Context.device, &image_create_info, nullptr, &image_raw));
-        vulkan_texture.image.attach(m_Context.device, image_raw);
+    //    for (uint32_t i = 0; i < texture.mip_levels.size(); i++) {
+    //        VkBufferImageCopy buffer_copy_region{};
+    //        buffer_copy_region.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+    //        buffer_copy_region.imageSubresource.mipLevel       = i;
+    //        buffer_copy_region.imageSubresource.baseArrayLayer = 0;
+    //        buffer_copy_region.imageSubresource.layerCount     = 1;
+    //        buffer_copy_region.imageExtent.width               = texture.mip_levels[i].width;
+    //        buffer_copy_region.imageExtent.height              = texture.mip_levels[i].height;
+    //        buffer_copy_region.imageExtent.depth               = 1;
+    //        buffer_copy_region.bufferOffset                    = texture.mip_levels[i].offset;
 
-        vkGetImageMemoryRequirements(m_Context.device, vulkan_texture.image, &memory_requirements);
-        memory_allocate_info.allocationSize  = memory_requirements.size;
-        memory_allocate_info.memoryTypeIndex = fe::getMemoryType(m_Context, memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    //        buffer_copy_regions.emplace_back(buffer_copy_region);
+    //    }
 
-        VkDeviceMemory device_memory_raw = vulkan_texture.device_memory.get();
-        VK_CHECK_RESULT(vkAllocateMemory(m_Context.device, &memory_allocate_info, nullptr, &device_memory_raw));
-        VK_CHECK_RESULT(vkBindImageMemory(m_Context.device, image_raw, device_memory_raw, 0));
+    //    VkImageCreateInfo image_create_info{};
+    //    image_create_info.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    //    image_create_info.imageType     = VK_IMAGE_TYPE_2D;
+    //    image_create_info.format        = format;
+    //    image_create_info.mipLevels     = vulkan_texture.mip_levels;
+    //    image_create_info.arrayLayers   = 1;
+    //    image_create_info.samples       = VK_SAMPLE_COUNT_1_BIT;
+    //    image_create_info.tiling        = VK_IMAGE_TILING_OPTIMAL;
+    //    image_create_info.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;
+    //    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    //    image_create_info.extent        = { vulkan_texture.width, vulkan_texture.height, 1 };
+    //    image_create_info.usage         = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
-        VkCommandBuffer copy_command_buffer{};
+    //    VkImage image_raw{};
+    //    VK_CHECK_RESULT(vkCreateImage(m_Context.device, &image_create_info, nullptr, &image_raw));
+    //    vulkan_texture.image.attach(m_Context.device, image_raw);
 
-        VkCommandBufferAllocateInfo command_buffer_allocate_info{};
-        command_buffer_allocate_info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        command_buffer_allocate_info.commandPool        = m_Context.command_pool;
-        command_buffer_allocate_info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        command_buffer_allocate_info.commandBufferCount = 1;
+    //    vkGetImageMemoryRequirements(m_Context.device, vulkan_texture.image, &memory_requirements);
+    //    memory_allocate_info.allocationSize  = memory_requirements.size;
+    //    memory_allocate_info.memoryTypeIndex = fe::getMemoryType(m_Context, memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-        VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Context.device, &command_buffer_allocate_info, &copy_command_buffer));
+    //    VkDeviceMemory device_memory_raw = vulkan_texture.device_memory.get();
+    //    VK_CHECK_RESULT(vkAllocateMemory(m_Context.device, &memory_allocate_info, nullptr, &device_memory_raw));
+    //    VK_CHECK_RESULT(vkBindImageMemory(m_Context.device, image_raw, device_memory_raw, 0));
 
-        VkImageSubresourceRange subresource_range = {};
-        subresource_range.aspectMask              = VK_IMAGE_ASPECT_COLOR_BIT;
-        subresource_range.baseMipLevel            = 0;
-        subresource_range.levelCount              = vulkan_texture.mip_levels;
-        subresource_range.layerCount              = 1;
+    //    VkCommandBuffer copy_command_buffer{};
 
-        VkImageMemoryBarrier image_memory_barrier{};
-        image_memory_barrier.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        image_memory_barrier.image               = vulkan_texture.image;
-        image_memory_barrier.subresourceRange    = subresource_range;
-        image_memory_barrier.srcAccessMask       = 0;
-        image_memory_barrier.dstAccessMask       = VK_ACCESS_TRANSFER_WRITE_BIT;
-        image_memory_barrier.oldLayout           = VK_IMAGE_LAYOUT_UNDEFINED;
-        image_memory_barrier.newLayout           = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    //    VkCommandBufferAllocateInfo command_buffer_allocate_info{};
+    //    command_buffer_allocate_info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    //    command_buffer_allocate_info.commandPool        = m_Context.command_pool;
+    //    command_buffer_allocate_info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    //    command_buffer_allocate_info.commandBufferCount = 1;
 
-        vkCmdPipelineBarrier(copy_command_buffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VkDependencyFlags{}, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+    //    VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Context.device, &command_buffer_allocate_info, &copy_command_buffer));
 
-        vkCmdCopyBufferToImage(
-            copy_command_buffer,
-            staging_buffer,
-            vulkan_texture.image,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            static_cast<uint32_t>(bufferCopyRegions.size()),
-            bufferCopyRegions.data());
+    //    VkImageSubresourceRange subresource_range = {};
+    //    subresource_range.aspectMask              = VK_IMAGE_ASPECT_COLOR_BIT;
+    //    subresource_range.baseMipLevel            = 0;
+    //    subresource_range.levelCount              = vulkan_texture.mip_levels;
+    //    subresource_range.layerCount              = 1;
 
-        // Once the data has been uploaded we transfer to the vulkan_texture image to the shader read layout, so it can be sampled from
-        image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-        image_memory_barrier.oldLayout     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        image_memory_barrier.newLayout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    //    VkImageMemoryBarrier image_memory_barrier{};
+    //    image_memory_barrier.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    //    image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    //    image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    //    image_memory_barrier.image               = vulkan_texture.image;
+    //    image_memory_barrier.subresourceRange    = subresource_range;
+    //    image_memory_barrier.srcAccessMask       = 0;
+    //    image_memory_barrier.dstAccessMask       = VK_ACCESS_TRANSFER_WRITE_BIT;
+    //    image_memory_barrier.oldLayout           = VK_IMAGE_LAYOUT_UNDEFINED;
+    //    image_memory_barrier.newLayout           = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
-        // Insert a memory dependency at the proper pipeline stages that will execute the image layout transition
-        // Source pipeline stage is copy command execution (VK_PIPELINE_STAGE_TRANSFER_BIT)
-        // Destination pipeline stage fragment shader access (VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT)
-        vkCmdPipelineBarrier(
-            copyCmd,
-            VK_PIPELINE_STAGE_TRANSFER_BIT,
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            0,
-            0,
-            nullptr,
-            0,
-            nullptr,
-            1,
-            &image_memory_barrier);
+    //    vkCmdPipelineBarrier(copy_command_buffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VkDependencyFlags{}, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 
-        // Store current layout for later reuse
-        vulkan_texture.image_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    //    vkCmdCopyBufferToImage(
+    //        copy_command_buffer,
+    //        staging_buffer,
+    //        vulkan_texture.image,
+    //        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+    //        static_cast<uint32_t>(bufferCopyRegions.size()),
+    //        bufferCopyRegions.data());
 
-        vulkanDevice->flushCommandBuffer(copyCmd, m_Context.queue_transfer, true);
+    //    // Once the data has been uploaded we transfer to the vulkan_texture image to the shader read layout, so it can be sampled from
+    //    image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    //    image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    //    image_memory_barrier.oldLayout     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    //    image_memory_barrier.newLayout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-        // Clean up staging resources
-        vkFreeMemory(m_Context.device, staging_memory, nullptr);
-        vkDestroyBuffer(m_Context.device, staging_buffer, nullptr);
-    }
-    else {
-        // Copy data to a linear tiled image
+    //    // Insert a memory dependency at the proper pipeline stages that will execute the image layout transition
+    //    // Source pipeline stage is copy command execution (VK_PIPELINE_STAGE_TRANSFER_BIT)
+    //    // Destination pipeline stage fragment shader access (VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT)
+    //    vkCmdPipelineBarrier(
+    //        copyCmd,
+    //        VK_PIPELINE_STAGE_TRANSFER_BIT,
+    //        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+    //        0,
+    //        0,
+    //        nullptr,
+    //        0,
+    //        nullptr,
+    //        1,
+    //        &image_memory_barrier);
 
-        vk::Image        mappable_image{};
-        vk::DeviceMemory mappable_memory{};
+    //    // Store current layout for later reuse
+    //    vulkan_texture.image_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-        // Load mip map level 0 to linear tiling image
-        VkImageCreateInfo imageCreateInfo = vks::initializers::imageCreateInfo();
-        imageCreateInfo.imageType         = VK_IMAGE_TYPE_2D;
-        imageCreateInfo.format            = format;
-        imageCreateInfo.mipLevels         = 1;
-        imageCreateInfo.arrayLayers       = 1;
-        imageCreateInfo.samples           = VK_SAMPLE_COUNT_1_BIT;
-        imageCreateInfo.tiling            = VK_IMAGE_TILING_LINEAR;
-        imageCreateInfo.usage             = VK_IMAGE_USAGE_SAMPLED_BIT;
-        imageCreateInfo.sharingMode       = VK_SHARING_MODE_EXCLUSIVE;
-        imageCreateInfo.initialLayout     = VK_IMAGE_LAYOUT_PREINITIALIZED;
-        imageCreateInfo.extent            = { vulkan_texture.width, vulkan_texture.height, 1 };
-        VK_CHECK_RESULT(vkCreateImage(m_Context.device, &imageCreateInfo, nullptr, &mappable_image));
+    //    vulkanDevice->flushCommandBuffer(copyCmd, m_Context.queue_transfer, true);
 
-        // Get memory requirements for this image like size and alignment
-        vkGetImageMemoryRequirements(m_Context.device, mappable_image, &memory_requirements);
-        // Set memory allocation size to required memory size
-        memory_allocate_info.allocationSize = memory_requirements.size;
-        // Get memory type that can be mapped to host memory
-        memory_allocate_info.memoryTypeIndex = vulkanDevice->getMemoryType(memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        VK_CHECK_RESULT(vkAllocateMemory(m_Context.device, &memory_allocate_info, nullptr, &mappable_memory));
-        VK_CHECK_RESULT(vkBindImageMemory(m_Context.device, mappable_image, mappable_memory, 0));
+    //    // Clean up staging resources
+    //    vkFreeMemory(m_Context.device, staging_memory, nullptr);
+    //    vkDestroyBuffer(m_Context.device, staging_buffer, nullptr);
+    //}
+    //else {
+    //    // Copy data to a linear tiled image
 
-        // Map image memory
-        void* data;
-        VK_CHECK_RESULT(vkMapMemory(m_Context.device, mappable_memory, 0, memory_requirements.size, 0, &data));
-        // Copy image data of the first mip level into memory
-        memcpy(data, ktxTextureData, memory_requirements.size);
-        vkUnmapMemory(m_Context.device, mappable_memory);
+    //    vk::Image        mappable_image{};
+    //    vk::DeviceMemory mappable_memory{};
 
-        // Linear tiled images don't need to be staged and can be directly used as textures
-        vulkan_texture.image         = std::move(mappable_image);
-        vulkan_texture.device_memory = std::move(mappable_memory);
-        vulkan_texture.image_layout  = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    //    // Load mip map level 0 to linear tiling image
+    //    VkImageCreateInfo imageCreateInfo = vks::initializers::imageCreateInfo();
+    //    imageCreateInfo.imageType         = VK_IMAGE_TYPE_2D;
+    //    imageCreateInfo.format            = format;
+    //    imageCreateInfo.mipLevels         = 1;
+    //    imageCreateInfo.arrayLayers       = 1;
+    //    imageCreateInfo.samples           = VK_SAMPLE_COUNT_1_BIT;
+    //    imageCreateInfo.tiling            = VK_IMAGE_TILING_LINEAR;
+    //    imageCreateInfo.usage             = VK_IMAGE_USAGE_SAMPLED_BIT;
+    //    imageCreateInfo.sharingMode       = VK_SHARING_MODE_EXCLUSIVE;
+    //    imageCreateInfo.initialLayout     = VK_IMAGE_LAYOUT_PREINITIALIZED;
+    //    imageCreateInfo.extent            = { vulkan_texture.width, vulkan_texture.height, 1 };
+    //    VK_CHECK_RESULT(vkCreateImage(m_Context.device, &imageCreateInfo, nullptr, &mappable_image));
 
-        // Setup image memory barrier transfer image to shader read layout
-        VkCommandBuffer copyCmd = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+    //    // Get memory requirements for this image like size and alignment
+    //    vkGetImageMemoryRequirements(m_Context.device, mappable_image, &memory_requirements);
+    //    // Set memory allocation size to required memory size
+    //    memory_allocate_info.allocationSize = memory_requirements.size;
+    //    // Get memory type that can be mapped to host memory
+    //    memory_allocate_info.memoryTypeIndex = vulkanDevice->getMemoryType(memory_requirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    //    VK_CHECK_RESULT(vkAllocateMemory(m_Context.device, &memory_allocate_info, nullptr, &mappable_memory));
+    //    VK_CHECK_RESULT(vkBindImageMemory(m_Context.device, mappable_image, mappable_memory, 0));
 
-        // The sub resource range describes the regions of the image we will be transition
-        VkImageSubresourceRange subresourceRange = {};
-        subresourceRange.aspectMask              = VK_IMAGE_ASPECT_COLOR_BIT;
-        subresourceRange.baseMipLevel            = 0;
-        subresourceRange.levelCount              = 1;
-        subresourceRange.layerCount              = 1;
+    //    // Map image memory
+    //    void* data;
+    //    VK_CHECK_RESULT(vkMapMemory(m_Context.device, mappable_memory, 0, memory_requirements.size, 0, &data));
+    //    // Copy image data of the first mip level into memory
+    //    memcpy(data, ktxTextureData, memory_requirements.size);
+    //    vkUnmapMemory(m_Context.device, mappable_memory);
 
-        // Transition the vulkan_texture image layout to shader read, so it can be sampled from
-        VkImageMemoryBarrier imageMemoryBarrier = vks::initializers::imageMemoryBarrier();
-        ;
-        imageMemoryBarrier.image            = vulkan_texture.image;
-        imageMemoryBarrier.subresourceRange = subresourceRange;
-        imageMemoryBarrier.srcAccessMask    = VK_ACCESS_HOST_WRITE_BIT;
-        imageMemoryBarrier.dstAccessMask    = VK_ACCESS_SHADER_READ_BIT;
-        imageMemoryBarrier.oldLayout        = VK_IMAGE_LAYOUT_PREINITIALIZED;
-        imageMemoryBarrier.newLayout        = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    //    // Linear tiled images don't need to be staged and can be directly used as textures
+    //    vulkan_texture.image         = std::move(mappable_image);
+    //    vulkan_texture.device_memory = std::move(mappable_memory);
+    //    vulkan_texture.image_layout  = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-        // Insert a memory dependency at the proper pipeline stages that will execute the image layout transition
-        // Source pipeline stage is host write/read execution (VK_PIPELINE_STAGE_HOST_BIT)
-        // Destination pipeline stage fragment shader access (VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT)
-        vkCmdPipelineBarrier(
-            copyCmd,
-            VK_PIPELINE_STAGE_HOST_BIT,
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            0,
-            0,
-            nullptr,
-            0,
-            nullptr,
-            1,
-            &imageMemoryBarrier);
+    //    // Setup image memory barrier transfer image to shader read layout
+    //    VkCommandBuffer copyCmd = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
-        vulkanDevice->flushCommandBuffer(copyCmd, m_Context.queue_transfer, true);
-    }
+    //    // The sub resource range describes the regions of the image we will be transition
+    //    VkImageSubresourceRange subresourceRange = {};
+    //    subresourceRange.aspectMask              = VK_IMAGE_ASPECT_COLOR_BIT;
+    //    subresourceRange.baseMipLevel            = 0;
+    //    subresourceRange.levelCount              = 1;
+    //    subresourceRange.layerCount              = 1;
 
-    ktxTexture_Destroy(ktxTexture);
+    //    // Transition the vulkan_texture image layout to shader read, so it can be sampled from
+    //    VkImageMemoryBarrier imageMemoryBarrier = vks::initializers::imageMemoryBarrier();
+    //    ;
+    //    imageMemoryBarrier.image            = vulkan_texture.image;
+    //    imageMemoryBarrier.subresourceRange = subresourceRange;
+    //    imageMemoryBarrier.srcAccessMask    = VK_ACCESS_HOST_WRITE_BIT;
+    //    imageMemoryBarrier.dstAccessMask    = VK_ACCESS_SHADER_READ_BIT;
+    //    imageMemoryBarrier.oldLayout        = VK_IMAGE_LAYOUT_PREINITIALIZED;
+    //    imageMemoryBarrier.newLayout        = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-    // Create a vulkan_texture sampler
-    // In Vulkan textures are accessed by samplers
-    // This separates all the sampling information from the vulkan_texture data. This means you could have multiple sampler objects for the same vulkan_texture with different settings
-    // Note: Similar to the samplers available with OpenGL 3.3
-    VkSamplerCreateInfo sampler = vks::initializers::samplerCreateInfo();
-    sampler.magFilter           = VK_FILTER_LINEAR;
-    sampler.minFilter           = VK_FILTER_LINEAR;
-    sampler.mipmapMode          = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    sampler.addressModeU        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    sampler.addressModeV        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    sampler.addressModeW        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    sampler.mipLodBias          = 0.0f;
-    sampler.compareOp           = VK_COMPARE_OP_NEVER;
-    sampler.minLod              = 0.0f;
-    // Set max level-of-detail to mip level count of the vulkan_texture
-    sampler.maxLod = (use_staging) ? (float) vulkan_texture.mip_levels : 0.0f;
-    // Enable anisotropic filtering
-    // This feature is optional, so we must check if it's supported on the m_Context.device
-    if (m_Context.physical_device_features.samplerAnisotropy) {
-        // Use max. level of anisotropy for this example
-        sampler.maxAnisotropy    = m_Context.physical_device_properties.limits.maxSamplerAnisotropy;
-        sampler.anisotropyEnable = VK_TRUE;
-    }
-    else {
-        // The m_Context.device does not support anisotropic filtering
-        sampler.maxAnisotropy    = 1.0;
-        sampler.anisotropyEnable = VK_FALSE;
-    }
-    sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-    VK_CHECK_RESULT(vkCreateSampler(m_Context.device, &sampler, nullptr, &vulkan_texture.sampler));
+    //    // Insert a memory dependency at the proper pipeline stages that will execute the image layout transition
+    //    // Source pipeline stage is host write/read execution (VK_PIPELINE_STAGE_HOST_BIT)
+    //    // Destination pipeline stage fragment shader access (VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT)
+    //    vkCmdPipelineBarrier(
+    //        copyCmd,
+    //        VK_PIPELINE_STAGE_HOST_BIT,
+    //        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+    //        0,
+    //        0,
+    //        nullptr,
+    //        0,
+    //        nullptr,
+    //        1,
+    //        &imageMemoryBarrier);
 
-    // Create image view
-    // Textures are not directly accessed by the shaders and
-    // are abstracted by image views containing additional
-    // information and sub resource ranges
-    VkImageViewCreateInfo view = vks::initializers::imageViewCreateInfo();
-    view.viewType              = VK_IMAGE_VIEW_TYPE_2D;
-    view.format                = format;
-    // The subresource range describes the set of mip levels (and array layers) that can be accessed through this image view
-    // It's possible to create multiple image views for a single image referring to different (and/or overlapping) ranges of the image
-    view.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-    view.subresourceRange.baseMipLevel   = 0;
-    view.subresourceRange.baseArrayLayer = 0;
-    view.subresourceRange.layerCount     = 1;
-    // Linear tiling usually won't support mip maps
-    // Only set mip map count if optimal tiling is used
-    view.subresourceRange.levelCount = (use_staging) ? vulkan_texture.mip_levels : 1;
-    // The view will be based on the vulkan_texture's image
-    view.image = vulkan_texture.image;
-    VK_CHECK_RESULT(vkCreateImageView(m_Context.device, &view, nullptr, &vulkan_texture.view));
+    //    vulkanDevice->flushCommandBuffer(copyCmd, m_Context.queue_transfer, true);
+    //}
 
-    this->storeResource(texture.gpu_handle, vulkan_texture, m_StorageTextures);
+    //ktxTexture_Destroy(ktxTexture);
+
+    //// Create a vulkan_texture sampler
+    //// In Vulkan textures are accessed by samplers
+    //// This separates all the sampling information from the vulkan_texture data. This means you could have multiple sampler objects for the same vulkan_texture with different settings
+    //// Note: Similar to the samplers available with OpenGL 3.3
+    //VkSamplerCreateInfo sampler = vks::initializers::samplerCreateInfo();
+    //sampler.magFilter           = VK_FILTER_LINEAR;
+    //sampler.minFilter           = VK_FILTER_LINEAR;
+    //sampler.mipmapMode          = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    //sampler.addressModeU        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    //sampler.addressModeV        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    //sampler.addressModeW        = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    //sampler.mipLodBias          = 0.0f;
+    //sampler.compareOp           = VK_COMPARE_OP_NEVER;
+    //sampler.minLod              = 0.0f;
+    //// Set max level-of-detail to mip level count of the vulkan_texture
+    //sampler.maxLod = (use_staging) ? (float) vulkan_texture.mip_levels : 0.0f;
+    //// Enable anisotropic filtering
+    //// This feature is optional, so we must check if it's supported on the m_Context.device
+    //if (m_Context.physical_device_features.samplerAnisotropy) {
+    //    // Use max. level of anisotropy for this example
+    //    sampler.maxAnisotropy    = m_Context.physical_device_properties.limits.maxSamplerAnisotropy;
+    //    sampler.anisotropyEnable = VK_TRUE;
+    //}
+    //else {
+    //    // The m_Context.device does not support anisotropic filtering
+    //    sampler.maxAnisotropy    = 1.0;
+    //    sampler.anisotropyEnable = VK_FALSE;
+    //}
+    //sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    //VK_CHECK_RESULT(vkCreateSampler(m_Context.device, &sampler, nullptr, &vulkan_texture.sampler));
+
+    //// Create image view
+    //// Textures are not directly accessed by the shaders and
+    //// are abstracted by image views containing additional
+    //// information and sub resource ranges
+    //VkImageViewCreateInfo view = vks::initializers::imageViewCreateInfo();
+    //view.viewType              = VK_IMAGE_VIEW_TYPE_2D;
+    //view.format                = format;
+    //// The subresource range describes the set of mip levels (and array layers) that can be accessed through this image view
+    //// It's possible to create multiple image views for a single image referring to different (and/or overlapping) ranges of the image
+    //view.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+    //view.subresourceRange.baseMipLevel   = 0;
+    //view.subresourceRange.baseArrayLayer = 0;
+    //view.subresourceRange.layerCount     = 1;
+    //// Linear tiling usually won't support mip maps
+    //// Only set mip map count if optimal tiling is used
+    //view.subresourceRange.levelCount = (use_staging) ? vulkan_texture.mip_levels : 1;
+    //// The view will be based on the vulkan_texture's image
+    //view.image = vulkan_texture.image;
+    //VK_CHECK_RESULT(vkCreateImageView(m_Context.device, &view, nullptr, &vulkan_texture.view));
+
+    //this->storeResource(texture.gpu_handle, vulkan_texture, m_StorageTextures);
 }
 
 // TODO : provide fallbacks
@@ -751,8 +763,8 @@ void fe::VulkanResourceManager::generateMipmaps(VkCommandBuffer command_buffer, 
     barrier.subresourceRange.layerCount     = 1;
     barrier.subresourceRange.levelCount     = 1;
 
-    int32_t mip_width  = width;
-    int32_t mip_height = height;
+    int mip_width  = width;
+    int mip_height = height;
 
     for (uint32_t i = 1; i < mip_levels; i++) {
         barrier.subresourceRange.baseMipLevel = i - 1;
@@ -765,9 +777,7 @@ void fe::VulkanResourceManager::generateMipmaps(VkCommandBuffer command_buffer, 
 
         VkImageBlit blit{};
         blit.srcOffsets[0]             = VkOffset3D{ 0, 0, 0 };
-        blit.srcOffsets[1]             = VkOffset3D{ mip_width,
-                                                     mip_height,
-                                                     1 };
+        blit.srcOffsets[1]             = VkOffset3D{ mip_width, mip_height, 1 };
         blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         blit.srcSubresource.mipLevel   = i - 1;
 

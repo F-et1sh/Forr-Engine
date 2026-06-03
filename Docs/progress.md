@@ -10,7 +10,7 @@
     ( do not create GPU resources if they're already created --> InitializeGPUResources() )
 
 ### Done
-    -
+    VMA integrated
 
 ### Problem
     Vulkan boilerplate
