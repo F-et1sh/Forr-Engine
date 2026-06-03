@@ -58,6 +58,9 @@ fe::pointer<Texture> fe::TextureImporter::Import(ResourceStorage& storage, const
     size_t buffer_size = width * height * components;
     texture.bytes      = std::make_unique<unsigned char[]>(buffer_size);
     texture.size       = buffer_size;
+    
+    // TODO : remove this line
+    //texture.mip_levels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
 
     // bytes are already checked that it is not nullptr
     std::copy(bytes, bytes + buffer_size, texture.bytes.get());
