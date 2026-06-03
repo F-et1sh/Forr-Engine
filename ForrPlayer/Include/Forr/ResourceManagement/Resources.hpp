@@ -33,11 +33,11 @@ namespace fe::resource {
     GUID guid{}; // for future serialization
 
     struct FORR_API Texture {
-        enum class ColorSpace {
+        enum class ColorSpace : std::uint8_t {
             LINEAR,
             SRGB
         };
-        enum class InternalFormat {
+        enum class InternalFormat : std::uint8_t {
             RGBA8,
             RGB8,
             RG8,
@@ -45,13 +45,13 @@ namespace fe::resource {
             SRGB8_ALPHA8,
             SRGB8
         };
-        enum class DataFormat {
+        enum class DataFormat : std::uint8_t {
             RGBA,
             RGB,
             RG,
             RED
         };
-        enum class MinFilter {
+        enum class MinFilter : std::uint8_t {
             NEAREST,
             LINEAR,
             NEAREST_MIPMAP_NEAREST,
@@ -59,26 +59,26 @@ namespace fe::resource {
             NEAREST_MIPMAP_LINEAR,
             LINEAR_MIPMAP_LINEAR
         };
-        enum class MagFilter {
+        enum class MagFilter : std::uint8_t {
             NEAREST,
             LINEAR,
         };
-        enum class Wrap {
+        enum class Wrap : std::uint8_t {
             CLAMP_TO_EDGE,
             MIRRORED_REPEAT,
             REPEAT
         };
-        enum class Target {
+        enum class Target : std::uint8_t {
             TEXTURE_2D,
             TEXTURE_3D,
             // TODO : add more
         };
 
-        GPUHandle<Texture> gpu_handle{};
-
-        uint8_t      components{};
-        unsigned int width{};
-        unsigned int height{};
+        // R    - 1
+        // RG   - 2
+        // RGB  - 3
+        // RGBA - 4
+        uint8_t components{};
 
         MinFilter min_filter{ MinFilter::LINEAR_MIPMAP_LINEAR };
         MagFilter mag_filter{ MagFilter::LINEAR };
@@ -90,9 +90,26 @@ namespace fe::resource {
 
         Target target{ Target::TEXTURE_2D };
 
-        std::unique_ptr<unsigned char[]> bytes{};
+        unsigned int width{};
+        unsigned int height{};
+
         //fe::ArenaMarker offset{}; // TODO : think about using this instead of std::unique_ptr<>
+        std::unique_ptr<unsigned char[]> bytes{};
+        // size in bytes
         std::size_t size{};
+
+        struct MipData {
+            std::size_t  offset{};
+            std::size_t  size{};
+            unsigned int width{};
+            unsigned int height{};
+
+            MipData()  = default;
+            ~MipData() = default;
+        };
+        std::vector<MipData> mip_levels{};
+
+        GPUHandle<Texture> gpu_handle{};
 
         Texture()  = default;
         ~Texture() = default;
@@ -187,10 +204,10 @@ namespace fe::resource {
 
         // this is needed to assign textures' data to the passing buffer
         // it works like this :
-        // 
+        //
         // buffer : [ data, data, null, data, null ]
         // samplers : [ offset 2, texture_ptr 0, offset 4, texture_ptr 2 ]
-        // 
+        //
         // then, in GPU resource manager, while creating analogue of this material,
         // it takes every sampler from 'samplers', creates its GPU analogue and assigns
         // it to the 'buffer' of this material, according to 'offset' of the sampler
