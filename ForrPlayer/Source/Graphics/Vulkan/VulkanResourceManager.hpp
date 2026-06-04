@@ -15,6 +15,8 @@
 #include "VulkanTypes.hpp"
 #include "VulkanContext.hpp"
 
+#include <vma/vk_mem_alloc.h>
+
 namespace fe {
     class VulkanResourceManager {
     public:
