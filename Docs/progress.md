@@ -1,5 +1,21 @@
 ﻿# Forr-Engine Devlog
 
+## 07.06.2026
+### Goal
+    provide tools to decrease Vulkan boilerplate code
+    provide texture's concept to Vulkan ( don't push to the shader, CPU only )
+    chnage GLSL to Slang
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    VMA submodule added
+    VMA added
+
+### Problem
+    -
+
 ## 04.06.2026
 ### Goal
     provide tools to decrease Vulkan boilerplate code
