@@ -78,5 +78,6 @@
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="Source\ECS\Systems\RenderSystem.cpp" />
+    <ClCompile Include="..\ThirdParty\VulkanMemoryAllocator\src\vk_mem_alloc.cpp" />
   </ItemGroup>
 </Project>

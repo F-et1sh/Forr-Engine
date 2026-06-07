@@ -19,3 +19,6 @@
 [submodule "External/entt"]
 	path = External/entt
 	url = https://github.com/skypjack/entt.git
+[submodule "External/VulkanMemoryAllocator"]
+	path = External/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
