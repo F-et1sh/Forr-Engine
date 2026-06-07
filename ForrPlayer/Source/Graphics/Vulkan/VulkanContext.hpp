@@ -89,7 +89,7 @@ namespace fe {
 
         std::vector<VkFramebuffer> framebuffers{}; // can be removed
 
-        fe::vk::DescriptorSetLayout global_descriptor_set_layout{};
+        fe::vk::DescriptorSetLayout global_descriptor_set_layout{}; // TODO : move this. Why there is a RAII class in context ?
 
         VulkanContext()  = default;
         ~VulkanContext() = default;
