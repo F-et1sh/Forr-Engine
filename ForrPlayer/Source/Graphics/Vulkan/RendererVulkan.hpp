@@ -157,6 +157,8 @@ namespace fe {
         fe::vk::Instance m_Instance{};
         fe::vk::Device   m_Device{};
 
+        fe::vk::Allocator m_Allocator{};
+
         VulkanContext m_Context{};
 
         VulkanResourceManager m_VulkanResourceManager{ m_Context, m_ResourceManager };

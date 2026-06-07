@@ -12,6 +12,7 @@
 ### Done
     VMA submodule added
     VMA added
+    fe::vk::Allocator added
 
 ### Problem
     -

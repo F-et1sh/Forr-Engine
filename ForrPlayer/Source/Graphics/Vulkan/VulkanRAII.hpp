@@ -21,6 +21,8 @@
 
 #include <Volk/volk.h>
 
+#include "vk_mem_alloc.h"
+
 #include "Tools.hpp"
 
 namespace fe::vk {
@@ -106,6 +108,48 @@ namespace fe::vk {
 
     private:
         VkInstance instance = VK_NULL_HANDLE;
+    };
+
+    struct Allocator {
+        Allocator() = default;
+        explicit Allocator(VmaAllocator allocator) noexcept : allocator(allocator) {}
+
+        ~Allocator() { this->reset(); }
+
+        FORR_CLASS_NONCOPYABLE(Allocator)
+
+        Allocator(Allocator&& other) noexcept : allocator(other.allocator) {
+            other.allocator = VK_NULL_HANDLE;
+        }
+
+        Allocator& operator=(Allocator&& other) noexcept {
+            if (this != &other) {
+                this->attach(other.allocator);
+                other.allocator = VK_NULL_HANDLE; // NOT other.reset()
+            }
+            return *this;
+        }
+
+        void reset() noexcept {
+            if (allocator != nullptr) {
+                vmaDestroyAllocator(allocator);
+                allocator = VK_NULL_HANDLE;
+            }
+        }
+
+        void attach(VmaAllocator allocator) noexcept {
+            if (this->allocator != allocator) {
+                this->reset();
+                this->allocator = allocator;
+            }
+        }
+
+        FORR_NODISCARD VmaAllocator get() const noexcept { return allocator; }
+
+        operator VmaAllocator() const noexcept { return allocator; }
+
+    private:
+        VmaAllocator allocator = VK_NULL_HANDLE;
     };
 
     template <typename Handle, typename DestroyFn> // unified class for objects, which needs VkDevice
