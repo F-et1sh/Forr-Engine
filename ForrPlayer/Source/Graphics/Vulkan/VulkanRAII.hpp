@@ -23,243 +23,127 @@
 
 #include "vk_mem_alloc.h"
 
-#include "Tools.hpp"
-
 namespace fe::vk {
-    struct Device {
-        Device() = default;
-        explicit Device(VkDevice device) noexcept : device(device) {}
-
-        ~Device() { this->reset(); }
-
-        FORR_CLASS_NONCOPYABLE(Device)
-
-        Device(Device&& other) noexcept : device(other.device) {
-            other.device = VK_NULL_HANDLE;
-        }
-
-        Device& operator=(Device&& other) noexcept {
-            if (this != &other) {
-                this->attach(other.device);
-                other.device = VK_NULL_HANDLE; // NOT other.reset()
-            }
-            return *this;
-        }
-
-        void reset() noexcept {
-            if (device != nullptr) {
-                vkDestroyDevice(device, nullptr);
-                device = VK_NULL_HANDLE;
-            }
-        }
-
-        void attach(VkDevice device) noexcept {
-            if (this->device != device) {
-                this->reset();
-                this->device = device;
-            }
-        }
-
-        FORR_NODISCARD VkDevice get() const noexcept { return device; }
-
-        operator VkDevice() const noexcept { return device; }
-
-    private:
-        VkDevice device = VK_NULL_HANDLE;
-    };
-
-    struct Instance {
-        Instance() = default;
-        explicit Instance(VkInstance instance) noexcept : instance(instance) {}
-
-        ~Instance() { this->reset(); }
-
-        FORR_CLASS_NONCOPYABLE(Instance)
-
-        Instance(Instance&& other) noexcept : instance(other.instance) {
-            other.instance = VK_NULL_HANDLE;
-        }
-
-        Instance& operator=(Instance&& other) noexcept {
-            if (this != &other) {
-                this->attach(other.instance);
-                other.instance = VK_NULL_HANDLE; // NOT other.reset()
-            }
-            return *this;
-        }
-
-        void reset() noexcept {
-            if (instance != nullptr) {
-                vkDestroyInstance(instance, nullptr);
-                instance = VK_NULL_HANDLE;
-            }
-        }
-
-        void attach(VkInstance instance) noexcept {
-            if (this->instance != instance) {
-                this->reset();
-                this->instance = instance;
-            }
-        }
-
-        FORR_NODISCARD VkInstance get() const noexcept { return instance; }
-
-        operator VkInstance() const noexcept { return instance; }
-
-    private:
-        VkInstance instance = VK_NULL_HANDLE;
-    };
-
-    struct Allocator {
-        Allocator() = default;
-        explicit Allocator(VmaAllocator allocator) noexcept : allocator(allocator) {}
-
-        ~Allocator() { this->reset(); }
-
-        FORR_CLASS_NONCOPYABLE(Allocator)
-
-        Allocator(Allocator&& other) noexcept : allocator(other.allocator) {
-            other.allocator = VK_NULL_HANDLE;
-        }
-
-        Allocator& operator=(Allocator&& other) noexcept {
-            if (this != &other) {
-                this->attach(other.allocator);
-                other.allocator = VK_NULL_HANDLE; // NOT other.reset()
-            }
-            return *this;
-        }
-
-        void reset() noexcept {
-            if (allocator != nullptr) {
-                vmaDestroyAllocator(allocator);
-                allocator = VK_NULL_HANDLE;
-            }
-        }
-
-        void attach(VmaAllocator allocator) noexcept {
-            if (this->allocator != allocator) {
-                this->reset();
-                this->allocator = allocator;
-            }
-        }
-
-        FORR_NODISCARD VmaAllocator get() const noexcept { return allocator; }
-
-        operator VmaAllocator() const noexcept { return allocator; }
-
-    private:
-        VmaAllocator allocator = VK_NULL_HANDLE;
-    };
-
-    template <typename Handle, typename DestroyFn> // unified class for objects, which needs VkDevice
-    class DeviceHandle {
+    template <typename Handle, typename DestroyFn> // unified class for objects, which can destroyed by themselves
+    class RootHandle {
     public:
-        DeviceHandle() = default;
-        explicit DeviceHandle(VkDevice device, Handle handle) noexcept : device(device), handle(handle) {}
+        RootHandle() = default;
+        explicit RootHandle(Handle handle) noexcept : handle(handle) {}
 
-        ~DeviceHandle() { this->reset(); }
+        ~RootHandle() { this->reset(); }
 
-        FORR_CLASS_NONCOPYABLE(DeviceHandle)
+        FORR_CLASS_NONCOPYABLE(RootHandle)
 
-        DeviceHandle(DeviceHandle&& other) noexcept : device(other.device), handle(other.handle) {
-            other.device = VK_NULL_HANDLE;
+        RootHandle(RootHandle&& other) noexcept : handle(other.handle) {
             other.handle = VK_NULL_HANDLE;
         }
 
-        DeviceHandle& operator=(DeviceHandle&& other) noexcept {
+        RootHandle& operator=(RootHandle&& other) noexcept {
             if (this != &other) {
-                this->attach(other.device, other.handle);
-                other.device = VK_NULL_HANDLE;
+                this->attach(other.handle);
                 other.handle = VK_NULL_HANDLE; // NOT other.reset()
             }
             return *this;
         }
 
         void reset() noexcept {
-            if (handle) {
-                assert(device);
-
-                DestroyFn{}(device, handle);
-
-                device = VK_NULL_HANDLE;
+            if (handle != nullptr) {
+                DestroyFn{}(handle);
                 handle = VK_NULL_HANDLE;
             }
         }
 
-        void attach(VkDevice device, Handle handle) noexcept {
-            if (this->handle != handle ||
-                this->device != device) {
-
+        void attach(Handle handle) noexcept {
+            if (this->handle != handle) {
                 this->reset();
-
-                this->device = device;
                 this->handle = handle;
             }
         }
 
-        FORR_NODISCARD Handle   get() const noexcept { return handle; }
-        FORR_NODISCARD VkDevice get_device() const noexcept { return device; }
+        FORR_NODISCARD Handle get() const noexcept { return handle; }
 
         operator Handle() const noexcept { return handle; }
 
-    protected:
-        VkDevice device = VK_NULL_HANDLE;
-        Handle   handle = VK_NULL_HANDLE;
+    private:
+        Handle handle = VK_NULL_HANDLE;
     };
 
-    template <typename Handle, typename DestroyFn> // unified class for objects, which needs VkInstance
-    class InstanceHandle {
+    struct DeviceDestroy {
+        void operator()(VkDevice device) const noexcept {
+            vkDestroyDevice(device, nullptr);
+        }
+    };
+
+    struct InstanceDestroy {
+        void operator()(VkInstance instance) const noexcept {
+            vkDestroyInstance(instance, nullptr);
+        }
+    };
+
+    struct AllocatorDestroy {
+        void operator()(VmaAllocator allocator) const noexcept {
+            vmaDestroyAllocator(allocator);
+        }
+    };
+
+    using Device    = RootHandle<VkDevice, DeviceDestroy>;
+    using Instance  = RootHandle<VkInstance, InstanceDestroy>;
+    using Allocator = RootHandle<VmaAllocator, AllocatorDestroy>;
+
+    ///
+
+    template <typename ParentHandle, typename Handle, typename DestroyFn> // unified class for objects, which needs a parent handle to be destroyed
+    class ChildHandle {
     public:
-        InstanceHandle() = default;
-        explicit InstanceHandle(VkInstance instance, Handle handle) noexcept : instance(instance), handle(handle) {}
+        ChildHandle() = default;
+        explicit ChildHandle(ParentHandle parent_handle, Handle handle) noexcept : parent_handle(parent_handle), handle(handle) {}
 
-        ~InstanceHandle() { this->reset(); }
+        ~ChildHandle() { this->reset(); }
 
-        FORR_CLASS_NONCOPYABLE(InstanceHandle)
+        FORR_CLASS_NONCOPYABLE(ChildHandle)
 
-        InstanceHandle(InstanceHandle&& other) noexcept : instance(other.instance), handle(other.handle) {
-            other.instance = VK_NULL_HANDLE;
-            other.handle   = VK_NULL_HANDLE;
+        ChildHandle(ChildHandle&& other) noexcept : parent_handle(other.parent_handle), handle(other.handle) {
+            other.parent_handle = VK_NULL_HANDLE;
+            other.handle        = VK_NULL_HANDLE;
         }
 
-        InstanceHandle& operator=(InstanceHandle&& other) noexcept {
+        ChildHandle& operator=(ChildHandle&& other) noexcept {
             if (this != &other) {
-                this->attach(other.instance, other.handle);
-                other.instance = VK_NULL_HANDLE;
-                other.handle   = VK_NULL_HANDLE; // NOT other.reset()
+                this->attach(other.parent_handle, other.handle);
+                other.parent_handle = VK_NULL_HANDLE;
+                other.handle        = VK_NULL_HANDLE; // NOT other.reset()
             }
             return *this;
         }
 
         void reset() noexcept {
             if (handle) {
-                assert(instance);
+                assert(parent_handle);
 
-                DestroyFn{}(instance, handle);
+                DestroyFn{}(parent_handle, handle);
 
-                instance = VK_NULL_HANDLE;
-                handle   = VK_NULL_HANDLE;
+                parent_handle = VK_NULL_HANDLE;
+                handle        = VK_NULL_HANDLE;
             }
         }
 
-        void attach(VkInstance instance, Handle handle) noexcept {
+        void attach(ParentHandle parent_handle, Handle handle) noexcept {
             assert(this->handle != handle);
 
             this->reset();
 
-            this->instance = instance;
-            this->handle   = handle;
+            this->parent_handle = parent_handle;
+            this->handle        = handle;
         }
 
-        FORR_NODISCARD Handle     get() const noexcept { return handle; }
-        FORR_NODISCARD VkInstance get_instance() const noexcept { return instance; }
+        FORR_NODISCARD Handle       get() const noexcept { return handle; }
+        FORR_NODISCARD ParentHandle get_parent_handle() const noexcept { return parent_handle; }
 
         operator Handle() const noexcept { return handle; }
 
     protected:
-        VkInstance instance = VK_NULL_HANDLE;
-        Handle     handle   = VK_NULL_HANDLE;
+        ParentHandle parent_handle = VK_NULL_HANDLE;
+        Handle       handle        = VK_NULL_HANDLE;
     };
 
     struct SurfaceDestroy {
@@ -376,24 +260,24 @@ namespace fe::vk {
         }
     };
 
-    using Surface             = InstanceHandle<VkSurfaceKHR, SurfaceDestroy>;
-    using Swapchain           = DeviceHandle<VkSwapchainKHR, SwapchainDestroy>;
-    using Buffer              = DeviceHandle<VkBuffer, BufferDestroy>;
-    using Image               = DeviceHandle<VkImage, ImageDestroy>;
-    using ImageView           = DeviceHandle<VkImageView, ImageViewDestroy>;
-    using Sampler             = DeviceHandle<VkSampler, SamplerDestroy>;
-    using ShaderModule        = DeviceHandle<VkShaderModule, ShaderModuleDestroy>;
-    using RenderPass          = DeviceHandle<VkRenderPass, RenderPassDestroy>;
-    using Framebuffer         = DeviceHandle<VkFramebuffer, FramebufferDestroy>;
-    using Pipeline            = DeviceHandle<VkPipeline, PipelineDestroy>;
-    using PipelineCache       = DeviceHandle<VkPipelineCache, PipelineCacheDestroy>;
-    using PipelineLayout      = DeviceHandle<VkPipelineLayout, PipelineLayoutDestroy>;
-    using DescriptorSetLayout = DeviceHandle<VkDescriptorSetLayout, DescriptorSetLayoutDestroy>;
-    using DescriptorPool      = DeviceHandle<VkDescriptorPool, DescriptorPoolDestroy>;
-    using CommandPool         = DeviceHandle<VkCommandPool, CommandPoolDestroy>;
-    using Fence               = DeviceHandle<VkFence, FenceDestroy>;
-    using Semaphore           = DeviceHandle<VkSemaphore, SemaphoreDestroy>;
-    using Event               = DeviceHandle<VkEvent, EventDestroy>;
-    using DeviceMemory        = DeviceHandle<VkDeviceMemory, DeviceMemoryDestroy>;
+    using Surface             = ChildHandle<VkInstance, VkSurfaceKHR, SurfaceDestroy>;
+    using Swapchain           = ChildHandle<VkDevice, VkSwapchainKHR, SwapchainDestroy>;
+    using Buffer              = ChildHandle<VkDevice, VkBuffer, BufferDestroy>;
+    using Image               = ChildHandle<VkDevice, VkImage, ImageDestroy>;
+    using ImageView           = ChildHandle<VkDevice, VkImageView, ImageViewDestroy>;
+    using Sampler             = ChildHandle<VkDevice, VkSampler, SamplerDestroy>;
+    using ShaderModule        = ChildHandle<VkDevice, VkShaderModule, ShaderModuleDestroy>;
+    using RenderPass          = ChildHandle<VkDevice, VkRenderPass, RenderPassDestroy>;
+    using Framebuffer         = ChildHandle<VkDevice, VkFramebuffer, FramebufferDestroy>;
+    using Pipeline            = ChildHandle<VkDevice, VkPipeline, PipelineDestroy>;
+    using PipelineCache       = ChildHandle<VkDevice, VkPipelineCache, PipelineCacheDestroy>;
+    using PipelineLayout      = ChildHandle<VkDevice, VkPipelineLayout, PipelineLayoutDestroy>;
+    using DescriptorSetLayout = ChildHandle<VkDevice, VkDescriptorSetLayout, DescriptorSetLayoutDestroy>;
+    using DescriptorPool      = ChildHandle<VkDevice, VkDescriptorPool, DescriptorPoolDestroy>;
+    using CommandPool         = ChildHandle<VkDevice, VkCommandPool, CommandPoolDestroy>;
+    using Fence               = ChildHandle<VkDevice, VkFence, FenceDestroy>;
+    using Semaphore           = ChildHandle<VkDevice, VkSemaphore, SemaphoreDestroy>;
+    using Event               = ChildHandle<VkDevice, VkEvent, EventDestroy>;
+    using DeviceMemory        = ChildHandle<VkDevice, VkDeviceMemory, DeviceMemoryDestroy>;
 
 } // namespace fe::vk

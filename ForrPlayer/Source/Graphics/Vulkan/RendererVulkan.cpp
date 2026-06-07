@@ -31,6 +31,7 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
 
     this->InitializeBase();
     this->InitializeDevice();
+    this->InitializeAllocator();
     this->InitializeSwapchain();
     this->InitializeCommandBuffers();
     this->InitializeSynchronizationPrimitives();
@@ -311,6 +312,29 @@ void fe::RendererVulkan::InitializeDevice() {
     this->VKCreateDevice();
     this->VKCreateCommandPool();
     this->VKSetupQueues();
+}
+
+void fe::RendererVulkan::InitializeAllocator() {
+    VmaAllocatorCreateInfo allocator_create_info{};
+    allocator_create_info.physicalDevice   = m_PhysicalDevice;
+    allocator_create_info.device           = m_Device;
+    allocator_create_info.instance         = m_Instance;
+    allocator_create_info.vulkanApiVersion = m_Context.api_version;
+    allocator_create_info.flags            = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT |
+                                             VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT |
+                                             VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT;
+
+    VmaVulkanFunctions vulkan_functions{};
+    VK_CHECK_RESULT(vmaImportVulkanFunctionsFromVolk(&allocator_create_info, &vulkan_functions));
+    allocator_create_info.pVulkanFunctions = &vulkan_functions;
+
+    VmaAllocator allocator{};
+    VK_CHECK_RESULT(vmaCreateAllocator(&allocator_create_info, &allocator));
+
+    m_Allocator.attach(allocator);
+
+    // === SETUP CONTEXT ===
+    m_Context.allocator = m_Allocator.get(); // allocator
 }
 
 void fe::RendererVulkan::InitializeSwapchain() {
@@ -962,10 +986,12 @@ void fe::RendererVulkan::VKSetupDescriptorSetLayout() {
     descriptor_layout_create_info.pBindings    = bindings.data();
     descriptor_layout_create_info.pNext        = &binding_flags_create_info;
 
-    // === SETUP CONTEXT ===
     VkDescriptorSetLayout descriptor_set_layout_raw{};
     VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptor_layout_create_info, nullptr, &descriptor_set_layout_raw));
-    m_Context.global_descriptor_set_layout.attach(m_Device, descriptor_set_layout_raw); // global_descriptor_set_layout
+    m_GlobalDescriptorSetLayout.attach(m_Device, descriptor_set_layout_raw);
+
+    // === SETUP CONTEXT ===
+    m_Context.global_descriptor_set_layout = m_GlobalDescriptorSetLayout.get();
 }
 
 void fe::RendererVulkan::VKSetupDescriptorPool() {
