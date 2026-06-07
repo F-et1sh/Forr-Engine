@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -61,12 +61,6 @@
 #else
 #define FORR_NO_INLINE
 #endif
-#endif
-
-// In some cases [[nodiscard]] will get false positives,
-// we can prevent the warning in specific cases by preceding the call with a cast.
-#ifndef FORR_ALLOW_DISCARD
-#define FORR_ALLOW_DISCARD (void)
 #endif
 
 // Windows badly defines a lot of stuff we'll never use. Undefine it.

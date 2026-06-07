@@ -29,5 +29,5 @@ namespace fe {
         }                                                                                                                               \
     }
 
-    constexpr inline static std::size_t MAX_BINDING_COUNT_PER_SET = 4;
+    constexpr inline static std::size_t MAX_BINDING_COUNT_PER_SET = 4; // TODO : remove this
 } // namespace fe

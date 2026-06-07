@@ -65,6 +65,10 @@ namespace fe {
         // - queues
         void InitializeDevice();
 
+        // Initialize Vulkan Memory Allocator ( VMA )
+        // - create allocator
+        void InitializeAllocator();
+
         // Create Vulkan swapchain :
         // - create surface
         // - create swapchain
@@ -144,7 +148,7 @@ namespace fe {
             fe::vk::Semaphore present_complete_semaphore{};
 
             VulkanShaderBuffer storage_buffer{};
-            
+
             FrameData()  = default;
             ~FrameData() = default;
         };
@@ -158,6 +162,8 @@ namespace fe {
         fe::vk::Device   m_Device{};
 
         fe::vk::Allocator m_Allocator{};
+
+        fe::vk::DescriptorSetLayout m_GlobalDescriptorSetLayout{};
 
         VulkanContext m_Context{};
 

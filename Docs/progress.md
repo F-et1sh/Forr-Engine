@@ -13,6 +13,7 @@
     VMA submodule added
     VMA added
     fe::vk::Allocator added
+    fe::RendererVulkan::m_Allocator added. VulkanRAII.hpp reviewed
 
 ### Problem
     -

@@ -22,6 +22,8 @@
 #include "VulkanContext.hpp"
 #include "Graphics/IRenderer.hpp"
 
+#include "Tools.hpp"
+
 namespace fe {
     class VulkanSwapchain {
     public:
