@@ -24,49 +24,74 @@
 #include "vk_mem_alloc.h"
 
 namespace fe::vk {
-    template <typename Handle, typename DestroyFn> // unified class for objects, which can destroyed by themselves
-    class RootHandle {
+    template <typename DestroyFn, typename... Handles>
+    class VulkanHandle {
     public:
-        RootHandle() = default;
-        explicit RootHandle(Handle handle) noexcept : handle(handle) {}
+        static constexpr std::size_t HandlesCount = sizeof...(Handles);
 
-        ~RootHandle() { this->reset(); }
+    public:
+        VulkanHandle() = default;
+        explicit VulkanHandle(Handles... handles) noexcept
+            : m_Handles(handles...) {}
 
-        FORR_CLASS_NONCOPYABLE(RootHandle)
+        ~VulkanHandle() { this->free(); }
 
-        RootHandle(RootHandle&& other) noexcept : handle(other.handle) {
-            other.handle = VK_NULL_HANDLE;
+        FORR_CLASS_NONCOPYABLE(VulkanHandle)
+
+        VulkanHandle(VulkanHandle&& other) noexcept
+            : m_Handles(std::move(other.m_Handles)) {
+            other.reset_handles();
         }
 
-        RootHandle& operator=(RootHandle&& other) noexcept {
+        VulkanHandle& operator=(VulkanHandle&& other) noexcept {
             if (this != &other) {
-                this->attach(other.handle);
-                other.handle = VK_NULL_HANDLE; // NOT other.reset()
+                this->free();
+                m_Handles = std::move(other.m_Handles);
+                other.reset_handles(); // NOT other.free()
             }
             return *this;
         }
 
-        void reset() noexcept {
-            if (handle != nullptr) {
-                DestroyFn{}(handle);
-                handle = VK_NULL_HANDLE;
+        void free() noexcept {
+            auto target_handle       = this->get_target_handle();
+            using target_handle_type = decltype(target_handle); // there is no need in 'std::decay_t<>'
+
+            if (target_handle != target_handle_type{}) {
+                std::apply(DestroyFn{}, m_Handles);
+                this->reset_handles();
             }
         }
 
-        void attach(Handle handle) noexcept {
-            if (this->handle != handle) {
-                this->reset();
-                this->handle = handle;
+        void attach(Handles... handles) noexcept {
+            std::tuple<Handles...> new_handles{ handles... };
+
+            if (m_Handles != new_handles) {
+                this->free();
+                m_Handles = std::move(new_handles);
             }
         }
 
-        FORR_NODISCARD Handle get() const noexcept { return handle; }
+        auto get() const noexcept { return get_target_handle(); }
 
-        operator Handle() const noexcept { return handle; }
+        operator auto() const noexcept { return get_target_handle(); }
+
+        template <typename T>
+        auto get() const noexcept { return std::get<T>(m_Handles); }
 
     private:
-        Handle handle = VK_NULL_HANDLE;
+        void reset_handles() noexcept {
+            m_Handles = std::tuple<Handles...>{ Handles{}... };
+        }
+
+        auto get_target_handle() const noexcept {
+            return std::get<HandlesCount - 1>(m_Handles);
+        }
+
+    private:
+        std::tuple<Handles...> m_Handles{ Handles{}... };
     };
+
+    ///
 
     struct DeviceDestroy {
         void operator()(VkDevice device) const noexcept {
@@ -84,66 +109,6 @@ namespace fe::vk {
         void operator()(VmaAllocator allocator) const noexcept {
             vmaDestroyAllocator(allocator);
         }
-    };
-
-    using Device    = RootHandle<VkDevice, DeviceDestroy>;
-    using Instance  = RootHandle<VkInstance, InstanceDestroy>;
-    using Allocator = RootHandle<VmaAllocator, AllocatorDestroy>;
-
-    ///
-
-    template <typename ParentHandle, typename Handle, typename DestroyFn> // unified class for objects, which needs a parent handle to be destroyed
-    class ChildHandle {
-    public:
-        ChildHandle() = default;
-        explicit ChildHandle(ParentHandle parent_handle, Handle handle) noexcept : parent_handle(parent_handle), handle(handle) {}
-
-        ~ChildHandle() { this->reset(); }
-
-        FORR_CLASS_NONCOPYABLE(ChildHandle)
-
-        ChildHandle(ChildHandle&& other) noexcept : parent_handle(other.parent_handle), handle(other.handle) {
-            other.parent_handle = VK_NULL_HANDLE;
-            other.handle        = VK_NULL_HANDLE;
-        }
-
-        ChildHandle& operator=(ChildHandle&& other) noexcept {
-            if (this != &other) {
-                this->attach(other.parent_handle, other.handle);
-                other.parent_handle = VK_NULL_HANDLE;
-                other.handle        = VK_NULL_HANDLE; // NOT other.reset()
-            }
-            return *this;
-        }
-
-        void reset() noexcept {
-            if (handle) {
-                assert(parent_handle);
-
-                DestroyFn{}(parent_handle, handle);
-
-                parent_handle = VK_NULL_HANDLE;
-                handle        = VK_NULL_HANDLE;
-            }
-        }
-
-        void attach(ParentHandle parent_handle, Handle handle) noexcept {
-            assert(this->handle != handle);
-
-            this->reset();
-
-            this->parent_handle = parent_handle;
-            this->handle        = handle;
-        }
-
-        FORR_NODISCARD Handle       get() const noexcept { return handle; }
-        FORR_NODISCARD ParentHandle get_parent_handle() const noexcept { return parent_handle; }
-
-        operator Handle() const noexcept { return handle; }
-
-    protected:
-        ParentHandle parent_handle = VK_NULL_HANDLE;
-        Handle       handle        = VK_NULL_HANDLE;
     };
 
     struct SurfaceDestroy {
@@ -260,24 +225,56 @@ namespace fe::vk {
         }
     };
 
-    using Surface             = ChildHandle<VkInstance, VkSurfaceKHR, SurfaceDestroy>;
-    using Swapchain           = ChildHandle<VkDevice, VkSwapchainKHR, SwapchainDestroy>;
-    using Buffer              = ChildHandle<VkDevice, VkBuffer, BufferDestroy>;
-    using Image               = ChildHandle<VkDevice, VkImage, ImageDestroy>;
-    using ImageView           = ChildHandle<VkDevice, VkImageView, ImageViewDestroy>;
-    using Sampler             = ChildHandle<VkDevice, VkSampler, SamplerDestroy>;
-    using ShaderModule        = ChildHandle<VkDevice, VkShaderModule, ShaderModuleDestroy>;
-    using RenderPass          = ChildHandle<VkDevice, VkRenderPass, RenderPassDestroy>;
-    using Framebuffer         = ChildHandle<VkDevice, VkFramebuffer, FramebufferDestroy>;
-    using Pipeline            = ChildHandle<VkDevice, VkPipeline, PipelineDestroy>;
-    using PipelineCache       = ChildHandle<VkDevice, VkPipelineCache, PipelineCacheDestroy>;
-    using PipelineLayout      = ChildHandle<VkDevice, VkPipelineLayout, PipelineLayoutDestroy>;
-    using DescriptorSetLayout = ChildHandle<VkDevice, VkDescriptorSetLayout, DescriptorSetLayoutDestroy>;
-    using DescriptorPool      = ChildHandle<VkDevice, VkDescriptorPool, DescriptorPoolDestroy>;
-    using CommandPool         = ChildHandle<VkDevice, VkCommandPool, CommandPoolDestroy>;
-    using Fence               = ChildHandle<VkDevice, VkFence, FenceDestroy>;
-    using Semaphore           = ChildHandle<VkDevice, VkSemaphore, SemaphoreDestroy>;
-    using Event               = ChildHandle<VkDevice, VkEvent, EventDestroy>;
-    using DeviceMemory        = ChildHandle<VkDevice, VkDeviceMemory, DeviceMemoryDestroy>;
+    struct VmaBufferDestroy {
+        void operator()(VmaAllocator allocator, VkBuffer buffer, VmaAllocation allocation) const noexcept {
+            vmaDestroyBuffer(allocator, buffer, allocation);
+        }
+    };
+
+    struct VmaImageDestroy {
+        void operator()(VmaAllocator allocator, VkImage image, VmaAllocation allocation) const noexcept {
+            vmaDestroyImage(allocator, image, allocation);
+        }
+    };
+
+    template <typename T>
+    struct TraitsFromDestroyFn;
+
+    template <typename ClassType, typename ReturnType, typename... Args>
+    struct TraitsFromDestroyFn<ReturnType (ClassType::*)(Args...) const noexcept> {
+        template <typename DestroyFn>
+        using HandleType = VulkanHandle<DestroyFn, Args...>;
+    };
+
+    // If you get error C2938 - 'fe::vk::MakeVulkanHandle' : Failed to specialize alias template :
+    // destroy structure's operator() must have the same signature as in 'TraitsFromDestroyFn<ReturnType (ClassType::*)(Args...) const noexcept'
+    // don't forget 'const noexcept'
+    template <typename DestroyFn>
+    using MakeVulkanHandle = typename TraitsFromDestroyFn<decltype(&DestroyFn::operator())>::template HandleType<DestroyFn>;
+
+    using Device              = MakeVulkanHandle<DeviceDestroy>;
+    using Instance            = MakeVulkanHandle<InstanceDestroy>;
+    using Allocator           = MakeVulkanHandle<AllocatorDestroy>;
+    using Surface             = MakeVulkanHandle<SurfaceDestroy>;
+    using Swapchain           = MakeVulkanHandle<SwapchainDestroy>;
+    using Buffer              = MakeVulkanHandle<BufferDestroy>;
+    using Image               = MakeVulkanHandle<ImageDestroy>;
+    using ImageView           = MakeVulkanHandle<ImageViewDestroy>;
+    using Sampler             = MakeVulkanHandle<SamplerDestroy>;
+    using ShaderModule        = MakeVulkanHandle<ShaderModuleDestroy>;
+    using RenderPass          = MakeVulkanHandle<RenderPassDestroy>;
+    using Framebuffer         = MakeVulkanHandle<FramebufferDestroy>;
+    using Pipeline            = MakeVulkanHandle<PipelineDestroy>;
+    using PipelineCache       = MakeVulkanHandle<PipelineCacheDestroy>;
+    using PipelineLayout      = MakeVulkanHandle<PipelineLayoutDestroy>;
+    using DescriptorSetLayout = MakeVulkanHandle<DescriptorSetLayoutDestroy>;
+    using DescriptorPool      = MakeVulkanHandle<DescriptorPoolDestroy>;
+    using CommandPool         = MakeVulkanHandle<CommandPoolDestroy>;
+    using Fence               = MakeVulkanHandle<FenceDestroy>;
+    using Semaphore           = MakeVulkanHandle<SemaphoreDestroy>;
+    using Event               = MakeVulkanHandle<EventDestroy>;
+    using DeviceMemory        = MakeVulkanHandle<DeviceMemoryDestroy>;
+    using VmaBuffer           = MakeVulkanHandle<VmaBufferDestroy>;
+    using VmaImage            = MakeVulkanHandle<VmaImageDestroy>;
 
 } // namespace fe::vk
