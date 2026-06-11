@@ -237,6 +237,12 @@ namespace fe::vk {
         }
     };
 
+    struct CommandBufferDestroy {
+        void operator()(VkDevice device, VkCommandPool command_pool, VkCommandBuffer handle) const noexcept {
+            vkFreeCommandBuffers(device, command_pool, 1, &handle);
+        }
+    };
+
     template <typename T>
     struct TraitsFromDestroyFn;
 
@@ -276,5 +282,6 @@ namespace fe::vk {
     using DeviceMemory        = MakeVulkanHandle<DeviceMemoryDestroy>;
     using VmaBuffer           = MakeVulkanHandle<VmaBufferDestroy>;
     using VmaImage            = MakeVulkanHandle<VmaImageDestroy>;
+    using CommandBuffer       = MakeVulkanHandle<CommandBufferDestroy>;
 
 } // namespace fe::vk

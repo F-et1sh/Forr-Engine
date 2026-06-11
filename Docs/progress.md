@@ -1,5 +1,35 @@
 ﻿# Forr-Engine Devlog
 
+## 11.06.2026
+### Goal
+    provide tools to decrease Vulkan boilerplate
+    provide texture's concept to Vulkan ( don't push to the shader, CPU only )
+    chnage GLSL to Slang
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    VKTools.hpp : createBuffer(), runOneTimeCommands() and createDeviceLocalBuffer() are added
+
+### Problem
+    -
+
+## 09.06.2026
+### Goal
+    provide tools to decrease Vulkan boilerplate code
+    provide texture's concept to Vulkan ( don't push to the shader, CPU only )
+    chnage GLSL to Slang
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    -
+
+### Problem
+    Russian language exam ( it is harder than C++ templates. I'm not even Russian! )
+
 ## 08.06.2026
 ### Goal
     provide tools to decrease Vulkan boilerplate code
@@ -13,7 +43,7 @@
     VulkanRAII.hpp : template hell added
 
 ### Problem
-    -
+    Russian language exam
 
 ## 07.06.2026
 ### Goal

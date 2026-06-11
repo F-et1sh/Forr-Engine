@@ -322,7 +322,7 @@ void fe::RendererVulkan::InitializeAllocator() {
     allocator_create_info.vulkanApiVersion = m_Context.api_version;
     allocator_create_info.flags            = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT |
                                              VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT |
-                                             VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT;
+                                             VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT; // TODO : provide crossplatform for this
 
     VmaVulkanFunctions vulkan_functions{};
     VK_CHECK_RESULT(vmaImportVulkanFunctionsFromVolk(&allocator_create_info, &vulkan_functions));
