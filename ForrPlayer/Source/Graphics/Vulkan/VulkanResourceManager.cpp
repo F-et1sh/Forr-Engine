@@ -589,7 +589,7 @@ fe::vk::ShaderModule fe::VulkanResourceManager::createShaderModule(fe::pointer<f
     VK_CHECK_RESULT(vkCreateShaderModule(m_Context.device, &shader_module_create_info, nullptr, &shader_module_raw));
     shader_module.attach(m_Context.device, shader_module_raw);
 
-    return std::move(shader_module);
+    return shader_module;
 }
 
 void fe::VulkanResourceManager::generateMipmaps(VkCommandBuffer command_buffer, vk::Image& image, uint32_t width, uint32_t height, uint32_t mip_levels) {

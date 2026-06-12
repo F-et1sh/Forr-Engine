@@ -275,10 +275,10 @@ void fe::RendererVulkan::handleRenderQueue(const RenderPacket& render_packet) {
 
             VkDeviceSize offsets[1]{ 0 };
 
-            VkBuffer vertex_buffer_raw = vulkan_mesh.vertex_buffer.buffer;
+            VkBuffer vertex_buffer_raw = vulkan_mesh.vertex_buffer.get<VkBuffer>();
             vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
 
-            VkBuffer index_buffer_raw = vulkan_mesh.index_buffer.buffer;
+            VkBuffer index_buffer_raw = vulkan_mesh.index_buffer.get<VkBuffer>();
             vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
         }
 

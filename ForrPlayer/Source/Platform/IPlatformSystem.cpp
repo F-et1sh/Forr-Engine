@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -29,5 +29,5 @@ std::unique_ptr<fe::IPlatformSystem> fe::IPlatformSystem::Create(const PlatformS
             break;
     }
 
-    return std::move(result);
+    return result;
 }
