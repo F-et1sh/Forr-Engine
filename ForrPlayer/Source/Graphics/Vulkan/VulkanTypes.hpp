@@ -72,10 +72,9 @@ namespace fe {
         uint32_t height{};
         uint32_t mip_levels{};
 
-        vk::DeviceMemory device_memory{};
-        vk::Sampler      sampler{};
-        vk::Image        image{};
-        vk::ImageView    view{};
+        vk::Sampler   sampler{};
+        vk::ImageView image_view{};
+        vk::VmaImage  image{};
 
         VulkanTexture()  = default;
         ~VulkanTexture() = default;

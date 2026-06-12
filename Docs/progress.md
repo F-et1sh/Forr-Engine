@@ -12,6 +12,7 @@
 ### Done
     fe::VulkanResourceManager::createMesh() finally turned from 165 lines of code to only 6
     RVO bug fixed ( all 'return std::move(...)' removed )
+    fe::createImage() added
 
 ### Problem
     -
