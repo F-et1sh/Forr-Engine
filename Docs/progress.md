@@ -15,6 +15,7 @@
     fe::createImage() added
     Vulkan mipmaps generating done. VulkanTexture creation finally added
     Slang added
+    Slang integration in progress. ShaderCompiler and ShaderReflector removed
 
 ### Problem
     -
