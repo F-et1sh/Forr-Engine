@@ -174,7 +174,7 @@ namespace fe::resource {
             ~DescriptorSetLayoutData() = default;
         };
 
-        Type                  type{};
+        //Type                  type{};
         std::vector<uint32_t> source_code{};
 
         std::vector<DescriptorSetLayoutData> descriptor_sets{};

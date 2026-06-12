@@ -65,8 +65,7 @@ namespace fe {
 
         FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getMetadataExtension() const { return L".forr_meta"; }
         FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getMaterialExtension() const { return L".forr_material"; }
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getVertexShaderExtension() const { return L".vert"; }
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getFragmentShaderExtension() const { return L".frag"; }
+        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getShaderExtension() const { return L".slang"; }
 
     private:
         PathManager()  = default;

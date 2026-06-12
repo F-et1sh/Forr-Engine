@@ -4,6 +4,7 @@
 ### Goal
     provide tools to decrease Vulkan boilerplate
     provide texture's concept to Vulkan ( don't push to the shader, CPU only )
+    remove fe::resource::Shader. Create fe::resource::ShaderProgram instead
     chnage GLSL to Slang
     provide debug tools with Dear ImGui
     ( fix window resizing for GL/VK )

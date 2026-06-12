@@ -15,9 +15,6 @@
 
 #include <fstream>
 
-#include "Graphics/Shaders/ShaderReflector.hpp"
-#include "Graphics/Shaders/ShaderCompiler.hpp"
-
 #include "slang.h"
 #include "slang-com-ptr.h"
 #include "slang-com-helper.h"
@@ -52,25 +49,14 @@ fe::pointer<fe::resource::Shader> fe::ShaderImporter::Import(ResourceStorage& st
         source_code = source_code.substr(3);
     }
 
-    if (resource_full_path.extension() == PATH.getVertexShaderExtension()) {
-        shader.type = Shader::Type::VERTEX;
-    }
-    else if (resource_full_path.extension() == PATH.getFragmentShaderExtension()) {
-        shader.type = Shader::Type::FRAGMENT;
-    }
-    else {
-        fe::logging::error("File -> Unified. Unknown shader file extension\nPath : %s", resource_full_path.string().c_str());
-        return {};
-    }
-
     const auto& resource_management_context = storage.GetContext();
-    CompileAndReflect(shader.source_code, source_code, shader.type, resource_management_context.graphics_backend);
+    CompileAndReflect(shader.source_code, source_code, resource_management_context.graphics_backend);
 
     auto ptr = storage.CreateResource(std::move(shader));
     return ptr;
 }
 
-void fe::ShaderImporter::CompileAndReflect(std::vector<uint32_t>& dst, std::string_view src, resource::Shader::Type shader_type, GraphicsBackend graphics_backend) {
+void fe::ShaderImporter::CompileAndReflect(std::vector<uint32_t>& dst, std::string_view src, GraphicsBackend graphics_backend) {
     static Slang::ComPtr<slang::IGlobalSession> global_session{};
     if (!global_session) {
         if (SLANG_FAILED(slang::createGlobalSession(global_session.writeRef()))) {
@@ -95,7 +81,7 @@ void fe::ShaderImporter::CompileAndReflect(std::vector<uint32_t>& dst, std::stri
             break;
 
         default:
-            fe::logging::warning("The selected graphics backend %i for shader was not found. Using OpenGL default", graphics_backend);
+            fe::logging::warning("The selected graphics backend %i for shader was not found. Using OpenGL by default", graphics_backend);
             target_desc.format  = SLANG_GLSL;
             target_desc.profile = global_session->findProfile("glsl_450");
             break;
@@ -107,20 +93,6 @@ void fe::ShaderImporter::CompileAndReflect(std::vector<uint32_t>& dst, std::stri
 
     Slang::ComPtr<slang::ISession> session{};
     global_session->createSession(session_desc, session.writeRef());
-
-    SlangStage stage = SLANG_STAGE_NONE;
-    switch (shader_type) {
-        case resource::Shader::Type::VERTEX:
-            stage = SLANG_STAGE_VERTEX;
-            break;
-        case resource::Shader::Type::FRAGMENT:
-            stage = SLANG_STAGE_FRAGMENT;
-            break;
-        default:
-            fe::logging::warning("The selected shader type %i was not found. Using VERTEX default", shader_type);
-            stage = SLANG_STAGE_VERTEX;
-            break;
-    }
 
     Slang::ComPtr<slang::IBlob> diagnostic_blob{};
 
@@ -161,13 +133,23 @@ void fe::ShaderImporter::CompileAndReflect(std::vector<uint32_t>& dst, std::stri
     const size_t   byte_size = compiled_code->getBufferSize();
     const uint8_t* raw_data  = reinterpret_cast<const uint8_t*>(compiled_code->getBufferPointer());
 
-    if (graphics_backend == GraphicsBackend::Vulkan) {
-        dst.resize(byte_size / sizeof(uint32_t));
-        std::memcpy(dst.data(), raw_data, byte_size);
-    }
-    else {
-        size_t words_count = (byte_size + sizeof(uint32_t) - 1) / sizeof(uint32_t);
-        dst.resize(words_count, 0);
-        std::memcpy(dst.data(), raw_data, byte_size);
+    switch (graphics_backend) {
+        case GraphicsBackend::OpenGL: {
+            size_t words_count = (byte_size + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+            dst.resize(words_count, 0);
+            std::memcpy(dst.data(), raw_data, byte_size);
+        } break;
+
+        case GraphicsBackend::Vulkan: {
+            dst.resize(byte_size / sizeof(uint32_t));
+            std::memcpy(dst.data(), raw_data, byte_size);
+        } break;
+
+        default: {
+            fe::logging::warning("The selected graphics backend %i for shader was not found. Using OpenGL by default", graphics_backend);
+            size_t words_count = (byte_size + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+            dst.resize(words_count, 0);
+            std::memcpy(dst.data(), raw_data, byte_size);
+        } break;
     }
 }
