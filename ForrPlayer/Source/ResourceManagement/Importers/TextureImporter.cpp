@@ -48,7 +48,7 @@ fe::pointer<Texture> fe::TextureImporter::Import(ResourceStorage& storage, const
     }
     // clang-format on
 
-    fe::resource::Texture texture{};
+    Texture texture{};
     texture.width           = width;
     texture.height          = height;
     texture.components      = components;
@@ -58,9 +58,14 @@ fe::pointer<Texture> fe::TextureImporter::Import(ResourceStorage& storage, const
     size_t buffer_size = width * height * components;
     texture.bytes      = std::make_unique<unsigned char[]>(buffer_size);
     texture.size       = buffer_size;
-    
-    // mip levels are skipped
-    //texture.mip_levels
+
+    // mip levels are skipped because I don't want to waste memory on it
+    // 
+    //Texture::MipData& mip_level0 = texture.mip_levels.emplace_back();
+    //mip_level0.offset            = 0;
+    //mip_level0.size              = buffer_size;
+    //mip_level0.width             = width;
+    //mip_level0.height            = height;
 
     // bytes are already checked that it is not nullptr
     std::copy(bytes, bytes + buffer_size, texture.bytes.get());
