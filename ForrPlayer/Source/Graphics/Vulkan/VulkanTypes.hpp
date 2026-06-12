@@ -42,29 +42,6 @@ namespace fe {
         FORR_CLASS_MOVABLE(VulkanMaterial)
     };
 
-    struct VulkanVertexBuffer {
-        fe::vk::DeviceMemory memory{};
-        fe::vk::Buffer       buffer{};
-
-        VulkanVertexBuffer()  = default;
-        ~VulkanVertexBuffer() = default;
-
-        FORR_CLASS_NONCOPYABLE(VulkanVertexBuffer)
-        FORR_CLASS_MOVABLE(VulkanVertexBuffer)
-    };
-
-    struct VulkanIndexBuffer {
-        fe::vk::DeviceMemory memory{};
-        fe::vk::Buffer       buffer{};
-        size_t               count{};
-
-        VulkanIndexBuffer()  = default;
-        ~VulkanIndexBuffer() = default;
-
-        FORR_CLASS_NONCOPYABLE(VulkanIndexBuffer)
-        FORR_CLASS_MOVABLE(VulkanIndexBuffer)
-    };
-
     struct VulkanShaderBuffer {
         struct Binding {
             fe::vk::DeviceMemory memory{};
@@ -108,8 +85,8 @@ namespace fe {
     };
 
     struct VulkanMesh {
-        VulkanVertexBuffer vertex_buffer{};
-        VulkanIndexBuffer  index_buffer{};
+        vk::VmaBuffer vertex_buffer{};
+        vk::VmaBuffer index_buffer{};
 
         VulkanMesh()  = default;
         ~VulkanMesh() = default;

@@ -1,5 +1,20 @@
 ﻿# Forr-Engine Devlog
 
+## 12.06.2026
+### Goal
+    provide tools to decrease Vulkan boilerplate
+    provide texture's concept to Vulkan ( don't push to the shader, CPU only )
+    chnage GLSL to Slang
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    fe::VulkanResourceManager::createMesh() finally turned from 165 lines of code to only 6
+
+### Problem
+    -
+
 ## 11.06.2026
 ### Goal
     provide tools to decrease Vulkan boilerplate
