@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -33,5 +33,5 @@ std::unique_ptr<fe::IRenderer> fe::IRenderer::Create(const RendererDesc& desc, I
             break;
     }
 
-    return std::move(result);
+    return result;
 }
