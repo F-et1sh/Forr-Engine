@@ -19,7 +19,7 @@
 
 namespace fe {
     struct ResourceManagerDesc {
-        // this needs to compile shaders with or without macro 'FORR_USE_OPENGL'
+        // this needs to compile shaders
         GraphicsBackend graphics_backend{};
 
         ResourceManagerDesc()  = default;

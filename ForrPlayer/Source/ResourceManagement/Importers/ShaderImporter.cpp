@@ -21,8 +21,8 @@
 
 using namespace fe::resource;
 
-fe::pointer<fe::resource::Shader> fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
-    Shader shader{};
+fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
+    ShaderProgram shader{};
 
     std::ifstream file(resource_full_path, std::ios::binary | std::ios::ate);
     if (!file.good()) {
@@ -50,13 +50,13 @@ fe::pointer<fe::resource::Shader> fe::ShaderImporter::Import(ResourceStorage& st
     }
 
     const auto& resource_management_context = storage.GetContext();
-    CompileAndReflect(shader.source_code, source_code, resource_management_context.graphics_backend);
+    CompileAndReflect(shader.source_codes, source_code, resource_management_context.graphics_backend);
 
     auto ptr = storage.CreateResource(std::move(shader));
     return ptr;
 }
 
-void fe::ShaderImporter::CompileAndReflect(std::vector<uint32_t>& dst, std::string_view src, GraphicsBackend graphics_backend) {
+void fe::ShaderImporter::CompileAndReflect(resource::ShaderProgram::SourceCodeStorage& dst, std::string_view src, GraphicsBackend graphics_backend) {
     static Slang::ComPtr<slang::IGlobalSession> global_session{};
     if (!global_session) {
         if (SLANG_FAILED(slang::createGlobalSession(global_session.writeRef()))) {
@@ -106,50 +106,91 @@ void fe::ShaderImporter::CompileAndReflect(std::vector<uint32_t>& dst, std::stri
         return;
     }
 
-    Slang::ComPtr<slang::IEntryPoint> entryPoint;
-    slang_module->findEntryPointByName("main", entryPoint.writeRef());
+    struct EntryPointTarget {
+        std::string_view name{};
+        SlangStage       stage{};
 
-    if (!entryPoint) {
-        fe::logging::error("Slang : Entry point 'main' not found in shader");
-        return;
-    }
+        EntryPointTarget()  = default;
+        ~EntryPointTarget() = default;
 
-    slang::IComponentType*               components[] = { slang_module, entryPoint.get() };
-    Slang::ComPtr<slang::IComponentType> program;
-    session->createCompositeComponentType(components, 2, program.writeRef(), diagnostic_blob.writeRef());
+        EntryPointTarget(std::string_view name, SlangStage stage)
+            : name(name), stage(stage) {}
+    };
 
-    Slang::ComPtr<slang::IBlob> compiled_code{};
-    int                         entry_point_index = 0;
-    int                         target_index      = 0;
+    static std::array<EntryPointTarget, 3> targets_to_find{
+        EntryPointTarget{ "vertexMain", SLANG_STAGE_VERTEX },
+        EntryPointTarget{ "fragmentMain", SLANG_STAGE_FRAGMENT },
+        EntryPointTarget{ "computeMain", SLANG_STAGE_COMPUTE }
+    };
 
-    if (SLANG_FAILED(program->getEntryPointCode(entry_point_index, target_index, compiled_code.writeRef(), diagnostic_blob.writeRef()))) {
-        if (diagnostic_blob) {
-            std::string_view errors(reinterpret_cast<const char*>(diagnostic_blob->getBufferPointer()), diagnostic_blob->getBufferSize());
-            fe::logging::error("Slang Linker Failed :\n%s", errors.data());
+    std::vector<slang::IComponentType*>            components{ slang_module };
+    std::vector<Slang::ComPtr<slang::IEntryPoint>> entry_points{};
+
+    for (const auto& target : targets_to_find) {
+        Slang::ComPtr<slang::IEntryPoint> entry_point{};
+        slang_module->findEntryPointByName(target.name.data(), entry_point.writeRef());
+
+        if (entry_point) {
+            entry_points.push_back(entry_point);
+            components.push_back(entry_point.get());
         }
-        return;
+    }
+    std::vector<ShaderProgram::ShaderType> active_stages;
+
+    for (size_t i = 0; i < targets_to_find.size(); i++) {
+        Slang::ComPtr<slang::IEntryPoint> entry_point{};
+        slang_module->findEntryPointByName(targets_to_find[i].name.data(), entry_point.writeRef());
+        if (entry_point) {
+            entry_points.push_back(entry_point);
+            active_stages.push_back(static_cast<ShaderProgram::ShaderType>(i));
+        }
     }
 
-    const size_t   byte_size = compiled_code->getBufferSize();
-    const uint8_t* raw_data  = reinterpret_cast<const uint8_t*>(compiled_code->getBufferPointer());
+    for (size_t i = 0; i < entry_points.size(); i++) {
+        Slang::ComPtr<slang::IComponentType> linked_entry_point{};
+        //linked_entry_point->link()
 
-    switch (graphics_backend) {
-        case GraphicsBackend::OpenGL: {
-            size_t words_count = (byte_size + sizeof(uint32_t) - 1) / sizeof(uint32_t);
-            dst.resize(words_count, 0);
-            std::memcpy(dst.data(), raw_data, byte_size);
-        } break;
+        //if (SLANG_FAILED(session->linkEntryPoint(entry_points[i].get(), linked_entry_point.writeRef(), diagnostic_blob.writeRef()))) {
+        //    if (diagnostic_blob) {
+        //        std::string_view errors(reinterpret_cast<const char*>(diagnostic_blob->getBufferPointer()), diagnostic_blob->getBufferSize());
+        //        fe::logging::error("Slang LinkEntryPoint Failed for stage %i :\n%s", active_stages[i], errors.data());
+        //    }
+        //    continue;
+        //}
 
-        case GraphicsBackend::Vulkan: {
-            dst.resize(byte_size / sizeof(uint32_t));
-            std::memcpy(dst.data(), raw_data, byte_size);
-        } break;
+        Slang::ComPtr<slang::IBlob> compiled_code;
+        if (SLANG_SUCCEEDED(linked_entry_point->getEntryPointCode(0, 0, compiled_code.writeRef(), diagnostic_blob.writeRef()))) {
 
-        default: {
-            fe::logging::warning("The selected graphics backend %i for shader was not found. Using OpenGL by default", graphics_backend);
-            size_t words_count = (byte_size + sizeof(uint32_t) - 1) / sizeof(uint32_t);
-            dst.resize(words_count, 0);
-            std::memcpy(dst.data(), raw_data, byte_size);
-        } break;
+            const size_t   byte_size = compiled_code->getBufferSize();
+            const uint8_t* raw_data  = reinterpret_cast<const uint8_t*>(compiled_code->getBufferPointer());
+
+            auto shader_type = active_stages[i];
+
+            switch (graphics_backend) {
+                case GraphicsBackend::OpenGL: {
+                    size_t words_count = (byte_size + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+                    dst[shader_type].resize(words_count, 0);
+                    std::memcpy(dst[shader_type].data(), raw_data, byte_size);
+                } break;
+
+                case GraphicsBackend::Vulkan: {
+                    dst[shader_type].resize(byte_size / sizeof(uint32_t));
+                    std::memcpy(dst[shader_type].data(), raw_data, byte_size);
+                } break;
+
+                default: {
+                    fe::logging::warning("The selected graphics backend %i for shader was not found. Using OpenGL by default", graphics_backend);
+                    size_t words_count = (byte_size + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+                    dst[shader_type].resize(words_count, 0);
+                    std::memcpy(dst[shader_type].data(), raw_data, byte_size);
+                } break;
+            }
+        }
+        else {
+            if (diagnostic_blob) {
+                std::string_view errors(reinterpret_cast<const char*>(diagnostic_blob->getBufferPointer()), diagnostic_blob->getBufferSize());
+                fe::logging::error("Slang failed to get entry point code for stage %i :\n%s", active_stages[i], errors.data());
+            }
+        }
     }
 }

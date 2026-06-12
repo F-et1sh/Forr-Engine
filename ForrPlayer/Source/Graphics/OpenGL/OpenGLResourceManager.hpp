@@ -41,7 +41,7 @@ namespace fe {
         fe::GPUHandle<fe::resource::Model::Mesh> createMesh(resource::Model::Mesh& mesh);
 
     private: // helpers
-        GLuint createShaderProgramRaw(std::vector<resource::Shader*> shaders);
+        GLuint createShaderProgramRaw(resource::ShaderProgram& shader_program);
 
     private:
         // this function returns the index of the resource ( GPUHandle<>::index )

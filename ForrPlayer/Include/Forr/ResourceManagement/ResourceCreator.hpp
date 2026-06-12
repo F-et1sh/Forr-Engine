@@ -56,7 +56,6 @@ namespace fe {
         }
 
     private:
-        void createDefaultShaders();
         void createDefaultMaterials();
 
     private:

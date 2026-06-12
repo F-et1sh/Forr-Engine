@@ -43,10 +43,9 @@ namespace fe {
         VkDescriptorSetLayout                    createDescriptorSetLayout(const resource::Material& material);
         VkPipelineLayout                         createPipelineLayout(const std::vector<VkDescriptorSetLayout>& descriptor_set_layouts_raw);
         VkPipeline                               createPipeline(VkPipelineLayout pipeline_layout_raw, const resource::Material& material);
-        fe::vk::ShaderModule                     createShaderModule(fe::pointer<fe::resource::Shader> shader_ptr);
         void                                     generateMipmaps(VkCommandBuffer command_buffer, VkImage image_raw, uint32_t width, uint32_t height, uint32_t mip_levels);
 
-        VkDescriptorType toVkDescriptorType(resource::Shader::DescriptorType descriptor_type) const;
+        VkDescriptorType toVkDescriptorType(resource::ShaderProgram::DescriptorType descriptor_type) const;
 
     private:
         // this function returns the index of the resource ( GPUHandle<>::index )

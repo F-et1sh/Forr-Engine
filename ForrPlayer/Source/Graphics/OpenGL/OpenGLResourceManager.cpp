@@ -16,16 +16,15 @@
 using namespace fe::resource;
 
 void fe::OpenGLResourceManager::CreateResource(Material& material) {
-    auto vertex_shader   = m_ResourceManager.GetResource(material.vertex_shader_ptr);
-    auto fragment_shader = m_ResourceManager.GetResource(material.fragment_shader_ptr);
+    auto shader_program = m_ResourceManager.GetResource(material.shader_program_ptr);
 
     OpenGLShaderProgram opengl_shader_program{};
-    GLuint              opengl_shader_program_raw = this->createShaderProgramRaw({ vertex_shader, fragment_shader });
+    GLuint              opengl_shader_program_raw = this->createShaderProgramRaw(*shader_program);
     opengl_shader_program.shader_program.attach(opengl_shader_program_raw);
 
-    opengl_shader_program.shader_buffers.bindings.reserve(vertex_shader->descriptor_sets.size());
+    opengl_shader_program.shader_buffers.bindings.reserve(shader_program->descriptor_sets.size());
 
-    for (auto& descriptor_set : vertex_shader->descriptor_sets) {
+    for (auto& descriptor_set : shader_program->descriptor_sets) {
 
         // basic scene data. already created in renderer
         if (descriptor_set.index == 0) continue;
@@ -258,25 +257,23 @@ fe::GPUHandle<fe::resource::Model::Mesh> fe::OpenGLResourceManager::createMesh(r
     return GPUHandle<Model::Mesh>(this->storeResource(mesh.gpu_handle, opengl_mesh, m_StorageMeshes));
 }
 
-GLuint fe::OpenGLResourceManager::createShaderProgramRaw(std::vector<resource::Shader*> shaders) {
+GLuint fe::OpenGLResourceManager::createShaderProgramRaw(resource::ShaderProgram& shader_program) {
     GLuint opengl_shader_program_raw = glCreateProgram();
 
-    for (size_t i = 0; i < shaders.size(); i++) {
-        const auto& shader = shaders[i];
-
+    for (const auto& [shader_type, source_code] : shader_program.source_codes) {
         unsigned int opengl_type{};
         unsigned int opengl_shader{};
 
         // clang-format off
-        switch (shader->type) {
-            case resource::Shader::Type::VERTEX  : opengl_type = GL_VERTEX_SHADER  ; break;
-            case resource::Shader::Type::FRAGMENT: opengl_type = GL_FRAGMENT_SHADER; break;
+        switch (shader_type) {
+            case resource::ShaderProgram::ShaderType::VERTEX  : opengl_type = GL_VERTEX_SHADER  ; break;
+            case resource::ShaderProgram::ShaderType::FRAGMENT: opengl_type = GL_FRAGMENT_SHADER; break;
         }
         // clang-format on
 
         opengl_shader = glCreateShader(opengl_type);
 
-        glShaderBinary(1, &opengl_shader, GL_SHADER_BINARY_FORMAT_SPIR_V, shader->source_code.data(), shader->source_code.size() * sizeof(uint32_t));
+        glShaderBinary(1, &opengl_shader, GL_SHADER_BINARY_FORMAT_SPIR_V, source_code.data(), source_code.size() * sizeof(uint32_t));
         glSpecializeShader(opengl_shader, "main", 0, nullptr, nullptr);
 
         glCompileShader(opengl_shader);
@@ -296,7 +293,7 @@ GLuint fe::OpenGLResourceManager::createShaderProgramRaw(std::vector<resource::S
         }
 
         glDeleteShader(opengl_shader);
-    }
+    };
 
     glLinkProgram(opengl_shader_program_raw);
     glValidateProgram(opengl_shader_program_raw);

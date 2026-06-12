@@ -117,15 +117,9 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Texture)
     };
 
-    struct FORR_API Shader { // TODO : provide names for block members to use it in GUI
+    struct FORR_API ShaderProgram { // TODO : provide names for block members to use it in GUI
     public:
-        enum class Type {
-            VERTEX,
-            FRAGMENT,
-            COMPUTE
-        };
-
-        enum class DescriptorType {
+        enum class DescriptorType : std::uint8_t {
             SAMPLER,
             COMBINED_IMAGE_SAMPLER,
             SAMPLED_IMAGE,
@@ -174,25 +168,31 @@ namespace fe::resource {
             ~DescriptorSetLayoutData() = default;
         };
 
-        //Type                  type{};
-        std::vector<uint32_t> source_code{};
+        enum class ShaderType : std::uint8_t {
+            VERTEX,
+            FRAGMENT,
+            COMPUTE
+        };
+
+        using SourceCode        = std::vector<uint32_t>;
+        using SourceCodeStorage = std::unordered_map<ShaderType, SourceCode>;
+
+        SourceCodeStorage source_codes{};
 
         std::vector<DescriptorSetLayoutData> descriptor_sets{};
         std::vector<BlockMember>             push_constants{};
 
-        Shader()  = default;
-        ~Shader() = default;
+        ShaderProgram()  = default;
+        ~ShaderProgram() = default;
 
-        FORR_RESOURCE_BODY(Shader)
+        FORR_RESOURCE_BODY(ShaderProgram)
     };
 
     struct FORR_API Material {
     public:
         GPUHandle<Material> gpu_handle{};
 
-        fe::pointer<fe::resource::Shader> vertex_shader_ptr{};
-        fe::pointer<fe::resource::Shader> fragment_shader_ptr{};
-        // add more later...
+        fe::pointer<fe::resource::ShaderProgram> shader_program_ptr{};
 
         struct Sampler {
             std::size_t          offset{};
@@ -341,7 +341,7 @@ namespace fe::resource {
     template <typename T>
     concept resource_t =
         (std::is_same_v<T, Texture>) ||
-        (std::is_same_v<T, Shader>) ||
+        (std::is_same_v<T, ShaderProgram>) ||
         (std::is_same_v<T, Material>) ||
         (std::is_same_v<T, Model>);
 
