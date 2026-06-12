@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -60,8 +60,8 @@ namespace fe {
                 return m_Materials;
             else if constexpr (std::is_same_v<T, fe::resource::Model>)
                 return m_Models;
-            else if constexpr (std::is_same_v<T, fe::resource::Shader>)
-                return m_Shader;
+            else if constexpr (std::is_same_v<T, fe::resource::ShaderProgram>)
+                return m_ShaderPrograms;
         }
 
         const ResourceManagementContext& GetContext() const noexcept { return m_Context; }
@@ -69,9 +69,9 @@ namespace fe {
     private:
         ResourceManagementContext& m_Context;
 
-        fe::typed_pointer_storage<fe::resource::Texture>  m_Textures{};
-        fe::typed_pointer_storage<fe::resource::Material> m_Materials{};
-        fe::typed_pointer_storage<fe::resource::Model>    m_Models{};
-        fe::typed_pointer_storage<fe::resource::Shader>   m_Shader{};
+        fe::typed_pointer_storage<fe::resource::Texture>       m_Textures{};
+        fe::typed_pointer_storage<fe::resource::Material>      m_Materials{};
+        fe::typed_pointer_storage<fe::resource::Model>         m_Models{};
+        fe::typed_pointer_storage<fe::resource::ShaderProgram> m_ShaderPrograms{};
     };
 } // namespace fe

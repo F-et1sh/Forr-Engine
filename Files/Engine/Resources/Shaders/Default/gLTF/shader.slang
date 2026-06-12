@@ -62,13 +62,13 @@ VertexStageOutput vertexMain(VertexInput input) {
 
 [shader("fragment")]
 float4 fragmentMain(VertexStageOutput input) : SV_Target {
-    int index = constants.instance_index;
+     int index = constants.instance_index;
     
     uint2 handle = material_set.materials[index].base_color_texture_handle;
-
-    Texture2D tex = Texture2D::getFromStringHandle(handle);
-    SamplerState defaultSampler;
     
-    float4 fragColor = tex.Sample(defaultSampler, input.texture_coord);
+    Sampler2D tex = reinterpret<Sampler2D>(handle);
+    
+    float4 fragColor = tex.Sample(input.texture_coord);
+    
     return fragColor;
 }

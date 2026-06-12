@@ -245,7 +245,7 @@ fe::GPUHandle<Model::Mesh> fe::VulkanResourceManager::createMesh(resource::Model
 
 VkDescriptorSetLayout fe::VulkanResourceManager::createDescriptorSetLayout(const Material& material) {
     // NOTE : why only vertex shader ?
-    const auto& vertex_shader = *m_ResourceManager.GetResource(material.vertex_shader_ptr);
+    //const auto& vertex_shader = *m_ResourceManager.GetResource(material.vertex_shader_ptr);
 
     std::vector<VkDescriptorSetLayoutBinding> bindings{};
     std::vector<VkDescriptorBindingFlags>     binding_flags{};
@@ -402,31 +402,53 @@ VkPipeline fe::VulkanResourceManager::createPipeline(VkPipelineLayout pipeline_l
     vertex_input_state_create_info.vertexAttributeDescriptionCount = vertex_input_attributs.size();
     vertex_input_state_create_info.pVertexAttributeDescriptions    = vertex_input_attributs.data();
 
-    std::array<VkPipelineShaderStageCreateInfo, 2> shader_stages_create_info{};
+    auto& shader_program = *m_ResourceManager.GetResource(material.shader_program_ptr);
 
-    // vertex shader
-    fe::vk::ShaderModule vertex_shader_module = this->createShaderModule(material.vertex_shader_ptr);
+    std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_infos{};
+    std::vector<fe::vk::ShaderModule>            shader_modules_raii{};
 
-    shader_stages_create_info[0].sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shader_stages_create_info[0].stage  = VK_SHADER_STAGE_VERTEX_BIT;
-    shader_stages_create_info[0].module = vertex_shader_module;
-    shader_stages_create_info[0].pName  = "main";
+    shader_stages_create_infos.reserve(shader_program.source_codes.size());
+    shader_modules_raii.reserve(shader_program.source_codes.size());
 
-    assert(shader_stages_create_info[0].module != VK_NULL_HANDLE);
+    for (const auto& [shader_type, source_code] : shader_program.source_codes) {
+        auto& shader_stages_create_info = shader_stages_create_infos.emplace_back();
 
-    // fragment shader
-    fe::vk::ShaderModule fragment_shader_module = this->createShaderModule(material.fragment_shader_ptr);
+        VkShaderModuleCreateInfo shader_module_create_info{};
+        shader_module_create_info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        shader_module_create_info.codeSize = source_code.size() * sizeof(uint32_t);
+        shader_module_create_info.pCode    = (uint32_t*) source_code.data();
 
-    shader_stages_create_info[1].sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shader_stages_create_info[1].stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-    shader_stages_create_info[1].module = fragment_shader_module;
-    shader_stages_create_info[1].pName  = "main";
+        VkShaderModule shader_module_raw{};
+        VK_CHECK_RESULT(vkCreateShaderModule(m_Context.device, &shader_module_create_info, nullptr, &shader_module_raw));
+        shader_modules_raii.emplace_back().attach(m_Context.device, shader_module_raw);
 
-    assert(shader_stages_create_info[1].module != VK_NULL_HANDLE);
+        shader_stages_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        shader_stages_create_info.module = shader_module_raw;
 
-    graphics_pipeline_create_info.stageCount = static_cast<uint32_t>(shader_stages_create_info.size());
-    graphics_pipeline_create_info.pStages    = shader_stages_create_info.data();
+        switch (shader_type) {
+            case ShaderProgram::ShaderType::VERTEX:
+                shader_stages_create_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+                shader_stages_create_info.pName = "vertexMain";
+                break;
+            case ShaderProgram::ShaderType::FRAGMENT:
+                shader_stages_create_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+                shader_stages_create_info.pName = "fragmentMain";
+                break;
+            case ShaderProgram::ShaderType::COMPUTE:
+                shader_stages_create_info.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+                shader_stages_create_info.pName = "computeMain";
+                break;
+            default:
+                fe::logging::error("Unknown shader type : %i", static_cast<uint32_t>(shader_type));
 
+                shader_stages_create_info.stage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+                shader_stages_create_info.pName = nullptr;
+                break;
+        }
+    }
+
+    graphics_pipeline_create_info.stageCount          = static_cast<uint32_t>(shader_stages_create_infos.size());
+    graphics_pipeline_create_info.pStages             = shader_stages_create_infos.data();
     graphics_pipeline_create_info.pVertexInputState   = &vertex_input_state_create_info;
     graphics_pipeline_create_info.pInputAssemblyState = &input_assembly_state_create_info;
     graphics_pipeline_create_info.pRasterizationState = &rasterization_state_create_info;
@@ -439,26 +461,6 @@ VkPipeline fe::VulkanResourceManager::createPipeline(VkPipelineLayout pipeline_l
     VkPipeline pipeline_raw{};
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_Context.device, nullptr, 1, &graphics_pipeline_create_info, nullptr, &pipeline_raw));
     return pipeline_raw;
-}
-
-fe::vk::ShaderModule fe::VulkanResourceManager::createShaderModule(fe::pointer<fe::resource::Shader> shader_ptr) {
-    // shader's source code must be std::vector<uint32_t>
-    static_assert(std::is_same_v<decltype(fe::resource::Shader::source_code), std::vector<uint32_t>>);
-
-    auto& shader = *m_ResourceManager.GetResource(shader_ptr);
-
-    VkShaderModuleCreateInfo shader_module_create_info{};
-    shader_module_create_info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    shader_module_create_info.codeSize = shader.source_code.size() * sizeof(uint32_t);
-    shader_module_create_info.pCode    = (uint32_t*) shader.source_code.data();
-
-    fe::vk::ShaderModule shader_module{};
-
-    VkShaderModule shader_module_raw{};
-    VK_CHECK_RESULT(vkCreateShaderModule(m_Context.device, &shader_module_create_info, nullptr, &shader_module_raw));
-    shader_module.attach(m_Context.device, shader_module_raw);
-
-    return shader_module;
 }
 
 void fe::VulkanResourceManager::generateMipmaps(VkCommandBuffer command_buffer, VkImage image_raw, uint32_t width, uint32_t height, uint32_t mip_levels) {
@@ -526,20 +528,20 @@ void fe::VulkanResourceManager::generateMipmaps(VkCommandBuffer command_buffer, 
     vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VkDependencyFlags{}, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 }
 
-VkDescriptorType fe::VulkanResourceManager::toVkDescriptorType(Shader::DescriptorType descriptor_type) const {
+VkDescriptorType fe::VulkanResourceManager::toVkDescriptorType(ShaderProgram::DescriptorType descriptor_type) const {
     // clang-format off
     switch (descriptor_type) {
-        case Shader::DescriptorType::SAMPLER               : return VK_DESCRIPTOR_TYPE_SAMPLER               ; break;
-        case Shader::DescriptorType::COMBINED_IMAGE_SAMPLER: return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; break;
-        case Shader::DescriptorType::SAMPLED_IMAGE         : return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE         ; break;
-        case Shader::DescriptorType::STORAGE_IMAGE         : return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE         ; break;
-        case Shader::DescriptorType::UNIFORM_TEXEL_BUFFER  : return VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER  ; break;
-        case Shader::DescriptorType::STORAGE_TEXEL_BUFFER  : return VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER  ; break;
-        case Shader::DescriptorType::UNIFORM_BUFFER        : return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        ; break;
-        case Shader::DescriptorType::STORAGE_BUFFER        : return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER        ; break;
-        case Shader::DescriptorType::UNIFORM_BUFFER_DYNAMIC: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC; break;
-        case Shader::DescriptorType::STORAGE_BUFFER_DYNAMIC: return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC; break;
-        case Shader::DescriptorType::INPUT_ATTACHMENT      : return VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT      ; break;
+        case ShaderProgram::DescriptorType::SAMPLER               : return VK_DESCRIPTOR_TYPE_SAMPLER               ; break;
+        case ShaderProgram::DescriptorType::COMBINED_IMAGE_SAMPLER: return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; break;
+        case ShaderProgram::DescriptorType::SAMPLED_IMAGE         : return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE         ; break;
+        case ShaderProgram::DescriptorType::STORAGE_IMAGE         : return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE         ; break;
+        case ShaderProgram::DescriptorType::UNIFORM_TEXEL_BUFFER  : return VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER  ; break;
+        case ShaderProgram::DescriptorType::STORAGE_TEXEL_BUFFER  : return VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER  ; break;
+        case ShaderProgram::DescriptorType::UNIFORM_BUFFER        : return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER        ; break;
+        case ShaderProgram::DescriptorType::STORAGE_BUFFER        : return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER        ; break;
+        case ShaderProgram::DescriptorType::UNIFORM_BUFFER_DYNAMIC: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC; break;
+        case ShaderProgram::DescriptorType::STORAGE_BUFFER_DYNAMIC: return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC; break;
+        case ShaderProgram::DescriptorType::INPUT_ATTACHMENT      : return VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT      ; break;
         default:
             assert(false);
     }

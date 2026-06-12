@@ -17,6 +17,7 @@
     Vulkan mipmaps generating done. VulkanTexture creation finally added
     Slang added
     Slang integration in progress. ShaderCompiler and ShaderReflector removed
+    fe::resource::Shader --> fe::resource::ShaderProgram. shader errors resolved
 
 ### Problem
     -
