@@ -157,7 +157,6 @@ namespace fe {
     }
 
     static vk::VmaImage createImage(VulkanContext&           context,
-                                    VkImageCreateFlags       flags,
                                     VkImageType              image_type,
                                     VkFormat                 format,
                                     VkExtent3D               extent,
@@ -167,6 +166,7 @@ namespace fe {
                                     VkImageTiling            tiling,
                                     VkImageLayout            initial_layout,
                                     VkBufferUsageFlags       usage,
+                                    VkImageCreateFlags       flags                = {},
                                     VmaAllocationCreateFlags vma_allocation_flags = {},
                                     const void*              p_next               = nullptr) {
         VkImageCreateInfo image_create_info{};

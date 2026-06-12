@@ -165,6 +165,7 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
 
     glTexImage2D(GL_TEXTURE_2D, 0, internal_format, texture.width, texture.height, 0, data_format, GL_UNSIGNED_BYTE, texture.bytes.get());
 
+    // TODO : get mipmaps from 'texture.mip_levels'
     glGenerateMipmap(GL_TEXTURE_2D);
 
     opengl_texture.resident_id = glGetTextureHandleARB(texture_id_raw);
