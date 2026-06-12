@@ -1,0 +1,117 @@
+#version 450
+layout(column_major) uniform;
+layout(column_major) buffer;
+
+#line 26 0
+struct PushConstants_0
+{
+    int instance_index_0;
+};
+
+
+#line 29
+layout(binding = 0, set = 2)
+layout(std140) uniform block_PushConstants_0
+{
+    int instance_index_0;
+}constants_0;
+
+#line 14
+struct SceneDataResource_0
+{
+    mat4x4 projection_matrix_0;
+    mat4x4 view_matrix_0;
+    uint lights_count_0;
+};
+
+
+#line 4
+layout(binding = 0)
+layout(std140) uniform block_SceneDataResource_0
+{
+    mat4x4 projection_matrix_0;
+    mat4x4 view_matrix_0;
+    uint lights_count_0;
+}scene_set_0;
+
+#line 51
+layout(std430, binding = 1) readonly buffer StructuredBuffer_matrixx3Cfloatx2C4x2C4x3E_t_0 {
+    mat4x4 _data[];
+} scene_set_model_matrices_0;
+
+#line 31
+layout(location = 0)
+out vec3 entryPointParam_vertexMain_position_0;
+
+
+#line 31
+layout(location = 1)
+out vec3 entryPointParam_vertexMain_normal_0;
+
+
+#line 31
+layout(location = 2)
+out vec2 entryPointParam_vertexMain_texture_coord_0;
+
+
+#line 31
+layout(location = 0)
+in vec3 input_position_0;
+
+
+#line 31
+layout(location = 1)
+in vec3 input_normal_0;
+
+
+#line 31
+layout(location = 2)
+in vec2 input_texture_coord_0;
+
+
+
+
+struct VertexStageOutput_0
+{
+    vec4 sv_position_0;
+    vec3 position_0;
+    vec3 normal_0;
+    vec2 texture_coord_0;
+};
+
+
+void main()
+{
+
+
+
+    vec4 worldPosition_0 = (((scene_set_model_matrices_0._data[uint(constants_0.instance_index_0)]) * (vec4(input_position_0, 1.0))));
+
+#line 47
+    VertexStageOutput_0 output_0;
+
+#line 54
+    output_0.sv_position_0 = (((scene_set_0.projection_matrix_0) * ((((scene_set_0.view_matrix_0) * (worldPosition_0))))));
+
+    output_0.position_0 = worldPosition_0.xyz;
+    output_0.normal_0 = input_normal_0;
+    output_0.texture_coord_0 = input_texture_coord_0;
+
+    VertexStageOutput_0 _S1 = output_0;
+
+#line 60
+    gl_Position = output_0.sv_position_0;
+
+#line 60
+    entryPointParam_vertexMain_position_0 = _S1.position_0;
+
+#line 60
+    entryPointParam_vertexMain_normal_0 = _S1.normal_0;
+
+#line 60
+    entryPointParam_vertexMain_texture_coord_0 = _S1.texture_coord_0;
+
+#line 60
+    return;
+}
+
