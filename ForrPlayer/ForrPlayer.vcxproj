@@ -51,18 +51,21 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(SolutionDir)ThirdParty\glfw\include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\glm\include;$(SolutionDir)ThirdParty\stb\include;$(SolutionDir)ThirdParty\tinygltf\include;$(SolutionDir)ThirdParty\MikkTSpace\include;$(SolutionDir)ThirdParty\SPIRV-Reflect\include;$(SolutionDir)ThirdParty\entt\include;$(SolutionDir)ThirdParty\VulkanMemoryAllocator\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(SolutionDir)ThirdParty\glfw\include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\glm\include;$(SolutionDir)ThirdParty\stb\include;$(SolutionDir)ThirdParty\tinygltf\include;$(SolutionDir)ThirdParty\MikkTSpace\include;$(SolutionDir)ThirdParty\SPIRV-Reflect\include;$(SolutionDir)ThirdParty\entt\include;$(SolutionDir)ThirdParty\VulkanMemoryAllocator\include;$(SolutionDir)ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(SolutionDir)ThirdParty\glfw\win64_debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(SolutionDir)ThirdParty\glfw\win64_debug;$(SolutionDir)ThirdParty\slang\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;volk.lib;slang.lib;shaderc_combinedd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>call "$(SolutionDir)Scripts\collect_licenses.bat" "$(TargetDir)" "$(SolutionDir)"</Command>
+      <Command>call "$(SolutionDir)Scripts\collect_licenses.bat" $(TargetDir) $(SolutionDir)
+
+call "$(SolutionDir)Scripts\slang\copy_dlls_to_build_folder_debug.bat" $(TargetDir) $(SolutionDir)
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -75,18 +78,21 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(SolutionDir)ThirdParty\glfw\include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\glm\include;$(SolutionDir)ThirdParty\stb\include;$(SolutionDir)ThirdParty\tinygltf\include;$(SolutionDir)ThirdParty\MikkTSpace\include;$(SolutionDir)ThirdParty\SPIRV-Reflect\include;$(SolutionDir)ThirdParty\entt\include;$(SolutionDir)ThirdParty\VulkanMemoryAllocator\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(SolutionDir)ThirdParty\glfw\include;$(SolutionDir)ThirdParty\glad\include;$(SolutionDir)ThirdParty\glm\include;$(SolutionDir)ThirdParty\stb\include;$(SolutionDir)ThirdParty\tinygltf\include;$(SolutionDir)ThirdParty\MikkTSpace\include;$(SolutionDir)ThirdParty\SPIRV-Reflect\include;$(SolutionDir)ThirdParty\entt\include;$(SolutionDir)ThirdParty\VulkanMemoryAllocator\include;$(SolutionDir)ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(SolutionDir)ThirdParty\glfw\win64_release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(SolutionDir)ThirdParty\glfw\win64_release;$(SolutionDir)ThirdParty\slang\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;volk.lib;slang.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>call "$(SolutionDir)Scripts\collect_licenses.bat" "$(TargetDir)" "$(SolutionDir)"</Command>
+      <Command>call "$(SolutionDir)Scripts\collect_licenses.bat" $(TargetDir) $(SolutionDir)
+
+call "$(SolutionDir)Scripts\slang\copy_dlls_to_build_folder_release.bat" $(TargetDir) $(SolutionDir)
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

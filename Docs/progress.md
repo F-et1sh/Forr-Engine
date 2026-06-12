@@ -14,6 +14,7 @@
     RVO bug fixed ( all 'return std::move(...)' removed )
     fe::createImage() added
     Vulkan mipmaps generating done. VulkanTexture creation finally added
+    Slang added
 
 ### Problem
     -
