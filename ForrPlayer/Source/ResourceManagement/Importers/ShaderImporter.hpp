@@ -25,6 +25,6 @@ namespace fe {
         static fe::pointer<resource::Shader> Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path);
 
     private:
-        static void CompileAndReflect(std::vector<uint32_t>& dst, std::string_view src, resource::Shader::Type shader_type, GraphicsBackend graphics_backend);
+        static void CompileAndReflect(std::vector<uint32_t>& dst, std::string_view src, GraphicsBackend graphics_backend);
     };
 } // namespace fe

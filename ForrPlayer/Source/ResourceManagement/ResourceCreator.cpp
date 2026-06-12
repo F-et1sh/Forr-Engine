@@ -1,4 +1,4 @@
-/*===============================================
+﻿/*===============================================
 
     Forr Engine
 
@@ -13,15 +13,13 @@
 #include "pch.hpp"
 #include "ResourceManagement/ResourceCreator.hpp"
 
-#include "Graphics/Shaders/ShaderCompiler.hpp"
-
 void fe::ResourceCreator::CreateDefaultResources() {
     this->createDefaultShaders();
     this->createDefaultMaterials();
 }
 
 void fe::ResourceCreator::createDefaultShaders() {
-    std::filesystem::path gltf_shaders_path = PATH.getDefaultShadersPath() / L"gLTF" / L"shader";
+    std::filesystem::path gltf_shaders_path = (PATH.getDefaultShadersPath() / L"gLTF" / L"shader").wstring() + PATH.getShaderExtension().wstring();
 
     m_Context.default_gltf_vertex_shader_ptr   = m_Importer.ImportResource<resource::Shader>(gltf_shaders_path.wstring() + PATH.getVertexShaderExtension().wstring());
     m_Context.default_gltf_fragment_shader_ptr = m_Importer.ImportResource<resource::Shader>(gltf_shaders_path.wstring() + PATH.getFragmentShaderExtension().wstring());

@@ -18,3 +18,5 @@ set SLANG_BIN=%SOLUTION_DIR%\\External\\slang\\build\\Debug\\bin
 
 copy /y "%SLANG_BIN%\\slang.dll" "%OUTPUT_DIR%" >nul
 copy /y "%SLANG_BIN%\\slang-compiler.dll" "%OUTPUT_DIR%" >nul
+copy /y "%SLANG_BIN%\\slang-glslang.dll" "%OUTPUT_DIR%" >nul
+copy /y "%SLANG_BIN%\\slang-glsl-module.dll" "%OUTPUT_DIR%" >nul

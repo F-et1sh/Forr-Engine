@@ -39,7 +39,7 @@ void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_
     else if (extension == PATH.getMaterialExtension()) {
         MaterialImporter::Import(m_Storage, resource_full_path);
     }
-    else if (extension == PATH.getVertexShaderExtension() || extension == PATH.getFragmentShaderExtension()) {
+    else if (extension == PATH.getShaderExtension()) {
         ShaderImporter::Import(m_Storage, resource_full_path);
     }
 }
