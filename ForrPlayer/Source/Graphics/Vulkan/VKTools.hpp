@@ -88,28 +88,6 @@ namespace fe {
         return 0;
     }
 
-    static vk::VmaBuffer createBuffer(VmaAllocator             allocator,
-                                      VkDeviceSize             size,
-                                      VkBufferUsageFlags       usage,
-                                      VmaAllocationCreateFlags vma_allocation_flags) {
-        VkBufferCreateInfo buffer_info{};
-        buffer_info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        buffer_info.size        = size;
-        buffer_info.usage       = usage;
-        buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-        VmaAllocationCreateInfo alloc_info{};
-        alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
-        alloc_info.flags = vma_allocation_flags;
-
-        VkBuffer      buffer_raw{};
-        VmaAllocation allocation_raw{};
-
-        VK_CHECK_RESULT(vmaCreateBuffer(allocator, &buffer_info, &alloc_info, &buffer_raw, &allocation_raw, nullptr));
-
-        return vk::VmaBuffer{ allocator, buffer_raw, allocation_raw };
-    }
-
     template <typename Func>
     static void runOneTimeCommands(VulkanContext& context, Func&& func) {
         vk::CommandBuffer command_buffer{};
@@ -154,11 +132,106 @@ namespace fe {
         vkDestroyFence(context.device, fence_raw, nullptr);
     }
 
+    static vk::VmaBuffer createBuffer(VulkanContext&           context,
+                                      VkDeviceSize             size,
+                                      VkBufferUsageFlags       usage,
+                                      VmaAllocationCreateFlags vma_allocation_flags = {},
+                                      const void*              p_next               = nullptr) {
+        VkBufferCreateInfo buffer_create_info{};
+        buffer_create_info.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_create_info.pNext       = p_next;
+        buffer_create_info.size        = size;
+        buffer_create_info.usage       = usage;
+        buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        VmaAllocationCreateInfo allocation_create_info{};
+        allocation_create_info.usage = VMA_MEMORY_USAGE_AUTO;
+        allocation_create_info.flags = vma_allocation_flags;
+
+        VkBuffer      buffer_raw{};
+        VmaAllocation allocation_raw{};
+
+        VK_CHECK_RESULT(vmaCreateBuffer(context.allocator, &buffer_create_info, &allocation_create_info, &buffer_raw, &allocation_raw, nullptr));
+
+        return vk::VmaBuffer{ context.allocator, buffer_raw, allocation_raw };
+    }
+
+    static vk::VmaImage createImage(VulkanContext&           context,
+                                    VkImageCreateFlags       flags,
+                                    VkImageType              image_type,
+                                    VkFormat                 format,
+                                    VkExtent3D               extent,
+                                    uint32_t                 mip_levels,
+                                    uint32_t                 array_layers,
+                                    VkSampleCountFlagBits    samples,
+                                    VkImageTiling            tiling,
+                                    VkImageLayout            initial_layout,
+                                    VkBufferUsageFlags       usage,
+                                    VmaAllocationCreateFlags vma_allocation_flags = {},
+                                    const void*              p_next               = nullptr) {
+        VkImageCreateInfo image_create_info{};
+        image_create_info.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        image_create_info.pNext         = p_next;
+        image_create_info.flags         = flags;
+        image_create_info.imageType     = image_type;
+        image_create_info.format        = format;
+        image_create_info.extent        = extent;
+        image_create_info.mipLevels     = mip_levels;
+        image_create_info.arrayLayers   = array_layers;
+        image_create_info.samples       = samples;
+        image_create_info.tiling        = tiling;
+        image_create_info.initialLayout = initial_layout;
+        image_create_info.usage         = usage;
+        image_create_info.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;
+
+        VmaAllocationCreateInfo allocation_create_info{};
+        allocation_create_info.usage = VMA_MEMORY_USAGE_AUTO;
+        allocation_create_info.flags = vma_allocation_flags;
+
+        VkImage       image_raw{};
+        VmaAllocation allocation_raw{};
+
+        VK_CHECK_RESULT(vmaCreateImage(context.allocator, &image_create_info, &allocation_create_info, &image_raw, &allocation_raw, nullptr));
+
+        fe::runOneTimeCommands(context, [&](VkCommandBuffer command_buffer) {
+            VkImageSubresourceRange subresource_range = {};
+            subresource_range.aspectMask              = VK_IMAGE_ASPECT_COLOR_BIT;
+            subresource_range.baseMipLevel            = 0;
+            subresource_range.levelCount              = 1;
+            subresource_range.layerCount              = 1;
+
+            VkImageMemoryBarrier image_memory_barrier{};
+            image_memory_barrier.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            image_memory_barrier.image               = image_raw;
+            image_memory_barrier.subresourceRange    = subresource_range;
+            image_memory_barrier.srcAccessMask       = VK_ACCESS_HOST_WRITE_BIT;
+            image_memory_barrier.dstAccessMask       = VK_ACCESS_SHADER_READ_BIT;
+            image_memory_barrier.oldLayout           = VK_IMAGE_LAYOUT_PREINITIALIZED;
+            image_memory_barrier.newLayout           = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            vkCmdPipelineBarrier(
+                command_buffer,
+                VK_PIPELINE_STAGE_HOST_BIT,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                0,
+                0,
+                nullptr,
+                0,
+                nullptr,
+                1,
+                &image_memory_barrier);
+        });
+
+        return vk::VmaImage{ context.allocator, image_raw, allocation_raw };
+    }
+
     static vk::VmaBuffer createDeviceLocalBuffer(VulkanContext&     context,
                                                  const void*        data,
                                                  VkDeviceSize       size,
                                                  VkBufferUsageFlags usage) {
-        vk::VmaBuffer staging_buffer = createBuffer(context.allocator,
+        vk::VmaBuffer staging_buffer = createBuffer(context,
                                                     size,
                                                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                                     VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
@@ -168,7 +241,12 @@ namespace fe {
 
         std::memcpy(allocation_info.pMappedData, data, size);
 
-        vk::VmaBuffer device_buffer = createBuffer(context.allocator, size, usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT, 0);
+#ifdef _DEBUG
+        if (usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+            fe::logging::warning("You don't have to set the 'VkBufferUsageFlags usage' to VK_BUFFER_USAGE_TRANSFER_DST_BIT manually in fe::createDeviceLocalBuffer(...). It is already done by the function");
+#endif // _DEBUG
+
+        vk::VmaBuffer device_buffer = createBuffer(context, size, usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 
         runOneTimeCommands(context, [&](VkCommandBuffer command_buffer) {
             VkBufferCopy copy_region{};
