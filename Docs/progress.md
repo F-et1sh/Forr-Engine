@@ -20,7 +20,7 @@
     fe::resource::Shader --> fe::resource::ShaderProgram. shader errors resolved
 
 ### Problem
-    -
+    Slang shaders compilation
 
 ## 11.06.2026
 ### Goal

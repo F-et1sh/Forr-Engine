@@ -1,4 +1,4 @@
-#ifndef SLANG_H
+﻿#ifndef SLANG_H
 #define SLANG_H
 
 #ifdef SLANG_USER_CONFIG
