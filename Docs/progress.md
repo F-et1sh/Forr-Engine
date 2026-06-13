@@ -1,5 +1,18 @@
 ﻿# Forr-Engine Devlog
 
+## 13.06.2026
+### Goal
+    chnage GLSL to Slang
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    Slang shader compiling almost resolved
+
+### Problem
+    -
+
 ## 12.06.2026
 ### Goal
     provide tools to decrease Vulkan boilerplate

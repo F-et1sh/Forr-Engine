@@ -24,33 +24,106 @@ using namespace fe::resource;
 fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
     ShaderProgram shader{};
 
-    std::ifstream file(resource_full_path, std::ios::binary | std::ios::ate);
-    if (!file.good()) {
-        fe::logging::error("File -> Unified. Failed to open shader file\nPath : %s", resource_full_path.string().c_str());
+    static Slang::ComPtr<slang::IGlobalSession> global_session{};
+    if (!global_session) {
+        if (SLANG_FAILED(slang::createGlobalSession(global_session.writeRef()))) {
+            fe::logging::error("File -> Unified. Slang : Failed to create global session");
+            return {};
+        }
+    }
+
+    slang::SessionDesc session_desc{};
+    slang::TargetDesc  target_desc{};
+    target_desc.format  = SLANG_SPIRV;
+    target_desc.profile = global_session->findProfile("spirv_1_5");
+    target_desc.flags = 0;
+
+    session_desc.targets                  = &target_desc;
+    session_desc.targetCount              = 1;
+    session_desc.compilerOptionEntryCount = 0;
+
+    Slang::ComPtr<slang::ISession> session{};
+    if (SLANG_FAILED(global_session->createSession(session_desc, session.writeRef()))) {
+        fe::logging::error("File -> Unified. Slang : Failed to create a session");
         return {};
     }
 
-    std::streampos file_size{};
-
-    file.seekg(0, std::ios::end);
-    file_size = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    std::string source_code{};
-
-    source_code.resize(file_size);
-    file.read((char*) &source_code[0], file_size);
-
-    // remove BOM characters
-    if (source_code.size() >= 3 &&
-        (unsigned char) source_code[0] == 0xEF &&
-        (unsigned char) source_code[1] == 0xBB &&
-        (unsigned char) source_code[2] == 0xBF) {
-        source_code = source_code.substr(3);
+    slang::IModule* slang_module = nullptr;
+    {
+        slang_module = session->loadModule(resource_full_path.string().c_str());
+        if (!slang_module) {
+            fe::logging::error("File -> Unified. Slang : Failed to load a slang module\nPath : %s", resource_full_path.string().c_str());
+            return {};
+        }
     }
 
-    const auto& resource_management_context = storage.GetContext();
-    CompileAndReflect(shader.source_codes, source_code, resource_management_context.graphics_backend);
+    std::vector<slang::IComponentType*> component_types{};
+    component_types.emplace_back(slang_module);
+
+    // make sure that entry points' order is the same as shader types in fe::resource::ShaderProgram::ShaderType
+    static constexpr const char* entry_point_names[] = {
+        "vertexMain",
+        "fragmentMain",
+        "computeMain"
+    };
+
+    struct EntryPoint {
+        Slang::ComPtr<slang::IEntryPoint> entry_point{};
+        ShaderProgram::ShaderType         shader_type{};
+
+        EntryPoint()  = default;
+        ~EntryPoint() = default;
+
+        EntryPoint(slang::IEntryPoint* entry_point, ShaderProgram::ShaderType shader_type)
+            : entry_point(entry_point), shader_type(shader_type) {}
+    };
+
+    std::vector<EntryPoint> entry_points{};
+
+    for (std::uint32_t i = 0; i < std::size(entry_point_names); i++) {
+        auto                entry_point_name = entry_point_names[i];
+        slang::IEntryPoint* entry_point{};
+        slang_module->findEntryPointByName(entry_point_name, &entry_point);
+
+        if (entry_point) {
+            entry_points.emplace_back(entry_point, static_cast<ShaderProgram::ShaderType>(i)); // temp, I guess
+            component_types.emplace_back(entry_point);
+        }
+    }
+
+    Slang::ComPtr<slang::IComponentType> composed_program{};
+    {
+        SlangResult result = session->createCompositeComponentType(component_types.data(),
+                                                                   component_types.size(),
+                                                                   composed_program.writeRef());
+        if (SLANG_FAILED(result)) {
+            fe::logging::error("File -> Unified. Slang : Failed to create a composed program\nPath : %s", resource_full_path.string().c_str());
+            return {};
+        }
+    }
+
+    for (std::size_t i = 0; i < entry_points.size(); i++) {
+        const auto&                 entry_point = entry_points[i];
+        Slang::ComPtr<slang::IBlob> spirv_code{};
+
+        SlangResult result = composed_program->getEntryPointCode(i,
+                                                                 0,
+                                                                 spirv_code.writeRef());
+        if (SLANG_FAILED(result)) {
+            fe::logging::error("File -> Unified. Slang : Failed to get entry point code\nEntry point index : %i\nPath : %s", i, resource_full_path.string().c_str());
+            return {};
+        }
+
+        const size_t   byte_size   = spirv_code->getBufferSize();
+        const uint8_t* raw_data    = reinterpret_cast<const uint8_t*>(spirv_code->getBufferPointer());
+        size_t         words_count = (byte_size + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+
+        ShaderProgram::ShaderType shader_type     = entry_point.shader_type;
+        auto&                     source_code_dst = shader.source_codes[shader_type];
+
+        source_code_dst.resize(words_count, 0);
+        std::memcpy(source_code_dst.data(), raw_data, byte_size);
+    }
 
     auto ptr = storage.CreateResource(std::move(shader));
     return ptr;
