@@ -1,5 +1,20 @@
 ﻿# Forr-Engine Devlog
 
+## 14.06.2026
+### Goal
+    chnage GLSL to Slang
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    FAAAAHH sound works in VS2026 even without a specific extension.
+        Maybe this IDE is not that bad I was thinking. But it's GUI is still awkward
+    Provided FAAAHH sound for Windows critical error window and when build fails
+
+### Problem
+    -
+
 ## 13.06.2026
 ### Goal
     chnage GLSL to Slang
@@ -11,7 +26,8 @@
     Slang shader compiling almost resolved
 
 ### Problem
-    -
+    my IDE just broken, so, I have to switch my favourite VS2022 to this shity modern VS2026,
+        because its compiler, v145, works, unlike v143, which just cracked after working with UE5
 
 ## 12.06.2026
 ### Goal
