@@ -15,8 +15,6 @@
 
 #include "Graphics/Vulkan/VKTools.hpp"
 
-#define VMA_IMPLEMENTATION
-
 using namespace fe::resource;
 
 void fe::VulkanResourceManager::CreateResource(Material& material) {
@@ -415,8 +413,8 @@ VkPipeline fe::VulkanResourceManager::createPipeline(VkPipelineLayout pipeline_l
 
         VkShaderModuleCreateInfo shader_module_create_info{};
         shader_module_create_info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        shader_module_create_info.codeSize = source_code.size() * sizeof(uint32_t);
-        shader_module_create_info.pCode    = (uint32_t*) source_code.data();
+        shader_module_create_info.codeSize = source_code.size();
+        shader_module_create_info.pCode    = reinterpret_cast<const uint32_t*>(source_code.data());
 
         VkShaderModule shader_module_raw{};
         VK_CHECK_RESULT(vkCreateShaderModule(m_Context.device, &shader_module_create_info, nullptr, &shader_module_raw));

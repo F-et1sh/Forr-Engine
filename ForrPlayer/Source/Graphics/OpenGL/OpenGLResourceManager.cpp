@@ -22,6 +22,11 @@ void fe::OpenGLResourceManager::CreateResource(Material& material) {
         return;
     }
 
+    if (!shader_program) {
+        fe::logging::debug("Shader program wasn't valid");
+        return;
+    }
+
     OpenGLShaderProgram opengl_shader_program{};
     GLuint              opengl_shader_program_raw = this->createShaderProgramRaw(*shader_program);
     opengl_shader_program.shader_program.attach(opengl_shader_program_raw);
@@ -277,8 +282,12 @@ GLuint fe::OpenGLResourceManager::createShaderProgramRaw(resource::ShaderProgram
 
         opengl_shader = glCreateShader(opengl_type);
 
-        glShaderBinary(1, &opengl_shader, GL_SHADER_BINARY_FORMAT_SPIR_V, source_code.data(), source_code.size() * sizeof(uint32_t));
-        glSpecializeShader(opengl_shader, "main", 0, nullptr, nullptr);
+        //glShaderBinary(1, &opengl_shader, GL_SHADER_BINARY_FORMAT_SPIR_V, source_code.data(), source_code.size() * sizeof(uint32_t));
+        //glSpecializeShader(opengl_shader, "main", 0, nullptr, nullptr);
+
+        const char* glsl_text_ptr = reinterpret_cast<const char*>(source_code.data());
+        GLint       length        = static_cast<GLint>(source_code.size());
+        glShaderSource(opengl_shader, 1, &glsl_text_ptr, &length);
 
         glCompileShader(opengl_shader);
 

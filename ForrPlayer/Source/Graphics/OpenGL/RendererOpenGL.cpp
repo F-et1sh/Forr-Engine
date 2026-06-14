@@ -110,8 +110,8 @@ void fe::RendererOpenGL::InitializeGPUResources() {
 }
 
 void fe::RendererOpenGL::InitializeStorageBuffers() {
-    constexpr static std::size_t object_binding_index = GetBindingIndex<0, 0>();
-    constexpr static std::size_t lights_binding_index = GetBindingIndex<0, 1>();
+    //constexpr static std::size_t object_binding_index = GetBindingIndex<0, 0>();
+    //constexpr static std::size_t lights_binding_index = GetBindingIndex<0, 1>();
 
     constexpr static std::size_t object_buffer_size = 16 * 1024 * 1024;
     constexpr static std::size_t light_buffer_size  = 256 * 1024;
@@ -138,14 +138,14 @@ void fe::RendererOpenGL::InitializeStorageBuffers() {
 
     for (size_t i = 0; i < MAX_CONCURRENT_FRAMES; i++) {
         m_FrameData[i].storage_buffer.bindings.resize(2);                // bindings count
-        initialize_binding(i, object_binding_index, object_buffer_size); // Binding 0
-        initialize_binding(i, lights_binding_index, light_buffer_size);  // Binding 1
+        //initialize_binding(i, object_binding_index, object_buffer_size); // Binding 0
+        //initialize_binding(i, lights_binding_index, light_buffer_size);  // Binding 1
     }
 }
 
 void fe::RendererOpenGL::handleRenderQueue(const RenderPacket& render_packet) {
-    constexpr static std::size_t object_binding_index = GetBindingIndex<0, 0>();
-    constexpr static std::size_t lights_binding_index = GetBindingIndex<0, 1>();
+    //constexpr static std::size_t object_binding_index = GetBindingIndex<0, 0>();
+    //constexpr static std::size_t lights_binding_index = GetBindingIndex<0, 1>();
 
     auto& storage_buffer = m_FrameData[m_CurrentFrame].storage_buffer;
 
@@ -164,35 +164,35 @@ void fe::RendererOpenGL::handleRenderQueue(const RenderPacket& render_packet) {
         else if (glfwGetKey(glfw_window, GLFW_KEY_S))
             m_Camera.translate(glm::vec3(0.0f, 0.0f, -speed));
 
-        auto* object_ptr = static_cast<uint8_t*>(storage_buffer.bindings[object_binding_index].mapped);
+        //auto* object_ptr = static_cast<uint8_t*>(storage_buffer.bindings[object_binding_index].mapped);
 
-        struct GPUCamera {
-            glm::mat4 p;
-            glm::mat4 v;
-        } cam{ m_Camera.getPerspectiveMatrix(), m_Camera.getViewMatrix() };
-        memcpy(object_ptr, &cam, sizeof(cam));
-        object_ptr += sizeof(cam);
+        //struct GPUCamera {
+            //glm::mat4 p;
+            //glm::mat4 v;
+        //} cam{ m_Camera.getPerspectiveMatrix(), m_Camera.getViewMatrix() };
+        //memcpy(object_ptr, &cam, sizeof(cam));
+        //object_ptr += sizeof(cam);
 
-        if (!render_packet.object_transforms.empty()) {
-            size_t bytes_to_copy = render_packet.object_transforms.size() * sizeof(glm::mat4);
-            memcpy(object_ptr, render_packet.object_transforms.data(), bytes_to_copy);
-        }
+        //if (!render_packet.object_transforms.empty()) {
+            //size_t bytes_to_copy = render_packet.object_transforms.size() * sizeof(glm::mat4);
+            //memcpy(object_ptr, render_packet.object_transforms.data(), bytes_to_copy);
+        //}
 
-        auto*    lights_ptr   = static_cast<uint8_t*>(storage_buffer.bindings[lights_binding_index].mapped);
-        uint32_t lights_count = render_packet.lights.size();
-        memcpy(lights_ptr, &lights_count, sizeof(lights_count));
-        lights_ptr += 16;
-        if (!render_packet.lights.empty()) {
-            size_t bytes_to_copy = render_packet.lights.size() * sizeof(GPULight);
-            memcpy(lights_ptr, render_packet.lights.data(), bytes_to_copy);
-        }
+        //auto*    lights_ptr   = static_cast<uint8_t*>(storage_buffer.bindings[lights_binding_index].mapped);
+        //uint32_t lights_count = render_packet.lights.size();
+        //memcpy(lights_ptr, &lights_count, sizeof(lights_count));
+        //lights_ptr += 16;
+        //if (!render_packet.lights.empty()) {
+            //size_t bytes_to_copy = render_packet.lights.size() * sizeof(GPULight);
+            //memcpy(lights_ptr, render_packet.lights.data(), bytes_to_copy);
+        //}
     }
 
-    GLuint object_buffer_raw = storage_buffer.bindings[object_binding_index].buffer.get();
-    GLuint light_buffer_raw  = storage_buffer.bindings[lights_binding_index].buffer.get();
+    //GLuint object_buffer_raw = storage_buffer.bindings[object_binding_index].buffer.get();
+    //GLuint light_buffer_raw  = storage_buffer.bindings[lights_binding_index].buffer.get();
 
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, object_binding_index, object_buffer_raw);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, lights_binding_index, light_buffer_raw);
+    //glBindBufferBase(GL_SHADER_STORAGE_BUFFER, object_binding_index, object_buffer_raw);
+    //glBindBufferBase(GL_SHADER_STORAGE_BUFFER, lights_binding_index, light_buffer_raw);
 
     // draw
     for (const auto& draw_command : render_packet.draw_commands) {
@@ -208,7 +208,7 @@ void fe::RendererOpenGL::handleRenderQueue(const RenderPacket& render_packet) {
             const auto& material_bindings = opengl_shader_program.shader_buffers.bindings;
             for (std::size_t i = 0; i < material_bindings.size(); i++) {
                 const auto&       binding       = material_bindings[i];
-                const std::size_t binding_index = GetBindingIndex(1, i);
+                //const std::size_t binding_index = GetBindingIndex(1, i);
 
                 auto* ptr = static_cast<uint8_t*>(binding.mapped);
                 if (!material->buffer.empty()) {
@@ -216,7 +216,7 @@ void fe::RendererOpenGL::handleRenderQueue(const RenderPacket& render_packet) {
                     memcpy(ptr, material->buffer.data(), bytes_to_copy);
                 }
                 GLuint buffer_raw = binding.buffer.get();
-                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_index, buffer_raw);
+                //glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_index, buffer_raw);
             }
         }
 

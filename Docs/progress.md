@@ -11,6 +11,8 @@
     FAAAAHH sound works in VS2026 even without a specific extension.
         Maybe this IDE is not that bad I was thinking. But it's GUI is still awkward
     Provided FAAAHH sound for Windows critical error window and when build fails
+    returned my code from the stash
+    fe::resource::ShaderProgram::SourceCode is unified now
 
 ### Problem
     -
