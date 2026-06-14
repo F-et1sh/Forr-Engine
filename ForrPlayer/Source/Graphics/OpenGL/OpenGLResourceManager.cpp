@@ -16,7 +16,11 @@
 using namespace fe::resource;
 
 void fe::OpenGLResourceManager::CreateResource(Material& material) {
-    auto shader_program = m_ResourceManager.GetResource(material.shader_program_ptr);
+    ShaderProgram* shader_program = m_ResourceManager.GetResource(material.shader_program_ptr);
+    if (!shader_program) {
+        fe::logging::error("Unified -> OpenGL. Failed to create material. material.shader_program.ptr was invalid");
+        return;
+    }
 
     OpenGLShaderProgram opengl_shader_program{};
     GLuint              opengl_shader_program_raw = this->createShaderProgramRaw(*shader_program);

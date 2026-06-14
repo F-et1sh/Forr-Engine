@@ -292,6 +292,8 @@ void fe::RendererVulkan::handleRenderQueue(const RenderPacket& render_packet) {
 void fe::RendererVulkan::InitializeBase() {
     VK_CHECK_RESULT(volkInitialize());
 
+    m_Context.enabled_instance_extensions.emplace_back(VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
+
     this->VKCreateInstance();
     this->VKChoosePhysicalDevice();
     this->VKSetupDepthStencilFormat();
@@ -309,6 +311,9 @@ void fe::RendererVulkan::InitializeDevice() {
 
     // TODO : Add enabled extensions adding
 
+    m_Context.enabled_physical_device_extensions.emplace_back(VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
+    m_Context.enabled_physical_device_extensions.emplace_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
+
     this->VKCreateDevice();
     this->VKCreateCommandPool();
     this->VKSetupQueues();
@@ -320,9 +325,12 @@ void fe::RendererVulkan::InitializeAllocator() {
     allocator_create_info.device           = m_Device;
     allocator_create_info.instance         = m_Instance;
     allocator_create_info.vulkanApiVersion = m_Context.api_version;
-    allocator_create_info.flags            = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT |
-                                             VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT |
-                                             VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT; // TODO : provide crossplatform for this
+    //allocator_create_info.flags            = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT | VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT;
+    allocator_create_info.flags = 0;
+
+#ifdef _WIN32
+    //allocator_create_info.flags |= VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT;
+#endif
 
     VmaVulkanFunctions vulkan_functions{};
     VK_CHECK_RESULT(vmaImportVulkanFunctionsFromVolk(&allocator_create_info, &vulkan_functions));
@@ -635,9 +643,7 @@ void fe::RendererVulkan::VKCreateInstance() {
     for (size_t i = 0; i < enabled_instance_extensions_copy.size(); i++) {
         const auto& e = enabled_instance_extensions_copy[i];
 
-        auto it = std::find(m_Context.supported_instance_extensions.begin(),
-                            m_Context.supported_instance_extensions.end(),
-                            e);
+        auto it = std::ranges::find(m_Context.supported_instance_extensions, e);
 
         if (it == m_Context.supported_instance_extensions.end())
             extensions_to_remove.push_back(i);

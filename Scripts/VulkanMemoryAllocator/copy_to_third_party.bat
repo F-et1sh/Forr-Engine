@@ -19,6 +19,9 @@ copy "..\\..\\External\\VulkanMemoryAllocator\\LICENSE.txt" "..\\..\\ThirdParty\
 mkdir "..\\..\\ThirdParty\\VulkanMemoryAllocator\\src"
 
 (
+echo #ifdef _WIN32
+echo	#define VK_USE_PLATFORM_WIN32_KHR
+echo #endif
 echo #define VMA_IMPLEMENTATION
 echo #define VMA_STATIC_VULKAN_FUNCTIONS 0
 echo #define VMA_DYNAMIC_VULKAN_FUNCTIONS 0
