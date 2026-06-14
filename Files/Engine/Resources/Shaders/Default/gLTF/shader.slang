@@ -48,12 +48,12 @@ VertexStageOutput vertexMain(VertexInput input) {
 
     int index = constants.instance_index;
 
-    float4 worldPosition = mul(float4(input.position, 1.0f), scene_set.model_matrices[index]);
+    float4 world_position = mul(float4(input.position, 1.0f), scene_set.model_matrices[index]);
     
-    output.sv_position = mul(worldPosition, scene_set.view_matrix);
+    output.sv_position = mul(world_position, scene_set.view_matrix);
     output.sv_position = mul(output.sv_position, scene_set.projection_matrix);
     
-    output.position = worldPosition.xyz;
+    output.position = world_position.xyz;
     output.normal = input.normal;
     output.texture_coord = input.texture_coord;
 
@@ -68,7 +68,7 @@ float4 fragmentMain(VertexStageOutput input) : SV_Target {
     
     Sampler2D tex = reinterpret<Sampler2D>(handle);
     
-    float4 fragColor = tex.Sample(input.texture_coord);
+    float4 frag_color = tex.Sample(input.texture_coord);
     
-    return fragColor;
+    return float4(1.0f);
 }
