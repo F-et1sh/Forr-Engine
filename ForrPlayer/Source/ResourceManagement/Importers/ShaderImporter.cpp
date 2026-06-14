@@ -34,8 +34,26 @@ fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStor
 
     slang::SessionDesc session_desc{};
     slang::TargetDesc  target_desc{};
-    target_desc.format  = SLANG_SPIRV;
-    target_desc.profile = global_session->findProfile("spirv_1_5");
+
+    const auto& resource_management_context = storage.GetContext();
+
+    switch (resource_management_context.graphics_backend) {
+        case GraphicsBackend::OpenGL:
+            target_desc.format  = SLANG_GLSL;
+            target_desc.profile = global_session->findProfile("glsl_450");
+            break;
+        case GraphicsBackend::Vulkan:
+            target_desc.format  = SLANG_SPIRV;
+            target_desc.profile = global_session->findProfile("spirv_1_5");
+            break;
+        default:
+            fe::logging::warning("The selected renderer backend %i was not found. Using the default one", resource_management_context.graphics_backend);
+
+            target_desc.format  = SLANG_GLSL;
+            target_desc.profile = global_session->findProfile("glsl_450");
+            break;
+    }
+
     target_desc.flags = 0;
 
     session_desc.targets                  = &target_desc;
@@ -114,14 +132,13 @@ fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStor
             return {};
         }
 
-        const size_t   byte_size   = spirv_code->getBufferSize();
-        const uint8_t* raw_data    = reinterpret_cast<const uint8_t*>(spirv_code->getBufferPointer());
-        size_t         words_count = (byte_size + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+        const size_t   byte_size = spirv_code->getBufferSize();
+        const uint8_t* raw_data  = reinterpret_cast<const uint8_t*>(spirv_code->getBufferPointer());
 
         ShaderProgram::ShaderType shader_type     = entry_point.shader_type;
         auto&                     source_code_dst = shader.source_codes[shader_type];
 
-        source_code_dst.resize(words_count, 0);
+        source_code_dst.resize(byte_size, 0);
         std::memcpy(source_code_dst.data(), raw_data, byte_size);
     }
 

@@ -174,7 +174,7 @@ namespace fe::resource {
             COMPUTE
         };
 
-        using SourceCode        = std::vector<uint32_t>;
+        using SourceCode        = std::vector<uint8_t>;
         using SourceCodeStorage = std::unordered_map<ShaderType, SourceCode>;
 
         SourceCodeStorage source_codes{};
