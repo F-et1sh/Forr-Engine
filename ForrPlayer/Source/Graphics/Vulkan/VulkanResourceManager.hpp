@@ -45,7 +45,7 @@ namespace fe {
         VkPipeline                               createPipeline(VkPipelineLayout pipeline_layout_raw, const resource::Material& material);
         void                                     generateMipmaps(VkCommandBuffer command_buffer, VkImage image_raw, uint32_t width, uint32_t height, uint32_t mip_levels);
 
-        VkDescriptorType toVkDescriptorType(resource::ShaderProgram::DescriptorType descriptor_type) const;
+        VkDescriptorType toVkDescriptorType(/*resource::ShaderProgram::DescriptorType descriptor_type*/) const;
 
     private:
         // this function returns the index of the resource ( GPUHandle<>::index )

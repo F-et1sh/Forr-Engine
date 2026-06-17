@@ -1,5 +1,20 @@
 ﻿# Forr-Engine Devlog
 
+## 17.06.2026
+### Goal
+    do Slang reflection
+    fix Vukan VMA error
+    chnage GLSL to Slang
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 14.06.2026
 ### Goal
     chnage GLSL to Slang

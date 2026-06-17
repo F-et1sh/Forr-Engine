@@ -13,9 +13,6 @@
 #pragma once
 #include "ResourceManagement/ResourceStorage.hpp"
 
-#define SPIRV_REFLECT_USE_SYSTEM_SPIRV_H
-#include "spirv_reflect.h"
-
 namespace fe {
     class ShaderImporter {
     public:
@@ -23,8 +20,5 @@ namespace fe {
         ~ShaderImporter() = default;
 
         static fe::pointer<resource::ShaderProgram> Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path);
-
-    private:
-        static void CompileAndReflect(resource::ShaderProgram::SourceCodeStorage& dst, std::string_view src, GraphicsBackend graphics_backend);
     };
 } // namespace fe

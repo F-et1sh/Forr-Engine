@@ -22,7 +22,7 @@
 using namespace fe::resource;
 
 fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
-    ShaderProgram shader{};
+    ShaderProgram shader_program{};
 
     static Slang::ComPtr<slang::IGlobalSession> global_session{};
     if (!global_session) {
@@ -78,8 +78,7 @@ fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStor
     std::vector<slang::IComponentType*> component_types{};
     component_types.emplace_back(slang_module);
 
-    // make sure that entry points' order is the same as shader types in fe::resource::ShaderProgram::ShaderType
-    static constexpr const char* entry_point_names[] = {
+    static constexpr std::array<std::string_view, 3> entry_point_names{
         "vertexMain",
         "fragmentMain",
         "computeMain"
@@ -101,10 +100,19 @@ fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStor
     for (std::uint32_t i = 0; i < std::size(entry_point_names); i++) {
         auto                entry_point_name = entry_point_names[i];
         slang::IEntryPoint* entry_point{};
-        slang_module->findEntryPointByName(entry_point_name, &entry_point);
+        slang_module->findEntryPointByName(entry_point_name.data(), &entry_point);
 
         if (entry_point) {
-            entry_points.emplace_back(entry_point, static_cast<ShaderProgram::ShaderType>(i)); // temp, I guess
+            ShaderProgram::ShaderType shader_type{};
+
+            if (entry_point_name == entry_point_names[0])
+                shader_type = ShaderProgram::ShaderType::VERTEX;
+            else if (entry_point_name == entry_point_names[1])
+                shader_type = ShaderProgram::ShaderType::FRAGMENT;
+            else if (entry_point_name == entry_point_names[2])
+                shader_type = ShaderProgram::ShaderType::COMPUTE;
+
+            entry_points.emplace_back(entry_point, shader_type);
             component_types.emplace_back(entry_point);
         }
     }
@@ -124,11 +132,9 @@ fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStor
         const auto&                 entry_point = entry_points[i];
         Slang::ComPtr<slang::IBlob> spirv_code{};
 
-        SlangResult result = composed_program->getEntryPointCode(i,
-                                                                 0,
-                                                                 spirv_code.writeRef());
+        SlangResult result = composed_program->getEntryPointCode(i, 0, spirv_code.writeRef());
         if (SLANG_FAILED(result)) {
-            fe::logging::error("File -> Unified. Slang : Failed to get entry point code\nEntry point index : %i\nPath : %s", i, resource_full_path.string().c_str());
+            fe::logging::error("File -> Unified. Slang : Failed to get an entry point code\nEntry point index : %i\nPath : %s", i, resource_full_path.string().c_str());
             return {};
         }
 
@@ -136,127 +142,22 @@ fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStor
         const uint8_t* raw_data  = reinterpret_cast<const uint8_t*>(spirv_code->getBufferPointer());
 
         ShaderProgram::ShaderType shader_type     = entry_point.shader_type;
-        auto&                     source_code_dst = shader.source_codes[shader_type];
+        auto&                     source_code_dst = shader_program.source_codes[shader_type];
 
         source_code_dst.resize(byte_size, 0);
         std::memcpy(source_code_dst.data(), raw_data, byte_size);
     }
 
-    auto ptr = storage.CreateResource(std::move(shader));
+    slang::ProgramLayout* program_layout = composed_program->getLayout(0); // 'target = 0'
+    if (!program_layout) {
+        fe::logging::error("File -> Unified. Slang : Failed to get the layout of the composed program while reflection\nPath : %s", resource_full_path.string().c_str());
+        return {};
+    }
+
+    unsigned int parameter_count = program_layout->getParameterCount();
+
+
+
+    auto ptr = storage.CreateResource(std::move(shader_program));
     return ptr;
-}
-
-void fe::ShaderImporter::CompileAndReflect(resource::ShaderProgram::SourceCodeStorage& dst, std::string_view src, GraphicsBackend graphics_backend) {
-    static Slang::ComPtr<slang::IGlobalSession> global_session{};
-
-    if (!global_session) {
-        if (SLANG_FAILED(slang::createGlobalSession(global_session.writeRef()))) {
-            fe::logging::error("Slang : Failed to create global session");
-            return;
-        }
-    }
-
-    dst.clear();
-
-    slang::SessionDesc session_desc{};
-    slang::TargetDesc  target_desc{};
-
-    switch (graphics_backend) {
-        case GraphicsBackend::OpenGL:
-            target_desc.format  = SLANG_GLSL;
-            target_desc.profile = global_session->findProfile("glsl_450");
-            break;
-        case GraphicsBackend::Vulkan:
-            target_desc.format  = SLANG_SPIRV;
-            target_desc.profile = global_session->findProfile("spirv_1_5");
-            break;
-        default:
-            fe::logging::warning("The selected renderer backend %i was not found. Using the default one", graphics_backend);
-
-            target_desc.format  = SLANG_GLSL;
-            target_desc.profile = global_session->findProfile("glsl_450");
-            break;
-    }
-
-    session_desc.targets     = &target_desc;
-    session_desc.targetCount = 1;
-
-    Slang::ComPtr<slang::ISession> session{};
-    global_session->createSession(session_desc, session.writeRef());
-
-    Slang::ComPtr<slang::IModule> slang_module{};
-    Slang::ComPtr<slang::IBlob>   diagnostics_blob{};
-    const char*                   module_name = "shader";
-    const char*                   module_path = "shader.slang";
-
-    slang_module = session->loadModuleFromSourceString(module_name, module_path, src.data(), diagnostics_blob.writeRef());
-    assert(slang_module);
-
-    std::vector<std::string_view> entry_points_names{
-        "vertexMain",
-        "fragmentMain",
-        "ComputeMain"
-    };
-
-    std::vector<Slang::ComPtr<slang::IEntryPoint>> entry_points{};
-
-    for (const auto& entry_point_name : entry_points_names) {
-        Slang::ComPtr<slang::IEntryPoint> entry_point{};
-        slang_module->findEntryPointByName(entry_point_name.data(), entry_point.writeRef());
-
-        if (entry_point) entry_points.push_back(entry_point);
-    }
-
-    //std::vector<slang::IComponentType*> component_types{};
-    //component_types.push_back(slang_module);
-    //component_types.append_range(entry_points);
-
-    //Slang::ComPtr<slang::IComponentType> composed_program{};
-    //if (SLANG_FAILED(session->createCompositeComponentType(component_types.data(), component_types.size(), composed_program.writeRef()))) {
-    //assert(false);
-    //}
-
-    //Slang::ComPtr<slang::IComponentType> linked_program{};
-    //if (SLANG_FAILED(composed_program->link(linked_program.writeRef()))) {
-    //assert(false);
-    //}
-
-    for (std::size_t i = 0; i < entry_points.size(); i++) {
-        Slang::ComPtr<slang::IBlob> source_code{};
-
-        auto& entry_point = entry_points[i];
-
-        Slang::ComPtr<slang::IComponentType> linked_program{};
-        entry_point->link(linked_program.writeRef());
-
-        SlangResult result = linked_program->getEntryPointCode(0, // entryPointIndex
-                                                               0, // targetIndex
-                                                               source_code.writeRef());
-
-        if (SLANG_FAILED(result)) {
-            assert(false);
-        }
-
-        std::ofstream file("src_code" + std::to_string(i) + ".txt");
-        file.write(reinterpret_cast<const char*>(source_code->getBufferPointer()), source_code->getBufferSize());
-        file.close();
-
-        // temp
-        if (i == 0) {
-            const size_t   byte_size = source_code->getBufferSize();
-            const uint8_t* raw_data  = reinterpret_cast<const uint8_t*>(source_code->getBufferPointer());
-
-            size_t words_count = (byte_size + sizeof(uint32_t) - 1) / sizeof(uint32_t);
-            dst[ShaderProgram::ShaderType::VERTEX].resize(words_count, 0);
-            std::memcpy(dst[ShaderProgram::ShaderType::VERTEX].data(), raw_data, byte_size);
-        }
-        else if (i == 1) {
-            const size_t   byte_size = source_code->getBufferSize();
-            const uint8_t* raw_data  = reinterpret_cast<const uint8_t*>(source_code->getBufferPointer());
-
-            size_t words_count = (byte_size + sizeof(uint32_t) - 1) / sizeof(uint32_t);
-            dst[ShaderProgram::ShaderType::FRAGMENT].resize(words_count, 0);
-            std::memcpy(dst[ShaderProgram::ShaderType::FRAGMENT].data(), raw_data, byte_size);
-        }
-    }
 }
