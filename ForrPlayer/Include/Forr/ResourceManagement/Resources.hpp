@@ -117,56 +117,39 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Texture)
     };
 
-    struct FORR_API ShaderProgram { // TODO : provide names for block members to use it in GUI
+    struct FORR_API ShaderProgram {
     public:
-        enum class DescriptorType : std::uint8_t {
-            SAMPLER,
-            COMBINED_IMAGE_SAMPLER,
-            SAMPLED_IMAGE,
-            STORAGE_IMAGE,
-            UNIFORM_TEXEL_BUFFER,
-            STORAGE_TEXEL_BUFFER,
-            UNIFORM_BUFFER,
-            STORAGE_BUFFER,
-            UNIFORM_BUFFER_DYNAMIC,
-            STORAGE_BUFFER_DYNAMIC,
-            INPUT_ATTACHMENT
-        };
+        struct ReflectedVariable {
+            enum class Type : uint8_t {
+                FLOAT,
+                UINT,
+                INT,
+                FLOAT4,
+                MAT4,
+                TEXTURE2D
+            };
 
-        struct BlockMember {
+            Type     type{};
             uint32_t offset{};
             uint32_t size{};
-            uint32_t padded_size{};
 
-            BlockMember(uint32_t offset, uint32_t size, uint32_t padded_size)
-                : offset(offset), size(size), padded_size(padded_size) {}
-
-            BlockMember()  = default;
-            ~BlockMember() = default;
+            ReflectedVariable()  = default;
+            ~ReflectedVariable() = default;
         };
 
-        struct Binding {
-            DescriptorType descriptor_type{};
+        struct ReflectedBuffer {
+            uint32_t set_index{};
+            uint32_t binding_index{};
+            uint32_t total_size_bytes{};
 
-            uint32_t index{};
-            uint32_t count{};
-            uint32_t size{};
+            std::unordered_map<std::string, ReflectedVariable> variables{};
 
-            bool is_array{};
-
-            std::vector<BlockMember> members{};
-
-            Binding()  = default;
-            ~Binding() = default;
+            ReflectedBuffer()  = default;
+            ~ReflectedBuffer() = default;
         };
 
-        struct DescriptorSetLayoutData {
-            uint32_t             index{};
-            std::vector<Binding> bindings{};
-
-            DescriptorSetLayoutData()  = default;
-            ~DescriptorSetLayoutData() = default;
-        };
+        std::unordered_map<std::string, ReflectedBuffer>   reflected_buffers{};
+        std::unordered_map<std::string, ReflectedVariable> reflected_push_constants{};
 
         enum class ShaderType : std::uint8_t {
             VERTEX,
@@ -178,9 +161,6 @@ namespace fe::resource {
         using SourceCodeStorage = std::unordered_map<ShaderType, SourceCode>;
 
         SourceCodeStorage source_codes{};
-
-        std::vector<DescriptorSetLayoutData> descriptor_sets{};
-        std::vector<BlockMember>             push_constants{};
 
         ShaderProgram()  = default;
         ~ShaderProgram() = default;
