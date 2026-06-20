@@ -119,37 +119,59 @@ namespace fe::resource {
 
     struct FORR_API ShaderProgram {
     public:
-        struct ReflectedVariable {
-            enum class Type : uint8_t {
-                FLOAT,
-                UINT,
-                INT,
-                FLOAT4,
-                MAT4,
-                TEXTURE2D
-            };
+        enum class ResourceClass : uint8_t {
+            UNIFORM_BUFFER,
+            STORAGE_BUFFER,
+            SAMPLED_TEXTURE,
+            STORAGE_TEXTURE,
+            SAMPLER,
+            ACCELERATION_STRUCTURE,
+            PUSH_CONSTANT,
+        };
 
-            Type     type{};
+        enum class ValueType : uint8_t {
+            FLOAT,
+            FLOAT2,
+            FLOAT3,
+            FLOAT4,
+
+            INT,
+            INT2,
+            INT3,
+            INT4,
+
+            UINT,
+            UINT2,
+            UINT3,
+            UINT4,
+
+            MAT3,
+            MAT4,
+
+            STRUCT
+        };
+
+        struct ReflectedMember {
+            ValueType type{};
+
             uint32_t offset{};
             uint32_t size{};
 
-            ReflectedVariable()  = default;
-            ~ReflectedVariable() = default;
+            std::string name{};
         };
 
-        struct ReflectedBuffer {
-            uint32_t set_index{};
-            uint32_t binding_index{};
-            uint32_t total_size_bytes{};
+        struct ReflectedResource {
+            ResourceClass resource_class{};
 
-            std::unordered_map<std::string, ReflectedVariable> variables{};
+            uint32_t set{};
+            uint32_t binding{};
 
-            ReflectedBuffer()  = default;
-            ~ReflectedBuffer() = default;
+            uint32_t size{};
+
+            std::vector<ReflectedMember> members{};
+
+            std::string name{};
         };
-
-        std::unordered_map<std::string, ReflectedBuffer>   reflected_buffers{};
-        std::unordered_map<std::string, ReflectedVariable> reflected_push_constants{};
 
         enum class ShaderType : std::uint8_t {
             VERTEX,
@@ -160,7 +182,8 @@ namespace fe::resource {
         using SourceCode        = std::vector<uint8_t>;
         using SourceCodeStorage = std::unordered_map<ShaderType, SourceCode>;
 
-        SourceCodeStorage source_codes{};
+        SourceCodeStorage              source_codes{};
+        std::vector<ReflectedResource> reflected_resources{};
 
         ShaderProgram()  = default;
         ~ShaderProgram() = default;

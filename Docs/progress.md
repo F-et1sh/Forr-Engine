@@ -1,6 +1,6 @@
 ﻿# Forr-Engine Devlog
 
-## 17.06.2026
+## 20.06.2026
 ### Goal
     do Slang reflection
     fix Vukan VMA error
@@ -10,10 +10,11 @@
     ( do not create GPU resources if they're already created --> InitializeGPUResources() )
 
 ### Done
-    -
+    NOTE : your own code after Unreal Engine 4/5 feels much better
+    trying to implement reflection
 
 ### Problem
-    -
+    Some other project ( done today )
 
 ## 14.06.2026
 ### Goal
