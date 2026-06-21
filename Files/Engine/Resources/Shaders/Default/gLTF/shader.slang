@@ -8,25 +8,30 @@ struct PBRMaterial {
     uint2 base_color_texture_handle;
 };
 
-ParameterBlock<SceneDataResource> scene_set;
-ParameterBlock<MaterialDataResource> material_set;
-
-struct SceneDataResource {
+struct SceneData {
     float4x4 projection_matrix;
     float4x4 view_matrix;
-    StructuredBuffer<float4x4> model_matrices;
-    StructuredBuffer<GPULight> lights;
     uint lights_count;
+};
+
+struct SceneDataResource {
+    SceneData global_data;
+    StructuredBuffer<float4x4>  model_matrices;
+    StructuredBuffer<GPULight>  lights; 
 };
 
 struct MaterialDataResource {
     StructuredBuffer<PBRMaterial> materials;
 };
 
+ParameterBlock<SceneDataResource> scene_set;
+ParameterBlock<MaterialDataResource> material_set;
+
 struct PushConstants {
     int instance_index;
 };
-ParameterBlock<PushConstants> constants;
+[[vk::push_constant]]
+PushConstants push_constants;
 
 struct VertexInput {
     [[vk::location(0)]] float3 position    : POSITION;
@@ -46,12 +51,12 @@ struct VertexStageOutput {
 VertexStageOutput vertexMain(VertexInput input) {
     VertexStageOutput output;
 
-    int index = constants.instance_index;
+    int index = push_constants.instance_index;
 
     float4 world_position = mul(float4(input.position, 1.0f), scene_set.model_matrices[index]);
     
-    output.sv_position = mul(world_position, scene_set.view_matrix);
-    output.sv_position = mul(output.sv_position, scene_set.projection_matrix);
+    output.sv_position = mul(world_position, scene_set.global_data.view_matrix);
+    output.sv_position = mul(output.sv_position, scene_set.global_data.projection_matrix);
     
     output.position = world_position.xyz;
     output.normal = input.normal;
@@ -62,7 +67,7 @@ VertexStageOutput vertexMain(VertexInput input) {
 
 [shader("fragment")]
 float4 fragmentMain(VertexStageOutput input) : SV_Target {
-     int index = constants.instance_index;
+     int index = push_constants.instance_index;
     
     uint2 handle = material_set.materials[index].base_color_texture_handle;
     

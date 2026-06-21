@@ -60,7 +60,7 @@ namespace fe {
         static FORR_NODISCARD bool compile(ShaderImportContext& context);
         static FORR_NODISCARD bool reflect(ShaderImportContext& context);
 
-        static resource::ShaderProgram::ResourceClass to_resource_class(slang::TypeReflection::Kind kind);
+        static resource::ShaderProgram::ResourceClass to_resource_class(slang::TypeLayoutReflection* type_layout);
         static resource::ShaderProgram::ValueType     to_value_type(slang::TypeReflection* type);
     };
 } // namespace fe
