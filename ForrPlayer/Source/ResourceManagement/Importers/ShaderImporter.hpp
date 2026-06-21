@@ -18,6 +18,37 @@
 #include "slang-com-helper.h"
 
 namespace fe {
+    struct EntryPoint {
+        Slang::ComPtr<slang::IEntryPoint>   entry_point{};
+        resource::ShaderProgram::ShaderType shader_type{};
+
+        EntryPoint()  = default;
+        ~EntryPoint() = default;
+
+        EntryPoint(slang::IEntryPoint* entry_point, resource::ShaderProgram::ShaderType shader_type)
+            : entry_point(entry_point), shader_type(shader_type) {}
+    };
+
+    struct ShaderImportContext {
+        static constexpr std::array<std::string_view, 3> entry_point_names{
+            "vertexMain",
+            "fragmentMain",
+            "computeMain"
+        };
+
+        ResourceStorage& storage;
+        const std::filesystem::path& resource_full_path{};
+
+        resource::ShaderProgram& shader_program;
+
+        Slang::ComPtr<slang::ISession>       session{};
+        Slang::ComPtr<slang::IComponentType> composed_program{};
+
+        ShaderImportContext(ResourceStorage& storage, const std::filesystem::path& resource_full_path, resource::ShaderProgram& shader_program)
+            : storage(storage), resource_full_path(resource_full_path), shader_program(shader_program) {}
+        ~ShaderImportContext() = default;
+    };
+
     class ShaderImporter {
     public:
         ShaderImporter()  = default;
@@ -26,10 +57,8 @@ namespace fe {
         static fe::pointer<resource::ShaderProgram> Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path);
 
     private:
-        static FORR_NODISCARD slang::IComponentType* compile(fe::resource::ShaderProgram& shader_program,
-                                                             ResourceStorage&             storage,
-                                                             const std::filesystem::path& resource_full_path);
-        static FORR_NODISCARD bool                   reflect(fe::resource::ShaderProgram& shader_program, slang::IComponentType* composed_program);
+        static FORR_NODISCARD bool compile(ShaderImportContext& context);
+        static FORR_NODISCARD bool reflect(ShaderImportContext& context);
 
         static resource::ShaderProgram::ResourceClass to_resource_class(slang::TypeReflection::Kind kind);
         static resource::ShaderProgram::ValueType     to_value_type(slang::TypeReflection* type);
