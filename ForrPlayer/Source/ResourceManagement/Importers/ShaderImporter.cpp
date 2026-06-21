@@ -3,7 +3,7 @@
     Forr Engine
 
     File : ShaderImporter.cpp
-    Role : imports resources and their metadata. for spv
+    Role : imports resources and their metadata. for Slang
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -20,40 +20,41 @@ using namespace fe::resource;
 fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
     ShaderProgram shader_program{};
 
+    ShaderImportContext context{ storage, resource_full_path, shader_program };
+
     // compile
-    slang::IComponentType*               composed_program_raw = compile(shader_program, storage, resource_full_path);
-    Slang::ComPtr<slang::IComponentType> composed_program{ composed_program_raw };
-    if (!composed_program) {
-        fe::logging::error("File -> Unified. Slang : Failed to compile the shader program\nPath : %s", resource_full_path.string().c_str());
+    bool compilation_result = compile(context);
+    if (!compilation_result) {
+        fe::logging::error("File -> Unified. Slang : Failed to compile a shader program\nPath : %s", resource_full_path.string().c_str());
         return {};
     }
 
     // reflect
-    bool result = reflect(shader_program, composed_program.get());
-    if (!result) {
-        fe::logging::error("File -> Unified. Slang : Failed to reflect the shader program\nPath : %s", resource_full_path.string().c_str());
+    bool reflection_result = reflect(context);
+    if (!reflection_result) {
+        fe::logging::error("File -> Unified. Slang : Failed to reflect a shader program\nPath : %s", resource_full_path.string().c_str());
         return {};
     }
+
+    // TODO : add reflection check
 
     auto ptr = storage.CreateResource(std::move(shader_program));
     return ptr;
 }
 
-slang::IComponentType* fe::ShaderImporter::compile(fe::resource::ShaderProgram& shader_program,
-                                                   ResourceStorage&             storage,
-                                                   const std::filesystem::path& resource_full_path) {
+bool fe::ShaderImporter::compile(ShaderImportContext& context) {
     static Slang::ComPtr<slang::IGlobalSession> global_session{};
     if (!global_session) {
         if (SLANG_FAILED(slang::createGlobalSession(global_session.writeRef()))) {
             fe::logging::error("File -> Unified. Slang : Failed to create global session");
-            return {};
+            return false;
         }
     }
 
     slang::SessionDesc session_desc{};
     slang::TargetDesc  target_desc{};
 
-    const auto& resource_management_context = storage.GetContext();
+    const auto& resource_management_context = context.storage.GetContext();
 
     switch (resource_management_context.graphics_backend) {
         case GraphicsBackend::OpenGL:
@@ -65,7 +66,8 @@ slang::IComponentType* fe::ShaderImporter::compile(fe::resource::ShaderProgram& 
             target_desc.profile = global_session->findProfile("spirv_1_5");
             break;
         default:
-            fe::logging::warning("The selected renderer backend %i was not found. Using the default one", resource_management_context.graphics_backend);
+            fe::logging::warning("The selected renderer backend %i was not found. Using the default one",
+                                 resource_management_context.graphics_backend);
 
             target_desc.format  = SLANG_GLSL;
             target_desc.profile = global_session->findProfile("glsl_450");
@@ -78,55 +80,37 @@ slang::IComponentType* fe::ShaderImporter::compile(fe::resource::ShaderProgram& 
     session_desc.targetCount              = 1;
     session_desc.compilerOptionEntryCount = 0;
 
-    Slang::ComPtr<slang::ISession> session{};
-    if (SLANG_FAILED(global_session->createSession(session_desc, session.writeRef()))) {
+    if (SLANG_FAILED(global_session->createSession(session_desc, context.session.writeRef()))) {
         fe::logging::error("File -> Unified. Slang : Failed to create a session");
-        return {};
+        return false;
     }
 
     slang::IModule* slang_module = nullptr;
 
-    slang_module = session->loadModule(resource_full_path.string().c_str());
+    slang_module = context.session->loadModule(context.resource_full_path.string().c_str());
     if (!slang_module) {
         fe::logging::error("File -> Unified. Slang : Failed to load a slang module");
-        return {};
+        return false;
     }
 
     std::vector<slang::IComponentType*> component_types{};
     component_types.emplace_back(slang_module);
 
-    static constexpr std::array<std::string_view, 3> entry_point_names{
-        "vertexMain",
-        "fragmentMain",
-        "computeMain"
-    };
-
-    struct EntryPoint {
-        Slang::ComPtr<slang::IEntryPoint> entry_point{};
-        ShaderProgram::ShaderType         shader_type{};
-
-        EntryPoint()  = default;
-        ~EntryPoint() = default;
-
-        EntryPoint(slang::IEntryPoint* entry_point, ShaderProgram::ShaderType shader_type)
-            : entry_point(entry_point), shader_type(shader_type) {}
-    };
-
     std::vector<EntryPoint> entry_points{};
 
-    for (std::uint32_t i = 0; i < std::size(entry_point_names); i++) {
-        auto                entry_point_name = entry_point_names[i];
+    for (std::uint32_t i = 0; i < std::size(ShaderImportContext::entry_point_names); i++) {
+        auto                entry_point_name = ShaderImportContext::entry_point_names[i];
         slang::IEntryPoint* entry_point{};
         slang_module->findEntryPointByName(entry_point_name.data(), &entry_point);
 
         if (entry_point) {
             ShaderProgram::ShaderType shader_type{};
 
-            if (entry_point_name == entry_point_names[0])
+            if (entry_point_name == ShaderImportContext::entry_point_names[0])
                 shader_type = ShaderProgram::ShaderType::VERTEX;
-            else if (entry_point_name == entry_point_names[1])
+            else if (entry_point_name == ShaderImportContext::entry_point_names[1])
                 shader_type = ShaderProgram::ShaderType::FRAGMENT;
-            else if (entry_point_name == entry_point_names[2])
+            else if (entry_point_name == ShaderImportContext::entry_point_names[2])
                 shader_type = ShaderProgram::ShaderType::COMPUTE;
 
             entry_points.emplace_back(entry_point, shader_type);
@@ -134,41 +118,37 @@ slang::IComponentType* fe::ShaderImporter::compile(fe::resource::ShaderProgram& 
         }
     }
 
-    slang::IComponentType* composed_program{};
-
-    SlangResult result = session->createCompositeComponentType(component_types.data(),
-                                                               component_types.size(),
-                                                               &composed_program);
+    SlangResult result = context.session->createCompositeComponentType(component_types.data(), component_types.size(), context.composed_program.writeRef());
     if (SLANG_FAILED(result)) {
         fe::logging::error("File -> Unified. Slang : Failed to create a composed program");
-        return {};
+        return false;
     }
 
     for (std::size_t i = 0; i < entry_points.size(); i++) {
         const auto&                 entry_point = entry_points[i];
         Slang::ComPtr<slang::IBlob> spirv_code{};
 
-        SlangResult result = composed_program->getEntryPointCode(i, 0, spirv_code.writeRef());
+        SlangResult result = context.composed_program->getEntryPointCode(i, 0, spirv_code.writeRef());
         if (SLANG_FAILED(result)) {
             fe::logging::error("File -> Unified. Slang : Failed to get an entry point code\nEntry point index : %i", i);
-            return {};
+            return false;
         }
 
         const size_t   byte_size = spirv_code->getBufferSize();
         const uint8_t* raw_data  = reinterpret_cast<const uint8_t*>(spirv_code->getBufferPointer());
 
         ShaderProgram::ShaderType shader_type     = entry_point.shader_type;
-        auto&                     source_code_dst = shader_program.source_codes[shader_type];
+        auto&                     source_code_dst = context.shader_program.source_codes[shader_type];
 
         source_code_dst.resize(byte_size, 0);
         std::memcpy(source_code_dst.data(), raw_data, byte_size);
     }
 
-    return composed_program;
+    return true;
 }
 
-bool fe::ShaderImporter::reflect(fe::resource::ShaderProgram& shader_program, slang::IComponentType* composed_program) {
-    slang::ProgramLayout* program_layout = composed_program->getLayout(0); // 'target = 0'
+bool fe::ShaderImporter::reflect(ShaderImportContext& context) {
+    slang::ProgramLayout* program_layout = context.composed_program->getLayout(0); // 'target = 0'
     if (!program_layout) {
         fe::logging::error("File -> Unified. Slang : Failed to get the layout of the composed program while reflection");
         return false;
@@ -176,7 +156,7 @@ bool fe::ShaderImporter::reflect(fe::resource::ShaderProgram& shader_program, sl
 
     unsigned int parameter_count = program_layout->getParameterCount();
 
-    shader_program.reflected_resources.reserve(parameter_count);
+    context.shader_program.reflected_resources.reserve(parameter_count);
 
     for (unsigned int i = 0; i < parameter_count; i++) {
         ShaderProgram::ReflectedResource reflected_resource{};
@@ -221,7 +201,7 @@ bool fe::ShaderImporter::reflect(fe::resource::ShaderProgram& shader_program, sl
                 reflected_resource.members.emplace_back(reflected_member);
             }
 
-            shader_program.reflected_resources.emplace_back(reflected_resource);
+            context.shader_program.reflected_resources.emplace_back(reflected_resource);
         }
     }
 
