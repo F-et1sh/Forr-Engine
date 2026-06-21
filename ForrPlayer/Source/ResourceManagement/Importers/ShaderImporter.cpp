@@ -25,14 +25,14 @@ fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStor
     // compile
     bool compilation_result = compile(context);
     if (!compilation_result) {
-        fe::logging::error("File -> Unified. Slang : Failed to compile a shader program\nPath : %s", resource_full_path.string().c_str());
+        fe::logging::error("Slang -> Unified. Slang : Failed to compile a shader program\nPath : %s", resource_full_path.string().c_str());
         return {};
     }
 
     // reflect
     bool reflection_result = reflect(context);
     if (!reflection_result) {
-        fe::logging::error("File -> Unified. Slang : Failed to reflect a shader program\nPath : %s", resource_full_path.string().c_str());
+        fe::logging::error("Slang -> Unified. Slang : Failed to reflect a shader program\nPath : %s", resource_full_path.string().c_str());
         return {};
     }
 
@@ -46,7 +46,7 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
     static Slang::ComPtr<slang::IGlobalSession> global_session{};
     if (!global_session) {
         if (SLANG_FAILED(slang::createGlobalSession(global_session.writeRef()))) {
-            fe::logging::error("File -> Unified. Slang : Failed to create global session");
+            fe::logging::error("Slang -> Unified. Slang : Failed to create global session");
             return false;
         }
     }
@@ -81,7 +81,7 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
     session_desc.compilerOptionEntryCount = 0;
 
     if (SLANG_FAILED(global_session->createSession(session_desc, context.session.writeRef()))) {
-        fe::logging::error("File -> Unified. Slang : Failed to create a session");
+        fe::logging::error("Slang -> Unified. Slang : Failed to create a session");
         return false;
     }
 
@@ -89,7 +89,7 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
 
     slang_module = context.session->loadModule(context.resource_full_path.string().c_str());
     if (!slang_module) {
-        fe::logging::error("File -> Unified. Slang : Failed to load a slang module");
+        fe::logging::error("Slang -> Unified. Slang : Failed to load a slang module");
         return false;
     }
 
@@ -120,7 +120,7 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
 
     SlangResult result = context.session->createCompositeComponentType(component_types.data(), component_types.size(), context.composed_program.writeRef());
     if (SLANG_FAILED(result)) {
-        fe::logging::error("File -> Unified. Slang : Failed to create a composed program");
+        fe::logging::error("Slang -> Unified. Slang : Failed to create a composed program");
         return false;
     }
 
@@ -130,7 +130,7 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
 
         SlangResult result = context.composed_program->getEntryPointCode(i, 0, spirv_code.writeRef());
         if (SLANG_FAILED(result)) {
-            fe::logging::error("File -> Unified. Slang : Failed to get an entry point code\nEntry point index : %i", i);
+            fe::logging::error("Slang -> Unified. Slang : Failed to get an entry point code\nEntry point index : %i", i);
             return false;
         }
 
@@ -150,7 +150,7 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
 bool fe::ShaderImporter::reflect(ShaderImportContext& context) {
     slang::ProgramLayout* program_layout = context.composed_program->getLayout(0); // 'target = 0'
     if (!program_layout) {
-        fe::logging::error("File -> Unified. Slang : Failed to get the layout of the composed program while reflection");
+        fe::logging::error("Slang -> Unified. Slang : Failed to get the layout of the composed program while reflection");
         return false;
     }
 
@@ -163,98 +163,141 @@ bool fe::ShaderImporter::reflect(ShaderImportContext& context) {
 
         slang::VariableLayoutReflection* parameter = program_layout->getParameterByIndex(i);
         if (!parameter) {
-            fe::logging::warning("File -> Unified. Slang : slang::VariableLayoutReflection* parameter = program_layout->getParameterByIndex(i) was nullptr. i = %i", i);
+            fe::logging::warning("Slang -> Unified. Slang : slang::VariableLayoutReflection* parameter = program_layout->getParameterByIndex(i) was nullptr. i = %i", i);
             continue;
         }
 
-        reflected_resource.binding = parameter->getBindingIndex();
-        reflected_resource.set     = parameter->getBindingSpace();
-
         slang::TypeLayoutReflection* type_layout = parameter->getTypeLayout();
 
-        slang::TypeReflection::Kind       kind        = type_layout->getKind();
-        slang::TypeReflection::ScalarType scalar_type = type_layout->getScalarType();
+        if (type_layout->getKind() == slang::TypeReflection::Kind::ParameterBlock ||
+            type_layout->getKind() == slang::TypeReflection::Kind::ConstantBuffer ||
+            type_layout->getKind() == slang::TypeReflection::Kind::Array) {
 
-        reflected_resource.resource_class = to_resource_class(kind);
-        reflected_resource.name           = parameter->getName();
-        reflected_resource.size           = type_layout->getSize();
-
-        if (reflected_resource.resource_class == ShaderProgram::ResourceClass::UNIFORM_BUFFER ||
-            reflected_resource.resource_class == ShaderProgram::ResourceClass::STORAGE_BUFFER) {
-
-            unsigned int field_count = type_layout->getFieldCount();
-
-            reflected_resource.members.reserve(field_count);
-
-            for (unsigned int j = 0; j < field_count; j++) {
-                ShaderProgram::ReflectedMember reflected_member{};
-
-                slang::VariableLayoutReflection* variable_layout = type_layout->getFieldByIndex(j);
-
-                slang::TypeReflection* type = variable_layout->getType();
-
-                reflected_member.type   = to_value_type(type);
-                reflected_member.offset = variable_layout->getOffset();
-                reflected_member.size   = variable_layout->getTypeLayout()->getSize();
-                reflected_member.name   = variable_layout->getName();
-
-                reflected_resource.members.emplace_back(reflected_member);
-            }
-
-            context.shader_program.reflected_resources.emplace_back(reflected_resource);
+            type_layout = type_layout->getElementTypeLayout();
         }
+
+        reflected_resource.set            = parameter->getBindingSpace();
+        reflected_resource.size           = type_layout->getSize();
+        reflected_resource.name           = parameter->getName();
+        reflected_resource.binding        = parameter->getBindingIndex();
+        reflected_resource.resource_class = to_resource_class(type_layout);
+
+        unsigned int field_count = type_layout->getFieldCount();
+
+        reflected_resource.members.reserve(field_count);
+
+        for (unsigned int j = 0; j < field_count; j++) {
+            ShaderProgram::ReflectedMember reflected_member{};
+
+            slang::VariableLayoutReflection* variable_layout = type_layout->getFieldByIndex(j);
+
+            slang::TypeReflection* type = variable_layout->getType();
+
+            reflected_member.type   = to_value_type(type);
+            reflected_member.offset = variable_layout->getOffset();
+            reflected_member.size   = variable_layout->getTypeLayout()->getSize();
+            reflected_member.name   = variable_layout->getName();
+
+            reflected_resource.members.emplace_back(reflected_member);
+        }
+
+        context.shader_program.reflected_resources.emplace_back(reflected_resource);
     }
 
     return true;
 }
 
-ShaderProgram::ResourceClass fe::ShaderImporter::to_resource_class(slang::TypeReflection::Kind kind) {
-    using _shader = ShaderProgram::ResourceClass;
-    using _slang  = slang::TypeReflection::Kind;
+ShaderProgram::ResourceClass fe::ShaderImporter::to_resource_class(slang::TypeLayoutReflection* type_layout) {
+    using _shader    = ShaderProgram::ResourceClass;
+    using _slang_kind = slang::TypeReflection::Kind;
+
+    slang::TypeReflection* type = type_layout->getType();
+    _slang_kind             kind = type->getKind();
 
     switch (kind) {
-        case _slang::ConstantBuffer:
+        case _slang_kind::ConstantBuffer:
             return _shader::UNIFORM_BUFFER;
 
-        case _slang::ParameterBlock:
-            return _shader::UNIFORM_BUFFER;
-
-        case _slang::SamplerState:
-            return _shader::SAMPLER;
-
-        case _slang::TextureBuffer:
-        case _slang::Resource:
-            return _shader::SAMPLED_TEXTURE;
-
-        case _slang::ShaderStorageBuffer:
+        case _slang_kind::ShaderStorageBuffer:
             return _shader::STORAGE_BUFFER;
 
+        case _slang_kind::SamplerState:
+            return _shader::SAMPLER;
+
+        case _slang_kind::Resource: {
+            SlangResourceShape  shape  = type_layout->getResourceShape();
+            SlangResourceAccess access = type_layout->getResourceAccess();
+
+            if ((shape & SLANG_RESOURCE_BASE_SHAPE_MASK) == SLANG_STRUCTURED_BUFFER) {
+                return _shader::STORAGE_BUFFER;
+            }
+            if ((shape & SLANG_RESOURCE_BASE_SHAPE_MASK) == SLANG_ACCELERATION_STRUCTURE) {
+                return _shader::ACCELERATION_STRUCTURE;
+            }
+
+            if ((shape & SLANG_RESOURCE_BASE_SHAPE_MASK) == SLANG_TEXTURE_2D) {
+                if (access == SLANG_RESOURCE_ACCESS_READ_WRITE) {
+                    return _shader::STORAGE_TEXTURE;
+                }
+                return _shader::SAMPLED_TEXTURE;
+            }
+
+            return _shader::SAMPLED_TEXTURE;
+        }
+
+        case _slang_kind::ParameterBlock:
+            assert(false && "ParameterBlock must be unwrapped using getElementTypeLayout()");
+            return _shader::UNIFORM_BUFFER;
+
         default:
-            assert(false);
+            assert(false && "Unknown resource class");
             return _shader::UNIFORM_BUFFER;
     }
 }
 
 ShaderProgram::ValueType fe::ShaderImporter::to_value_type(slang::TypeReflection* type) {
-    using _shader = ShaderProgram::ValueType;
-    using _slang  = slang::TypeReflection::ScalarType;
+    using _shader      = ShaderProgram::ValueType;
+    using _slang_kind   = slang::TypeReflection::Kind;
+    using _slang_scalar = slang::TypeReflection::ScalarType;
 
-    if (type->getScalarType() == _slang::Float32) {
-        if (type->getRowCount() == 4 && type->getColumnCount() == 4)
-            return _shader::MAT4;
+    _slang_kind   kind   = type->getKind();
+    _slang_scalar scalar = type->getScalarType();
 
-        if (type->getColumnCount() == 4)
-            return _shader::FLOAT4;
-
-        return _shader::FLOAT;
+    if (kind == _slang_kind::Scalar) {
+        if (scalar == _slang_scalar::Float32) return _shader::FLOAT;
+        if (scalar == _slang_scalar::Int32) return _shader::INT;
+        if (scalar == _slang_scalar::UInt32) return _shader::UINT;
     }
 
-    // clang-format off
-        switch (type->getScalarType()) {
-            case _slang::Float32: return _shader::FLOAT;
-            case _slang::Int32  : return _shader::INT;
-            case _slang::UInt32 : return _shader::UINT;
-            default             : return _shader::STRUCT;
+    if (kind == _slang_kind::Vector) {
+        uint32_t component_count = type->getElementCount();
+        if (scalar == _slang_scalar::Float32) {
+            if (component_count == 2) return _shader::FLOAT2;
+            if (component_count == 3) return _shader::FLOAT3;
+            if (component_count == 4) return _shader::FLOAT4;
         }
-    // clang-format on
+        if (scalar == _slang_scalar::Int32) {
+            if (component_count == 2) return _shader::INT2;
+            if (component_count == 3) return _shader::INT3;
+            if (component_count == 4) return _shader::INT4;
+        }
+        if (scalar == _slang_scalar::UInt32) {
+            if (component_count == 2) return _shader::UINT2;
+            if (component_count == 3) return _shader::UINT3;
+            if (component_count == 4) return _shader::UINT4;
+        }
+    }
+
+    if (kind == _slang_kind::Matrix) {
+        uint32_t rows = type->getRowCount();
+        uint32_t cols = type->getColumnCount();
+        if (rows == 4 && cols == 4) return _shader::MAT4;
+        if (rows == 3 && cols == 3) return _shader::MAT3;
+    }
+
+    if (kind == _slang_kind::Struct) {
+        return _shader::STRUCT;
+    }
+
+    return _shader::STRUCT;
 }
