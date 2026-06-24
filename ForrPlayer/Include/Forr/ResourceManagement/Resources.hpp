@@ -119,28 +119,53 @@ namespace fe::resource {
 
     struct FORR_API ShaderProgram {
     public:
-        enum class ResourceClass : uint8_t {
+        enum class DescriptorType : uint8_t {
             UNIFORM_BUFFER,
             STORAGE_BUFFER,
+
             SAMPLED_TEXTURE,
             STORAGE_TEXTURE,
-            SAMPLER,
-            ACCELERATION_STRUCTURE,
+
             PUSH_CONSTANT,
+
+            UNKNOWN
         };
 
         enum class ValueType : uint8_t {
-            FLOAT,
+            VOID,
+
+            BOOL,
+
+            INT32,
+            UINT32,
+
+            INT64,
+            UINT64,
+
+            FLOAT16,
+            FLOAT32,
+            FLOAT64,
+
+            INT8,
+            UINT8,
+            INT16,
+            UINT16,
+
+            INT_PTR,
+            UINT_PTR,
+
+            BFLOAT16,
+            FLOATE4M3,
+            FLOATE5M2,
+
             FLOAT2,
             FLOAT3,
             FLOAT4,
 
-            INT,
             INT2,
             INT3,
             INT4,
 
-            UINT,
             UINT2,
             UINT3,
             UINT4,
@@ -148,7 +173,13 @@ namespace fe::resource {
             MAT3,
             MAT4,
 
-            STRUCT
+            STRUCT,
+            ARRAY,
+
+            STRUCTURED_BUFFER,
+            TEXTURE_2D,
+
+            UNKNOWN
         };
 
         struct ReflectedMember {
@@ -157,11 +188,16 @@ namespace fe::resource {
             uint32_t offset{};
             uint32_t size{};
 
+            std::vector<ReflectedMember> members{};
+
             std::string name{};
+
+            ReflectedMember()  = default;
+            ~ReflectedMember() = default;
         };
 
         struct ReflectedResource {
-            ResourceClass resource_class{};
+            DescriptorType descriptor_type{};
 
             uint32_t set{};
             uint32_t binding{};
@@ -171,6 +207,9 @@ namespace fe::resource {
             std::vector<ReflectedMember> members{};
 
             std::string name{};
+
+            ReflectedResource()  = default;
+            ~ReflectedResource() = default;
         };
 
         enum class ShaderType : std::uint8_t {

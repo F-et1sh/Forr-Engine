@@ -24,8 +24,8 @@ struct MaterialDataResource {
     StructuredBuffer<PBRMaterial> materials;
 };
 
-ParameterBlock<SceneDataResource> scene_set;
-ParameterBlock<MaterialDataResource> material_set;
+[[vk::binding(0, 0)]] ParameterBlock<SceneDataResource> scene_set;
+[[vk::binding(0, 1)]] ParameterBlock<MaterialDataResource> material_set;
 
 struct PushConstants {
     int instance_index;
