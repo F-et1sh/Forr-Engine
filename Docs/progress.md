@@ -1,5 +1,34 @@
 ﻿# Forr-Engine Devlog
 
+## 24.06.2026
+### Goal
+    validate Slang reflection
+    fix Vukan VMA error
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    Slang reflection is done
+
+### Problem
+    -
+
+## 22.06.2026
+### Goal
+    rewrite Slang reflection
+    fix Vukan VMA error
+    chnage GLSL to Slang
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    starting to understand Slang Reflection API
+
+### Problem
+    Slang Reflection API is got a bug
+
 ## 21.06.2026
 ### Goal
     do Slang reflection
@@ -10,7 +39,7 @@
     ( do not create GPU resources if they're already created --> InitializeGPUResources() )
 
 ### Done
-    Slang reflection fixed
+    Slang reflection fixed <-- ( 22.06.2026 ) who wrote this ?
 
 ### Problem
     -
