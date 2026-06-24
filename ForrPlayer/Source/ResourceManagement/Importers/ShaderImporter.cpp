@@ -34,18 +34,23 @@ fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStor
     // compile
     bool compilation_result = ShaderImporter::compile(context);
     if (!compilation_result) {
-        fe::logging::error("Slang -> Unified. Slang : Failed to compile a shader program\nPath : %s", resource_full_path.string().c_str());
+        fe::logging::error("Slang -> Unified. Failed to compile a shader program\nPath : %s", resource_full_path.string().c_str());
         return {};
     }
 
     // reflect
     bool reflection_result = ShaderImporter::reflect(context);
     if (!reflection_result) {
-        fe::logging::error("Slang -> Unified. Slang : Failed to reflect a shader program\nPath : %s", resource_full_path.string().c_str());
+        fe::logging::error("Slang -> Unified. Failed to reflect a shader program\nPath : %s", resource_full_path.string().c_str());
         return {};
     }
 
-    // TODO : add reflection check
+    // validate
+    bool validation_result = ShaderImporter::validate(context);
+    if (!validation_result) {
+        fe::logging::error("Slang -> Unified. Validation failed\nPath : %s", resource_full_path.string().c_str());
+        return {};
+    }
 
     auto ptr = storage.CreateResource(std::move(shader_program));
     return ptr;
@@ -55,7 +60,7 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
     static Slang::ComPtr<slang::IGlobalSession> global_session{};
     if (!global_session) {
         if (SLANG_FAILED(slang::createGlobalSession(global_session.writeRef()))) {
-            fe::logging::error("Slang -> Unified. Slang : Failed to create global session");
+            fe::logging::error("Slang -> Unified. Failed to create global session");
             return false;
         }
     }
@@ -64,9 +69,9 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
     slang::TargetDesc  target_desc{};
     target_desc.flags = 0;
 
-    const auto& resource_management_context = context.storage.GetContext();
+    auto& graphics_backend = context.storage.GetContext().graphics_backend;
 
-    switch (resource_management_context.graphics_backend) {
+    switch (graphics_backend) {
         case GraphicsBackend::OpenGL:
             target_desc.format  = SLANG_GLSL;
             target_desc.profile = global_session->findProfile("glsl_450");
@@ -77,8 +82,7 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
             target_desc.flags   = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
             break;
         default:
-            fe::logging::warning("The selected renderer backend %i was not found. Using the default one",
-                                 resource_management_context.graphics_backend);
+            fe::logging::warning("The selected renderer backend %i was not found. Using the default one", graphics_backend);
 
             target_desc.format  = SLANG_GLSL;
             target_desc.profile = global_session->findProfile("glsl_450");
@@ -92,7 +96,7 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
     session_desc.compilerOptionEntryCount = 0;
 
     if (SLANG_FAILED(global_session->createSession(session_desc, context.session.writeRef()))) {
-        fe::logging::error("Slang -> Unified. Slang : Failed to create a session");
+        fe::logging::error("Slang -> Unified. Failed to create a session");
         return false;
     }
 
@@ -100,7 +104,7 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
 
     slang_module = context.session->loadModule(context.resource_full_path.string().c_str());
     if (!slang_module) {
-        fe::logging::error("Slang -> Unified. Slang : Failed to load a slang module");
+        fe::logging::error("Slang -> Unified. Failed to load a slang module");
         return false;
     }
 
@@ -131,7 +135,7 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
 
     SlangResult result = context.session->createCompositeComponentType(component_types.data(), component_types.size(), context.composed_program.writeRef());
     if (SLANG_FAILED(result)) {
-        fe::logging::error("Slang -> Unified. Slang : Failed to create a composed program");
+        fe::logging::error("Slang -> Unified. Failed to create a composed program");
         return false;
     }
 
@@ -141,7 +145,7 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
 
         SlangResult result = context.composed_program->getEntryPointCode(i, 0, spirv_code.writeRef());
         if (SLANG_FAILED(result)) {
-            fe::logging::error("Slang -> Unified. Slang : Failed to get an entry point code\nEntry point index : %i", i);
+            fe::logging::error("Slang -> Unified. Failed to get an entry point code\nEntry point index : %i", i);
             return false;
         }
 
@@ -163,7 +167,7 @@ bool fe::ShaderImporter::reflect(ShaderImportContext& context) {
 
     slang::ProgramLayout* program_layout = context.composed_program->getLayout(0); // 'target = 0'
     if (!program_layout) {
-        fe::logging::error("Slang -> Unified. Slang : Failed to get the layout of the composed program while reflection in fe::ShaderImporter::reflect()");
+        fe::logging::error("Slang -> Unified. Failed to get the layout of the composed program while reflection in fe::ShaderImporter::reflect()");
         return false;
     }
 
@@ -174,12 +178,91 @@ bool fe::ShaderImporter::reflect(ShaderImportContext& context) {
     for (unsigned int i = 0; i < parameter_count; i++) {
         slang::VariableLayoutReflection* parameter = program_layout->getParameterByIndex(i);
         if (!parameter) {
-            fe::logging::warning("Slang -> Unified. Slang : slang::VariableLayoutReflection* parameter = program_layout->getParameterByIndex(i) was nullptr. i = %i", i);
+            fe::logging::warning("Slang -> Unified. slang::VariableLayoutReflection* parameter = program_layout->getParameterByIndex(i) was nullptr. i = %i", i);
             continue;
         }
 
         auto& resource = shader_program.reflected_resources.emplace_back();
         ShaderImporter::parseVariable(context, parameter, resource);
+    }
+
+    return true;
+}
+
+bool fe::ShaderImporter::validate(ShaderImportContext& context) {
+    // TODO : add define for shader to mute the warning message
+    // TODO : make validation more strict
+
+    auto& graphics_backend    = context.storage.GetContext().graphics_backend;
+    auto& reflected_resources = context.shader_program.reflected_resources;
+
+    struct ExpectedResource {
+        ShaderProgram::DescriptorType descriptor_type{};
+
+        uint32_t set{};
+        uint32_t binding{};
+
+        uint32_t members_count{};
+
+        std::string_view name{};
+    };
+
+    constexpr static std::array expected_resources_vulkan{
+        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 0, 3, "scene_set" },
+        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 1, 0, 1, "material_set" }
+    };
+
+    constexpr static std::array expected_resources_opengl{
+        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 0, 3, "scene_set" },
+        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 1, 1, "material_set" }
+    };
+
+    const auto& expected_resources = (graphics_backend == GraphicsBackend::OpenGL) ? expected_resources_opengl : expected_resources_vulkan;
+
+    for (const auto& expected_resource : expected_resources) {
+        auto it = std::ranges::find_if(reflected_resources, [&expected_resource](const auto& resource) {
+            return resource.set == expected_resource.set &&
+                   resource.binding == expected_resource.binding;
+        });
+
+        if (it == reflected_resources.end()) {
+            fe::logging::warning("Slang -> Unified. Shader has no descriptor set %i ( \"%s\" ).\nIf you don't need it in the shader you don't have to add it",
+                                 expected_resource.set,
+                                 expected_resource.name.data());
+            continue;
+        }
+
+        if (it->descriptor_type != expected_resource.descriptor_type) {
+            fe::logging::error("Slang -> Unified. Shader descriptor set %i has descriptor type %i, but must be %i",
+                               expected_resource.set,
+                               it->descriptor_type,
+                               expected_resource.descriptor_type);
+            return false;
+        }
+
+        if (it->binding != expected_resource.binding) {
+            fe::logging::error("Slang -> Unified. Shader descriptor set %i has binding %i, but must be %i",
+                               expected_resource.set,
+                               it->binding,
+                               expected_resource.binding);
+            return false;
+        }
+
+        if (it->members.size() != expected_resource.members_count) {
+            fe::logging::error("Slang -> Unified. Shader descriptor set %i has members count %i, but must be %i",
+                               expected_resource.set,
+                               it->members.size(),
+                               expected_resource.members_count);
+            return false;
+        }
+
+        if (it->name != expected_resource.name) {
+            fe::logging::error("Slang -> Unified. Shader descriptor set %i has name %s, but must be \"%s\"",
+                               expected_resource.set,
+                               it->name.c_str(),
+                               expected_resource.name.data());
+            return false;
+        }
     }
 
     return true;
@@ -199,7 +282,7 @@ void fe::ShaderImporter::parseVariable(ShaderImportContext&                     
     dst_resource.binding = variable_layout->getBindingIndex();
 
     // 24.06.2026 Slang has got a bug, so, now this will work like this
-    // 
+    //
     // TODO : update Slang submodule and remove this part
     {
         static uint32_t vulkan_set_counter = 0;
@@ -221,9 +304,9 @@ void fe::ShaderImporter::parseVariable(ShaderImportContext&                     
             dst_resource.binding = variable_layout->getBindingIndex();
         }
 
-        const auto& resource_management_context = context.storage.GetContext();
+        auto& graphics_backend = context.storage.GetContext().graphics_backend;
 
-        if (resource_management_context.graphics_backend == GraphicsBackend::OpenGL) {
+        if (graphics_backend == GraphicsBackend::OpenGL) {
             dst_resource.set     = 0;
             dst_resource.binding = variable_layout->getBindingIndex();
         }

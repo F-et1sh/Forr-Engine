@@ -16,8 +16,8 @@ struct SceneData {
 
 struct SceneDataResource {
     SceneData global_data;
-    StructuredBuffer<float4x4>  model_matrices;
-    StructuredBuffer<GPULight>  lights; 
+    StructuredBuffer<float4x4> model_matrices;
+    StructuredBuffer<GPULight> lights;
 };
 
 struct MaterialDataResource {
