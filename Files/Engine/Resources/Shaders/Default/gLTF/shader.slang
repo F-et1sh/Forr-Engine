@@ -27,16 +27,11 @@ struct MaterialDataResource {
 [[vk::binding(0, 0)]] ParameterBlock<SceneDataResource> scene_set;
 [[vk::binding(0, 1)]] ParameterBlock<MaterialDataResource> material_set;
 
-struct PushConstants {
-    int instance_index;
-};
-[[vk::push_constant]]
-PushConstants push_constants;
-
 struct VertexInput {
     [[vk::location(0)]] float3 position    : POSITION;
     [[vk::location(1)]] float3 normal      : NORMAL;
     [[vk::location(2)]] float2 texture_coord : TEXCOORD;
+    [[vk::location(3)]] int instance_index : INSTANCE_INDEX;
 };
 
 struct VertexStageOutput {
@@ -45,13 +40,14 @@ struct VertexStageOutput {
     [[vk::location(0)]] float3 position      : POSITION;
     [[vk::location(1)]] float3 normal        : NORMAL;
     [[vk::location(2)]] float2 texture_coord : TEXCOORD;
+    [[vk::location(3)]] int instance_index : INSTANCE_INDEX;
 };
 
 [shader("vertex")]
-VertexStageOutput vertexMain(VertexInput input) {
+VertexStageOutput vertexMain(VertexInput input, [Layout(location = 0)] uniform int instance_index) {
     VertexStageOutput output;
 
-    int index = push_constants.instance_index;
+    int index = instance_index;
 
     float4 world_position = mul(float4(input.position, 1.0f), scene_set.model_matrices[index]);
     
@@ -61,13 +57,14 @@ VertexStageOutput vertexMain(VertexInput input) {
     output.position = world_position.xyz;
     output.normal = input.normal;
     output.texture_coord = input.texture_coord;
+    output.instance_index = instance_index;
 
     return output;
 }
 
 [shader("fragment")]
 float4 fragmentMain(VertexStageOutput input) : SV_Target {
-     int index = push_constants.instance_index;
+     int index = input.instance_index;
     
     uint2 handle = material_set.materials[index].base_color_texture_handle;
     

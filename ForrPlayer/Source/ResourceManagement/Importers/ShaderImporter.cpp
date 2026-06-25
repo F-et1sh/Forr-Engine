@@ -69,25 +69,29 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
     slang::TargetDesc  target_desc{};
     target_desc.flags = 0;
 
-    auto& graphics_backend = context.storage.GetContext().graphics_backend;
+    //auto& graphics_backend = context.storage.GetContext().graphics_backend;
 
-    switch (graphics_backend) {
-        case GraphicsBackend::OpenGL:
-            target_desc.format  = SLANG_GLSL;
-            target_desc.profile = global_session->findProfile("glsl_450");
-            break;
-        case GraphicsBackend::Vulkan:
-            target_desc.format  = SLANG_SPIRV;
-            target_desc.profile = global_session->findProfile("spirv_1_5");
-            target_desc.flags   = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
-            break;
-        default:
-            fe::logging::warning("The selected renderer backend %i was not found. Using the default one", graphics_backend);
+    //switch (graphics_backend) {
+    //    case GraphicsBackend::OpenGL:
+    //        target_desc.format  = SLANG_GLSL;
+    //        target_desc.profile = global_session->findProfile("glsl_450");
+    //        break;
+    //    case GraphicsBackend::Vulkan:
+    //        target_desc.format  = SLANG_SPIRV;
+    //        target_desc.profile = global_session->findProfile("spirv_1_5");
+    //        target_desc.flags   = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
+    //        break;
+    //    default:
+    //        fe::logging::warning("The selected renderer backend %i was not found. Using the default one", graphics_backend);
 
-            target_desc.format  = SLANG_GLSL;
-            target_desc.profile = global_session->findProfile("glsl_450");
-            break;
-    }
+    //        target_desc.format  = SLANG_GLSL;
+    //        target_desc.profile = global_session->findProfile("glsl_450");
+    //        break;
+    //}
+
+    target_desc.format  = SLANG_SPIRV;
+    target_desc.profile = global_session->findProfile("spirv_1_5");
+    target_desc.flags   = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
 
     target_desc.flags |= SLANG_TARGET_FLAG_GENERATE_WHOLE_PROGRAM;
 
@@ -209,21 +213,30 @@ bool fe::ShaderImporter::validate(ShaderImportContext& context) {
 
     constexpr static std::array expected_resources_vulkan{
         ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 0, 3, "scene_set" },
-        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 1, 0, 1, "material_set" }
+        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 1, 0, 1, "material_set" },
+        ExpectedResource{ ShaderProgram::DescriptorType::PUSH_CONSTANT, 0, 0, 1, "push_constants" }
     };
 
     constexpr static std::array expected_resources_opengl{
         ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 0, 3, "scene_set" },
-        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 1, 1, "material_set" }
+        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 1, 1, "material_set" },
+        ExpectedResource{ ShaderProgram::DescriptorType::PUSH_CONSTANT, 0, 0, 1, "push_constants" }
     };
 
     const auto& expected_resources = (graphics_backend == GraphicsBackend::OpenGL) ? expected_resources_opengl : expected_resources_vulkan;
 
     for (const auto& expected_resource : expected_resources) {
-        auto it = std::ranges::find_if(reflected_resources, [&expected_resource](const auto& resource) {
-            return resource.set == expected_resource.set &&
-                   resource.binding == expected_resource.binding;
-        });
+        auto it = reflected_resources.end();
+
+        if (expected_resource.descriptor_type == ShaderProgram::DescriptorType::PUSH_CONSTANT) {
+            it = std::ranges::find(reflected_resources, ShaderProgram::DescriptorType::PUSH_CONSTANT, &ShaderProgram::ReflectedResource::descriptor_type);
+        }
+        else {
+            it = std::ranges::find_if(reflected_resources, [&](const auto& resource) -> bool {
+                return resource.set == expected_resource.set &&
+                       resource.binding == expected_resource.binding;
+            });
+        }
 
         if (it == reflected_resources.end()) {
             fe::logging::warning("Slang -> Unified. Shader has no descriptor set %i ( \"%s\" ).\nIf you don't need it in the shader you don't have to add it",

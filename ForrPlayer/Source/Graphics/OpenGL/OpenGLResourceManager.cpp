@@ -16,59 +16,52 @@
 using namespace fe::resource;
 
 void fe::OpenGLResourceManager::CreateResource(Material& material) {
-    //ShaderProgram* shader_program = m_ResourceManager.GetResource(material.shader_program_ptr);
-    //if (!shader_program) {
-    //    fe::logging::error("Unified -> OpenGL. Failed to create material. material.shader_program.ptr was invalid");
-    //    return;
-    //}
+    ShaderProgram* shader_program = m_ResourceManager.GetResource(material.shader_program_ptr);
+    if (!shader_program) {
+        fe::logging::error("Unified -> OpenGL. Failed to create material. material.shader_program.ptr was invalid");
+        return;
+    }
 
-    //if (!shader_program) {
-    //    fe::logging::debug("Shader program wasn't valid");
-    //    return;
-    //}
+    OpenGLShaderProgram opengl_shader_program{};
+    GLuint              opengl_shader_program_raw = this->createShaderProgramRaw(*shader_program);
+    opengl_shader_program.shader_program.attach(opengl_shader_program_raw);
 
-    //OpenGLShaderProgram opengl_shader_program{};
-    //GLuint              opengl_shader_program_raw = this->createShaderProgramRaw(*shader_program);
-    //opengl_shader_program.shader_program.attach(opengl_shader_program_raw);
+    opengl_shader_program.shader_buffers.bindings.reserve(shader_program->reflected_resources.size());
 
-    //opengl_shader_program.shader_buffers.bindings.reserve(shader_program->descriptor_sets.size());
+    for (auto& reflected_resource : shader_program->reflected_resources) {
 
-    //for (auto& descriptor_set : shader_program->descriptor_sets) {
+        // basic scene data. already created in renderer
+        if (reflected_resource.binding == 0) continue;
 
-    //    // basic scene data. already created in renderer
-    //    if (descriptor_set.index == 0) continue;
+        for (auto& member : reflected_resource.members) {
+            auto& this_binding = opengl_shader_program.shader_buffers.bindings.emplace_back();
 
-    //    for (auto& binding : descriptor_set.bindings) {
-    //        auto& this_binding = opengl_shader_program.shader_buffers.bindings.emplace_back();
+            GLuint buffer_raw{};
+            glCreateBuffers(1, &buffer_raw);
 
-    //        GLuint buffer_raw{};
-    //        glCreateBuffers(1, &buffer_raw);
+            GLbitfield flags = GL_MAP_WRITE_BIT |
+                               GL_MAP_PERSISTENT_BIT |
+                               GL_MAP_COHERENT_BIT;
 
-    //        GLbitfield flags = GL_MAP_WRITE_BIT |
-    //                           GL_MAP_PERSISTENT_BIT |
-    //                           GL_MAP_COHERENT_BIT;
+            glNamedBufferStorage(buffer_raw, member.size, nullptr, flags);
 
-    //        glNamedBufferStorage(buffer_raw, binding.size, nullptr, flags);
+            this_binding.size = member.size;
+            this_binding.buffer.attach(buffer_raw);
+            this_binding.mapped = static_cast<uint8_t*>(glMapNamedBufferRange(buffer_raw, 0, member.size, flags));
+        }
+    }
 
-    //        this_binding.size = binding.size;
-    //        this_binding.buffer.attach(buffer_raw);
-    //        this_binding.mapped = static_cast<uint8_t*>(glMapNamedBufferRange(buffer_raw, 0, binding.size, flags));
-    //    }
-    //}
+    for (const auto& sampler : material.samplers) {
+        auto& texture = *m_ResourceManager.GetResource(sampler.texture_ptr);
+        if (!texture.gpu_handle)
+            this->CreateResource(texture);
+        const auto& opengl_texture = this->GetResource(texture.gpu_handle);
 
-    //// TODO : add for fragment shader
+        if (!material.buffer.empty())
+            std::memcpy(&material.buffer[sampler.offset], &opengl_texture.resident_id, sizeof(uint64_t));
+    }
 
-    //for (const auto& sampler : material.samplers) {
-    //    auto& texture = *m_ResourceManager.GetResource(sampler.texture_ptr);
-    //    if (!texture.gpu_handle)
-    //        this->CreateResource(texture);
-    //    const auto& opengl_texture = this->GetResource(texture.gpu_handle);
-
-    //    if (!material.buffer.empty())
-    //        std::memcpy(&material.buffer[sampler.offset], &opengl_texture.resident_id, sizeof(uint64_t));
-    //}
-
-    //this->storeResource(material.gpu_handle, opengl_shader_program, m_StorageShaderPrograms);
+    this->storeResource(material.gpu_handle, opengl_shader_program, m_StorageShaderPrograms);
 }
 
 void fe::OpenGLResourceManager::CreateResource(Model& model) {
@@ -282,14 +275,14 @@ GLuint fe::OpenGLResourceManager::createShaderProgramRaw(resource::ShaderProgram
 
         opengl_shader = glCreateShader(opengl_type);
 
-        //glShaderBinary(1, &opengl_shader, GL_SHADER_BINARY_FORMAT_SPIR_V, source_code.data(), source_code.size() * sizeof(uint32_t));
-        //glSpecializeShader(opengl_shader, "main", 0, nullptr, nullptr);
+        glShaderBinary(1, &opengl_shader, GL_SHADER_BINARY_FORMAT_SPIR_V, source_code.data(), source_code.size());
+        glSpecializeShader(opengl_shader, "main", 0, nullptr, nullptr);
 
-        const char* glsl_text_ptr = reinterpret_cast<const char*>(source_code.data());
-        GLint       length        = static_cast<GLint>(source_code.size());
-        glShaderSource(opengl_shader, 1, &glsl_text_ptr, &length);
+        //const char* glsl_text_ptr = reinterpret_cast<const char*>(source_code.data());
+        //GLint       length        = static_cast<GLint>(source_code.size());
+        //glShaderSource(opengl_shader, 1, &glsl_text_ptr, &length);
 
-        glCompileShader(opengl_shader);
+        //glCompileShader(opengl_shader);
 
         int result = 0;
         glGetShaderiv(opengl_shader, GL_COMPILE_STATUS, &result);
