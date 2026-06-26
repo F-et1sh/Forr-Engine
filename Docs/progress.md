@@ -1,5 +1,20 @@
 ﻿# Forr-Engine Devlog
 
+## 27.06.2026
+### Goal
+    return OpenGLMaterial
+    create buffers ( OpenGL/Vulkan ) via reflected information from the shader
+    fix Vukan VMA error
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 25.06.2026
 ### Goal
     create buffers ( OpenGL/Vulkan ) via reflected information from the shader
@@ -15,7 +30,7 @@
     completely disappointed in Slang.
         Maybe better write code in HLSL ( which I almost learned, learning Slang ) and use SPIR-V and SPIRV-Cross ?
     Vulkan backend still does not work ( maybe a mounth ) because of runtime error of VMA
-    OpenGL backend does not work because of lack of buffers. Vulkan needs buffers too  
+    OpenGL backend does not work because of lack of buffers. Vulkan needs buffers too
 
 ## 24.06.2026
 ### Goal

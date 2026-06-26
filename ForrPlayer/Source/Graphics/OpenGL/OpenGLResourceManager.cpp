@@ -26,35 +26,14 @@ void fe::OpenGLResourceManager::CreateResource(Material& material) {
     GLuint              opengl_shader_program_raw = this->createShaderProgramRaw(*shader_program);
     opengl_shader_program.shader_program.attach(opengl_shader_program_raw);
 
-    opengl_shader_program.shader_buffers.bindings.reserve(shader_program->reflected_resources.size());
-
-    for (auto& reflected_resource : shader_program->reflected_resources) {
-
-        // basic scene data. already created in renderer
-        if (reflected_resource.binding == 0) continue;
-
-        for (auto& member : reflected_resource.members) {
-            auto& this_binding = opengl_shader_program.shader_buffers.bindings.emplace_back();
-
-            GLuint buffer_raw{};
-            glCreateBuffers(1, &buffer_raw);
-
-            GLbitfield flags = GL_MAP_WRITE_BIT |
-                               GL_MAP_PERSISTENT_BIT |
-                               GL_MAP_COHERENT_BIT;
-
-            glNamedBufferStorage(buffer_raw, member.size, nullptr, flags);
-
-            this_binding.size = member.size;
-            this_binding.buffer.attach(buffer_raw);
-            this_binding.mapped = static_cast<uint8_t*>(glMapNamedBufferRange(buffer_raw, 0, member.size, flags));
-        }
-    }
+    opengl_shader_program.shader_buffers.
 
     for (const auto& sampler : material.samplers) {
         auto& texture = *m_ResourceManager.GetResource(sampler.texture_ptr);
-        if (!texture.gpu_handle)
+        if (!texture.gpu_handle) {
             this->CreateResource(texture);
+        }
+
         const auto& opengl_texture = this->GetResource(texture.gpu_handle);
 
         if (!material.buffer.empty())
