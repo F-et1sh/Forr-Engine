@@ -31,9 +31,9 @@ namespace fe {
         void CreateResource(resource::Texture& texture);
         ///@}
 
-        const OpenGLMesh&          GetResource(GPUHandle<resource::Model::Mesh> handle) const;
-        const OpenGLShaderProgram& GetResource(GPUHandle<resource::Material> handle) const;
-        const OpenGLTexture&       GetResource(GPUHandle<resource::Texture> handle) const;
+        const OpenGLMesh&     GetResource(GPUHandle<resource::Model::Mesh> handle) const;
+        const OpenGLMaterial& GetResource(GPUHandle<resource::Material> handle) const;
+        const OpenGLTexture&  GetResource(GPUHandle<resource::Texture> handle) const;
 
     private: // here functions, which used like helpers to create some resources that don't have thier own CPU realization.
              // The functions return 'GPUHandle<>' but you DON'T have to set 'GPUHandle<> gpu_handle' in the resources, the functions does it by themselves
@@ -56,8 +56,8 @@ namespace fe {
     private:
         ResourceManager& m_ResourceManager;
 
-        std::vector<OpenGLShaderProgram> m_StorageShaderPrograms{};
-        std::vector<OpenGLMesh>          m_StorageMeshes{};
-        std::vector<OpenGLTexture>       m_StorageTextures{};
+        std::vector<OpenGLMaterial> m_StorageMaterials{};
+        std::vector<OpenGLMesh>     m_StorageMeshes{};
+        std::vector<OpenGLTexture>  m_StorageTextures{};
     };
 } // namespace fe

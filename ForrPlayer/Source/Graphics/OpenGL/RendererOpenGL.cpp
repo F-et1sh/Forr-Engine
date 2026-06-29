@@ -167,15 +167,15 @@ void fe::RendererOpenGL::handleRenderQueue(const RenderPacket& render_packet) {
         auto* object_ptr = static_cast<uint8_t*>(storage_buffer.bindings[object_binding_index].mapped);
 
         struct GPUCamera {
-          glm::mat4 p;
-          glm::mat4 v;
+            glm::mat4 p;
+            glm::mat4 v;
         } cam{ m_Camera.getPerspectiveMatrix(), m_Camera.getViewMatrix() };
         memcpy(object_ptr, &cam, sizeof(cam));
         object_ptr += sizeof(cam);
 
         if (!render_packet.object_transforms.empty()) {
-          size_t bytes_to_copy = render_packet.object_transforms.size() * sizeof(glm::mat4);
-          memcpy(object_ptr, render_packet.object_transforms.data(), bytes_to_copy);
+            size_t bytes_to_copy = render_packet.object_transforms.size() * sizeof(glm::mat4);
+            memcpy(object_ptr, render_packet.object_transforms.data(), bytes_to_copy);
         }
 
         auto*    lights_ptr   = static_cast<uint8_t*>(storage_buffer.bindings[lights_binding_index].mapped);
@@ -196,22 +196,24 @@ void fe::RendererOpenGL::handleRenderQueue(const RenderPacket& render_packet) {
 
     // draw
     for (const auto& draw_command : render_packet.draw_commands) {
-        const auto& material              = m_ResourceManager.GetResource(draw_command.material_ptr);
-        const auto& opengl_shader_program = m_OpenGLResourceManager.GetResource(material->gpu_handle);
+        const auto& material              = *m_ResourceManager.GetResource(draw_command.material_ptr);
+        const auto& shader_program        = *m_ResourceManager.GetResource(material.shader_program_ptr);
+        const auto& opengl_material       = m_OpenGLResourceManager.GetResource(material.gpu_handle);
+        const auto& opengl_shader_program = m_OpenGLResourceManager.GetResource(shader_program.gpu_handle);
 
         // bind shader ( material )
-        if (material->gpu_handle != m_CurrentMaterial) {
-            m_CurrentMaterial = material->gpu_handle;
+        if (material.gpu_handle != m_CurrentMaterial) {
+            m_CurrentMaterial = material.gpu_handle;
 
             glUseProgram(opengl_shader_program.shader_program);
 
-            const auto& material_bindings = opengl_shader_program.shader_buffers.bindings;
+            const auto& material_bindings = opengl_shader_program.shader_buffersz.bindings;
             for (std::size_t i = 0; i < material_bindings.size(); i++) {
                 const auto&       binding       = material_bindings[i];
                 const std::size_t binding_index = 0;
 
-                if (!material->buffer.empty()) {
-                    memcpy(binding.mapped, material->buffer.data(), material->buffer.size());
+                if (!material.buffer.empty()) {
+                    memcpy(binding.mapped, material.buffer.data(), material.buffer.size());
                 }
                 GLuint buffer_raw = binding.buffer.get();
                 glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_index, buffer_raw);

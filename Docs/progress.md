@@ -1,8 +1,8 @@
 ﻿# Forr-Engine Devlog
 
-## 27.06.2026
+## 29.06.2026
 ### Goal
-    return OpenGLMaterial
+    review materials system
     create buffers ( OpenGL/Vulkan ) via reflected information from the shader
     fix Vukan VMA error
     provide debug tools with Dear ImGui
