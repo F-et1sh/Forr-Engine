@@ -51,7 +51,7 @@ void fe::OpenGLResourceManager::CreateResource(Model& model) {
     }
 
     //m_StorageMaterials
-    std::
+    //std::
 }
 
 void fe::OpenGLResourceManager::CreateResource(Texture& texture) {

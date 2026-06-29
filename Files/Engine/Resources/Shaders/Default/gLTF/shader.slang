@@ -4,14 +4,8 @@
     float4 color_intensity;
 };
 
-struct WaterMaterial {
-    float wave_speed;
-    float some_variable_0;
-    float some_variable_1;
-
+struct PBRMaterial {
     uint2 base_color_texture_handle;
-    uint2 noise0_texture_handle;
-    uint2 noise1_texture_handle;
 };
 
 struct SceneData {
@@ -20,18 +14,15 @@ struct SceneData {
     uint lights_count;
 };
 
-struct SceneDataResource {
-    SceneData global_data;
-    StructuredBuffer<float4x4> model_matrices;
-    StructuredBuffer<GPULight> lights;
-};
-
 struct MaterialDataResource {
-    StructuredBuffer<WaterMaterial> materials;
+    StructuredBuffer<PBRMaterial> materials;
 };
 
-[[vk::binding(0, 0)]] ParameterBlock<SceneDataResource> scene_set;
-[[vk::binding(0, 1)]] ParameterBlock<MaterialDataResource> material_set;
+[[vk::binding(0, 0)]] ConstantBuffer<SceneData>   global_data;   
+[[vk::binding(1, 0)]] StructuredBuffer<float4x4>  model_matrices;
+[[vk::binding(2, 0)]] StructuredBuffer<GPULight>  lights;         
+
+[[vk::binding(0, 1)]] StructuredBuffer<PBRMaterial> materials;
 
 struct VertexInput {
     [[vk::location(0)]] float3 position    : POSITION;
@@ -55,10 +46,10 @@ VertexStageOutput vertexMain(VertexInput input, [Layout(location = 0)] uniform i
 
     int index = instance_index;
 
-    float4 world_position = mul(float4(input.position, 1.0f), scene_set.model_matrices[index]);
+    float4 world_position = mul(float4(input.position, 1.0f), model_matrices[index]);
     
-    output.sv_position = mul(world_position, scene_set.global_data.view_matrix);
-    output.sv_position = mul(output.sv_position, scene_set.global_data.projection_matrix);
+    output.sv_position = mul(world_position, global_data.view_matrix);
+    output.sv_position = mul(output.sv_position, global_data.projection_matrix);
     
     output.position = world_position.xyz;
     output.normal = input.normal;
@@ -72,11 +63,11 @@ VertexStageOutput vertexMain(VertexInput input, [Layout(location = 0)] uniform i
 float4 fragmentMain(VertexStageOutput input) : SV_Target {
      int index = input.instance_index;
     
-    uint2 handle = material_set.materials[index].base_color_texture_handle;
+    uint2 handle = materials[index].base_color_texture_handle;
     
-    Sampler2D tex = reinterpret<Sampler2D>(handle);
+    Sampler2D texture = reinterpret<Sampler2D>(handle);
     
-    float4 frag_color = tex.Sample(input.texture_coord);
+    float4 frag_color = texture.Sample(input.texture_coord);
     
     return float4(1.0f);
 }

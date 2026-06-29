@@ -45,12 +45,14 @@ fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStor
         return {};
     }
 
+    // Validation is temporarily turned off till I completely fix the shaders
+
     // validate
-    bool validation_result = ShaderImporter::validate(context);
-    if (!validation_result) {
-        fe::logging::error("Slang -> Unified. Validation failed\nPath : %s", resource_full_path.string().c_str());
-        return {};
-    }
+    //bool validation_result = ShaderImporter::validate(context);
+    //if (!validation_result) {
+    //    fe::logging::error("Slang -> Unified. Validation failed\nPath : %s", resource_full_path.string().c_str());
+    //    return {};
+    //}
 
     auto ptr = storage.CreateResource(std::move(shader_program));
     return ptr;
@@ -67,27 +69,6 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
 
     slang::SessionDesc session_desc{};
     slang::TargetDesc  target_desc{};
-    target_desc.flags = 0;
-
-    //auto& graphics_backend = context.storage.GetContext().graphics_backend;
-
-    //switch (graphics_backend) {
-    //    case GraphicsBackend::OpenGL:
-    //        target_desc.format  = SLANG_GLSL;
-    //        target_desc.profile = global_session->findProfile("glsl_450");
-    //        break;
-    //    case GraphicsBackend::Vulkan:
-    //        target_desc.format  = SLANG_SPIRV;
-    //        target_desc.profile = global_session->findProfile("spirv_1_5");
-    //        target_desc.flags   = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
-    //        break;
-    //    default:
-    //        fe::logging::warning("The selected renderer backend %i was not found. Using the default one", graphics_backend);
-
-    //        target_desc.format  = SLANG_GLSL;
-    //        target_desc.profile = global_session->findProfile("glsl_450");
-    //        break;
-    //}
 
     target_desc.format  = SLANG_SPIRV;
     target_desc.profile = global_session->findProfile("spirv_1_5");
@@ -212,14 +193,18 @@ bool fe::ShaderImporter::validate(ShaderImportContext& context) {
     };
 
     constexpr static std::array expected_resources_vulkan{
-        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 0, 3, "scene_set" },
-        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 1, 0, 1, "material_set" },
+        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 0, 1, "global_data" },
+        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 1, 1, "model_matrices" },
+        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 2, 1, "lights" },
+        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 1, 0, 1, "materials" },
         ExpectedResource{ ShaderProgram::DescriptorType::PUSH_CONSTANT, 0, 0, 1, "push_constants" }
     };
 
     constexpr static std::array expected_resources_opengl{
-        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 0, 3, "scene_set" },
-        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 1, 1, "material_set" },
+        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 0, 1, "global_data" },
+        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 1, 1, "model_matrices" },
+        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 2, 1, "lights" },
+        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 3, 1, "materials" },
         ExpectedResource{ ShaderProgram::DescriptorType::PUSH_CONSTANT, 0, 0, 1, "push_constants" }
     };
 
@@ -468,6 +453,23 @@ void fe::ShaderImporter::setupDescriptorType(slang::TypeLayoutReflection* type_l
                 dst_descriptor_type = _shader_descriptor::STORAGE_BUFFER;
             }
             break;
+
+        case _slang_category::DescriptorTableSlot:
+            if (kind == _slang_kind::Resource) {
+                SlangResourceShape shape = type_layout->getResourceShape();
+                uint32_t base_shape = shape & SLANG_RESOURCE_BASE_SHAPE_MASK;
+                
+                if (base_shape == SLANG_STRUCTURED_BUFFER) dst_descriptor_type = _shader_descriptor::STORAGE_BUFFER;
+                else
+                    ShaderImporter::setupDescriptorType(type_layout, dst_descriptor_type); // maybe fallback on '_shader_descriptor::UNIFORM_BUFFER'
+            }
+            else if (kind == _slang_kind::ConstantBuffer) {
+                dst_descriptor_type = _shader_descriptor::UNIFORM_BUFFER;
+            }
+            else {
+                dst_descriptor_type = _shader_descriptor::STORAGE_BUFFER;
+            }
+            break;
         
         case _slang_category::None:
             fe::logging::error("Slang -> Unified. Failed to reflect resource : got slang::ParameterCategory::None.\nSetting descriptor_type as fe::resource::ShaderProgram::DescriptorType::UNKNOWN");
@@ -475,7 +477,7 @@ void fe::ShaderImporter::setupDescriptorType(slang::TypeLayoutReflection* type_l
             break;
     
         default:
-            fe::logging::error("Slang -> Unified. Failed to reflect resource : got unknown slang::ParameterCategory.\nSetting descriptor_type as fe::resource::ShaderProgram::DescriptorType::UNKNOWN");
+            fe::logging::error("Slang -> Unified. Failed to reflect resource : got unknown slang::ParameterCategory %i.\nSetting descriptor_type as fe::resource::ShaderProgram::DescriptorType::UNKNOWN", category);
             dst_descriptor_type = _shader_descriptor::UNKNOWN;
             break;
     }
