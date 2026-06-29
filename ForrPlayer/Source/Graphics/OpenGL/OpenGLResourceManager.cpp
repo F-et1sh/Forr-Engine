@@ -16,37 +16,42 @@
 using namespace fe::resource;
 
 void fe::OpenGLResourceManager::CreateResource(Material& material) {
-    ShaderProgram* shader_program = m_ResourceManager.GetResource(material.shader_program_ptr);
-    if (!shader_program) {
-        fe::logging::error("Unified -> OpenGL. Failed to create material. material.shader_program.ptr was invalid");
-        return;
-    }
+    OpenGLMaterial opengl_material{};
 
-    OpenGLShaderProgram opengl_shader_program{};
-    GLuint              opengl_shader_program_raw = this->createShaderProgramRaw(*shader_program);
-    opengl_shader_program.shader_program.attach(opengl_shader_program_raw);
+    //ShaderProgram* shader_program = m_ResourceManager.GetResource(material.shader_program_ptr);
+    //if (!shader_program) {
+    //    fe::logging::error("Unified -> OpenGL. Failed to create material. material.shader_program.ptr was invalid");
+    //    return;
+    //}
 
-    opengl_shader_program.shader_buffers.
+    //OpenGLShaderProgram opengl_shader_program{};
+    //GLuint              opengl_shader_program_raw = this->createShaderProgramRaw(*shader_program);
+    //opengl_shader_program.shader_program.attach(opengl_shader_program_raw);
 
-    for (const auto& sampler : material.samplers) {
-        auto& texture = *m_ResourceManager.GetResource(sampler.texture_ptr);
-        if (!texture.gpu_handle) {
-            this->CreateResource(texture);
-        }
+    //opengl_shader_program.shader_buffers.
 
-        const auto& opengl_texture = this->GetResource(texture.gpu_handle);
+    //for (const auto& sampler : material.samplers) {
+    //    auto& texture = *m_ResourceManager.GetResource(sampler.texture_ptr);
+    //    if (!texture.gpu_handle) {
+    //        this->CreateResource(texture);
+    //    }
 
-        if (!material.buffer.empty())
-            std::memcpy(&material.buffer[sampler.offset], &opengl_texture.resident_id, sizeof(uint64_t));
-    }
+    //    const auto& opengl_texture = this->GetResource(texture.gpu_handle);
 
-    this->storeResource(material.gpu_handle, opengl_shader_program, m_StorageShaderPrograms);
+    //    if (!material.buffer.empty())
+    //        std::memcpy(&material.buffer[sampler.offset], &opengl_texture.resident_id, sizeof(uint64_t));
+    //}
+
+    this->storeResource(material.gpu_handle, opengl_material, m_StorageMaterials);
 }
 
 void fe::OpenGLResourceManager::CreateResource(Model& model) {
     for (auto& mesh : model.meshes) {
         this->createMesh(mesh);
     }
+
+    //m_StorageMaterials
+    std::
 }
 
 void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
@@ -167,7 +172,7 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
         return STORAGE[handle.index];                                                          \
     }
 
-GET_RESOURCE_INSTANCE(fe::OpenGLShaderProgram, fe::resource::Material, m_StorageShaderPrograms)
+GET_RESOURCE_INSTANCE(fe::OpenGLMaterial, fe::resource::Material, m_StorageMaterials)
 GET_RESOURCE_INSTANCE(fe::OpenGLMesh, fe::resource::Model::Mesh, m_StorageMeshes)
 GET_RESOURCE_INSTANCE(fe::OpenGLTexture, fe::resource::Texture, m_StorageTextures)
 

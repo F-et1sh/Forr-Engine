@@ -4,8 +4,14 @@
     float4 color_intensity;
 };
 
-struct PBRMaterial {
+struct WaterMaterial {
+    float wave_speed;
+    float some_variable_0;
+    float some_variable_1;
+
     uint2 base_color_texture_handle;
+    uint2 noise0_texture_handle;
+    uint2 noise1_texture_handle;
 };
 
 struct SceneData {
@@ -21,7 +27,7 @@ struct SceneDataResource {
 };
 
 struct MaterialDataResource {
-    StructuredBuffer<PBRMaterial> materials;
+    StructuredBuffer<WaterMaterial> materials;
 };
 
 [[vk::binding(0, 0)]] ParameterBlock<SceneDataResource> scene_set;

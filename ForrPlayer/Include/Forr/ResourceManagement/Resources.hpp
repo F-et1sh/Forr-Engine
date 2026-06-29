@@ -221,6 +221,8 @@ namespace fe::resource {
         using SourceCode        = std::vector<uint8_t>;
         using SourceCodeStorage = std::unordered_map<ShaderType, SourceCode>;
 
+        GPUHandle<ShaderProgram> gpu_handle{};
+
         SourceCodeStorage              source_codes{};
         std::vector<ReflectedResource> reflected_resources{};
 

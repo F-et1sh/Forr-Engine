@@ -51,15 +51,16 @@ namespace fe {
         FORR_RESOURCE_BODY(OpenGLShaderBuffer)
     };
 
-    // shader 'program' because it is not only vertex, only fragment or only compute shader, but combined
-    struct OpenGLShaderProgram {
+    struct OpenGLMaterial {
+        // shader 'program' because it is not only vertex, only fragment or only compute shader, but combined
         fe::gl::ShaderProgram shader_program{};
         OpenGLShaderBuffer    shader_buffers{};
+        // std::vector<uint8_t> buffer{}; - take this from the CPU material ( fe::resource::Material ) when drawing
 
-        OpenGLShaderProgram()  = default;
-        ~OpenGLShaderProgram() = default;
+        OpenGLMaterial()  = default;
+        ~OpenGLMaterial() = default;
 
-        FORR_RESOURCE_BODY(OpenGLShaderProgram)
+        FORR_RESOURCE_BODY(OpenGLMaterial)
     };
 
     struct OpenGLPrimitive {
