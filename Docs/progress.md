@@ -1,5 +1,21 @@
 ﻿# Forr-Engine Devlog
 
+## 30.06.2026
+### Goal
+    review materials system
+    create buffers ( OpenGL/Vulkan ) via reflected information from the shader
+    fix Vukan VMA error
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+    ( provide string_pool and use std::string_view instead of always using std::string - helps to decrease allocations )
+
+### Done
+    fe::resource::ShaderProgram reviewed
+
+### Problem
+    -
+
 ## 29.06.2026
 ### Goal
     review materials system
