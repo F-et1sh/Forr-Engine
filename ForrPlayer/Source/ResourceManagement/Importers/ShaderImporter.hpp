@@ -58,16 +58,16 @@ namespace fe {
 
     private:
         static FORR_NODISCARD bool compile(ShaderImportContext& context);
-        static FORR_NODISCARD bool reflect(ShaderImportContext& context);
-        static FORR_NODISCARD bool validate(ShaderImportContext& context);
+        //static FORR_NODISCARD bool reflect(ShaderImportContext& context);
+        //static FORR_NODISCARD bool validate(ShaderImportContext& context);
 
-        static void parseVariable(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedResource& dst_resource);
-        static void parseMemberRecursive(slang::VariableLayoutReflection* variable_layout, std::vector<resource::ShaderProgram::ReflectedMember>& dst_members);
+        //static void parseVariable(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedResource& dst_resource);
+        //static void parseMemberRecursive(slang::VariableLayoutReflection* variable_layout, std::vector<resource::ShaderProgram::ReflectedMember>& dst_members);
 
-        static void setupDescriptorType(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::DescriptorType& dst_descriptor_type);
+        //static void setupDescriptorType(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::DescriptorType& dst_descriptor_type);
 
-        static void mapMatrix(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ValueType& type);
-        static void mapVector(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ValueType& type);
-        static void mapScalar(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ValueType& type);
+        //static void mapMatrix(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ValueType& type);
+        //static void mapVector(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ValueType& type);
+        //static void mapScalar(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ValueType& type);
     };
 } // namespace fe

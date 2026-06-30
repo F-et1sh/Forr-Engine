@@ -103,9 +103,6 @@ namespace fe::resource {
             std::size_t  size{};
             unsigned int width{};
             unsigned int height{};
-
-            MipData()  = default;
-            ~MipData() = default;
         };
         std::vector<MipData> mip_levels{};
 
@@ -119,19 +116,19 @@ namespace fe::resource {
 
     struct FORR_API ShaderProgram {
     public:
-        enum class DescriptorType : uint8_t {
+        enum class DescriptorType : std::uint8_t {
             UNIFORM_BUFFER,
             STORAGE_BUFFER,
 
-            SAMPLED_TEXTURE,
-            STORAGE_TEXTURE,
-
-            PUSH_CONSTANT,
+            SAMPLED_IMAGE,
+            SAMPLER,
+            COMBINED_IMAGE_SAMPLER,
+            STORAGE_IMAGE,
 
             UNKNOWN
         };
 
-        enum class ValueType : uint8_t {
+        enum class ValueType : std::uint8_t {
             VOID,
 
             BOOL,
@@ -154,10 +151,6 @@ namespace fe::resource {
             INT_PTR,
             UINT_PTR,
 
-            BFLOAT16,
-            FLOATE4M3,
-            FLOATE5M2,
-
             FLOAT2,
             FLOAT3,
             FLOAT4,
@@ -174,16 +167,14 @@ namespace fe::resource {
             MAT4,
 
             STRUCT,
-            ARRAY,
-
-            STRUCTURED_BUFFER,
-            TEXTURE_2D,
 
             UNKNOWN
         };
 
         struct ReflectedMember {
-            ValueType type{};
+            ValueType type{ ValueType::UNKNOWN };
+
+            uint32_t array_count{ 1 };
 
             uint32_t offset{};
             uint32_t size{};
@@ -191,25 +182,37 @@ namespace fe::resource {
             std::vector<ReflectedMember> members{};
 
             std::string name{};
-
-            ReflectedMember()  = default;
-            ~ReflectedMember() = default;
         };
 
-        struct ReflectedResource {
-            DescriptorType descriptor_type{};
+        struct ReflectedParameter {
+            DescriptorType descriptor_type{ DescriptorType::UNKNOWN };
 
             uint32_t set{};
             uint32_t binding{};
 
             uint32_t size{};
 
+            uint32_t stage_flags{};
+
+            bool is_bindless{};
+
             std::vector<ReflectedMember> members{};
 
             std::string name{};
+        };
 
-            ReflectedResource()  = default;
-            ~ReflectedResource() = default;
+        struct ReflectedPushConstants {
+            ValueType type{ ValueType::UNKNOWN };
+
+            uint32_t array_count{ 1 };
+
+            uint32_t size{};
+
+            uint32_t stage_flags{};
+
+            std::vector<ReflectedMember> members{};
+
+            std::string name{};
         };
 
         enum class ShaderType : std::uint8_t {
@@ -223,8 +226,10 @@ namespace fe::resource {
 
         GPUHandle<ShaderProgram> gpu_handle{};
 
-        SourceCodeStorage              source_codes{};
-        std::vector<ReflectedResource> reflected_resources{};
+        SourceCodeStorage source_codes{};
+
+        std::vector<ReflectedParameter> reflected_parameters{};
+        ReflectedPushConstants          reflected_push_constants{};
 
         ShaderProgram()  = default;
         ~ShaderProgram() = default;
@@ -241,9 +246,6 @@ namespace fe::resource {
         struct Sampler {
             std::size_t          offset{};
             fe::pointer<Texture> texture_ptr{};
-
-            Sampler()  = default;
-            ~Sampler() = default;
         };
 
         // this is needed to assign textures' data to the passing buffer
@@ -275,9 +277,6 @@ namespace fe::resource {
                 RenderIndexType index_type{ RenderIndexType::UNSIGNED_INT }; // this should be removed
                 int             index_count{};
                 int             index_offset{};
-
-                Primitive()  = default;
-                ~Primitive() = default;
             };
 
             GPUHandle<Mesh> gpu_handle{};
@@ -289,9 +288,6 @@ namespace fe::resource {
 
             std::vector<Primitive> primitives{};
             std::vector<float>     weights{}; // weights to be applied to the Morph Targets
-
-            Mesh()  = default;
-            ~Mesh() = default;
         };
 
         struct FORR_API AnimationChannel {
@@ -305,9 +301,6 @@ namespace fe::resource {
             int        sampler{ -1 };
             int        target_node{ -1 };
             TargetPath target_path{}; // "rotation", "translation", "scale"
-
-            AnimationChannel()  = default;
-            ~AnimationChannel() = default;
         };
 
         struct FORR_API AnimationSampler {
@@ -320,17 +313,11 @@ namespace fe::resource {
             std::vector<float>     times{};
             std::vector<glm::vec4> values{}; // rotation as quat, translation/scale as vec3
             InterpolationMode      interpolation{ InterpolationMode::LINEAR };
-
-            AnimationSampler()  = default;
-            ~AnimationSampler() = default;
         };
 
         struct FORR_API Animation {
             std::vector<AnimationChannel> channels{};
             std::vector<AnimationSampler> samplers{};
-
-            Animation()  = default;
-            ~Animation() = default;
         };
 
         struct FORR_API Node {
@@ -353,9 +340,6 @@ namespace fe::resource {
             glm::mat4 global_matrix{ 1.0f };
 
             std::vector<float> weights{};
-
-            Node()  = default;
-            ~Node() = default;
         };
 
         struct FORR_API Skin {
@@ -365,9 +349,6 @@ namespace fe::resource {
             std::vector<int>       joints{};       // indices of skeleton nodes
 
             std::vector<glm::mat4> bone_final_matrices{};
-
-            Skin()  = default;
-            ~Skin() = default;
         };
 
         std::vector<Node>      nodes{};
