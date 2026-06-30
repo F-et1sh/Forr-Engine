@@ -33,3 +33,11 @@ IndentCaseLabels: true
 Cpp11BracedListStyle: false
 Standard: Latest
 Language: Cpp
+AttributeMacros:
+  - FORR_UNLIKELY
+  - FORR_LIKELY
+  - FORR_MAYBE_UNUSED
+  - FORR_NODISCARD
+  - FORR_ALWAYS_INLINE
+  - FORR_FORCE_INLINE
+  - FORR_NO_INLINE

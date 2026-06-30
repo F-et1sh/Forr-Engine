@@ -15,11 +15,20 @@
 
 #if __cplusplus >= 201703L // C++17
 #define FORR_MAYBE_UNUSED [[maybe_unused]]
+#define FORR_NODISCARD [[nodiscard]]
 #else
 #define FORR_MAYBE_UNUSED
+#define FORR_NODISCARD
 #endif
 
-#define FORR_NODISCARD [[nodiscard]]
+#if __cplusplus >= 202002L // C++20
+#define FORR_LIKELY [[likely]]
+#define FORR_UNLIKELY [[unlikely]]
+#else
+#define FORR_LIKELY
+#define FORR_UNLIKELY
+#endif
+
 
 #ifdef _WIN32
 #ifdef FORRENGINE_EXPORTS
