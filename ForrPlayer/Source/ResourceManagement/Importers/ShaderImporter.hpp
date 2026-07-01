@@ -62,7 +62,10 @@ namespace fe {
         //static FORR_NODISCARD bool validate(ShaderImportContext& context);
 
         static void parseDescriptorTable(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
-        static void parsePushConstant(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedPushConstants& dst_push_constants);
+        static void parsePushConstant(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedPushConstants& dst_push_constants);        
+        
+        static void parseTypeLayout(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
+        static void parseElementTypeLayout(ShaderImportContext& context, slang::TypeLayoutReflection* element_type_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
         
         static void parseParameter(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
         static void parseParameter2(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
