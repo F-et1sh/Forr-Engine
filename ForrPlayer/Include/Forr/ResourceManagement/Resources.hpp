@@ -216,9 +216,11 @@ namespace fe::resource {
         };
 
         enum class ShaderType : std::uint8_t {
-            VERTEX,
-            FRAGMENT,
-            COMPUTE
+            NONE     = 0,
+            VERTEX   = 1,
+            GEOMETRY = 2,
+            FRAGMENT = 3,
+            COMPUTE  = 4,
         };
 
         using SourceCode        = std::vector<uint8_t>;
