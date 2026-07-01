@@ -61,8 +61,11 @@ namespace fe {
         static FORR_NODISCARD bool reflect(ShaderImportContext& context);
         //static FORR_NODISCARD bool validate(ShaderImportContext& context);
 
+        static void parseDescriptorTable(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
         static void parsePushConstant(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedPushConstants& dst_push_constants);
+        
         static void parseParameter(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
+        static void parseParameter2(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
 
         static void parseMemberRecursive(slang::VariableLayoutReflection* variable_layout, std::vector<resource::ShaderProgram::ReflectedMember>& dst_members);
 

@@ -20,6 +20,7 @@ using namespace fe::resource;
 namespace fe {
     using _shader_descriptor = ShaderProgram::DescriptorType;
     using _shader_value      = ShaderProgram::ValueType;
+    using _shader_type       = ShaderProgram::ShaderType;
 
     using _slang_kind     = slang::TypeReflection::Kind;
     using _slang_scalar   = slang::TypeReflection::ScalarType;
@@ -148,14 +149,14 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
 }
 
 bool fe::ShaderImporter::reflect(ShaderImportContext& context) {
-    // TODO : Using debug tools of Visual Studio look what you getting during the reflection and 
+    // TODO : Using debug tools of Visual Studio look what you getting during the reflection and
     //          step-by-step try to merge that Unified and Slang reflection resources.
     //        Also, forget about '_slang_kind::Resource' for now - just ignore it
 
     auto& shader_program = context.shader_program;
 
     slang::ProgramLayout* program_layout = context.composed_program->getLayout(0); // 'target = 0'
-    if (!program_layout) {
+    if (!program_layout) FORR_UNLIKELY {
         fe::logging::error("Slang -> Unified. Failed to get the layout of the composed program while reflection in fe::ShaderImporter::reflect()");
         return false;
     }
@@ -171,15 +172,17 @@ bool fe::ShaderImporter::reflect(ShaderImportContext& context) {
             continue;
         }
 
-        slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
-        _slang_category              category    = type_layout->getParameterCategory();
+        _slang_category category = variable_layout->getCategory();
 
-        if (category != _slang_category::PushConstantBuffer) FORR_LIKELY {
+        if (category == _slang_category::DescriptorTableSlot) {
             auto& parameter = shader_program.reflected_parameters.emplace_back();
-            ShaderImporter::parseParameter(context, variable_layout, parameter);
+            ShaderImporter::parseDescriptorTable(context, variable_layout, parameter);
         }
-        else FORR_UNLIKELY {
+        else if (category == _slang_category::PushConstantBuffer) {
             ShaderImporter::parsePushConstant(context, variable_layout, shader_program.reflected_push_constants);
+        }
+        else {
+            assert(false);
         }
     }
 
@@ -278,28 +281,73 @@ bool fe::ShaderImporter::reflect(ShaderImportContext& context) {
 //    return true;
 //}
 
-void fe::ShaderImporter::parsePushConstant(ShaderImportContext&                             context,
-                                           slang::VariableLayoutReflection*                 variable_layout,
-                                           resource::ShaderProgram::ReflectedPushConstants& dst_push_constants) {
+void fe::ShaderImporter::parseParameter2(ShaderImportContext&                         context,
+                                         slang::VariableLayoutReflection*             variable_layout,
+                                         resource::ShaderProgram::ReflectedParameter& dst_parameter) {
     assert(variable_layout);
 
+    _slang_category c = variable_layout->getCategory(); // DescriptorTableSlot
+    auto            n = variable_layout->getName();     // "global_data"
+
     slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
+    _slang_kind                  k           = type_layout->getKind();       // ConstantBuffer
+    auto                         n2          = type_layout->getName();       // "ConstantBuffer"
+    unsigned int                 field_count = type_layout->getFieldCount(); // 0
 
-    dst_push_constants.name = variable_layout->getName();
-    dst_push_constants.size = static_cast<uint32_t>(type_layout->getSize());
+    slang::TypeLayoutReflection* element_type_layout = type_layout->getElementTypeLayout();
+    _slang_kind                  k2                  = element_type_layout->getKind();       // Struct
+    auto                         n3                  = element_type_layout->getName();       // "SceneData"
+    unsigned int                 field_count2        = element_type_layout->getFieldCount(); // 3
 
-    //context.composed_program->
+    slang::VariableLayoutReflection* field_variable_layout = element_type_layout->getFieldByIndex(0);
 
-    dst_push_constants.stage_flags = 0;
+    {
+        _slang_category f_c = field_variable_layout->getCategory(); // Uniform
+        auto            f_n = field_variable_layout->getName();     // "projection_matrix"
 
-    uint32_t field_count = type_layout->getFieldCount();
-    for (uint32_t i = 0; i < field_count; i++) {
-        parseMemberRecursive(type_layout->getFieldByIndex(i), dst_push_constants.members);
+        slang::TypeLayoutReflection* f_type_layout = field_variable_layout->getTypeLayout();
+        _slang_kind                  f_k           = f_type_layout->getKind();       // Matrix
+        auto                         f_n2          = f_type_layout->getName();       // "matrix"
+        unsigned int                 f_field_count = f_type_layout->getFieldCount(); // 0
+
+        slang::TypeLayoutReflection* f_element_type_layout = f_type_layout->getElementTypeLayout();
+        _slang_kind                  f_k2                  = f_element_type_layout->getKind();       // Vector
+        auto                         f_n3                  = f_element_type_layout->getName();       // "vector"
+        unsigned int                 f_field_count2        = f_element_type_layout->getFieldCount(); // 0
     }
 
-    if (dst_push_constants.size == 0 && !dst_push_constants.members.empty()) {
-        auto& last              = dst_push_constants.members.back();
-        dst_push_constants.size = last.offset + last.size;
+    slang::VariableLayoutReflection* field_variable_layout2 = element_type_layout->getFieldByIndex(1);
+
+    {
+        _slang_category f_c = field_variable_layout2->getCategory(); // Uniform
+        auto            f_n = field_variable_layout2->getName();     // "view_matrix"
+
+        slang::TypeLayoutReflection* f_type_layout = field_variable_layout2->getTypeLayout();
+        _slang_kind                  f_k           = f_type_layout->getKind();       // Matrix
+        auto                         f_n2          = f_type_layout->getName();       // "matrix"
+        unsigned int                 f_field_count = f_type_layout->getFieldCount(); // 0
+
+        slang::TypeLayoutReflection* f_element_type_layout = f_type_layout->getElementTypeLayout();
+        _slang_kind                  f_k2                  = f_element_type_layout->getKind();       // Vector
+        auto                         f_n3                  = f_element_type_layout->getName();       // "vector"
+        unsigned int                 f_field_count2        = f_element_type_layout->getFieldCount(); // 0
+    }
+
+    slang::VariableLayoutReflection* field_variable_layout3 = element_type_layout->getFieldByIndex(2);
+
+    {
+        _slang_category f_c = field_variable_layout3->getCategory(); // Uniform
+        auto            f_n = field_variable_layout3->getName();     // "lights_count"
+
+        slang::TypeLayoutReflection* f_type_layout = field_variable_layout3->getTypeLayout();
+        _slang_kind                  f_k           = f_type_layout->getKind();       // Scalar
+        auto                         f_n2          = f_type_layout->getName();       // "uint"
+        unsigned int                 f_field_count = f_type_layout->getFieldCount(); // 0
+
+        slang::TypeLayoutReflection* f_element_type_layout = f_type_layout->getElementTypeLayout();
+        _slang_kind                  f_k2                  = f_element_type_layout->getKind();       // None
+        auto                         f_n3                  = f_element_type_layout->getName();       // nullptr
+        unsigned int                 f_field_count2        = f_element_type_layout->getFieldCount(); // 0
     }
 }
 
@@ -361,6 +409,89 @@ void fe::ShaderImporter::parseParameter(ShaderImportContext&                    
 
     for (uint32_t i = 0; i < field_count; i++) {
         parseMemberRecursive(type_layout_to_parse->getFieldByIndex(i), dst_parameter.members);
+    }
+}
+
+void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&                         context,
+                                              slang::VariableLayoutReflection*             variable_layout,
+                                              resource::ShaderProgram::ReflectedParameter& dst_parameter) {
+    assert(variable_layout);
+    assert(variable_layout->getCategory() == _slang_category::DescriptorTableSlot);
+
+    dst_parameter.name        = variable_layout->getName();
+    dst_parameter.set         = variable_layout->getBindingSpace();
+    dst_parameter.binding     = variable_layout->getBindingIndex();
+    dst_parameter.stage_flags = static_cast<uint32_t>(_shader_type::NONE);
+
+    SlangStage stage = variable_layout->getStage();
+
+    dst_parameter.stage_flags =
+        ((stage & SLANG_STAGE_VERTEX) ? static_cast<uint32_t>(_shader_type::VERTEX) : 0) |
+        ((stage & SLANG_STAGE_FRAGMENT) ? static_cast<uint32_t>(_shader_type::FRAGMENT) : 0) |
+        ((stage & SLANG_STAGE_COMPUTE) ? static_cast<uint32_t>(_shader_type::COMPUTE) : 0) |
+        ((stage & SLANG_STAGE_GEOMETRY) ? static_cast<uint32_t>(_shader_type::GEOMETRY) : 0);
+
+    slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
+
+    // if size is zero, then it is bindless
+    dst_parameter.is_bindless = (type_layout->getSize() == 0);
+
+    // 24.06.2026 Slang has got a bug, so, now this will work like this
+    //
+    // TODO : update Slang submodule and remove this part
+    {
+        static uint32_t vulkan_set_counter = 0;
+
+        if (dst_parameter.name == "scene_set")
+            vulkan_set_counter = 0;
+
+        _slang_kind kind = type_layout->getKind();
+
+        if (kind == _slang_kind::ParameterBlock) {
+            dst_parameter.set     = vulkan_set_counter++;
+            dst_parameter.binding = 0;
+        }
+        else if (kind == _slang_kind::ConstantBuffer ||
+                 kind == _slang_kind::ShaderStorageBuffer) {
+            dst_parameter.set     = vulkan_set_counter;
+            dst_parameter.binding = variable_layout->getBindingIndex();
+        }
+        else {
+            dst_parameter.set     = variable_layout->getBindingSpace();
+            dst_parameter.binding = variable_layout->getBindingIndex();
+        }
+
+        auto& graphics_backend = context.storage.GetContext().graphics_backend;
+
+        if (graphics_backend == GraphicsBackend::OpenGL) {
+            dst_parameter.set     = 0;
+            dst_parameter.binding = variable_layout->getBindingIndex();
+        }
+    }
+}
+
+void fe::ShaderImporter::parsePushConstant(ShaderImportContext&                             context,
+                                           slang::VariableLayoutReflection*                 variable_layout,
+                                           resource::ShaderProgram::ReflectedPushConstants& dst_push_constants) {
+    assert(variable_layout);
+
+    slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
+
+    dst_push_constants.name = variable_layout->getName();
+    dst_push_constants.size = static_cast<uint32_t>(type_layout->getSize());
+
+    //context.composed_program->
+
+    dst_push_constants.stage_flags = 0;
+
+    uint32_t field_count = type_layout->getFieldCount();
+    for (uint32_t i = 0; i < field_count; i++) {
+        parseMemberRecursive(type_layout->getFieldByIndex(i), dst_push_constants.members);
+    }
+
+    if (dst_push_constants.size == 0 && !dst_push_constants.members.empty()) {
+        auto& last              = dst_push_constants.members.back();
+        dst_push_constants.size = last.offset + last.size;
     }
 }
 
