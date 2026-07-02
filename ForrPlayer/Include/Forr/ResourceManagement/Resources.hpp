@@ -174,7 +174,7 @@ namespace fe::resource {
         };
 
         struct ReflectedMember; // forward declaration
-        
+
         // base struct for reflection
         struct ReflectedDataNode {
             ValueType type{ ValueType::UNKNOWN };
@@ -186,6 +186,17 @@ namespace fe::resource {
             std::vector<ReflectedMember> members{};
 
             std::string name{};
+
+            ReflectedDataNode() = default;
+            ReflectedDataNode(ValueType                    type,
+                              uint32_t                     array_size,
+                              uint32_t                     size,
+                              std::vector<ReflectedMember> members,
+                              std::string                  name) : type(type),
+                                                  array_size(array_size),
+                                                  size(size),
+                                                  members(std::move(members)),
+                                                  name(std::move(name)) {}
         };
 
         // may be a field of a Slang struct
@@ -203,11 +214,37 @@ namespace fe::resource {
             uint32_t stage_flags{};
 
             bool is_bindless{};
+
+            ReflectedParameter() = default;
+            ReflectedParameter(ValueType                    type,
+                               uint32_t                     array_size,
+                               uint32_t                     size,
+                               std::vector<ReflectedMember> members,
+                               std::string                  name,
+                               DescriptorType               descriptor_type,
+                               uint32_t                     set,
+                               uint32_t                     binding,
+                               uint32_t                     stage_flags,
+                               bool                         is_bindless) : ReflectedDataNode::ReflectedDataNode(type, array_size, size, members, name),
+                                                   descriptor_type(descriptor_type),
+                                                   set(set),
+                                                   binding(binding),
+                                                   stage_flags(stage_flags),
+                                                   is_bindless(is_bindless) {}
         };
 
         // entry point : push constants
         struct ReflectedPushConstants : public ReflectedDataNode {
             uint32_t stage_flags{};
+
+            ReflectedPushConstants() = default;
+            ReflectedPushConstants(ValueType                    type,
+                                   uint32_t                     array_size,
+                                   uint32_t                     size,
+                                   std::vector<ReflectedMember> members,
+                                   std::string                  name,
+                                   uint32_t                     stage_flags) : ReflectedDataNode::ReflectedDataNode(type, array_size, size, members, name),
+                                                           stage_flags(stage_flags) {}
         };
 
         enum class ShaderType : std::uint8_t {
