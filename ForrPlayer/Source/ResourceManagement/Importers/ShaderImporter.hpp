@@ -67,16 +67,6 @@ namespace fe {
         static void parseMemberRecursive(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node);
         static void parseMemberRecursive(ShaderImportContext& context, slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node);
 
-        static void parseTypeLayout(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
-
-        static void parseElementTypeLayout(ShaderImportContext& context, slang::TypeLayoutReflection* element_type_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
-
-        static void decompile1(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
-        static void decompile2(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
-        static void decompile3(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
-
-        static void setupDescriptorType(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::DescriptorType& dst_descriptor_type);
-
         static void mapMatrix(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ValueType& type);
         static void mapVector(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ValueType& type);
         static void mapScalar(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ValueType& type);

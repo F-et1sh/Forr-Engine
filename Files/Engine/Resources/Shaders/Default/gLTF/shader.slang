@@ -23,11 +23,12 @@ struct MaterialDataResource {
 [[vk::binding(2, 0)]] StructuredBuffer<GPULight>  lights;
 [[vk::binding(0, 1)]] StructuredBuffer<PBRMaterial> materials;
 
+[[vk::push_constant]] int instance_index;
+
 struct VertexInput {
     [[vk::location(0)]] float3 position    : POSITION;
     [[vk::location(1)]] float3 normal      : NORMAL;
     [[vk::location(2)]] float2 texture_coord : TEXCOORD;
-    [[vk::location(3)]] int instance_index : INSTANCE_INDEX;
 };
 
 struct VertexStageOutput {
@@ -36,16 +37,13 @@ struct VertexStageOutput {
     [[vk::location(0)]] float3 position      : POSITION;
     [[vk::location(1)]] float3 normal        : NORMAL;
     [[vk::location(2)]] float2 texture_coord : TEXCOORD;
-    [[vk::location(3)]] int instance_index : INSTANCE_INDEX;
 };
 
 [shader("vertex")]
-VertexStageOutput vertexMain(VertexInput input, [Layout(location = 0)] uniform int instance_index) {
+VertexStageOutput vertexMain(VertexInput input) {
     VertexStageOutput output;
 
-    int index = instance_index;
-
-    float4 world_position = mul(float4(input.position, 1.0f), model_matrices[index]);
+    float4 world_position = mul(float4(input.position, 1.0f), model_matrices[instance_index]);
     
     output.sv_position = mul(world_position, global_data.view_matrix);
     output.sv_position = mul(output.sv_position, global_data.projection_matrix);
@@ -53,16 +51,13 @@ VertexStageOutput vertexMain(VertexInput input, [Layout(location = 0)] uniform i
     output.position = world_position.xyz;
     output.normal = input.normal;
     output.texture_coord = input.texture_coord;
-    output.instance_index = instance_index;
 
     return output;
 }
 
 [shader("fragment")]
 float4 fragmentMain(VertexStageOutput input) : SV_Target {
-     int index = input.instance_index;
-    
-    uint2 handle = materials[index].base_color_texture_handle;
+    uint2 handle = materials[instance_index].base_color_texture_handle;
     
     Sampler2D texture = reinterpret<Sampler2D>(handle);
     
