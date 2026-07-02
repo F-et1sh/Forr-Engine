@@ -62,15 +62,18 @@ namespace fe {
         //static FORR_NODISCARD bool validate(ShaderImportContext& context);
 
         static void parseDescriptorTable(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
-        static void parsePushConstant(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedPushConstants& dst_push_constants);        
-        
+        static void parsePushConstant(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedPushConstants& dst_push_constants);
+
+        static void parseMemberRecursive(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node);
+        static void parseMemberRecursive(ShaderImportContext& context, slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node);
+
         static void parseTypeLayout(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
+
         static void parseElementTypeLayout(ShaderImportContext& context, slang::TypeLayoutReflection* element_type_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
-        
+
         static void decompile1(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
         static void decompile2(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
-
-        static void parseMemberRecursive(slang::VariableLayoutReflection* variable_layout, std::vector<resource::ShaderProgram::ReflectedMember>& dst_members);
+        static void decompile3(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
 
         static void setupDescriptorType(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::DescriptorType& dst_descriptor_type);
 

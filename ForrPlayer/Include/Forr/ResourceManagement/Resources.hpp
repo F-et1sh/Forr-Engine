@@ -171,12 +171,14 @@ namespace fe::resource {
             UNKNOWN
         };
 
-        struct ReflectedMember {
+        struct ReflectedMember; // forward declaration
+        
+        // base struct for reflection
+        struct ReflectedDataNode {
             ValueType type{ ValueType::UNKNOWN };
 
-            uint32_t array_count{ 1 };
+            uint32_t array_size{ 1 };
 
-            uint32_t offset{};
             uint32_t size{};
 
             std::vector<ReflectedMember> members{};
@@ -184,35 +186,26 @@ namespace fe::resource {
             std::string name{};
         };
 
-        struct ReflectedParameter {
+        // may be a field of a Slang struct
+        struct ReflectedMember : public ReflectedDataNode {
+            uint32_t offset{};
+        };
+
+        // entry point : parameter
+        struct ReflectedParameter : public ReflectedDataNode {
             DescriptorType descriptor_type{ DescriptorType::UNKNOWN };
 
             uint32_t set{};
             uint32_t binding{};
 
-            uint32_t size{};
-
             uint32_t stage_flags{};
 
             bool is_bindless{};
-
-            std::vector<ReflectedMember> members{};
-
-            std::string name{};
         };
 
-        struct ReflectedPushConstants {
-            ValueType type{ ValueType::UNKNOWN };
-
-            uint32_t array_count{ 1 };
-
-            uint32_t size{};
-
+        // entry point : push constants
+        struct ReflectedPushConstants : public ReflectedDataNode {
             uint32_t stage_flags{};
-
-            std::vector<ReflectedMember> members{};
-
-            std::string name{};
         };
 
         enum class ShaderType : std::uint8_t {
