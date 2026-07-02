@@ -428,6 +428,7 @@ void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&              
     dst_parameter.set         = variable_layout->getBindingSpace();
     dst_parameter.binding     = variable_layout->getBindingIndex();
     dst_parameter.stage_flags = static_cast<uint32_t>(_shader_type::NONE);
+    dst_parameter.array_size  = 1;
 
     SlangStage stage = variable_layout->getStage(); // does not work
 
@@ -483,14 +484,64 @@ void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&              
             ShaderImporter::parseMemberRecursive(context, type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
             break;
 
-        case _slang_kind::Array:
-            dst_parameter.descriptor_type = _shader_descriptor::STORAGE_BUFFER;
-            dst_parameter.is_bindless     = true;
-            ShaderImporter::parseMemberRecursive(context, type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
-            break;
+        case _slang_kind::Array: {
+            // if you got '_slang_kind::Array' here that means that this is a bindless parameter
+            dst_parameter.is_bindless = true;
+            // when you pass 'slang::TypeLayoutReflection*' into 'fe::ShaderImporter::parseMemberRecursive()' instead of 'slang::VariableLayoutReflection*'
+            //  you have to set 'array_size' yourself
+            dst_parameter.array_size  = type_layout->getElementCount();
+
+            slang::TypeLayoutReflection* array_element_type_layout = type_layout->getElementTypeLayout();
+            _slang_kind                  element_kind              = array_element_type_layout->getKind();
+
+            if (element_kind == _slang_kind::Resource) {
+                SlangResourceShape shape      = array_element_type_layout->getResourceShape();
+                unsigned int       shape_base = shape & SLANG_RESOURCE_BASE_SHAPE_MASK;
+
+                if (shape_base >= SLANG_TEXTURE_1D && shape_base <= SLANG_TEXTURE_CUBE) {
+                    bool is_read_write            = array_element_type_layout->getResourceAccess() == SLANG_RESOURCE_ACCESS_READ_WRITE;
+                    dst_parameter.descriptor_type = is_read_write ? _shader_descriptor::STORAGE_IMAGE : _shader_descriptor::COMBINED_IMAGE_SAMPLER;
+                }
+            }
+            else {
+                dst_parameter.descriptor_type = _shader_descriptor::UNIFORM_BUFFER;
+            }
+
+            ShaderImporter::parseMemberRecursive(context, array_element_type_layout, static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
+        } break;
 
         case _slang_kind::Resource: {
-            fe::logging::debug("got resource");
+            // when you pass 'slang::TypeLayoutReflection*' into 'fe::ShaderImporter::parseMemberRecursive()' instead of 'slang::VariableLayoutReflection*'
+            //  you have to set 'array_size' yourself
+            dst_parameter.array_size = type_layout->getElementCount();
+
+            SlangResourceShape shape      = type_layout->getResourceShape();
+            unsigned int       shape_base = shape & SLANG_RESOURCE_BASE_SHAPE_MASK;
+
+            SlangResourceAccess resource_access = type_layout->getResourceAccess();
+
+            if (shape_base >= SLANG_TEXTURE_1D &&
+                shape_base <= SLANG_TEXTURE_CUBE) {
+
+                if (resource_access == SLANG_RESOURCE_ACCESS_READ_WRITE) {
+                    dst_parameter.descriptor_type = _shader_descriptor::STORAGE_IMAGE;
+                }
+                else {
+                    dst_parameter.descriptor_type = _shader_descriptor::COMBINED_IMAGE_SAMPLER;
+                }
+            }
+            else if (shape_base == SLANG_STRUCTURED_BUFFER ||
+                     shape_base == SLANG_BYTE_ADDRESS_BUFFER) {
+
+                dst_parameter.descriptor_type = _shader_descriptor::STORAGE_BUFFER;
+            }
+            else if (shape_base == SLANG_ACCELERATION_STRUCTURE) {
+                dst_parameter.descriptor_type = _shader_descriptor::ACCELERATION_STRUCTURE;
+            }
+            else {
+                assert(false);
+            }
+
             ShaderImporter::parseMemberRecursive(context, type_layout->getElementTypeLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
         } break;
 
@@ -572,8 +623,7 @@ void fe::ShaderImporter::parseMemberRecursive(ShaderImportContext&              
     assert(type_layout);
     assert(dst_reflected_data_node);
 
-    dst_reflected_data_node->array_size = 1;
-    dst_reflected_data_node->size       = type_layout->getSize();
+    dst_reflected_data_node->size = type_layout->getSize();
 
     auto parse_recursive = [&context](slang::TypeLayoutReflection*                           type_layout,
                                       std::vector<resource::ShaderProgram::ReflectedMember>& dst_members) {
@@ -617,11 +667,19 @@ void fe::ShaderImporter::parseMemberRecursive(ShaderImportContext&              
             // clang-format on
 
         case _slang_kind::Resource: {
-
             SlangResourceShape shape      = type_layout->getResourceShape();
             unsigned int       shape_base = shape & SLANG_RESOURCE_BASE_SHAPE_MASK;
 
-            fe::logging::debug("%s", type_layout->getName());
+            if (shape_base >= SLANG_TEXTURE_1D &&
+                shape_base <= SLANG_TEXTURE_CUBE) {
+
+                dst_reflected_data_node->type = _shader_value::UINT32;
+            }
+            else if (shape_base == SLANG_STRUCTURED_BUFFER ||
+                     shape_base == SLANG_BYTE_ADDRESS_BUFFER) {
+
+                dst_reflected_data_node->type = _shader_value::UINT_PTR;
+            }
         } break;
 
         case _slang_kind::Enum:

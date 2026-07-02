@@ -11,7 +11,8 @@
 
 ### Done
     Slang reflection decompilations done
-    Slang reflection in progress
+    Slang reflection in progress ( last settings : 'descriptor_type' for Resources, 'is_bindless' and 'array_size' )
+    'descriptor_type' for Resources, 'is_bindless' and 'array_size' are fixed
 
 ### Problem
     -

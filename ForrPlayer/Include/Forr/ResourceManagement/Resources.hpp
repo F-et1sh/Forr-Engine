@@ -125,6 +125,8 @@ namespace fe::resource {
             COMBINED_IMAGE_SAMPLER,
             STORAGE_IMAGE,
 
+            ACCELERATION_STRUCTURE,
+
             UNKNOWN
         };
 
