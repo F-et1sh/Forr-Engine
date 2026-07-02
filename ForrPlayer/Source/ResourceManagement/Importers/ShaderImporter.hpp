@@ -59,13 +59,16 @@ namespace fe {
     private:
         static FORR_NODISCARD bool compile(ShaderImportContext& context);
         static FORR_NODISCARD bool reflect(ShaderImportContext& context);
-        //static FORR_NODISCARD bool validate(ShaderImportContext& context);
+        static FORR_NODISCARD bool validate(ShaderImportContext& context);
+
+        static void printProblem(std::string_view field_name, auto changed_to, auto should_be, fe::logging::Severity severity);
+        static void checkDataNode(ShaderImportContext& context, std::string_view field_name, const resource::ShaderProgram::ReflectedDataNode* data_node, const resource::ShaderProgram::ReflectedDataNode* expected_data_node);
 
         static void parseDescriptorTable(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
-        static void parsePushConstant(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedPushConstants& dst_push_constants);
+        static void parsePushConstant(slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedPushConstants& dst_push_constants);
 
-        static void parseMemberRecursive(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node);
-        static void parseMemberRecursive(ShaderImportContext& context, slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node);
+        static void parseMemberRecursive(slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node);
+        static void parseMemberRecursive(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node);
 
         static void mapMatrix(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ValueType& type);
         static void mapVector(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ValueType& type);

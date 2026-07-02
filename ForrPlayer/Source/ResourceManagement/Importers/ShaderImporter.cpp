@@ -46,14 +46,12 @@ fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStor
         return {};
     }
 
-    // Validation is temporarily turned off till I completely fix the shaders
-
     // validate
-    //bool validation_result = ShaderImporter::validate(context);
-    //if (!validation_result) {
-    //    fe::logging::error("Slang -> Unified. Validation failed\nPath : %s", resource_full_path.string().c_str());
-    //    return {};
-    //}
+    bool validation_result = ShaderImporter::validate(context);
+    if (!validation_result) {
+        fe::logging::error("Slang -> Unified. Validation failed\nPath : %s", resource_full_path.string().c_str());
+        return {};
+    }
 
     auto ptr = storage.CreateResource(std::move(shader_program));
     return ptr;
@@ -175,7 +173,7 @@ bool fe::ShaderImporter::reflect(ShaderImportContext& context) {
             ShaderImporter::parseDescriptorTable(context, variable_layout, parameter);
         }
         else if (category == _slang_category::PushConstantBuffer) {
-            ShaderImporter::parsePushConstant(context, variable_layout, shader_program.reflected_push_constants);
+            ShaderImporter::parsePushConstant(variable_layout, shader_program.reflected_push_constants);
         }
         else {
             fe::logging::error("Slang -> Unified. Failed to reflect a shader\nUnknown slang::ParameterCategory : %i", category);
@@ -186,97 +184,62 @@ bool fe::ShaderImporter::reflect(ShaderImportContext& context) {
     return true;
 }
 
-//bool fe::ShaderImporter::validate(ShaderImportContext& context) {
-//    // TODO : add define for shader to mute the warning message
-//    // TODO : make validation more strict
-//
-//    auto& graphics_backend    = context.storage.GetContext().graphics_backend;
-//    auto& reflected_resources = context.shader_program.reflected_resources;
-//
-//    struct ExpectedResource {
-//        ShaderProgram::DescriptorType descriptor_type{};
-//
-//        uint32_t set{};
-//        uint32_t binding{};
-//
-//        uint32_t members_count{};
-//
-//        std::string_view name{};
-//    };
-//
-//    constexpr static std::array expected_resources_vulkan{
-//        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 0, 1, "global_data" },
-//        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 1, 1, "model_matrices" },
-//        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 2, 1, "lights" },
-//        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 1, 0, 1, "materials" },
-//        ExpectedResource{ ShaderProgram::DescriptorType::PUSH_CONSTANT, 0, 0, 1, "push_constants" }
-//    };
-//
-//    constexpr static std::array expected_resources_opengl{
-//        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 0, 1, "global_data" },
-//        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 1, 1, "model_matrices" },
-//        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 2, 1, "lights" },
-//        ExpectedResource{ ShaderProgram::DescriptorType::STORAGE_BUFFER, 0, 3, 1, "materials" },
-//        ExpectedResource{ ShaderProgram::DescriptorType::PUSH_CONSTANT, 0, 0, 1, "push_constants" }
-//    };
-//
-//    const auto& expected_resources = (graphics_backend == GraphicsBackend::OpenGL) ? expected_resources_opengl : expected_resources_vulkan;
-//
-//    for (const auto& expected_resource : expected_resources) {
-//        auto it = reflected_resources.end();
-//
-//        if (expected_resource.descriptor_type == ShaderProgram::DescriptorType::PUSH_CONSTANT) {
-//            it = std::ranges::find(reflected_resources, ShaderProgram::DescriptorType::PUSH_CONSTANT, &ShaderProgram::ReflectedResource::descriptor_type);
-//        }
-//        else {
-//            it = std::ranges::find_if(reflected_resources, [&](const auto& resource) -> bool {
-//                return resource.set == expected_resource.set &&
-//                       resource.binding == expected_resource.binding;
-//            });
-//        }
-//
-//        if (it == reflected_resources.end()) {
-//            fe::logging::warning("Slang -> Unified. Shader has no descriptor set %i ( \"%s\" ).\nIf you don't need it in the shader you don't have to add it",
-//                                 expected_resource.set,
-//                                 expected_resource.name.data());
-//            continue;
-//        }
-//
-//        if (it->descriptor_type != expected_resource.descriptor_type) {
-//            fe::logging::error("Slang -> Unified. Shader descriptor set %i has descriptor type %i, but must be %i",
-//                               expected_resource.set,
-//                               it->descriptor_type,
-//                               expected_resource.descriptor_type);
-//            return false;
-//        }
-//
-//        if (it->binding != expected_resource.binding) {
-//            fe::logging::error("Slang -> Unified. Shader descriptor set %i has binding %i, but must be %i",
-//                               expected_resource.set,
-//                               it->binding,
-//                               expected_resource.binding);
-//            return false;
-//        }
-//
-//        if (it->members.size() != expected_resource.members_count) {
-//            fe::logging::error("Slang -> Unified. Shader descriptor set %i has members count %i, but must be %i",
-//                               expected_resource.set,
-//                               it->members.size(),
-//                               expected_resource.members_count);
-//            return false;
-//        }
-//
-//        if (it->name != expected_resource.name) {
-//            fe::logging::error("Slang -> Unified. Shader descriptor set %i has name %s, but must be \"%s\"",
-//                               expected_resource.set,
-//                               it->name.c_str(),
-//                               expected_resource.name.data());
-//            return false;
-//        }
-//    }
-//
-//    return true;
-//}
+bool fe::ShaderImporter::validate(ShaderImportContext& context) {
+    // TODO : add define for shader to mute the warning message
+
+    const auto& shader_program = context.shader_program;
+
+    const static ShaderProgram::ReflectedPushConstants expected_push_constants{
+        ShaderProgram::ValueType::INT32,
+        1,
+        4,
+        {},
+        "instance_index",
+        7
+    };
+
+    // you can change the name           --> warning
+    // you cannot change everything else --> error
+
+    checkDataNode(context,
+                  "push constants",
+                  static_cast<const resource::ShaderProgram::ReflectedDataNode*>(&shader_program.reflected_push_constants),
+                  static_cast<const resource::ShaderProgram::ReflectedDataNode*>(&expected_push_constants));
+    printProblem("push constants stage_flags", shader_program.reflected_push_constants.stage_flags, expected_push_constants.stage_flags, fe::logging::Severity::Warning);
+
+    return true;
+}
+void fe::ShaderImporter::printProblem(std::string_view      field_name,
+                                      auto                  changed_to,
+                                      auto                  should_be,
+                                      fe::logging::Severity severity) {
+
+    constexpr bool        is_string = std::is_convertible_v<decltype(changed_to), std::string_view>;
+    constexpr const char* fmt       = is_string ? "%s" : "%i";
+
+    std::string message = std::string("Slang -> Unified. Validation : field %s was changed to ") + fmt;
+    message += (severity < fe::logging::Severity::Error) ? ", but it should be " : ", but it must be ";
+    message += fmt;
+
+    if constexpr (is_string) {
+        fe::logging::message(severity, message.c_str(), field_name.data(), std::string_view(changed_to).data(), std::string_view(should_be).data());
+    }
+    else {
+        fe::logging::message(severity, message.c_str(), field_name.data(), changed_to, should_be);
+    }
+}
+
+void fe::ShaderImporter::checkDataNode(ShaderImportContext&                              context,
+                                       std::string_view                                  field_name,
+                                       const resource::ShaderProgram::ReflectedDataNode* data_node,
+                                       const resource::ShaderProgram::ReflectedDataNode* expected_data_node) {
+
+    ShaderImporter::printProblem(field_name.data() + std::string(" name"), data_node->name.c_str(), expected_data_node->name.c_str(), fe::logging::Severity::Warning);
+    ShaderImporter::printProblem(field_name.data() + std::string(" size"), data_node->size, expected_data_node->size, fe::logging::Severity::Error);
+    ShaderImporter::printProblem(field_name.data() + std::string(" array_size"), data_node->array_size, expected_data_node->array_size, fe::logging::Severity::Error);
+    ShaderImporter::printProblem(field_name.data() + std::string(" type"), static_cast<int>(data_node->type), static_cast<int>(expected_data_node->type), fe::logging::Severity::Error);
+    ShaderImporter::printProblem(field_name.data() + std::string(" members.size()"), data_node->members.size(), expected_data_node->members.size(), fe::logging::Severity::Error);
+}
 
 void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&                         context,
                                               slang::VariableLayoutReflection*             variable_layout,
@@ -331,12 +294,12 @@ void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&              
         case _slang_kind::ConstantBuffer:
         case _slang_kind::ParameterBlock:
             dst_parameter.descriptor_type = _shader_descriptor::UNIFORM_BUFFER;
-            ShaderImporter::parseMemberRecursive(context, type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
+            ShaderImporter::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
             break;
 
         case _slang_kind::ShaderStorageBuffer:
             dst_parameter.descriptor_type = _shader_descriptor::STORAGE_BUFFER;
-            ShaderImporter::parseMemberRecursive(context, type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
+            ShaderImporter::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
             break;
 
         case _slang_kind::Array: {
@@ -362,7 +325,7 @@ void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&              
                 dst_parameter.descriptor_type = _shader_descriptor::UNIFORM_BUFFER;
             }
 
-            ShaderImporter::parseMemberRecursive(context, array_element_type_layout, static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
+            ShaderImporter::parseMemberRecursive(array_element_type_layout, static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
         } break;
 
         case _slang_kind::Resource: {
@@ -397,12 +360,12 @@ void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&              
                 assert(false);
             }
 
-            ShaderImporter::parseMemberRecursive(context, type_layout->getElementTypeLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
+            ShaderImporter::parseMemberRecursive(type_layout->getElementTypeLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
         } break;
 
         case _slang_kind::SamplerState:
             dst_parameter.descriptor_type = _shader_descriptor::SAMPLER;
-            ShaderImporter::parseMemberRecursive(context, type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
+            ShaderImporter::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
             break;
 
         default:
@@ -422,9 +385,7 @@ void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&              
     dst_parameter.name = variable_layout->getName();
 }
 
-void fe::ShaderImporter::parsePushConstant(ShaderImportContext&                             context,
-                                           slang::VariableLayoutReflection*                 variable_layout,
-                                           resource::ShaderProgram::ReflectedPushConstants& dst_push_constants) {
+void fe::ShaderImporter::parsePushConstant(slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedPushConstants& dst_push_constants) {
     assert(variable_layout);
     assert(variable_layout->getCategory() == _slang_category::PushConstantBuffer);
 
@@ -450,25 +411,25 @@ void fe::ShaderImporter::parsePushConstant(ShaderImportContext&                 
     switch (kind) {
         case _slang_kind::ConstantBuffer:
         case _slang_kind::ParameterBlock:
-            ShaderImporter::parseMemberRecursive(context, type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_push_constants));
+            ShaderImporter::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_push_constants));
             break;
 
         case _slang_kind::ShaderStorageBuffer:
-            ShaderImporter::parseMemberRecursive(context, type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_push_constants));
+            ShaderImporter::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_push_constants));
             break;
 
         case _slang_kind::Array: {
             dst_push_constants.array_size = type_layout->getElementCount();
-            ShaderImporter::parseMemberRecursive(context, type_layout->getElementTypeLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_push_constants));
+            ShaderImporter::parseMemberRecursive(type_layout->getElementTypeLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_push_constants));
         } break;
 
         case _slang_kind::Resource: {
             dst_push_constants.array_size = type_layout->getElementCount();
-            ShaderImporter::parseMemberRecursive(context, type_layout->getElementTypeLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_push_constants));
+            ShaderImporter::parseMemberRecursive(type_layout->getElementTypeLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_push_constants));
         } break;
 
         case _slang_kind::SamplerState:
-            ShaderImporter::parseMemberRecursive(context, type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_push_constants));
+            ShaderImporter::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_push_constants));
             break;
 
         default:
@@ -487,9 +448,7 @@ void fe::ShaderImporter::parsePushConstant(ShaderImportContext&                 
     dst_push_constants.name = variable_layout->getName();
 }
 
-void fe::ShaderImporter::parseMemberRecursive(ShaderImportContext&                        context,
-                                              slang::VariableLayoutReflection*            variable_layout,
-                                              resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node) {
+void fe::ShaderImporter::parseMemberRecursive(slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node) {
     assert(variable_layout);
     assert(dst_reflected_data_node);
 
@@ -504,24 +463,22 @@ void fe::ShaderImporter::parseMemberRecursive(ShaderImportContext&              
         member->offset                                   = variable_layout->getOffset();
     }
 
-    ShaderImporter::parseMemberRecursive(context, type_layout, dst_reflected_data_node);
+    ShaderImporter::parseMemberRecursive(type_layout, dst_reflected_data_node);
 }
 
-void fe::ShaderImporter::parseMemberRecursive(ShaderImportContext&                        context,
-                                              slang::TypeLayoutReflection*                type_layout,
-                                              resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node) {
+void fe::ShaderImporter::parseMemberRecursive(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node) {
     assert(type_layout);
     assert(dst_reflected_data_node);
 
     dst_reflected_data_node->size = type_layout->getSize();
 
-    auto parse_recursive = [&context](slang::TypeLayoutReflection*                           type_layout,
-                                      std::vector<resource::ShaderProgram::ReflectedMember>& dst_members) {
+    auto parse_recursive = [](slang::TypeLayoutReflection*                           type_layout,
+                              std::vector<resource::ShaderProgram::ReflectedMember>& dst_members) {
         uint32_t field_count = type_layout->getFieldCount();
         dst_members.reserve(field_count);
         for (uint32_t i = 0; i < field_count; i++) {
             resource::ShaderProgram::ReflectedMember& member = dst_members.emplace_back();
-            parseMemberRecursive(context, type_layout->getFieldByIndex(i), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&member));
+            parseMemberRecursive(type_layout->getFieldByIndex(i), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&member));
         }
     };
 
