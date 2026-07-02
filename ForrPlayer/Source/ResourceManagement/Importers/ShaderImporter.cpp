@@ -172,7 +172,7 @@ bool fe::ShaderImporter::reflect(ShaderImportContext& context) {
 
         if (category == _slang_category::DescriptorTableSlot) {
             auto& parameter = shader_program.reflected_parameters.emplace_back();
-            ShaderImporter::decompile2(context, variable_layout, parameter);
+            ShaderImporter::parseDescriptorTable(context, variable_layout, parameter);
         }
         else if (category == _slang_category::PushConstantBuffer) {
             ShaderImporter::parsePushConstant(context, variable_layout, shader_program.reflected_push_constants);
@@ -282,12 +282,10 @@ void fe::ShaderImporter::decompile1(ShaderImportContext&                        
                                     resource::ShaderProgram::ReflectedParameter& dst_parameter) {
     assert(variable_layout);
 
-    // fe::resource::ShaderProgram::reflected_parameters
+    // auto& dst_parameter = fe::resource::ShaderProgram::reflected_parameters.emplace_back()
 
     _slang_category c = variable_layout->getCategory(); // DescriptorTableSlot
     auto            n = variable_layout->getName();     // "global_data"
-
-    // auto& dst_parameter = fe::resource::ShaderProgram::reflected_parameters.emplace_back()
 
     slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
     _slang_kind                  k           = type_layout->getKind();       // ConstantBuffer
@@ -366,14 +364,12 @@ void fe::ShaderImporter::decompile1(ShaderImportContext&                        
 void fe::ShaderImporter::decompile2(ShaderImportContext&                         context,
                                     slang::VariableLayoutReflection*             variable_layout,
                                     resource::ShaderProgram::ReflectedParameter& dst_parameter) {
-    assert(variable_layout); 
+    assert(variable_layout);
 
-    // fe::resource::ShaderProgram::reflected_parameters
+    // auto& dst_parameter = fe::resource::ShaderProgram::reflected_parameters.emplace_back()
 
     _slang_category c = variable_layout->getCategory(); // DescriptorTableSlot --> to know that this is an entry point
     auto            n = variable_layout->getName();     // "model_matrices"    --> to know that its name
-
-    // auto& dst_parameter = fe::resource::ShaderProgram::reflected_parameters.emplace_back()
 
     slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
     _slang_kind                  k           = type_layout->getKind();       // Resource            --> to know that this is an SSBO ( using that SlangResourceShape and others )
@@ -390,13 +386,45 @@ void fe::ShaderImporter::decompile2(ShaderImportContext&                        
     size_t                       s2                  = element_type_layout->getSize();       // 64          --> to know member's size
 }
 
+void fe::ShaderImporter::decompile3(ShaderImportContext&                         context,
+                                    slang::VariableLayoutReflection*             variable_layout,
+                                    resource::ShaderProgram::ReflectedParameter& dst_parameter) {
+    assert(variable_layout);
+
+    // [[vk::binding(0, 0)]] StructuredBuffer<Texture2D> textures[];
+
+    // auto& dst_parameter = fe::resource::ShaderProgram::reflected_parameters.emplace_back()
+
+    _slang_category c = variable_layout->getCategory(); // DescriptorTableSlot --> to know that this is an entry point
+    auto            n = variable_layout->getName();     // "textures"    --> to know that its name
+
+    slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
+    _slang_kind                  k           = type_layout->getKind();       // Array    --> to know that this is an SSBO ( using that SlangResourceShape and others )
+    auto                         n2          = type_layout->getName();       // "Array"  --> unused
+    unsigned int                 field_count = type_layout->getFieldCount(); // 0        --> unused ( always unwrap till element type layout )
+    size_t                       s           = type_layout->getSize();       // 0        --> unused ( this don't give us an information about bindless, I guess )
+
+    // auto& member = dst_parameter.members.emplace_back()
+
+    slang::TypeLayoutReflection* element_type_layout = type_layout->getElementTypeLayout();
+    _slang_kind                  k2                  = element_type_layout->getKind();       // Resource           --> to know member's type
+    auto                         n3                  = element_type_layout->getName();       // "StructuredBuffer" --> unused
+    unsigned int                 field_count2        = element_type_layout->getFieldCount(); // 0                  --> unused ( since we know member's type and it's not STRUCT or something )
+    size_t                       s2                  = element_type_layout->getSize();       // 0                  --> to know member's size
+
+    slang::TypeLayoutReflection* element_type_layout2 = element_type_layout->getElementTypeLayout();
+    _slang_kind                  k3                   = element_type_layout2->getKind();       // Resource   --> to know member's type
+    auto                         n4                   = element_type_layout2->getName();       // "_Texture" --> unused
+    unsigned int                 field_count3         = element_type_layout2->getFieldCount(); // 0          --> unused ( since we know member's type and it's not STRUCT or something )
+    size_t                       s3                   = element_type_layout2->getSize();       // 0          --> to know member's size
+}
+
 void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&                         context,
                                               slang::VariableLayoutReflection*             variable_layout,
                                               resource::ShaderProgram::ReflectedParameter& dst_parameter) {
     assert(variable_layout);
     assert(variable_layout->getCategory() == _slang_category::DescriptorTableSlot);
 
-    dst_parameter.name        = variable_layout->getName();
     dst_parameter.set         = variable_layout->getBindingSpace();
     dst_parameter.binding     = variable_layout->getBindingIndex();
     dst_parameter.stage_flags = static_cast<uint32_t>(_shader_type::NONE);
@@ -410,6 +438,7 @@ void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&              
         ((stage & SLANG_STAGE_GEOMETRY) ? static_cast<uint32_t>(_shader_type::GEOMETRY) : 0);
 
     slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
+    _slang_kind                  kind        = type_layout->getKind();
 
     // 24.06.2026 Slang has got a bug, so, now this will work like this
     //
@@ -419,8 +448,6 @@ void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&              
 
         if (dst_parameter.name == "scene_set")
             vulkan_set_counter = 0;
-
-        _slang_kind kind = type_layout->getKind();
 
         if (kind == _slang_kind::ParameterBlock) {
             dst_parameter.set     = vulkan_set_counter++;
@@ -444,7 +471,49 @@ void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&              
         }
     }
 
-    ShaderImporter::parseTypeLayout(context, variable_layout, dst_parameter);
+    switch (kind) {
+        case _slang_kind::ConstantBuffer:
+        case _slang_kind::ParameterBlock:
+            dst_parameter.descriptor_type = _shader_descriptor::UNIFORM_BUFFER;
+            ShaderImporter::parseMemberRecursive(context, type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
+            break;
+
+        case _slang_kind::ShaderStorageBuffer:
+            dst_parameter.descriptor_type = _shader_descriptor::STORAGE_BUFFER;
+            ShaderImporter::parseMemberRecursive(context, type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
+            break;
+
+        case _slang_kind::Array:
+            dst_parameter.descriptor_type = _shader_descriptor::STORAGE_BUFFER;
+            dst_parameter.is_bindless     = true;
+            ShaderImporter::parseMemberRecursive(context, type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
+            break;
+
+        case _slang_kind::Resource: {
+            fe::logging::debug("got resource");
+            ShaderImporter::parseMemberRecursive(context, type_layout->getElementTypeLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
+        } break;
+
+        case _slang_kind::SamplerState:
+            dst_parameter.descriptor_type = _shader_descriptor::SAMPLER;
+            ShaderImporter::parseMemberRecursive(context, type_layout->getElementVarLayout(), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&dst_parameter));
+            break;
+
+        default:
+            fe::logging::error("Slang -> Unified. Failed to reflect resource : Unknown descriptor resource kind : %i", kind);
+            dst_parameter.descriptor_type = _shader_descriptor::UNKNOWN;
+            break;
+    }
+
+    // here we have to override the name, because 'fe::ShaderImporter::parseMemberRecursive()' setting 'dst_parameter.name' as its
+    //  struct's name, but I want to see its actual name.
+    // For example :
+    // ```slang
+    // [[vk::binding(0, 0)]] ConstantBuffer<SceneData> global_data;
+    // ```
+    // 'fe::ShaderImporter::parseMemberRecursive()' will give us "SceneData", but I want to see name "global_data",
+    //  that's why we set the name here
+    dst_parameter.name = variable_layout->getName();
 }
 
 void fe::ShaderImporter::parsePushConstant(ShaderImportContext&                             context,
@@ -468,12 +537,104 @@ void fe::ShaderImporter::parsePushConstant(ShaderImportContext&                 
 
     uint32_t field_count = type_layout->getFieldCount();
     for (uint32_t i = 0; i < field_count; i++) {
-        parseMemberRecursive(type_layout->getFieldByIndex(i), dst_push_constants.members);
+        //parseMemberRecursive(type_layout->getFieldByIndex(i), dst_push_constants.members);
     }
 
     if (dst_push_constants.size == 0 && !dst_push_constants.members.empty()) {
         auto& last              = dst_push_constants.members.back();
         dst_push_constants.size = last.offset + last.size;
+    }
+}
+
+void fe::ShaderImporter::parseMemberRecursive(ShaderImportContext&                        context,
+                                              slang::VariableLayoutReflection*            variable_layout,
+                                              resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node) {
+    assert(variable_layout);
+    assert(dst_reflected_data_node);
+
+    slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
+
+    dst_reflected_data_node->name = variable_layout->getName() ? variable_layout->getName() : type_layout->getName();
+
+    // if offset is not zero, then it is most likely a member aka a field of a struct,
+    // so, we can cast it to 'resource::ShaderProgram::ReflectedMember*' and set its 'offset'
+    if (variable_layout->getOffset() != 0) {
+        resource::ShaderProgram::ReflectedMember* member = static_cast<resource::ShaderProgram::ReflectedMember*>(dst_reflected_data_node);
+        member->offset                                   = variable_layout->getOffset();
+    }
+
+    ShaderImporter::parseMemberRecursive(context, type_layout, dst_reflected_data_node);
+}
+
+void fe::ShaderImporter::parseMemberRecursive(ShaderImportContext&                        context,
+                                              slang::TypeLayoutReflection*                type_layout,
+                                              resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node) {
+    assert(type_layout);
+    assert(dst_reflected_data_node);
+
+    dst_reflected_data_node->array_size = 1;
+    dst_reflected_data_node->size       = type_layout->getSize();
+
+    auto parse_recursive = [&context](slang::TypeLayoutReflection*                           type_layout,
+                                      std::vector<resource::ShaderProgram::ReflectedMember>& dst_members) {
+        uint32_t field_count = type_layout->getFieldCount();
+        dst_members.reserve(field_count);
+        for (uint32_t i = 0; i < field_count; i++) {
+            resource::ShaderProgram::ReflectedMember& member = dst_members.emplace_back();
+            parseMemberRecursive(context, type_layout->getFieldByIndex(i), static_cast<resource::ShaderProgram::ReflectedDataNode*>(&member));
+        }
+    };
+
+    _slang_kind kind = type_layout->getKind();
+
+    switch (kind) {
+        case _slang_kind::Struct:
+            dst_reflected_data_node->type = _shader_value::STRUCT;
+            parse_recursive(type_layout, dst_reflected_data_node->members);
+            break;
+
+        case _slang_kind::Array: {
+            dst_reflected_data_node->type = _shader_value::STRUCT;
+
+            slang::TypeLayoutReflection* element_type_layout = type_layout->getElementTypeLayout();
+            dst_reflected_data_node->array_size              = type_layout->getElementCount();
+
+            if (element_type_layout->getKind() == _slang_kind::Struct) {
+                parse_recursive(element_type_layout, dst_reflected_data_node->members);
+            }
+            else {
+                ShaderImporter::mapScalar(element_type_layout, dst_reflected_data_node->type);
+            }
+        } break;
+
+            // clang-format off
+        case _slang_kind::Matrix        : ShaderImporter::mapMatrix(type_layout, dst_reflected_data_node->type); break;
+        case _slang_kind::Vector        : ShaderImporter::mapVector(type_layout, dst_reflected_data_node->type); break;
+        case _slang_kind::Scalar        : ShaderImporter::mapScalar(type_layout, dst_reflected_data_node->type); break;
+        
+        case _slang_kind::SamplerState  : dst_reflected_data_node->type = _shader_value::UINT64     ; break;
+        case _slang_kind::Pointer       : dst_reflected_data_node->type = _shader_value::UINT_PTR   ; break;
+            // clang-format on
+
+        case _slang_kind::Resource: {
+
+            SlangResourceShape shape      = type_layout->getResourceShape();
+            unsigned int       shape_base = shape & SLANG_RESOURCE_BASE_SHAPE_MASK;
+
+            fe::logging::debug("%s", type_layout->getName());
+        } break;
+
+        case _slang_kind::Enum:
+            ShaderImporter::mapScalar(type_layout, dst_reflected_data_node->type);
+
+            if (dst_reflected_data_node->type == _shader_value::UNKNOWN)
+                dst_reflected_data_node->type = _shader_value::INT32;
+            break;
+
+        default:
+            fe::logging::warning("Slang -> Unified. Unhandled member kind %i for '%s'. Setting as UNKNOWN", kind, dst_reflected_data_node->name.c_str());
+            dst_reflected_data_node->type = _shader_value::UNKNOWN;
+            break;
     }
 }
 
@@ -494,6 +655,11 @@ void fe::ShaderImporter::parseTypeLayout(ShaderImportContext&                   
 
         case _slang_kind::ShaderStorageBuffer:
             dst_parameter.descriptor_type = _shader_descriptor::STORAGE_BUFFER;
+            break;
+
+        case _slang_kind::Array:
+            dst_parameter.descriptor_type = _shader_descriptor::STORAGE_BUFFER;
+            dst_parameter.is_bindless     = true;
             break;
 
         case _slang_kind::Resource: {
@@ -521,11 +687,11 @@ void fe::ShaderImporter::parseElementTypeLayout(ShaderImportContext&            
     // if size is zero, then it is bindless
     dst_parameter.is_bindless = (element_type_layout->getSize() == 0);
 
-    auto& member       = dst_parameter.members.emplace_back();
-    member.name        = element_type_layout->getName();
-    member.offset      = 0;
-    member.array_count = 1;
-    member.size        = static_cast<uint32_t>(element_type_layout->getSize());
+    auto& member      = dst_parameter.members.emplace_back();
+    member.name       = element_type_layout->getName();
+    member.offset     = 0;
+    member.array_size = 1;
+    member.size       = static_cast<uint32_t>(element_type_layout->getSize());
 
     _slang_kind kind = element_type_layout->getKind();
 
@@ -533,7 +699,7 @@ void fe::ShaderImporter::parseElementTypeLayout(ShaderImportContext&            
                               std::vector<resource::ShaderProgram::ReflectedMember>& dst_members) {
         uint32_t field_count = layout->getFieldCount();
         for (uint32_t i = 0; i < field_count; i++) {
-            parseMemberRecursive(layout->getFieldByIndex(i), dst_members);
+            //parseMemberRecursive(layout->getFieldByIndex(i), dst_members);
         }
     };
 
@@ -602,90 +768,90 @@ void fe::ShaderImporter::parseElementTypeLayout(ShaderImportContext&            
     }
 }
 
-void fe::ShaderImporter::parseMemberRecursive(slang::VariableLayoutReflection*                       variable_layout,
-                                              std::vector<resource::ShaderProgram::ReflectedMember>& dst_members) {
-    assert(variable_layout);
-
-    slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
-
-    auto& member       = dst_members.emplace_back();
-    member.name        = variable_layout->getName();
-    member.offset      = static_cast<uint32_t>(variable_layout->getOffset());
-    member.array_count = 1;
-    member.size        = static_cast<uint32_t>(type_layout->getSize());
-
-    _slang_kind kind = type_layout->getKind();
-
-    auto parse_recursive = [](slang::TypeLayoutReflection*                           layout,
-                              std::vector<resource::ShaderProgram::ReflectedMember>& dst_members) {
-        uint32_t field_count = layout->getFieldCount();
-        for (uint32_t i = 0; i < field_count; i++) {
-            parseMemberRecursive(layout->getFieldByIndex(i), dst_members);
-        }
-    };
-
-    switch (kind) {
-        case _slang_kind::Struct:
-            member.type = _shader_value::STRUCT;
-            parse_recursive(type_layout, member.members);
-            break;
-
-        case _slang_kind::Array: {
-            member.type = _shader_value::STRUCT;
-
-            slang::TypeLayoutReflection* element_type_layout = type_layout->getElementTypeLayout();
-
-            if (element_type_layout) {
-                if (element_type_layout->getKind() == _slang_kind::Struct) {
-                    parse_recursive(element_type_layout, member.members);
-                }
-                else {
-                    ShaderImporter::mapScalar(element_type_layout, member.type);
-                }
-            }
-        } break;
-
-        case _slang_kind::Matrix:
-            ShaderImporter::mapMatrix(type_layout, member.type);
-            break;
-        case _slang_kind::Vector:
-            ShaderImporter::mapVector(type_layout, member.type);
-            break;
-        case _slang_kind::Scalar:
-            ShaderImporter::mapScalar(type_layout, member.type);
-            break;
-
-        case _slang_kind::Resource:
-            member.type = _shader_value::UINT32;
-            break;
-
-        case _slang_kind::SamplerState:
-            member.type = _shader_value::UINT64;
-            break;
-
-        case _slang_kind::Pointer:
-            member.type = _shader_value::UINT_PTR;
-            break;
-
-        case _slang_kind::Enum:
-            ShaderImporter::mapScalar(type_layout, member.type);
-            if (member.type == _shader_value::UNKNOWN) member.type = _shader_value::INT32;
-            break;
-
-        case _slang_kind::ConstantBuffer:
-        case _slang_kind::ShaderStorageBuffer:
-        case _slang_kind::ParameterBlock: {
-            member.type                                      = _shader_value::STRUCT;
-            slang::TypeLayoutReflection* element_type_layout = type_layout->getElementTypeLayout();
-            if (element_type_layout) parse_recursive(element_type_layout, member.members);
-        } break;
-
-        default:
-            fe::logging::warning("Slang -> Unified. Unhandled member kind %i for '%s'. Setting as UNKNOWN", kind, member.name.c_str());
-            member.type = _shader_value::UNKNOWN;
-            break;
-    }
-}
+//void fe::ShaderImporter::parseMemberRecursive(slang::VariableLayoutReflection*                       variable_layout,
+//                                              std::vector<resource::ShaderProgram::ReflectedMember>& dst_members) {
+//    assert(variable_layout);
+//
+//    slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
+//
+//    auto& member       = dst_members.emplace_back();
+//    member.name        = variable_layout->getName();
+//    member.offset      = static_cast<uint32_t>(variable_layout->getOffset());
+//    member.array_count = 1;
+//    member.size        = static_cast<uint32_t>(type_layout->getSize());
+//
+//    _slang_kind kind = type_layout->getKind();
+//
+//    auto parse_recursive = [](slang::TypeLayoutReflection*                           layout,
+//                              std::vector<resource::ShaderProgram::ReflectedMember>& dst_members) {
+//        uint32_t field_count = layout->getFieldCount();
+//        for (uint32_t i = 0; i < field_count; i++) {
+//            //parseMemberRecursive(layout->getFieldByIndex(i), dst_members);
+//        }
+//    };
+//
+//    switch (kind) {
+//        case _slang_kind::Struct:
+//            member.type = _shader_value::STRUCT;
+//            parse_recursive(type_layout, member.members);
+//            break;
+//
+//        case _slang_kind::Array: {
+//            member.type = _shader_value::STRUCT;
+//
+//            slang::TypeLayoutReflection* element_type_layout = type_layout->getElementTypeLayout();
+//
+//            if (element_type_layout) {
+//                if (element_type_layout->getKind() == _slang_kind::Struct) {
+//                    parse_recursive(element_type_layout, member.members);
+//                }
+//                else {
+//                    ShaderImporter::mapScalar(element_type_layout, member.type);
+//                }
+//            }
+//        } break;
+//
+//        case _slang_kind::Matrix:
+//            ShaderImporter::mapMatrix(type_layout, member.type);
+//            break;
+//        case _slang_kind::Vector:
+//            ShaderImporter::mapVector(type_layout, member.type);
+//            break;
+//        case _slang_kind::Scalar:
+//            ShaderImporter::mapScalar(type_layout, member.type);
+//            break;
+//
+//        case _slang_kind::Resource:
+//            member.type = _shader_value::UINT32;
+//            break;
+//
+//        case _slang_kind::SamplerState:
+//            member.type = _shader_value::UINT64;
+//            break;
+//
+//        case _slang_kind::Pointer:
+//            member.type = _shader_value::UINT_PTR;
+//            break;
+//
+//        case _slang_kind::Enum:
+//            ShaderImporter::mapScalar(type_layout, member.type);
+//            if (member.type == _shader_value::UNKNOWN) member.type = _shader_value::INT32;
+//            break;
+//
+//        case _slang_kind::ConstantBuffer:
+//        case _slang_kind::ShaderStorageBuffer:
+//        case _slang_kind::ParameterBlock: {
+//            member.type                                      = _shader_value::STRUCT;
+//            slang::TypeLayoutReflection* element_type_layout = type_layout->getElementTypeLayout();
+//            if (element_type_layout) parse_recursive(element_type_layout, member.members);
+//        } break;
+//
+//        default:
+//            fe::logging::warning("Slang -> Unified. Unhandled member kind %i for '%s'. Setting as UNKNOWN", kind, member.name.c_str());
+//            member.type = _shader_value::UNKNOWN;
+//            break;
+//    }
+//}
 
 void fe::ShaderImporter::setupDescriptorType(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::DescriptorType& dst_descriptor_type) {
     _slang_kind kind = type_layout->getKind();
