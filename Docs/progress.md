@@ -15,6 +15,7 @@
     'descriptor_type' for Resources, 'is_bindless' and 'array_size' are fixed
     Slang reflection is done
     push constants' validation provided
+    validation adding in progress
 
 ### Problem
     -

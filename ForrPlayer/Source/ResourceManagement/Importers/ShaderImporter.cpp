@@ -186,16 +186,48 @@ bool fe::ShaderImporter::reflect(ShaderImportContext& context) {
 
 bool fe::ShaderImporter::validate(ShaderImportContext& context) {
     // TODO : add define for shader to mute the warning message
+    // TODO : optimize work with strings here
 
     const auto& shader_program = context.shader_program;
 
     const static ShaderProgram::ReflectedPushConstants expected_push_constants{
-        ShaderProgram::ValueType::INT32,
-        1,
-        4,
-        {},
-        "instance_index",
+        { ShaderProgram::ValueType::INT32,
+          1,
+          4,
+          {},
+          "instance_index" },
         7
+    };
+
+    const static std::array expected_parameters{
+        ShaderProgram::ReflectedParameter{
+            { ShaderProgram::ValueType::STRUCT,
+              1,
+              144,
+              { { { ShaderProgram::ValueType::MAT4,
+                    1,
+                    64,
+                    {},
+                    "projection_matrix" },
+                  0 },
+                { { ShaderProgram::ValueType::MAT4,
+                    1,
+                    64,
+                    {},
+                    "view_matrix" },
+                  64 },
+                { { ShaderProgram::ValueType::UINT32,
+                    1,
+                    4,
+                    {},
+                    "lights_count" },
+                  128 } },
+              "global_data" },
+            ShaderProgram::DescriptorType::UNIFORM_BUFFER,
+            0,
+            0,
+            7,
+            false },
     };
 
     // you can change the name           --> warning
@@ -205,40 +237,47 @@ bool fe::ShaderImporter::validate(ShaderImportContext& context) {
                   "push constants",
                   static_cast<const resource::ShaderProgram::ReflectedDataNode*>(&shader_program.reflected_push_constants),
                   static_cast<const resource::ShaderProgram::ReflectedDataNode*>(&expected_push_constants));
-    printProblem("push constants stage_flags", shader_program.reflected_push_constants.stage_flags, expected_push_constants.stage_flags, fe::logging::Severity::Warning);
+    checkAndPrintProblem("push constants stage_flags", shader_program.reflected_push_constants.stage_flags, expected_push_constants.stage_flags, fe::logging::Severity::Warning);
 
     return true;
 }
-void fe::ShaderImporter::printProblem(std::string_view      field_name,
-                                      auto                  changed_to,
-                                      auto                  should_be,
-                                      fe::logging::Severity severity) {
+void fe::ShaderImporter::checkAndPrintProblem(const std::string&    field_name,
+                                              auto                  changed_to,
+                                              auto                  should_be,
+                                              fe::logging::Severity severity) {
+    constexpr bool is_string = std::is_convertible_v<decltype(changed_to), const std::string&>;
 
-    constexpr bool        is_string = std::is_convertible_v<decltype(changed_to), std::string_view>;
-    constexpr const char* fmt       = is_string ? "%s" : "%i";
+    if constexpr (is_string) {
+        if (std::string(changed_to) == std::string(should_be)) return;
+    }
+    else {
+        if (changed_to == should_be) return;
+    }
+
+    constexpr const char* fmt = is_string ? "%s" : "%i";
 
     std::string message = std::string("Slang -> Unified. Validation : field %s was changed to ") + fmt;
     message += (severity < fe::logging::Severity::Error) ? ", but it should be " : ", but it must be ";
     message += fmt;
 
     if constexpr (is_string) {
-        fe::logging::message(severity, message.c_str(), field_name.data(), std::string_view(changed_to).data(), std::string_view(should_be).data());
+        fe::logging::message(severity, message.c_str(), field_name.c_str(), std::string_view(changed_to).data(), std::string_view(should_be).data());
     }
     else {
-        fe::logging::message(severity, message.c_str(), field_name.data(), changed_to, should_be);
+        fe::logging::message(severity, message.c_str(), field_name.c_str(), changed_to, should_be);
     }
 }
 
 void fe::ShaderImporter::checkDataNode(ShaderImportContext&                              context,
-                                       std::string_view                                  field_name,
+                                       const std::string&    field_name,
                                        const resource::ShaderProgram::ReflectedDataNode* data_node,
                                        const resource::ShaderProgram::ReflectedDataNode* expected_data_node) {
 
-    ShaderImporter::printProblem(field_name.data() + std::string(" name"), data_node->name.c_str(), expected_data_node->name.c_str(), fe::logging::Severity::Warning);
-    ShaderImporter::printProblem(field_name.data() + std::string(" size"), data_node->size, expected_data_node->size, fe::logging::Severity::Error);
-    ShaderImporter::printProblem(field_name.data() + std::string(" array_size"), data_node->array_size, expected_data_node->array_size, fe::logging::Severity::Error);
-    ShaderImporter::printProblem(field_name.data() + std::string(" type"), static_cast<int>(data_node->type), static_cast<int>(expected_data_node->type), fe::logging::Severity::Error);
-    ShaderImporter::printProblem(field_name.data() + std::string(" members.size()"), data_node->members.size(), expected_data_node->members.size(), fe::logging::Severity::Error);
+    ShaderImporter::checkAndPrintProblem(field_name + std::string(" name"), data_node->name.c_str(), expected_data_node->name.c_str(), fe::logging::Severity::Warning);
+    ShaderImporter::checkAndPrintProblem(field_name + std::string(" size"), data_node->size, expected_data_node->size, fe::logging::Severity::Error);
+    ShaderImporter::checkAndPrintProblem(field_name + std::string(" array_size"), data_node->array_size, expected_data_node->array_size, fe::logging::Severity::Error);
+    ShaderImporter::checkAndPrintProblem(field_name + std::string(" type"), static_cast<int>(data_node->type), static_cast<int>(expected_data_node->type), fe::logging::Severity::Error);
+    ShaderImporter::checkAndPrintProblem(field_name + std::string(" members.size()"), data_node->members.size(), expected_data_node->members.size(), fe::logging::Severity::Error);
 }
 
 void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&                         context,

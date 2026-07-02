@@ -61,8 +61,8 @@ namespace fe {
         static FORR_NODISCARD bool reflect(ShaderImportContext& context);
         static FORR_NODISCARD bool validate(ShaderImportContext& context);
 
-        static void printProblem(std::string_view field_name, auto changed_to, auto should_be, fe::logging::Severity severity);
-        static void checkDataNode(ShaderImportContext& context, std::string_view field_name, const resource::ShaderProgram::ReflectedDataNode* data_node, const resource::ShaderProgram::ReflectedDataNode* expected_data_node);
+        static void checkAndPrintProblem(const std::string& field_name, auto changed_to, auto should_be, fe::logging::Severity severity);
+        static void checkDataNode(ShaderImportContext& context, const std::string& field_name, const resource::ShaderProgram::ReflectedDataNode* data_node, const resource::ShaderProgram::ReflectedDataNode* expected_data_node);
 
         static void parseDescriptorTable(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
         static void parsePushConstant(slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedPushConstants& dst_push_constants);
