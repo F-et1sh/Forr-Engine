@@ -187,6 +187,7 @@ bool fe::ShaderImporter::reflect(ShaderImportContext& context) {
 bool fe::ShaderImporter::validate(ShaderImportContext& context) {
     // TODO : add define for shader to mute the warning message
     // TODO : optimize work with strings here
+    // TODO : finish tihs validation somehow later
 
     const auto& shader_program = context.shader_program;
 
@@ -228,6 +229,20 @@ bool fe::ShaderImporter::validate(ShaderImportContext& context) {
             0,
             7,
             false },
+
+        ShaderProgram::ReflectedParameter{
+            { ShaderProgram::ValueType::MAT4,
+              0,
+              64,
+              {},
+              "model_matrices" },
+            ShaderProgram::DescriptorType::STORAGE_BUFFER,
+            0,
+            1,
+            7,
+            false },
+
+            // ...
     };
 
     // you can change the name           --> warning
@@ -241,6 +256,7 @@ bool fe::ShaderImporter::validate(ShaderImportContext& context) {
 
     return true;
 }
+
 void fe::ShaderImporter::checkAndPrintProblem(const std::string&    field_name,
                                               auto                  changed_to,
                                               auto                  should_be,
@@ -269,7 +285,7 @@ void fe::ShaderImporter::checkAndPrintProblem(const std::string&    field_name,
 }
 
 void fe::ShaderImporter::checkDataNode(ShaderImportContext&                              context,
-                                       const std::string&    field_name,
+                                       const std::string&                                field_name,
                                        const resource::ShaderProgram::ReflectedDataNode* data_node,
                                        const resource::ShaderProgram::ReflectedDataNode* expected_data_node) {
 
