@@ -29,7 +29,7 @@ namespace fe {
             m_buffer = static_cast<std::byte*>(::operator new(capacity, std::align_val_t{ alignof(std::max_align_t) }));
         }
 
-        ~Arena() { ::operator delete[](m_buffer, std::align_val_t{ alignof(std::max_align_t) }); }
+        ~Arena() { ::operator delete(m_buffer, std::align_val_t{ alignof(std::max_align_t) }); }
 
         FORR_CLASS_NONCOPYABLE(Arena)
         FORR_CLASS_MOVABLE(Arena)
@@ -57,9 +57,14 @@ namespace fe {
             return { m_offset };
         }
 
-        void restore(ArenaMarker marker) noexcept {
+        void restore(ArenaMarker marker) {
             assert(marker.offset <= m_offset);
             m_offset = marker.offset;
+        }
+
+        void reinitialize(size_t capacity) noexcept {
+            ::operator delete(m_buffer, std::align_val_t{ alignof(std::max_align_t) });
+            m_buffer = static_cast<std::byte*>(::operator new(capacity, std::align_val_t{ alignof(std::max_align_t) }));
         }
 
     private:
@@ -88,7 +93,7 @@ namespace fe {
             }
         }
 
-        ~Pool() { ::operator delete[](m_buffer, std::align_val_t{ alignof(_Ty) }); }
+        ~Pool() { ::operator delete(m_buffer, std::align_val_t{ alignof(_Ty) }); }
 
         FORR_CLASS_NONCOPYABLE(Pool)
 

@@ -14,10 +14,6 @@ struct SceneData {
     uint lights_count;
 };
 
-struct MaterialDataResource {
-    StructuredBuffer<PBRMaterial> materials;
-};
-
 [[vk::binding(0, 0)]] ConstantBuffer<SceneData>   global_data;
 [[vk::binding(1, 0)]] StructuredBuffer<float4x4>  model_matrices;
 [[vk::binding(2, 0)]] StructuredBuffer<GPULight>  lights;

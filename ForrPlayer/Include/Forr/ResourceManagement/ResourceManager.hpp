@@ -54,6 +54,7 @@ namespace fe {
             requires std::default_initializable<T>
         {
             return m_Storage.CreateResource();
+
         }
 
         template <typename T>
