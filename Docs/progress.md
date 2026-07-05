@@ -1,6 +1,6 @@
 ﻿# Forr-Engine Devlog
 
-## 03.07.2026
+## 05.07.2026
 ### Goal
     create buffers ( OpenGL/Vulkan ) via reflected information from the shader
     fix Vukan VMA error
@@ -8,6 +8,8 @@
     ( fix window resizing for GL/VK )
     ( do not create GPU resources if they're already created --> InitializeGPUResources() )
     ( provide string_pool and use std::string_view instead of always using std::string - helps to decrease allocations )
+
+    ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
 
 ### Done
     -

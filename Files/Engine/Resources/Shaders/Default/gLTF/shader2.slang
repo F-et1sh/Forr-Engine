@@ -4,8 +4,10 @@
     float4 color_intensity;
 };
 
-struct PBRMaterial {
-    uint2 base_color_texture_handle;
+struct WaterMaterial {
+    uint2 noise0_texture_handle;
+    uint2 noise1_texture_handle;
+    float step;
 };
 
 struct SceneData {
@@ -17,7 +19,7 @@ struct SceneData {
 [[vk::binding(0, 0)]] ConstantBuffer<SceneData>   global_data;
 [[vk::binding(1, 0)]] StructuredBuffer<float4x4>  model_matrices;
 [[vk::binding(2, 0)]] StructuredBuffer<GPULight>  lights;
-[[vk::binding(0, 1)]] StructuredBuffer<PBRMaterial> materials;
+[[vk::binding(0, 1)]] StructuredBuffer<WaterMaterial> materials;
 
 [[vk::push_constant]] int instance_index;
 

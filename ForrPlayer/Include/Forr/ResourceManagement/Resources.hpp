@@ -130,48 +130,35 @@ namespace fe::resource {
             UNKNOWN
         };
 
+        // clang-format off
         enum class ValueType : std::uint8_t {
             VOID,
 
             BOOL,
 
-            INT32,
-            UINT32,
+            INT32, UINT32,
 
-            INT64,
-            UINT64,
+            INT64, UINT64,
 
-            FLOAT16,
-            FLOAT32,
-            FLOAT64,
+            FLOAT16, FLOAT32, FLOAT64,
 
-            INT8,
-            UINT8,
-            INT16,
-            UINT16,
+            INT8, UINT8, INT16, UINT16,
 
-            INT_PTR,
-            UINT_PTR,
+            INT_PTR, UINT_PTR,
 
-            FLOAT2,
-            FLOAT3,
-            FLOAT4,
+            FLOAT2, FLOAT3, FLOAT4,
 
-            INT2,
-            INT3,
-            INT4,
+            INT2, INT3, INT4,
 
-            UINT2,
-            UINT3,
-            UINT4,
+            UINT2, UINT3, UINT4,
 
-            MAT3,
-            MAT4,
+            MAT3, MAT4,
 
             STRUCT,
 
             UNKNOWN
         };
+        // clang-format on
 
         struct ReflectedMember; // forward declaration
 
