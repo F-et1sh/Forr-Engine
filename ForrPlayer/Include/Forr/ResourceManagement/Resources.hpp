@@ -179,7 +179,7 @@ namespace fe::resource {
                 : type(type), array_size(array_size), size(size), members(std::move(members)), name(std::move(name)) {}
         };
 
-        // may be a field of a Slang struct
+        // may be a field of a shader struct
         struct ReflectedMember : public ReflectedDataNode {
             uint32_t offset{};
         };
@@ -256,6 +256,8 @@ namespace fe::resource {
         std::vector<Sampler> samplers{};
         // this buffer contains all raw data you pass to the shader
         std::vector<uint8_t> buffer{};
+
+        // TODO : move this 'std::vector<>'s to 'fe::ResourceManager' via 'fe::Arena'
 
         Material()  = default;
         ~Material() = default;

@@ -1,8 +1,13 @@
 ﻿# Forr-Engine Devlog
 
-## 05.07.2026
+## 06.07.2026
 ### Goal
+    allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
+        allocate big SSBO ( AZDO ) in renderer for materials;
+        see something on the screen
+    make a video for YouTube, when see something on the screen
     create buffers ( OpenGL/Vulkan ) via reflected information from the shader
+    create render graph logic ( render passes )
     fix Vukan VMA error
     provide debug tools with Dear ImGui
     ( fix window resizing for GL/VK )
@@ -10,6 +15,7 @@
     ( provide string_pool and use std::string_view instead of always using std::string - helps to decrease allocations )
 
     ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
+    ( use fe::Arena to store fe::resource::Material's buffers' data )
 
 ### Done
     -
