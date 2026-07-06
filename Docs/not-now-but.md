@@ -1,9 +1,12 @@
 # Forr-Engine Not now, but :
 
+# Added 06.07.2026
+- add OpenGL Legacy backend
+
 # Added 12.05.2026
 - use AoS instead of SoA
 
-# Added 30.04.2026
+# Added 30.04.2026 - DONE 06.07.2026 ( it was done much earlier, but I'm changing its status only this day )
 - provide sorting and passing meshes aka draw commands, not hierarchy-based system like now.
     "Tea in a cup does NOT belong to that cup - it is a separate object"
 
