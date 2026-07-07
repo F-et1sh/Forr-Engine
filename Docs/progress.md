@@ -1,6 +1,6 @@
 ﻿# Forr-Engine Devlog
 
-## 06.07.2026
+## 07.07.2026
 ### Goal
     allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
         allocate big SSBO ( AZDO ) in renderer for materials;
@@ -18,7 +18,7 @@
     ( use fe::Arena to store fe::resource::Material's buffers' data )
 
 ### Done
-    -
+    shader buffers creation provided to OpenGL
 
 ### Problem
     -

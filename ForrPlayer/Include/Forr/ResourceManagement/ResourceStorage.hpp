@@ -3,7 +3,9 @@
     Forr Engine
 
     File : ResourceStorage.hpp
-    Role : storage for resources
+    Role : storage for resources and partly their data
+        For example : fe::resource::Materil's 'samplers' and 'buffer' are kept here
+        via 'fe::Arena' to decrease allocations count
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -45,6 +47,9 @@ namespace fe {
             return storage.get(ptr);
         }
 
+        // TODO : provide later
+        //FORR_NODISCARD std::span<resource::Material::Sampler> GetSampler();
+
         template <typename T, typename Func>
         void RunForEach(Func&& func) {
             auto& storage = this->GetStorage<T>();
@@ -73,5 +78,9 @@ namespace fe {
         fe::typed_pointer_storage<fe::resource::Material>      m_Materials{};
         fe::typed_pointer_storage<fe::resource::Model>         m_Models{};
         fe::typed_pointer_storage<fe::resource::ShaderProgram> m_ShaderPrograms{};
+
+        // you can call 'fe::Arena::reinitialize()' if you want increase or decrease arena size
+        fe::Arena m_MaterialsBuffer{ 16 * 1024 };
+        fe::Arena m_MaterialsSamplers{ 16 * 1024 };
     };
 } // namespace fe

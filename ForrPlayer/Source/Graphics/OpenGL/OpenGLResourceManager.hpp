@@ -14,6 +14,29 @@
 #include "ResourceManagement/ResourceManager.hpp"
 #include "Graphics/OpenGL/OpenGLTypes.hpp"
 
+inline constexpr void hash_combine(std::size_t& seed, std::size_t value) noexcept {
+    seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
+namespace std {
+    template <>
+    struct hash<fe::resource::ShaderProgram::ReflectedParameter> {
+        std::size_t operator()(const fe::resource::ShaderProgram::ReflectedParameter& p) const {
+            std::size_t seed{};
+
+            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.descriptor_type)));
+            hash_combine(seed, std::hash<uint32_t>{}(p.set));
+            hash_combine(seed, std::hash<uint32_t>{}(p.binding));
+            hash_combine(seed, std::hash<uint32_t>{}(p.array_size * p.size));
+            hash_combine(seed, std::hash<uint8_t>{}(p.stage_flags));
+
+            hash_combine(seed, std::hash<std::string>{}(p.name));
+
+            return seed;
+        }
+    };
+} // namespace std
+
 namespace fe {
     class OpenGLResourceManager {
     public:
@@ -34,6 +57,8 @@ namespace fe {
         const OpenGLMesh&     GetResource(GPUHandle<resource::Model::Mesh> handle) const;
         const OpenGLMaterial& GetResource(GPUHandle<resource::Material> handle) const;
         const OpenGLTexture&  GetResource(GPUHandle<resource::Texture> handle) const;
+
+        GLuint GetShaderBuffer(resource::ShaderProgram::ReflectedParameter& parameter);
 
     private: // here functions, which used like helpers to create some resources that don't have thier own CPU realization.
              // The functions return 'GPUHandle<>' but you DON'T have to set 'GPUHandle<> gpu_handle' in the resources, the functions does it by themselves
@@ -59,5 +84,8 @@ namespace fe {
         std::vector<OpenGLMaterial> m_StorageMaterials{};
         std::vector<OpenGLMesh>     m_StorageMeshes{};
         std::vector<OpenGLTexture>  m_StorageTextures{};
+
+        // shader buffers : SSBOs and UBOs
+        std::unordered_map<resource::ShaderProgram::ReflectedParameter, gl::Buffer> m_ShaderBuffers{};
     };
 } // namespace fe

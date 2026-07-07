@@ -625,12 +625,12 @@ fe::pointer<Material> fe::GLTFImporter::createMaterial(GLTFImportContext& contex
     const auto& resource_management_context = context.storage.GetContext();
     const auto& default_gltf_material       = *context.storage.GetResource(resource_management_context.default_gltf_material_ptr);
 
-    this_material.shader_program_ptr = default_gltf_material.shader_program_ptr;
-    this_material.buffer.resize(sizeof(GPUPBRMaterial));
+    //this_material.shader_program_ptr = default_gltf_material.shader_program_ptr;
+    //this_material.buffer.resize(sizeof(GPUPBRMaterial));
 
-    auto& this_base_color_sampler       = this_material.samplers.emplace_back();
-    this_base_color_sampler.offset      = 0;
-    this_base_color_sampler.texture_ptr = context.GetTexture(material.pbrMetallicRoughness.baseColorTexture.index);
+    //auto& this_base_color_sampler       = this_material.samplers.emplace_back();
+    //this_base_color_sampler.offset      = 0;
+    //this_base_color_sampler.texture_ptr = context.GetTexture(material.pbrMetallicRoughness.baseColorTexture.index);
 
     auto ptr = context.storage.CreateResource<Material>(std::move(this_material));
     return ptr;
