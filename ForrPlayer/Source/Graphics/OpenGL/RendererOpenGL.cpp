@@ -102,6 +102,10 @@ void fe::RendererOpenGL::InitializeGPUResources() {
         m_OpenGLResourceManager.CreateResource(material);
     });
 
+    //m_ResourceManager.RunForEach<resource::ShaderProgram>([&](resource::ShaderProgram& shader_program) {
+        //m_OpenGLResourceManager.CreateResource(shader_program);
+    //});
+
     m_ResourceManager.RunForEach<resource::Model>([&](resource::Model& model) {
         m_OpenGLResourceManager.CreateResource(model);
 

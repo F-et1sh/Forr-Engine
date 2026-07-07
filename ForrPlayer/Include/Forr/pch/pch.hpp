@@ -14,6 +14,7 @@
 
 #include <array>
 #include <functional>
+#include <span>
 
 #include "Core/attributes.hpp"
 #include "Core/custom_allocators.hpp"

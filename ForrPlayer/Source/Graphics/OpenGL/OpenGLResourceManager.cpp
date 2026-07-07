@@ -163,6 +163,41 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
     this->storeResource(texture.gpu_handle, opengl_texture, m_StorageTextures);
 }
 
+GLuint fe::OpenGLResourceManager::GetShaderBuffer(resource::ShaderProgram::ReflectedParameter& parameter) {
+    auto it = m_ShaderBuffers.find(parameter);
+    if (it != m_ShaderBuffers.end()) return it->second.get();
+
+    using _shader_descriptor = ShaderProgram::DescriptorType;
+
+    size_t buffer_size = 16 * 1024; // 16KB
+
+    if (parameter.array_size != 0) {
+        buffer_size = parameter.array_size * parameter.size;
+    }
+
+    GLuint buffer_raw{};
+    glCreateBuffers(1, &buffer_raw);
+
+    if (parameter.descriptor_type == _shader_descriptor::UNIFORM_BUFFER) {
+        glNamedBufferData(buffer_raw, buffer_size, nullptr, GL_DYNAMIC_DRAW);
+    }
+    else if (parameter.descriptor_type == _shader_descriptor::STORAGE_BUFFER) {
+        GLbitfield flags = GL_MAP_WRITE_BIT |
+                           GL_MAP_PERSISTENT_BIT |
+                           GL_MAP_COHERENT_BIT;
+
+        glNamedBufferStorage(buffer_raw, buffer_size, nullptr, flags);
+    }
+    else {
+        glDeleteBuffers(1, &buffer_raw);
+        fe::logging::warning("Unified -> OpenGL. Failed to create a buffer ( SSBO or UBO ) : unsupported descriptor type %i", parameter.descriptor_type);
+        return ~0;
+    }
+
+    m_ShaderBuffers[parameter].attach(buffer_raw);
+    return buffer_raw;
+}
+
 // TODO : provide fallbacks
 #define GET_RESOURCE_INSTANCE(RETURN_T, HANDLE_T, STORAGE)                                     \
     const RETURN_T& fe::OpenGLResourceManager::GetResource(GPUHandle<HANDLE_T> handle) const { \

@@ -177,11 +177,15 @@ namespace fe::resource {
             ReflectedDataNode() = default;
             ReflectedDataNode(ValueType type, uint32_t array_size, uint32_t size, std::vector<ReflectedMember> members, std::string name)
                 : type(type), array_size(array_size), size(size), members(std::move(members)), name(std::move(name)) {}
+
+            bool operator==(const ReflectedDataNode&) const noexcept = default;
         };
 
         // may be a field of a shader struct
         struct ReflectedMember : public ReflectedDataNode {
             uint32_t offset{};
+
+            bool operator==(const ReflectedMember&) const noexcept = default;
         };
 
         // entry point : parameter
@@ -191,21 +195,23 @@ namespace fe::resource {
             uint32_t set{};
             uint32_t binding{};
 
-            uint32_t stage_flags{};
+            uint8_t stage_flags{};
 
             bool is_bindless{};
 
             ReflectedParameter() = default;
-            ReflectedParameter(ReflectedDataNode data_node, DescriptorType descriptor_type, uint32_t set, uint32_t binding, uint32_t stage_flags, bool is_bindless)
-                : ReflectedDataNode::ReflectedDataNode(std::move(data_node)), descriptor_type(descriptor_type), set(set), binding(binding), stage_flags(stage_flags), is_bindless(is_bindless) {}
+            ReflectedParameter(ReflectedDataNode data_node, DescriptorType descriptor_type, uint32_t set, uint32_t binding, uint8_t stage_flags, bool is_bindless)
+                : ReflectedDataNode(std::move(data_node)), descriptor_type(descriptor_type), set(set), binding(binding), stage_flags(stage_flags), is_bindless(is_bindless) {}
+
+            bool operator==(const ReflectedParameter&) const noexcept = default;
         };
 
         // entry point : push constants
         struct ReflectedPushConstants : public ReflectedDataNode {
-            uint32_t stage_flags{};
+            uint8_t stage_flags{};
 
             ReflectedPushConstants() = default;
-            ReflectedPushConstants(ReflectedDataNode data_node, uint32_t stage_flags)
+            ReflectedPushConstants(ReflectedDataNode data_node, uint8_t stage_flags)
                 : ReflectedDataNode::ReflectedDataNode(std::move(data_node)), stage_flags(stage_flags) {}
         };
 
@@ -253,11 +259,9 @@ namespace fe::resource {
         // then, in GPU resource manager, while creating analogue of this material,
         // it takes every sampler from 'samplers', creates its GPU analogue and assigns
         // it to the 'buffer' of this material, according to 'offset' of the sampler
-        std::vector<Sampler> samplers{};
+        std::span<Sampler> samplers{};
         // this buffer contains all raw data you pass to the shader
-        std::vector<uint8_t> buffer{};
-
-        // TODO : move this 'std::vector<>'s to 'fe::ResourceManager' via 'fe::Arena'
+        std::span<uint8_t> buffer{};
 
         Material()  = default;
         ~Material() = default;
