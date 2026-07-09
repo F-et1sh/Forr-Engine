@@ -47,9 +47,6 @@ namespace fe {
             return storage.get(ptr);
         }
 
-        // TODO : provide later
-        //FORR_NODISCARD std::span<resource::Material::Sampler> GetSampler();
-
         template <typename T, typename Func>
         void RunForEach(Func&& func) {
             auto& storage = this->GetStorage<T>();

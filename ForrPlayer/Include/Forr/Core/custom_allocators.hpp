@@ -29,10 +29,34 @@ namespace fe {
             m_buffer = static_cast<std::byte*>(::operator new(capacity, std::align_val_t{ alignof(std::max_align_t) }));
         }
 
-        ~Arena() { ::operator delete(m_buffer, std::align_val_t{ alignof(std::max_align_t) }); }
+        ~Arena() {
+            if (m_buffer) ::operator delete(m_buffer, std::align_val_t{ alignof(std::max_align_t) });
+            m_capacity = 0;
+            m_offset   = 0;
+        }
 
         FORR_CLASS_NONCOPYABLE(Arena)
-        FORR_CLASS_MOVABLE(Arena)
+
+        Arena(Arena&& other) noexcept : m_buffer(other.m_buffer), m_capacity(other.m_capacity), m_offset(other.m_offset) {
+            other.m_buffer   = nullptr;
+            other.m_capacity = 0;
+            other.m_offset   = 0;
+        }
+
+        Arena& operator=(Arena&& other) noexcept {
+            if (this != &other) {
+                if (m_buffer) ::operator delete(m_buffer, std::align_val_t{ alignof(std::max_align_t) });
+
+                m_buffer   = other.m_buffer;
+                m_capacity = other.m_capacity;
+                m_offset   = other.m_offset;
+
+                other.m_buffer   = nullptr;
+                other.m_capacity = 0;
+                other.m_offset   = 0;
+            }
+            return *this;
+        }
 
         FORR_NODISCARD std::byte* allocate(size_t size, size_t alignment = alignof(std::max_align_t)) {
             assert(alignment > 0 && (alignment & (alignment - 1)) == 0); // check that it's a power of two
@@ -48,29 +72,44 @@ namespace fe {
             return ptr;
         }
 
+        template <typename T = std::byte>
+        FORR_NODISCARD std::span<T> allocate_span(size_t byte_size, size_t alignment = alignof(std::max_align_t)) {
+            std::byte* raw_ptr = allocate(byte_size, alignment);
+            if (!raw_ptr) return {};
+
+            return std::span<T>(reinterpret_cast<T*>(raw_ptr), byte_size / sizeof(T));
+        }
+
         void reset() { m_offset = 0; }
 
         FORR_NODISCARD constexpr size_t get_used_memory() const noexcept { return m_offset; }
         FORR_NODISCARD constexpr size_t get_available_memory() const noexcept { return m_capacity - m_offset; }
 
-        FORR_NODISCARD ArenaMarker save() const noexcept {
+        FORR_NODISCARD constexpr ArenaMarker save() const noexcept {
             return { m_offset };
         }
 
-        void restore(ArenaMarker marker) {
+        constexpr void restore(ArenaMarker marker) {
             assert(marker.offset <= m_offset);
             m_offset = marker.offset;
         }
 
         void reinitialize(size_t capacity) noexcept {
-            ::operator delete(m_buffer, std::align_val_t{ alignof(std::max_align_t) });
-            m_buffer = static_cast<std::byte*>(::operator new(capacity, std::align_val_t{ alignof(std::max_align_t) }));
+            *this = Arena{ capacity };
+        }
+
+        FORR_NODISCARD constexpr std::byte* data() noexcept {
+            return m_buffer;
+        }
+
+        FORR_NODISCARD constexpr const std::byte* data() const noexcept {
+            return m_buffer;
         }
 
     private:
-        std::byte*   m_buffer   = nullptr;
-        const size_t m_capacity = 0;
-        size_t       m_offset   = 0;
+        std::byte* m_buffer   = nullptr;
+        size_t     m_capacity = 0;
+        size_t     m_offset   = 0;
     };
 
     template <typename _Ty>

@@ -40,7 +40,6 @@ namespace fe {
         void InitializeGPUResources() override;
 
     private:
-        void InitializeStorageBuffers();
         void handleRenderQueue(const RenderPacket& render_packet);
 
     private:
