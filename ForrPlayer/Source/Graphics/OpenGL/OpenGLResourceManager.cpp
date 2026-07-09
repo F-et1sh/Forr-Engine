@@ -163,6 +163,7 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
     this->storeResource(texture.gpu_handle, opengl_texture, m_StorageTextures);
 }
 
+// TODO : this about this again
 GLuint fe::OpenGLResourceManager::GetShaderBuffer(resource::ShaderProgram::ReflectedParameter& parameter) {
     auto it = m_ShaderBuffers.find(parameter);
     if (it != m_ShaderBuffers.end()) return it->second.get();

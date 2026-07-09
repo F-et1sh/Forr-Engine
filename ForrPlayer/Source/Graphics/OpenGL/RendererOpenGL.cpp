@@ -52,8 +52,6 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
         m_Camera.setPerspective(fov, aspect, znear, zfar);
         m_Camera.setMovementSpeed(speed);
     }
-
-    this->InitializeStorageBuffers();
 }
 
 fe::RendererOpenGL::~RendererOpenGL() {
@@ -73,6 +71,8 @@ void fe::RendererOpenGL::BeginFrame() {
 }
 
 void fe::RendererOpenGL::EndFrame(const RenderPacket& render_packet) {
+
+
     this->handleRenderQueue(render_packet);
 
     m_FrameData[m_CurrentFrame].sync.reset();
@@ -113,42 +113,10 @@ void fe::RendererOpenGL::InitializeGPUResources() {
     });
 }
 
-void fe::RendererOpenGL::InitializeStorageBuffers() {
-    constexpr static std::size_t object_binding_index = 0;
-    constexpr static std::size_t lights_binding_index = 1;
-
-    // TODO : provide dynamic increasing capacity like in 'std::vector<>'
-    constexpr static std::size_t object_buffer_size = 16 * 1024 * 1024;
-    constexpr static std::size_t light_buffer_size  = 256 * 1024;
-
-    auto initialize_binding = [&](std::size_t frame_data_i, std::size_t binding_i, size_t size) {
-        auto& binding = m_FrameData[frame_data_i].storage_buffer.bindings[binding_i];
-
-        GLuint buffer_raw{};
-        glCreateBuffers(1, &buffer_raw);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer_raw);
-
-        GLbitfield flags = GL_MAP_WRITE_BIT |
-                           GL_MAP_PERSISTENT_BIT |
-                           GL_MAP_COHERENT_BIT;
-
-        glBufferStorage(GL_SHADER_STORAGE_BUFFER, size, nullptr, flags);
-
-        binding.size = size;
-        binding.buffer.attach(buffer_raw);
-        binding.mapped = static_cast<uint8_t*>(glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, size, flags));
-
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    };
-
-    for (size_t i = 0; i < MAX_CONCURRENT_FRAMES; i++) {
-        m_FrameData[i].storage_buffer.bindings.resize(2);                // bindings count
-        initialize_binding(i, object_binding_index, object_buffer_size); // Binding 0
-        initialize_binding(i, lights_binding_index, light_buffer_size);  // Binding 1
-    }
-}
-
 void fe::RendererOpenGL::handleRenderQueue(const RenderPacket& render_packet) {
+    //uint8_t* materials_data = m_ResourceManager.GetMaterialsData();
+
+
     constexpr static std::size_t object_binding_index = 0;
     constexpr static std::size_t lights_binding_index = 1;
 
