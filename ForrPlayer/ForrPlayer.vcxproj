@@ -112,6 +112,7 @@ call "$(SolutionDir)Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Targe
     <ClInclude Include="Include\Forr\ECS\Systems\RenderSystem.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Camera.hpp" />
     <ClInclude Include="Include\Forr\Graphics\IRenderer.hpp" />
+    <ClInclude Include="Include\Forr\Graphics\RenderGraph.hpp" />
     <ClInclude Include="Include\Forr\Layer.hpp" />
     <ClInclude Include="Include\Forr\PCH\pch.hpp" />
     <ClInclude Include="Include\Forr\Platform\IPlatformSystem.hpp" />
@@ -175,6 +176,7 @@ call "$(SolutionDir)Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Targe
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Source\ECS\Systems\RenderSystem.cpp" />
+    <ClCompile Include="Source\Graphics\RenderGraph.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\ShaderImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceCreator.cpp" />
     <ClCompile Include="Source\Graphics\Camera.cpp" />

@@ -164,11 +164,11 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
 }
 
 // TODO : this about this again
-GLuint fe::OpenGLResourceManager::GetShaderBuffer(resource::ShaderProgram::ReflectedParameter& parameter) {
+GLuint fe::OpenGLResourceManager::GetShaderBuffer(shader::ReflectedParameter& parameter) {
     auto it = m_ShaderBuffers.find(parameter);
     if (it != m_ShaderBuffers.end()) return it->second.get();
 
-    using _shader_descriptor = ShaderProgram::DescriptorType;
+    using _shader_descriptor = shader::DescriptorType;
 
     size_t buffer_size = 16 * 1024; // 16KB
 
@@ -288,8 +288,8 @@ GLuint fe::OpenGLResourceManager::createShaderProgramRaw(resource::ShaderProgram
 
         // clang-format off
         switch (shader_type) {
-            case resource::ShaderProgram::ShaderType::VERTEX  : opengl_type = GL_VERTEX_SHADER  ; break;
-            case resource::ShaderProgram::ShaderType::FRAGMENT: opengl_type = GL_FRAGMENT_SHADER; break;
+            case shader::Type::VERTEX  : opengl_type = GL_VERTEX_SHADER  ; break;
+            case shader::Type::FRAGMENT: opengl_type = GL_FRAGMENT_SHADER; break;
         }
         // clang-format on
 

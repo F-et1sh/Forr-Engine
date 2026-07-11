@@ -20,12 +20,12 @@
 namespace fe {
     struct EntryPoint {
         Slang::ComPtr<slang::IEntryPoint>   entry_point{};
-        resource::ShaderProgram::ShaderType shader_type{};
+        shader::Type shader_type{};
 
         EntryPoint()  = default;
         ~EntryPoint() = default;
 
-        EntryPoint(slang::IEntryPoint* entry_point, resource::ShaderProgram::ShaderType shader_type)
+        EntryPoint(slang::IEntryPoint* entry_point, shader::Type shader_type)
             : entry_point(entry_point), shader_type(shader_type) {}
     };
 
@@ -62,16 +62,16 @@ namespace fe {
         static FORR_NODISCARD bool validate(ShaderImportContext& context);
 
         static void checkAndPrintProblem(const std::string& field_name, auto changed_to, auto should_be, fe::logging::Severity severity);
-        static void checkDataNode(ShaderImportContext& context, const std::string& field_name, const resource::ShaderProgram::ReflectedDataNode* data_node, const resource::ShaderProgram::ReflectedDataNode* expected_data_node);
+        static void checkDataNode(ShaderImportContext& context, const std::string& field_name, const shader::ReflectedDataNode* data_node, const shader::ReflectedDataNode* expected_data_node);
 
-        static void parseDescriptorTable(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedParameter& dst_parameter);
-        static void parsePushConstant(slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedPushConstants& dst_push_constants);
+        static void parseDescriptorTable(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, shader::ReflectedParameter& dst_parameter);
+        static void parsePushConstant(slang::VariableLayoutReflection* variable_layout, shader::ReflectedPushConstants& dst_push_constants);
 
-        static void parseMemberRecursive(slang::VariableLayoutReflection* variable_layout, resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node);
-        static void parseMemberRecursive(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ReflectedDataNode* dst_reflected_data_node);
+        static void parseMemberRecursive(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDataNode* dst_reflected_data_node);
+        static void parseMemberRecursive(slang::TypeLayoutReflection* type_layout, shader::ReflectedDataNode* dst_reflected_data_node);
 
-        static void mapMatrix(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ValueType& type);
-        static void mapVector(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ValueType& type);
-        static void mapScalar(slang::TypeLayoutReflection* type_layout, resource::ShaderProgram::ValueType& type);
+        static void mapMatrix(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
+        static void mapVector(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
+        static void mapScalar(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
     };
 } // namespace fe
