@@ -43,6 +43,7 @@
     <ClInclude Include="Source\Graphics\Vulkan\VulkanSwapchain.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanTypes.hpp" />
     <ClInclude Include="Include\Forr\ECS\Systems\RenderSystem.hpp" />
+    <ClInclude Include="Include\Forr\Graphics\RenderGraph.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -75,5 +76,6 @@
     <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="Source\ECS\Systems\RenderSystem.cpp" />
     <ClCompile Include="..\ThirdParty\VulkanMemoryAllocator\src\vk_mem_alloc.cpp" />
+    <ClCompile Include="Source\Graphics\RenderGraph.cpp" />
   </ItemGroup>
 </Project>

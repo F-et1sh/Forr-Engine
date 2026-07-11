@@ -424,15 +424,15 @@ VkPipeline fe::VulkanResourceManager::createPipeline(VkPipelineLayout pipeline_l
         shader_stages_create_info.module = shader_module_raw;
 
         switch (shader_type) {
-            case ShaderProgram::ShaderType::VERTEX:
+            case shader::Type::VERTEX:
                 shader_stages_create_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
                 shader_stages_create_info.pName = "vertexMain";
                 break;
-            case ShaderProgram::ShaderType::FRAGMENT:
+            case shader::Type::FRAGMENT:
                 shader_stages_create_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
                 shader_stages_create_info.pName = "fragmentMain";
                 break;
-            case ShaderProgram::ShaderType::COMPUTE:
+            case shader::Type::COMPUTE:
                 shader_stages_create_info.stage = VK_SHADER_STAGE_COMPUTE_BIT;
                 shader_stages_create_info.pName = "computeMain";
                 break;

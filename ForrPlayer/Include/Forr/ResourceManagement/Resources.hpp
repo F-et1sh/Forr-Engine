@@ -19,6 +19,7 @@
 
 #pragma once
 #include <vector>
+#include <span>
 #include "Core/types.hpp"
 #include "Core/guid.hpp"
 
@@ -30,7 +31,7 @@ namespace fe::resource {
 #define FORR_RESOURCE_BODY(T) \
     FORR_CLASS_NONCOPYABLE(T) \
     FORR_CLASS_MOVABLE(T)     \
-    GUID guid{}; // for future serialization
+    GUID guid{}; // for future serialization. TODO : move this to ResourceManager
 
     struct FORR_API Texture {
         enum class ColorSpace : std::uint8_t {
@@ -116,122 +117,15 @@ namespace fe::resource {
 
     struct FORR_API ShaderProgram {
     public:
-        enum class DescriptorType : std::uint8_t {
-            UNIFORM_BUFFER,
-            STORAGE_BUFFER,
-
-            SAMPLED_IMAGE,
-            SAMPLER,
-            COMBINED_IMAGE_SAMPLER,
-            STORAGE_IMAGE,
-
-            ACCELERATION_STRUCTURE,
-
-            UNKNOWN
-        };
-
-        // clang-format off
-        enum class ValueType : std::uint8_t {
-            VOID,
-
-            BOOL,
-
-            INT32, UINT32,
-
-            INT64, UINT64,
-
-            FLOAT16, FLOAT32, FLOAT64,
-
-            INT8, UINT8, INT16, UINT16,
-
-            INT_PTR, UINT_PTR,
-
-            FLOAT2, FLOAT3, FLOAT4,
-
-            INT2, INT3, INT4,
-
-            UINT2, UINT3, UINT4,
-
-            MAT3, MAT4,
-
-            STRUCT,
-
-            UNKNOWN
-        };
-        // clang-format on
-
-        struct ReflectedMember; // forward declaration
-
-        // base struct for reflection
-        struct ReflectedDataNode {
-            ValueType type{ ValueType::UNKNOWN };
-
-            uint32_t array_size{ 1 };
-
-            uint32_t size{};
-
-            std::vector<ReflectedMember> members{};
-
-            std::string name{};
-
-            ReflectedDataNode() = default;
-            ReflectedDataNode(ValueType type, uint32_t array_size, uint32_t size, std::vector<ReflectedMember> members, std::string name)
-                : type(type), array_size(array_size), size(size), members(std::move(members)), name(std::move(name)) {}
-
-            bool operator==(const ReflectedDataNode&) const noexcept = default;
-        };
-
-        // may be a field of a shader struct
-        struct ReflectedMember : public ReflectedDataNode {
-            uint32_t offset{};
-
-            bool operator==(const ReflectedMember&) const noexcept = default;
-        };
-
-        // entry point : parameter
-        struct ReflectedParameter : public ReflectedDataNode {
-            DescriptorType descriptor_type{ DescriptorType::UNKNOWN };
-
-            uint32_t set{};
-            uint32_t binding{};
-
-            uint8_t stage_flags{};
-
-            bool is_bindless{};
-
-            ReflectedParameter() = default;
-            ReflectedParameter(ReflectedDataNode data_node, DescriptorType descriptor_type, uint32_t set, uint32_t binding, uint8_t stage_flags, bool is_bindless)
-                : ReflectedDataNode(std::move(data_node)), descriptor_type(descriptor_type), set(set), binding(binding), stage_flags(stage_flags), is_bindless(is_bindless) {}
-
-            bool operator==(const ReflectedParameter&) const noexcept = default;
-        };
-
-        // entry point : push constants
-        struct ReflectedPushConstants : public ReflectedDataNode {
-            uint8_t stage_flags{};
-
-            ReflectedPushConstants() = default;
-            ReflectedPushConstants(ReflectedDataNode data_node, uint8_t stage_flags)
-                : ReflectedDataNode::ReflectedDataNode(std::move(data_node)), stage_flags(stage_flags) {}
-        };
-
-        enum class ShaderType : std::uint8_t {
-            NONE     = 0,
-            VERTEX   = 1,
-            GEOMETRY = 2,
-            FRAGMENT = 3,
-            COMPUTE  = 4,
-        };
-
         using SourceCode        = std::vector<uint8_t>;
-        using SourceCodeStorage = std::unordered_map<ShaderType, SourceCode>;
+        using SourceCodeStorage = std::unordered_map<shader::Type, SourceCode>;
 
         GPUHandle<ShaderProgram> gpu_handle{};
 
         SourceCodeStorage source_codes{};
 
-        std::vector<ReflectedParameter> reflected_parameters{};
-        ReflectedPushConstants          reflected_push_constants{};
+        std::vector<shader::ReflectedParameter> reflected_parameters{};
+        shader::ReflectedPushConstants          reflected_push_constants{};
 
         ShaderProgram()  = default;
         ~ShaderProgram() = default;
