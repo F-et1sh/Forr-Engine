@@ -18,17 +18,6 @@
 #include "slang-com-helper.h"
 
 namespace fe {
-    struct EntryPoint {
-        Slang::ComPtr<slang::IEntryPoint> entry_point{};
-        shader::StageBits                 shader_type{};
-
-        EntryPoint()  = default;
-        ~EntryPoint() = default;
-
-        EntryPoint(slang::IEntryPoint* entry_point, shader::StageBits shader_type)
-            : entry_point(entry_point), shader_type(shader_type) {}
-    };
-
     struct ShaderImportContext {
         static constexpr std::array<std::string_view, 3> entry_point_names{
             "vertexMain",

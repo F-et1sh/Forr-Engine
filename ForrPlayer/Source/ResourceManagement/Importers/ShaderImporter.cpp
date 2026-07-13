@@ -13,7 +13,7 @@
 #include "pch.hpp"
 #include "ShaderImporter.hpp"
 
-#include <iostream>
+#include "Graphics/Slang/SlangParser.hpp"
 
 using namespace fe::resource;
 
@@ -29,28 +29,10 @@ namespace fe {
 
 fe::pointer<fe::resource::ShaderReflectedData> fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
     ShaderReflectedData shader_reflected_data{};
-    ShaderProgram       shader_program{};
 
-    ShaderImportContext context{ storage, resource_full_path, shader_program, shader_reflected_data };
-
-    // compile
-    bool compilation_result = ShaderImporter::compile(context);
-    if (!compilation_result) {
-        fe::logging::error("Slang -> Unified. Failed to compile a shader program\nPath : %s", resource_full_path.string().c_str());
-        return {};
-    }
-
-    // reflect
-    bool reflection_result = ShaderImporter::reflect(context);
-    if (!reflection_result) {
-        fe::logging::error("Slang -> Unified. Failed to reflect a shader program\nPath : %s", resource_full_path.string().c_str());
-        return {};
-    }
-
-    // validate
-    bool validation_result = ShaderImporter::validate(context);
-    if (!validation_result) {
-        fe::logging::error("Slang -> Unified. Validation failed\nPath : %s", resource_full_path.string().c_str());
+    SlangParser parser{};
+    if (!parser.LoadFromFileAndReflect(resource_full_path, shader_reflected_data)) {
+        fe::logging::error("Slang -> Unified. Failed to load a shader\nPath : %s", resource_full_path.string().c_str());
         return {};
     }
 

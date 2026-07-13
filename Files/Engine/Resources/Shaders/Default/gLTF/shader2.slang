@@ -8,5 +8,5 @@ public interface IMaterial {
 }
 
 public struct PBRMaterial : IMaterial {
-    StandardSurfaceData GetStandardData(float2 uv)override { return {}; }
-}
+    uint2 base_color_texture_handle;
+};

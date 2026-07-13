@@ -152,7 +152,6 @@ namespace fe {
             bool operator==(const ReflectedMember&) const noexcept = default;
         };
 
-        // entry point ( aka shader slot, plug ) : parameter
         struct ReflectedDescriptor : public ReflectedDataNode {
             DescriptorType descriptor_type{ DescriptorType::UNKNOWN };
 
@@ -170,7 +169,6 @@ namespace fe {
             bool operator==(const ReflectedDescriptor&) const noexcept = default;
         };
 
-        // entry point ( aka shader slot, plug ) : push constants
         struct ReflectedPushConstants : public ReflectedDataNode {
             uint8_t stage_flags{};
 

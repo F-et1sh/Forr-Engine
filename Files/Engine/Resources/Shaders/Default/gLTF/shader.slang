@@ -6,10 +6,6 @@ struct GPULight {
     float4 color_intensity;
 };
 
-struct PBRMaterial {
-    uint2 base_color_texture_handle;
-};
-
 struct SceneData {
     float4x4 projection_matrix;
     float4x4 view_matrix;

@@ -19,6 +19,7 @@
 
 ### Done
     Trying to save Slang serialized data
+    SlangParser added
 
 ### Problem
     Very hard to start and continue the work
