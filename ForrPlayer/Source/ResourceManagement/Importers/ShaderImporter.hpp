@@ -19,13 +19,13 @@
 
 namespace fe {
     struct EntryPoint {
-        Slang::ComPtr<slang::IEntryPoint>   entry_point{};
-        shader::Type shader_type{};
+        Slang::ComPtr<slang::IEntryPoint> entry_point{};
+        shader::StageBits                 shader_type{};
 
         EntryPoint()  = default;
         ~EntryPoint() = default;
 
-        EntryPoint(slang::IEntryPoint* entry_point, shader::Type shader_type)
+        EntryPoint(slang::IEntryPoint* entry_point, shader::StageBits shader_type)
             : entry_point(entry_point), shader_type(shader_type) {}
     };
 
@@ -39,13 +39,14 @@ namespace fe {
         ResourceStorage&             storage;
         const std::filesystem::path& resource_full_path{};
 
-        resource::ShaderProgram& shader_program;
+        resource::ShaderProgram&       shader_program;
+        resource::ShaderReflectedData& shader_reflected_data;
 
-        Slang::ComPtr<slang::ISession>       session{};
-        Slang::ComPtr<slang::IComponentType> composed_program{};
+        Slang::ComPtr<slang::ISession> session{};
+        slang::ProgramLayout*          root_layout{};
 
-        ShaderImportContext(ResourceStorage& storage, const std::filesystem::path& resource_full_path, resource::ShaderProgram& shader_program)
-            : storage(storage), resource_full_path(resource_full_path), shader_program(shader_program) {}
+        ShaderImportContext(ResourceStorage& storage, const std::filesystem::path& resource_full_path, resource::ShaderProgram& shader_program, resource::ShaderReflectedData& shader_reflected_data)
+            : storage(storage), resource_full_path(resource_full_path), shader_program(shader_program), shader_reflected_data(shader_reflected_data) {}
         ~ShaderImportContext() = default;
     };
 
@@ -54,7 +55,7 @@ namespace fe {
         ShaderImporter()  = default;
         ~ShaderImporter() = default;
 
-        static fe::pointer<resource::ShaderProgram> Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path);
+        static fe::pointer<resource::ShaderReflectedData> Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path);
 
     private:
         static FORR_NODISCARD bool compile(ShaderImportContext& context);
@@ -64,7 +65,7 @@ namespace fe {
         static void checkAndPrintProblem(const std::string& field_name, auto changed_to, auto should_be, fe::logging::Severity severity);
         static void checkDataNode(ShaderImportContext& context, const std::string& field_name, const shader::ReflectedDataNode* data_node, const shader::ReflectedDataNode* expected_data_node);
 
-        static void parseDescriptorTable(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, shader::ReflectedParameter& dst_parameter);
+        static void parseDescriptorTable(ShaderImportContext& context, slang::VariableLayoutReflection* variable_layout, shader::ReflectedDescriptor& dst_descriptor);
         static void parsePushConstant(slang::VariableLayoutReflection* variable_layout, shader::ReflectedPushConstants& dst_push_constants);
 
         static void parseMemberRecursive(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDataNode* dst_reflected_data_node);

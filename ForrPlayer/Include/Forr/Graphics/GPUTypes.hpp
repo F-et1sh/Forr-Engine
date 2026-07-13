@@ -153,7 +153,7 @@ namespace fe {
         };
 
         // entry point ( aka shader slot, plug ) : parameter
-        struct ReflectedParameter : public ReflectedDataNode {
+        struct ReflectedDescriptor : public ReflectedDataNode {
             DescriptorType descriptor_type{ DescriptorType::UNKNOWN };
 
             uint32_t set{};
@@ -163,11 +163,11 @@ namespace fe {
 
             bool is_bindless{};
 
-            ReflectedParameter() = default;
-            ReflectedParameter(ReflectedDataNode data_node, DescriptorType descriptor_type, uint32_t set, uint32_t binding, uint8_t stage_flags, bool is_bindless)
+            ReflectedDescriptor() = default;
+            ReflectedDescriptor(ReflectedDataNode data_node, DescriptorType descriptor_type, uint32_t set, uint32_t binding, uint8_t stage_flags, bool is_bindless)
                 : ReflectedDataNode(std::move(data_node)), descriptor_type(descriptor_type), set(set), binding(binding), stage_flags(stage_flags), is_bindless(is_bindless) {}
 
-            bool operator==(const ReflectedParameter&) const noexcept = default;
+            bool operator==(const ReflectedDescriptor&) const noexcept = default;
         };
 
         // entry point ( aka shader slot, plug ) : push constants
@@ -176,15 +176,40 @@ namespace fe {
 
             ReflectedPushConstants() = default;
             ReflectedPushConstants(ReflectedDataNode data_node, uint8_t stage_flags)
-                : ReflectedDataNode::ReflectedDataNode(std::move(data_node)), stage_flags(stage_flags) {}
+                : ReflectedDataNode(std::move(data_node)), stage_flags(stage_flags) {}
+
+            bool operator==(const ReflectedPushConstants&) const noexcept = default;
         };
 
-        enum class Type : std::uint8_t {
+        enum class StageBits : std::uint8_t {
             NONE     = 0,
-            VERTEX   = 1,
-            GEOMETRY = 2,
-            FRAGMENT = 3,
-            COMPUTE  = 4,
+            VERTEX   = 1 << 0, // 1
+            GEOMETRY = 1 << 1, // 2
+            FRAGMENT = 1 << 2, // 4
+            COMPUTE  = 1 << 3, // 8
+        };
+
+        struct ReflectedPipelineLayout {
+            std::vector<shader::ReflectedDescriptor> descriptors{};
+            shader::ReflectedPushConstants           push_constants{};
+
+            ReflectedPipelineLayout() = default;
+            ReflectedPipelineLayout(std::vector<shader::ReflectedDescriptor> descriptors, shader::ReflectedPushConstants push_constants)
+                : descriptors(std::move(descriptors)), push_constants(std::move(push_constants)) {}
+
+            bool operator==(const ReflectedPipelineLayout&) const noexcept = default;
+        };
+
+        struct ReflectedMaterialLayout {
+            uint32_t                             size{};
+            std::vector<shader::ReflectedMember> members{};
+            std::string                          name{};
+
+            ReflectedMaterialLayout() = default;
+            ReflectedMaterialLayout(uint32_t size, std::vector<ReflectedMember> members, std::string name)
+                : size(size), members(std::move(members)), name(std::move(name)) {}
+
+            bool operator==(const ReflectedMaterialLayout&) const noexcept = default;
         };
     } // namespace shader
 } // namespace fe

@@ -20,17 +20,18 @@ using namespace fe::resource;
 namespace fe {
     using _shader_descriptor = shader::DescriptorType;
     using _shader_value      = shader::ValueType;
-    using _shader_type       = shader::Type;
+    using _shader_type       = shader::StageBits;
 
     using _slang_kind     = slang::TypeReflection::Kind;
     using _slang_scalar   = slang::TypeReflection::ScalarType;
     using _slang_category = slang::ParameterCategory;
 } // namespace fe
 
-fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
-    ShaderProgram shader_program{};
+fe::pointer<fe::resource::ShaderReflectedData> fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
+    ShaderReflectedData shader_reflected_data{};
+    ShaderProgram       shader_program{};
 
-    ShaderImportContext context{ storage, resource_full_path, shader_program };
+    ShaderImportContext context{ storage, resource_full_path, shader_program, shader_reflected_data };
 
     // compile
     bool compilation_result = ShaderImporter::compile(context);
@@ -53,7 +54,7 @@ fe::pointer<fe::resource::ShaderProgram> fe::ShaderImporter::Import(ResourceStor
         return {};
     }
 
-    auto ptr = storage.CreateResource(std::move(shader_program));
+    auto ptr = storage.CreateResource(std::move(shader_reflected_data));
     return ptr;
 }
 
@@ -92,6 +93,18 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
         return false;
     }
 
+    Slang::ComPtr<ISlangBlob> serialized_blob{};
+    if (SLANG_FAILED(slang_module->serialize(serialized_blob.writeRef()))) {
+        fe::logging::error("Slang -> Unified. Failed to get serialized data from Slang");
+        return false;
+    }
+
+    const uint8_t* buffer_data = (const uint8_t*) serialized_blob->getBufferPointer();
+    size_t         buffer_size = serialized_blob->getBufferSize();
+
+    // we store this data to compile the shader later
+    context.shader_reflected_data.slang_serialized_data.assign(buffer_data, buffer_data + buffer_size);
+
     std::vector<slang::IComponentType*> component_types{};
     component_types.emplace_back(slang_module);
 
@@ -103,66 +116,72 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
         slang_module->findEntryPointByName(entry_point_name.data(), &entry_point);
 
         if (entry_point) {
-            shader::Type shader_type{};
+            shader::StageBits shader_type{};
 
             if (entry_point_name == ShaderImportContext::entry_point_names[0])
-                shader_type = shader::Type::VERTEX;
+                shader_type = shader::StageBits::VERTEX;
             else if (entry_point_name == ShaderImportContext::entry_point_names[1])
-                shader_type = shader::Type::FRAGMENT;
+                shader_type = shader::StageBits::FRAGMENT;
             else if (entry_point_name == ShaderImportContext::entry_point_names[2])
-                shader_type = shader::Type::COMPUTE;
+                shader_type = shader::StageBits::COMPUTE;
 
             entry_points.emplace_back(entry_point, shader_type);
             component_types.emplace_back(entry_point);
         }
     }
 
-    SlangResult result = context.session->createCompositeComponentType(component_types.data(), component_types.size(), context.composed_program.writeRef());
-    if (SLANG_FAILED(result)) {
-        fe::logging::error("Slang -> Unified. Failed to create a composed program");
-        return false;
-    }
+    if (!entry_points.empty()) {
+        Slang::ComPtr<slang::IComponentType> composed_program{};
 
-    for (std::size_t i = 0; i < entry_points.size(); i++) {
-        const auto&                 entry_point = entry_points[i];
-        Slang::ComPtr<slang::IBlob> spirv_code{};
-
-        SlangResult result = context.composed_program->getEntryPointCode(i, 0, spirv_code.writeRef());
+        SlangResult result = context.session->createCompositeComponentType(component_types.data(), component_types.size(), composed_program.writeRef());
         if (SLANG_FAILED(result)) {
-            fe::logging::error("Slang -> Unified. Failed to get an entry point code\nEntry point index : %i", i);
+            fe::logging::error("Slang -> Unified. Failed to create a composed program");
             return false;
         }
 
-        const size_t   byte_size = spirv_code->getBufferSize();
-        const uint8_t* raw_data  = reinterpret_cast<const uint8_t*>(spirv_code->getBufferPointer());
+        for (std::size_t i = 0; i < entry_points.size(); i++) {
+            const auto&                 entry_point = entry_points[i];
+            Slang::ComPtr<slang::IBlob> spirv_code{};
 
-        shader::Type shader_type     = entry_point.shader_type;
-        auto&                     source_code_dst = context.shader_program.source_codes[shader_type];
+            SlangResult result = composed_program->getEntryPointCode(i, 0, spirv_code.writeRef());
+            if (SLANG_FAILED(result)) {
+                fe::logging::error("Slang -> Unified. Failed to get an entry point code\nEntry point index : %i", i);
+                return false;
+            }
 
-        source_code_dst.resize(byte_size, 0);
-        std::memcpy(source_code_dst.data(), raw_data, byte_size);
+            const size_t   byte_size = spirv_code->getBufferSize();
+            const uint8_t* raw_data  = reinterpret_cast<const uint8_t*>(spirv_code->getBufferPointer());
+
+            shader::StageBits shader_type     = entry_point.shader_type;
+            auto&             source_code_dst = context.shader_program.source_codes[shader_type];
+
+            source_code_dst.resize(byte_size, 0);
+            std::memcpy(source_code_dst.data(), raw_data, byte_size);
+        }
+
+        slang::ProgramLayout* program_layout = composed_program->getLayout();
+        if (!program_layout) FORR_UNLIKELY {
+            fe::logging::error("Slang -> Unified. Failed to get the layout of the composed program in fe::ShaderImporter::compile()");
+            return false;
+        }
+
+        context.root_layout = composed_program->getLayout();
     }
 
     return true;
 }
 
 bool fe::ShaderImporter::reflect(ShaderImportContext& context) {
-    auto& shader_program = context.shader_program;
+    auto& shader_program = context.shader_reflected_data;
 
-    slang::ProgramLayout* program_layout = context.composed_program->getLayout();
-    if (!program_layout) FORR_UNLIKELY {
-        fe::logging::error("Slang -> Unified. Failed to reflect a shader\nFailed to get the layout of the composed program while reflection in fe::ShaderImporter::reflect()");
-        return false;
-    }
-
-    unsigned int parameter_count = program_layout->getParameterCount();
+    unsigned int parameter_count = context.root_layout->getParameterCount();
 
     shader_program.reflected_parameters.reserve(parameter_count);
 
     for (unsigned int i = 0; i < parameter_count; i++) {
-        slang::VariableLayoutReflection* variable_layout = program_layout->getParameterByIndex(i);
+        slang::VariableLayoutReflection* variable_layout = context.root_layout->getParameterByIndex(i);
         if (!variable_layout) {
-            fe::logging::error("Slang -> Unified. Failed to reflect a shader\nslang::VariableLayoutReflection* variable_layout = program_layout->getParameterByIndex(i) was nullptr. i = %i", i);
+            fe::logging::error("Slang -> Unified. Failed to reflect a shader\nslang::VariableLayoutReflection* variable_layout = context.root_layout->getParameterByIndex(i) was nullptr. i = %i", i);
             continue;
         }
 
@@ -189,70 +208,70 @@ bool fe::ShaderImporter::validate(ShaderImportContext& context) {
     // TODO : optimize work with strings here
     // TODO : finish tihs validation somehow later
 
-    const auto& shader_program = context.shader_program;
+    //const auto& reflectd_data = context.shader_reflected_data;
 
-    const static shader::ReflectedPushConstants expected_push_constants{
-        { shader::ValueType::INT32,
-          1,
-          4,
-          {},
-          "instance_index" },
-        7
-    };
+    //const static shader::ReflectedPushConstants expected_push_constants{
+    //    { shader::ValueType::INT32,
+    //      1,
+    //      4,
+    //      {},
+    //      "instance_index" },
+    //    7
+    //};
 
-    const static std::array expected_parameters{
-        shader::ReflectedParameter{
-            { shader::ValueType::STRUCT,
-              1,
-              144,
-              { { { shader::ValueType::MAT4,
-                    1,
-                    64,
-                    {},
-                    "projection_matrix" },
-                  0 },
-                { { shader::ValueType::MAT4,
-                    1,
-                    64,
-                    {},
-                    "view_matrix" },
-                  64 },
-                { { shader::ValueType::UINT32,
-                    1,
-                    4,
-                    {},
-                    "lights_count" },
-                  128 } },
-              "global_data" },
-            shader::DescriptorType::UNIFORM_BUFFER,
-            0,
-            0,
-            7,
-            false },
+    //const static std::array expected_parameters{
+    //    shader::ReflectedDescriptor{
+    //        { shader::ValueType::STRUCT,
+    //          1,
+    //          144,
+    //          { { { shader::ValueType::MAT4,
+    //                1,
+    //                64,
+    //                {},
+    //                "projection_matrix" },
+    //              0 },
+    //            { { shader::ValueType::MAT4,
+    //                1,
+    //                64,
+    //                {},
+    //                "view_matrix" },
+    //              64 },
+    //            { { shader::ValueType::UINT32,
+    //                1,
+    //                4,
+    //                {},
+    //                "lights_count" },
+    //              128 } },
+    //          "global_data" },
+    //        shader::DescriptorType::UNIFORM_BUFFER,
+    //        0,
+    //        0,
+    //        7,
+    //        false },
 
-        shader::ReflectedParameter{
-            { shader::ValueType::MAT4,
-              0,
-              64,
-              {},
-              "model_matrices" },
-            shader::DescriptorType::STORAGE_BUFFER,
-            0,
-            1,
-            7,
-            false },
+    //    shader::ReflectedDescriptor{
+    //        { shader::ValueType::MAT4,
+    //          0,
+    //          64,
+    //          {},
+    //          "model_matrices" },
+    //        shader::DescriptorType::STORAGE_BUFFER,
+    //        0,
+    //        1,
+    //        7,
+    //        false },
 
-            // ...
-    };
+    //    // ...
+    //};
 
-    // you can change the name           --> warning
-    // you cannot change everything else --> error
+    //// you can change the name           --> warning
+    //// you cannot change everything else --> error
 
-    checkDataNode(context,
-                  "push constants",
-                  static_cast<const shader::ReflectedDataNode*>(&shader_program.reflected_push_constants),
-                  static_cast<const shader::ReflectedDataNode*>(&expected_push_constants));
-    checkAndPrintProblem("push constants stage_flags", shader_program.reflected_push_constants.stage_flags, expected_push_constants.stage_flags, fe::logging::Severity::Warning);
+    //checkDataNode(context,
+    //              "push constants",
+    //              static_cast<const shader::ReflectedDataNode*>(&reflectd_data.push_constants),
+    //              static_cast<const shader::ReflectedDataNode*>(&expected_push_constants));
+    //checkAndPrintProblem("push constants stage_flags", reflectd_data.reflected_push_constants.stage_flags, expected_push_constants.stage_flags, fe::logging::Severity::Warning);
 
     return true;
 }
@@ -284,8 +303,8 @@ void fe::ShaderImporter::checkAndPrintProblem(const std::string&    field_name,
     }
 }
 
-void fe::ShaderImporter::checkDataNode(ShaderImportContext&                              context,
-                                       const std::string&                                field_name,
+void fe::ShaderImporter::checkDataNode(ShaderImportContext&             context,
+                                       const std::string&               field_name,
                                        const shader::ReflectedDataNode* data_node,
                                        const shader::ReflectedDataNode* expected_data_node) {
 
@@ -296,29 +315,29 @@ void fe::ShaderImporter::checkDataNode(ShaderImportContext&                     
     ShaderImporter::checkAndPrintProblem(field_name + std::string(" members.size()"), data_node->members.size(), expected_data_node->members.size(), fe::logging::Severity::Error);
 }
 
-void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&                         context,
-                                              slang::VariableLayoutReflection*             variable_layout,
-                                              shader::ReflectedParameter& dst_parameter) {
+void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&             context,
+                                              slang::VariableLayoutReflection* variable_layout,
+                                              shader::ReflectedDescriptor&     dst_descriptor) {
     assert(variable_layout);
     assert(variable_layout->getCategory() == _slang_category::DescriptorTableSlot);
 
-    dst_parameter.set         = variable_layout->getBindingSpace();
-    dst_parameter.binding     = variable_layout->getBindingIndex();
-    dst_parameter.array_size  = 1;
-    dst_parameter.stage_flags = static_cast<uint32_t>(_shader_type::NONE);
+    dst_descriptor.set         = variable_layout->getBindingSpace();
+    dst_descriptor.binding     = variable_layout->getBindingIndex();
+    dst_descriptor.array_size  = 1;
+    dst_descriptor.stage_flags = static_cast<uint32_t>(_shader_type::NONE);
 
     // this doesn't work
     //SlangStage stage = variable_layout->getStage();
-    //dst_parameter.stage_flags =
+    //dst_descriptor.stage_flags =
     //    ((stage & SLANG_STAGE_VERTEX) ? static_cast<uint32_t>(_shader_type::VERTEX) : 0) |
     //    ((stage & SLANG_STAGE_FRAGMENT) ? static_cast<uint32_t>(_shader_type::FRAGMENT) : 0) |
     //    ((stage & SLANG_STAGE_COMPUTE) ? static_cast<uint32_t>(_shader_type::COMPUTE) : 0) |
     //    ((stage & SLANG_STAGE_GEOMETRY) ? static_cast<uint32_t>(_shader_type::GEOMETRY) : 0);
 
-    dst_parameter.stage_flags |= static_cast<uint32_t>(_shader_type::VERTEX);
-    dst_parameter.stage_flags |= static_cast<uint32_t>(_shader_type::FRAGMENT);
-    dst_parameter.stage_flags |= static_cast<uint32_t>(_shader_type::COMPUTE);
-    dst_parameter.stage_flags |= static_cast<uint32_t>(_shader_type::GEOMETRY);
+    dst_descriptor.stage_flags |= static_cast<uint32_t>(_shader_type::VERTEX);
+    dst_descriptor.stage_flags |= static_cast<uint32_t>(_shader_type::FRAGMENT);
+    dst_descriptor.stage_flags |= static_cast<uint32_t>(_shader_type::COMPUTE);
+    dst_descriptor.stage_flags |= static_cast<uint32_t>(_shader_type::GEOMETRY);
 
     slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
     _slang_kind                  kind        = type_layout->getKind();
@@ -332,7 +351,7 @@ void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&              
         //static uint32_t vulkan_set_counter     = 0;
         static uint32_t opengl_binding_counter = 0;
 
-        if (dst_parameter.name == "scene_set") {
+        if (dst_descriptor.name == "scene_set") {
             //vulkan_set_counter     = 0;
             opengl_binding_counter = 0;
         }
@@ -340,29 +359,29 @@ void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&              
         auto& graphics_backend = context.storage.GetContext().graphics_backend;
 
         if (graphics_backend == GraphicsBackend::OpenGL) {
-            dst_parameter.set     = 0;
-            dst_parameter.binding = opengl_binding_counter++;
+            dst_descriptor.set     = 0;
+            dst_descriptor.binding = opengl_binding_counter++;
         }
     }
 
     switch (kind) {
         case _slang_kind::ConstantBuffer:
         case _slang_kind::ParameterBlock:
-            dst_parameter.descriptor_type = _shader_descriptor::UNIFORM_BUFFER;
-            ShaderImporter::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<shader::ReflectedDataNode*>(&dst_parameter));
+            dst_descriptor.descriptor_type = _shader_descriptor::UNIFORM_BUFFER;
+            ShaderImporter::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
             break;
 
         case _slang_kind::ShaderStorageBuffer:
-            dst_parameter.descriptor_type = _shader_descriptor::STORAGE_BUFFER;
-            ShaderImporter::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<shader::ReflectedDataNode*>(&dst_parameter));
+            dst_descriptor.descriptor_type = _shader_descriptor::STORAGE_BUFFER;
+            ShaderImporter::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
             break;
 
         case _slang_kind::Array: {
             // if you got '_slang_kind::Array' here that means that this is a bindless parameter
-            dst_parameter.is_bindless = true;
+            dst_descriptor.is_bindless = true;
             // when you pass 'slang::TypeLayoutReflection*' into 'fe::ShaderImporter::parseMemberRecursive()' instead of 'slang::VariableLayoutReflection*'
             //  you have to set 'array_size' yourself
-            dst_parameter.array_size = type_layout->getElementCount();
+            dst_descriptor.array_size = type_layout->getElementCount();
 
             slang::TypeLayoutReflection* array_element_type_layout = type_layout->getElementTypeLayout();
             _slang_kind                  element_kind              = array_element_type_layout->getKind();
@@ -372,21 +391,21 @@ void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&              
                 unsigned int       shape_base = shape & SLANG_RESOURCE_BASE_SHAPE_MASK;
 
                 if (shape_base >= SLANG_TEXTURE_1D && shape_base <= SLANG_TEXTURE_CUBE) {
-                    bool is_read_write            = array_element_type_layout->getResourceAccess() == SLANG_RESOURCE_ACCESS_READ_WRITE;
-                    dst_parameter.descriptor_type = is_read_write ? _shader_descriptor::STORAGE_IMAGE : _shader_descriptor::COMBINED_IMAGE_SAMPLER;
+                    bool is_read_write             = array_element_type_layout->getResourceAccess() == SLANG_RESOURCE_ACCESS_READ_WRITE;
+                    dst_descriptor.descriptor_type = is_read_write ? _shader_descriptor::STORAGE_IMAGE : _shader_descriptor::COMBINED_IMAGE_SAMPLER;
                 }
             }
             else {
-                dst_parameter.descriptor_type = _shader_descriptor::UNIFORM_BUFFER;
+                dst_descriptor.descriptor_type = _shader_descriptor::UNIFORM_BUFFER;
             }
 
-            ShaderImporter::parseMemberRecursive(array_element_type_layout, static_cast<shader::ReflectedDataNode*>(&dst_parameter));
+            ShaderImporter::parseMemberRecursive(array_element_type_layout, static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
         } break;
 
         case _slang_kind::Resource: {
             // when you pass 'slang::TypeLayoutReflection*' into 'fe::ShaderImporter::parseMemberRecursive()' instead of 'slang::VariableLayoutReflection*'
             //  you have to set 'array_size' yourself
-            dst_parameter.array_size = type_layout->getElementCount();
+            dst_descriptor.array_size = type_layout->getElementCount();
 
             SlangResourceShape shape      = type_layout->getResourceShape();
             unsigned int       shape_base = shape & SLANG_RESOURCE_BASE_SHAPE_MASK;
@@ -397,39 +416,39 @@ void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&              
                 shape_base <= SLANG_TEXTURE_CUBE) {
 
                 if (resource_access == SLANG_RESOURCE_ACCESS_READ_WRITE) {
-                    dst_parameter.descriptor_type = _shader_descriptor::STORAGE_IMAGE;
+                    dst_descriptor.descriptor_type = _shader_descriptor::STORAGE_IMAGE;
                 }
                 else {
-                    dst_parameter.descriptor_type = _shader_descriptor::COMBINED_IMAGE_SAMPLER;
+                    dst_descriptor.descriptor_type = _shader_descriptor::COMBINED_IMAGE_SAMPLER;
                 }
             }
             else if (shape_base == SLANG_STRUCTURED_BUFFER ||
                      shape_base == SLANG_BYTE_ADDRESS_BUFFER) {
 
-                dst_parameter.descriptor_type = _shader_descriptor::STORAGE_BUFFER;
+                dst_descriptor.descriptor_type = _shader_descriptor::STORAGE_BUFFER;
             }
             else if (shape_base == SLANG_ACCELERATION_STRUCTURE) {
-                dst_parameter.descriptor_type = _shader_descriptor::ACCELERATION_STRUCTURE;
+                dst_descriptor.descriptor_type = _shader_descriptor::ACCELERATION_STRUCTURE;
             }
             else {
                 assert(false);
             }
 
-            ShaderImporter::parseMemberRecursive(type_layout->getElementTypeLayout(), static_cast<shader::ReflectedDataNode*>(&dst_parameter));
+            ShaderImporter::parseMemberRecursive(type_layout->getElementTypeLayout(), static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
         } break;
 
         case _slang_kind::SamplerState:
-            dst_parameter.descriptor_type = _shader_descriptor::SAMPLER;
-            ShaderImporter::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<shader::ReflectedDataNode*>(&dst_parameter));
+            dst_descriptor.descriptor_type = _shader_descriptor::SAMPLER;
+            ShaderImporter::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
             break;
 
         default:
             fe::logging::error("Slang -> Unified. Failed to reflect a shader\nUnknown descriptor resource kind : %i", kind);
-            dst_parameter.descriptor_type = _shader_descriptor::UNKNOWN;
+            dst_descriptor.descriptor_type = _shader_descriptor::UNKNOWN;
             break;
     }
 
-    // here we have to override the name, because 'fe::ShaderImporter::parseMemberRecursive()' setting 'dst_parameter.name' as its
+    // here we have to override the name, because 'fe::ShaderImporter::parseMemberRecursive()' setting 'dst_descriptor.name' as its
     //  struct's name, but I want to see its actual name.
     // For example :
     // ```slang
@@ -437,7 +456,7 @@ void fe::ShaderImporter::parseDescriptorTable(ShaderImportContext&              
     // ```
     // 'fe::ShaderImporter::parseMemberRecursive()' will give us "SceneData", but I want to see name "global_data",
     //  that's why we set the name here
-    dst_parameter.name = variable_layout->getName();
+    dst_descriptor.name = variable_layout->getName();
 }
 
 void fe::ShaderImporter::parsePushConstant(slang::VariableLayoutReflection* variable_layout, shader::ReflectedPushConstants& dst_push_constants) {
@@ -492,7 +511,7 @@ void fe::ShaderImporter::parsePushConstant(slang::VariableLayoutReflection* vari
             break;
     }
 
-    // here we have to override the name, because 'fe::ShaderImporter::parseMemberRecursive()' setting 'dst_parameter.name' as its
+    // here we have to override the name, because 'fe::ShaderImporter::parseMemberRecursive()' setting 'dst_descriptor.name' as its
     //  struct's name, but I want to see its actual name.
     // For example :
     // ```slang
@@ -515,7 +534,7 @@ void fe::ShaderImporter::parseMemberRecursive(slang::VariableLayoutReflection* v
     // so, we can cast it to 'shader::ReflectedMember*' and set its 'offset'
     if (variable_layout->getOffset() != 0) {
         shader::ReflectedMember* member = static_cast<shader::ReflectedMember*>(dst_reflected_data_node);
-        member->offset                                   = variable_layout->getOffset();
+        member->offset                  = variable_layout->getOffset();
     }
 
     ShaderImporter::parseMemberRecursive(type_layout, dst_reflected_data_node);
@@ -527,7 +546,7 @@ void fe::ShaderImporter::parseMemberRecursive(slang::TypeLayoutReflection* type_
 
     dst_reflected_data_node->size = type_layout->getSize();
 
-    auto parse_recursive = [](slang::TypeLayoutReflection*                           type_layout,
+    auto parse_recursive = [](slang::TypeLayoutReflection*          type_layout,
                               std::vector<shader::ReflectedMember>& dst_members) {
         uint32_t field_count = type_layout->getFieldCount();
         dst_members.reserve(field_count);
