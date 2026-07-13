@@ -1,4 +1,6 @@
-﻿struct GPULight {
+﻿#include "shader2.slang"
+
+struct GPULight {
     float4 position;
     float4 direction;
     float4 color_intensity;
@@ -14,9 +16,9 @@ struct SceneData {
     uint lights_count;
 };
 
-[[vk::binding(0, 0)]] ConstantBuffer<SceneData>   global_data;
-[[vk::binding(1, 0)]] StructuredBuffer<float4x4>  model_matrices;
-[[vk::binding(2, 0)]] StructuredBuffer<GPULight>  lights;
+[[vk::binding(0, 0)]] ConstantBuffer<SceneData>     global_data;
+[[vk::binding(1, 0)]] StructuredBuffer<float4x4>    model_matrices;
+[[vk::binding(2, 0)]] StructuredBuffer<GPULight>    lights;
 [[vk::binding(0, 1)]] StructuredBuffer<PBRMaterial> materials;
 
 [[vk::push_constant]] int instance_index;

@@ -46,7 +46,7 @@ void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_
 
 IMPORTER_INSTANCE(fe::resource::Texture, fe::TextureImporter)
 IMPORTER_INSTANCE(fe::resource::Model, fe::GLTFImporter)
-IMPORTER_INSTANCE(fe::resource::ShaderProgram, fe::ShaderImporter)
+IMPORTER_INSTANCE(fe::resource::ShaderReflectedData, fe::ShaderImporter)
 IMPORTER_INSTANCE(fe::resource::Material, fe::MaterialImporter)
 
 #undef IMPORTER_INSTANCE

@@ -94,7 +94,7 @@ namespace fe::resource {
         unsigned int width{};
         unsigned int height{};
 
-        //fe::ArenaMarker offset{}; // TODO : think about using this instead of std::unique_ptr<>
+        //fe::ArenaMarker offset{}; // TODO : think about using this instead of std::unique_ptr<> | TODO : std::span<> instead
         std::unique_ptr<unsigned char[]> bytes{};
         // size in bytes
         std::size_t size{};
@@ -115,17 +115,35 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Texture)
     };
 
+    // this is a basic structure, created by 'fe::ShaderImporter', while importing a file.
+    //  here, 'material_layout' or 'pipeline_layout' can be std::nullopt, bacause
+    //  in the shader, user can write only material's struct or only shader logic or write both.
+    // by the way, 'fe::ShaderImporter' also will create 'fe::resource::ShaderProgram',
+    //  if there is a logic in the shader file, otherwise - only this structure.
+    struct FORR_API ShaderReflectedData {
+    public:
+        std::optional<shader::ReflectedMaterialLayout> material_layout{};
+        std::optional<shader::ReflectedPipelineLayout> pipeline_layout{};
+
+        // this is needed to not accses disk twice
+        std::vector<uint8_t> slang_serialized_data{};
+
+        ShaderReflectedData()  = default;
+        ~ShaderReflectedData() = default;
+
+        FORR_RESOURCE_BODY(ShaderReflectedData)
+    };
+
     struct FORR_API ShaderProgram {
     public:
-        using SourceCode        = std::vector<uint8_t>;
-        using SourceCodeStorage = std::unordered_map<shader::Type, SourceCode>;
-
         GPUHandle<ShaderProgram> gpu_handle{};
 
-        SourceCodeStorage source_codes{};
+        fe::pointer<fe::resource::ShaderReflectedData> reflected_data_ptr{};
 
-        std::vector<shader::ReflectedParameter> reflected_parameters{};
-        shader::ReflectedPushConstants          reflected_push_constants{};
+        using SourceCode        = std::vector<uint8_t>;
+        using SourceCodeStorage = std::unordered_map<shader::StageBits, SourceCode>;
+
+        SourceCodeStorage source_codes{};
 
         ShaderProgram()  = default;
         ~ShaderProgram() = default;
@@ -137,7 +155,7 @@ namespace fe::resource {
     public:
         GPUHandle<Material> gpu_handle{};
 
-        fe::pointer<fe::resource::ShaderProgram> shader_program_ptr{};
+        fe::pointer<fe::resource::ShaderReflectedData> reflected_data_ptr{};
 
         struct Sampler {
             std::size_t          offset{};
