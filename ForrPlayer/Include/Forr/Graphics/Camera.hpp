@@ -3,7 +3,7 @@
     Forr Engine
 
     File : Camera.hpp
-    Role : Abstract camera
+    Role : Abstract camera. TODO : as I remember, I stole this code from somewhere - I have to rewrite this. It's really bad
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.

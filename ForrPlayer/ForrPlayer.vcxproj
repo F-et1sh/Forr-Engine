@@ -128,6 +128,7 @@ call "$(SolutionDir)Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Targe
     <ClInclude Include="Include\Forr\Graphics\GPUTypes.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLTypes.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
+    <ClInclude Include="Source\Graphics\Slang\SlangParser.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanTypes.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VKTools.hpp" />
@@ -177,6 +178,7 @@ call "$(SolutionDir)Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Targe
     </ClCompile>
     <ClCompile Include="Source\ECS\Systems\RenderSystem.cpp" />
     <ClCompile Include="Source\Graphics\RenderGraph.cpp" />
+    <ClCompile Include="Source\Graphics\Slang\SlangParser.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\ShaderImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceCreator.cpp" />
     <ClCompile Include="Source\Graphics\Camera.cpp" />
