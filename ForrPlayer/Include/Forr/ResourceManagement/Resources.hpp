@@ -115,30 +115,10 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Texture)
     };
 
-    // this is a basic structure, created by 'fe::ShaderImporter', while importing a file.
-    //  here, 'material_layout' or 'pipeline_layout' can be std::nullopt, bacause
-    //  in the shader, user can write only material's struct or only shader logic or write both.
-    // by the way, 'fe::ShaderImporter' also will create 'fe::resource::ShaderProgram',
-    //  if there is a logic in the shader file, otherwise - only this structure.
-    struct FORR_API ShaderReflectedData {
-    public:
-        std::optional<shader::ReflectedMaterialLayout> material_layout{};
-        std::optional<shader::ReflectedPipelineLayout> pipeline_layout{};
-
-        // this is needed to not accses disk twice
-        std::vector<uint8_t> slang_serialized_data{};
-
-        ShaderReflectedData()  = default;
-        ~ShaderReflectedData() = default;
-
-        FORR_RESOURCE_BODY(ShaderReflectedData)
-    };
-
     struct FORR_API ShaderProgram {
     public:
-        GPUHandle<ShaderProgram> gpu_handle{};
-
-        fe::pointer<fe::resource::ShaderReflectedData> reflected_data_ptr{};
+        GPUHandle<ShaderProgram>        gpu_handle{};
+        shader::ReflectedPipelineLayout reflected_layout{};
 
         using SourceCode        = std::vector<uint8_t>;
         using SourceCodeStorage = std::unordered_map<shader::StageBits, SourceCode>;
@@ -151,11 +131,20 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(ShaderProgram)
     };
 
+    struct FORR_API MaterialLayout {
+        shader::ReflectedMaterialLayout reflected_layout{};
+
+        MaterialLayout()  = default;
+        ~MaterialLayout() = default;
+
+        FORR_RESOURCE_BODY(MaterialLayout)
+    };
+
     struct FORR_API Material {
     public:
         GPUHandle<Material> gpu_handle{};
 
-        fe::pointer<fe::resource::ShaderReflectedData> reflected_data_ptr{};
+        fe::pointer<fe::resource::MaterialLayout> layout_ptr{};
 
         struct Sampler {
             std::size_t          offset{};
@@ -179,6 +168,24 @@ namespace fe::resource {
         ~Material() = default;
 
         FORR_RESOURCE_BODY(Material)
+    };
+
+    // this is a basic structure, created by 'fe::ShaderImporter', while importing a file
+    struct FORR_API ShaderReflectedData {
+    public:
+        using pipeline_ptr        = fe::pointer<resource::ShaderProgram>;
+        using material_layout_ptr = fe::pointer<resource::MaterialLayout>;
+
+        std::optional<pipeline_ptr>                     pipeline_ptr{};
+        std::optional<std::vector<material_layout_ptr>> material_layout_ptrs{};
+
+        // this is needed to not accses disk twice
+        std::vector<uint8_t> slang_serialized_data{};
+
+        ShaderReflectedData()  = default;
+        ~ShaderReflectedData() = default;
+
+        FORR_RESOURCE_BODY(ShaderReflectedData)
     };
 
     struct FORR_API Model {
