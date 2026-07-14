@@ -43,27 +43,41 @@ namespace fe {
         };
 
     public:
-        SlangParser();
+        SlangParser(GraphicsBackend graphics_backend);
         ~SlangParser() = default;
 
         FORR_CLASS_MOVABLE(SlangParser)
         FORR_CLASS_NONCOPYABLE(SlangParser)
 
-        // primary processing : load .slang file, save its reflected and serialized data, for the secondary processing
+        // primary processing : load .slang file, save its reflected and serialized data for the secondary processing
         bool LoadFromFileAndReflect(const std::filesystem::path& resource_full_path, resource::ShaderReflectedData& shader_reflected_data);
 
     private:
         std::vector<EntryPoint> findEntryPoints(std::vector<slang::IComponentType*>& component_types);
-        bool                    reflect(resource::ShaderReflectedData& shader_reflected_data);
+        void                    reflect(resource::ShaderReflectedData& shader_reflected_data);
 
+        // returns 'true', if actually found anything and 'false', if the argument is not changed
+        bool reflectPipeline(shader::ReflectedPipelineLayout& pipeline_layout);
+        // returns 'true', if actually found anything and 'false', if the argument is not changed
         bool reflectMaterial(shader::ReflectedMaterialLayout& material_layout);
-        bool reflectPipeline();
+
+        bool parseDeclarationRecursive(slang::DeclReflection* member);
+        void parseVariableRecursive(slang::VariableReflection* member);
+
+        void parseDescriptorTable(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDescriptor& dst_descriptor);
+        void parsePushConstant(slang::VariableLayoutReflection* variable_layout, shader::ReflectedPushConstants& dst_push_constants);
+
+        void parseMemberRecursive(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDataNode* dst_reflected_data_node);
+        void parseMemberRecursive(slang::TypeLayoutReflection* type_layout, shader::ReflectedDataNode* dst_reflected_data_node);
+
+        void mapMatrix(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
+        void mapVector(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
+        void mapScalar(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
 
     private:
+        GraphicsBackend                      m_GraphicsBackend{};
         Slang::ComPtr<slang::ISession>       m_Session{};
         slang::IModule*                      m_Module{};
         Slang::ComPtr<slang::IComponentType> m_CompusedProgram{};
-        // this will be 'm_Module's layout by default, but if you compose a program - it will be layout of that program
-        slang::ProgramLayout* m_RootLayout{};
     };
 } // namespace fe

@@ -18,6 +18,7 @@
 
 ### Done
     understood how to get structures from Slang file via Slang Reflection API
+    reflection in progress
 
 ### Problem
     borken PCH : I have to wait 21 seconds every compilation
