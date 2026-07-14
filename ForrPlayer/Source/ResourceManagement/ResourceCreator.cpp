@@ -18,7 +18,7 @@ void fe::ResourceCreator::CreateDefaultResources() {
 }
 
 void fe::ResourceCreator::createDefaultMaterials() {
-    std::filesystem::path gltf_shader_path        = PATH.getDefaultShadersPath() / L"PBRMaterial" / L"shader";
+    std::filesystem::path gltf_shader_path        = PATH.getDefaultShadersPath() / L"PBRMaterial" / L"shader2";
     auto                  default_gltf_shader_ptr = m_Importer.ImportResource<resource::ShaderReflectedData>(gltf_shader_path.wstring() + PATH.getShaderExtension().wstring());
 
     resource::Material gltf_material{};
