@@ -24,6 +24,4 @@
 #include "Core/path.hpp"
 #include "Core/guid.hpp"
 
-#include "ResourceManagement/Resources.hpp"
-
 #include "entt/entt.hpp"

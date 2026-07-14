@@ -136,6 +136,7 @@ namespace fe {
 
             std::vector<ReflectedMember> members{};
 
+            // TODO : provide attribute name
             std::string name{};
 
             ReflectedDataNode() = default;

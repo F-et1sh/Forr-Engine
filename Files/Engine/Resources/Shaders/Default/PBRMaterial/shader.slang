@@ -1,4 +1,4 @@
-﻿#include "shader2.slang"
+﻿import "shader2.slang";
 
 struct GPULight {
     float4 position;

@@ -400,50 +400,50 @@ VkPipeline fe::VulkanResourceManager::createPipeline(VkPipelineLayout pipeline_l
     vertex_input_state_create_info.vertexAttributeDescriptionCount = vertex_input_attributs.size();
     vertex_input_state_create_info.pVertexAttributeDescriptions    = vertex_input_attributs.data();
 
-    auto& shader_program = *m_ResourceManager.GetResource(material.shader_program_ptr);
+    auto& shader_program = *m_ResourceManager.GetResource(material.reflected_data_ptr);
 
     std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_infos{};
     std::vector<fe::vk::ShaderModule>            shader_modules_raii{};
 
-    shader_stages_create_infos.reserve(shader_program.source_codes.size());
-    shader_modules_raii.reserve(shader_program.source_codes.size());
+    //shader_stages_create_infos.reserve(shader_program.source_codes.size());
+    //shader_modules_raii.reserve(shader_program.source_codes.size());
 
-    for (const auto& [shader_type, source_code] : shader_program.source_codes) {
-        auto& shader_stages_create_info = shader_stages_create_infos.emplace_back();
+    //for (const auto& [shader_type, source_code] : shader_program.source_codes) {
+    //    auto& shader_stages_create_info = shader_stages_create_infos.emplace_back();
 
-        VkShaderModuleCreateInfo shader_module_create_info{};
-        shader_module_create_info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        shader_module_create_info.codeSize = source_code.size();
-        shader_module_create_info.pCode    = reinterpret_cast<const uint32_t*>(source_code.data());
+    //    VkShaderModuleCreateInfo shader_module_create_info{};
+    //    shader_module_create_info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    //    shader_module_create_info.codeSize = source_code.size();
+    //    shader_module_create_info.pCode    = reinterpret_cast<const uint32_t*>(source_code.data());
 
-        VkShaderModule shader_module_raw{};
-        VK_CHECK_RESULT(vkCreateShaderModule(m_Context.device, &shader_module_create_info, nullptr, &shader_module_raw));
-        shader_modules_raii.emplace_back().attach(m_Context.device, shader_module_raw);
+    //    VkShaderModule shader_module_raw{};
+    //    VK_CHECK_RESULT(vkCreateShaderModule(m_Context.device, &shader_module_create_info, nullptr, &shader_module_raw));
+    //    shader_modules_raii.emplace_back().attach(m_Context.device, shader_module_raw);
 
-        shader_stages_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        shader_stages_create_info.module = shader_module_raw;
+    //    shader_stages_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    //    shader_stages_create_info.module = shader_module_raw;
 
-        switch (shader_type) {
-            case shader::Type::VERTEX:
-                shader_stages_create_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
-                shader_stages_create_info.pName = "vertexMain";
-                break;
-            case shader::Type::FRAGMENT:
-                shader_stages_create_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-                shader_stages_create_info.pName = "fragmentMain";
-                break;
-            case shader::Type::COMPUTE:
-                shader_stages_create_info.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-                shader_stages_create_info.pName = "computeMain";
-                break;
-            default:
-                fe::logging::error("Unknown shader type : %i", static_cast<uint32_t>(shader_type));
+    //    switch (shader_type) {
+    //        case shader::StageBits::VERTEX:
+    //            shader_stages_create_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    //            shader_stages_create_info.pName = "vertexMain";
+    //            break;
+    //        case shader::StageBits::FRAGMENT:
+    //            shader_stages_create_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    //            shader_stages_create_info.pName = "fragmentMain";
+    //            break;
+    //        case shader::StageBits::COMPUTE:
+    //            shader_stages_create_info.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    //            shader_stages_create_info.pName = "computeMain";
+    //            break;
+    //        default:
+    //            fe::logging::error("Unknown shader type : %i", static_cast<uint32_t>(shader_type));
 
-                shader_stages_create_info.stage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
-                shader_stages_create_info.pName = nullptr;
-                break;
-        }
-    }
+    //            shader_stages_create_info.stage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+    //            shader_stages_create_info.pName = nullptr;
+    //            break;
+    //    }
+    //}
 
     graphics_pipeline_create_info.stageCount          = static_cast<uint32_t>(shader_stages_create_infos.size());
     graphics_pipeline_create_info.pStages             = shader_stages_create_infos.data();

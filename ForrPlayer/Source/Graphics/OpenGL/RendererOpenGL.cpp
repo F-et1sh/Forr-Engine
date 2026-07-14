@@ -169,9 +169,9 @@ void fe::RendererOpenGL::handleRenderQueue(const RenderPacket& render_packet) {
 
     // draw
     for (const auto& draw_command : render_packet.draw_commands) {
-        const auto& material              = *m_ResourceManager.GetResource(draw_command.material_ptr);
-        const auto& shader_program        = *m_ResourceManager.GetResource(material.shader_program_ptr);
-        const auto& opengl_material       = m_OpenGLResourceManager.GetResource(material.gpu_handle);
+        //const auto& material              = *m_ResourceManager.GetResource(draw_command.material_ptr);
+        //const auto& shader_program        = *m_ResourceManager.GetResource(material.);
+        //const auto& opengl_material       = m_OpenGLResourceManager.GetResource(material.gpu_handle);
         //const auto& opengl_shader_program = m_OpenGLResourceManager.GetResource(shader_program.gpu_handle);
 
         // bind shader ( material )
