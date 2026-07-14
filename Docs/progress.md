@@ -1,5 +1,27 @@
 ﻿# Forr-Engine Devlog
 
+## 14.07.2026
+### Goal
+    create render graph logic ( render passes )
+    allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
+        allocate big SSBO ( AZDO ) in renderer for materials;
+        see something on the screen
+    make a video for YouTube, when see something on the screen
+    fix Vukan VMA error
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+    ( provide string_pool and use std::string_view instead of always using std::string - helps to decrease allocations )
+
+    ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
+    ( use fe::Arena to store fe::resource::Material's buffers' data )
+
+### Done
+    understood how to get structures from Slang file via Slang Reflection API
+
+### Problem
+    borken PCH : I have to wait 21 seconds every compilation
+
 ## 13.07.2026
 ### Goal
     create separate class to handle Slang

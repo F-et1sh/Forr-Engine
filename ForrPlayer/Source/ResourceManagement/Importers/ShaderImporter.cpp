@@ -112,75 +112,73 @@ bool fe::ShaderImporter::compile(ShaderImportContext& context) {
         }
     }
 
-    if (!entry_points.empty()) {
-        Slang::ComPtr<slang::IComponentType> composed_program{};
+    Slang::ComPtr<slang::IComponentType> composed_program{};
 
-        SlangResult result = context.session->createCompositeComponentType(component_types.data(), component_types.size(), composed_program.writeRef());
-        if (SLANG_FAILED(result)) {
-            fe::logging::error("Slang -> Unified. Failed to create a composed program");
-            return false;
-        }
-
-        for (std::size_t i = 0; i < entry_points.size(); i++) {
-            const auto&                 entry_point = entry_points[i];
-            Slang::ComPtr<slang::IBlob> spirv_code{};
-
-            SlangResult result = composed_program->getEntryPointCode(i, 0, spirv_code.writeRef());
-            if (SLANG_FAILED(result)) {
-                fe::logging::error("Slang -> Unified. Failed to get an entry point code\nEntry point index : %i", i);
-                return false;
-            }
-
-            const size_t   byte_size = spirv_code->getBufferSize();
-            const uint8_t* raw_data  = reinterpret_cast<const uint8_t*>(spirv_code->getBufferPointer());
-
-            shader::StageBits shader_type     = entry_point.shader_type;
-            auto&             source_code_dst = context.shader_program.source_codes[shader_type];
-
-            source_code_dst.resize(byte_size, 0);
-            std::memcpy(source_code_dst.data(), raw_data, byte_size);
-        }
-
-        slang::ProgramLayout* program_layout = composed_program->getLayout();
-        if (!program_layout) FORR_UNLIKELY {
-            fe::logging::error("Slang -> Unified. Failed to get the layout of the composed program in fe::ShaderImporter::compile()");
-            return false;
-        }
-
-        context.root_layout = composed_program->getLayout();
+    SlangResult result = context.session->createCompositeComponentType(component_types.data(), component_types.size(), composed_program.writeRef());
+    if (SLANG_FAILED(result)) {
+        fe::logging::error("Slang -> Unified. Failed to create a composed program");
+        return false;
     }
+
+    for (std::size_t i = 0; i < entry_points.size(); i++) {
+        const auto&                 entry_point = entry_points[i];
+        Slang::ComPtr<slang::IBlob> spirv_code{};
+
+        SlangResult result = composed_program->getEntryPointCode(i, 0, spirv_code.writeRef());
+        if (SLANG_FAILED(result)) {
+            fe::logging::error("Slang -> Unified. Failed to get an entry point code\nEntry point index : %i", i);
+            return false;
+        }
+
+        const size_t   byte_size = spirv_code->getBufferSize();
+        const uint8_t* raw_data  = reinterpret_cast<const uint8_t*>(spirv_code->getBufferPointer());
+
+        shader::StageBits shader_type     = entry_point.shader_type;
+        auto&             source_code_dst = context.shader_program.source_codes[shader_type];
+
+        source_code_dst.resize(byte_size, 0);
+        std::memcpy(source_code_dst.data(), raw_data, byte_size);
+    }
+
+    slang::ProgramLayout* program_layout = composed_program->getLayout();
+    if (!program_layout) FORR_UNLIKELY {
+        fe::logging::error("Slang -> Unified. Failed to get the layout of the composed program in fe::ShaderImporter::compile()");
+        return false;
+    }
+
+    context.root_layout = program_layout;
 
     return true;
 }
 
 bool fe::ShaderImporter::reflect(ShaderImportContext& context) {
-    auto& shader_program = context.shader_reflected_data;
+    //auto& shader_program = context.shader_reflected_data;
 
-    unsigned int parameter_count = context.root_layout->getParameterCount();
+    //unsigned int parameter_count = context.root_layout->getParameterCount();
 
-    shader_program.reflected_parameters.reserve(parameter_count);
+    //shader_program.reflected_parameters.reserve(parameter_count);
 
-    for (unsigned int i = 0; i < parameter_count; i++) {
-        slang::VariableLayoutReflection* variable_layout = context.root_layout->getParameterByIndex(i);
-        if (!variable_layout) {
-            fe::logging::error("Slang -> Unified. Failed to reflect a shader\nslang::VariableLayoutReflection* variable_layout = context.root_layout->getParameterByIndex(i) was nullptr. i = %i", i);
-            continue;
-        }
+    //for (unsigned int i = 0; i < parameter_count; i++) {
+    //    slang::VariableLayoutReflection* variable_layout = context.root_layout->getParameterByIndex(i);
+    //    if (!variable_layout) {
+    //        fe::logging::error("Slang -> Unified. Failed to reflect a shader\nslang::VariableLayoutReflection* variable_layout = context.root_layout->getParameterByIndex(i) was nullptr. i = %i", i);
+    //        continue;
+    //    }
 
-        _slang_category category = variable_layout->getCategory();
+    //    _slang_category category = variable_layout->getCategory();
 
-        if (category == _slang_category::DescriptorTableSlot) {
-            auto& parameter = shader_program.reflected_parameters.emplace_back();
-            ShaderImporter::parseDescriptorTable(context, variable_layout, parameter);
-        }
-        else if (category == _slang_category::PushConstantBuffer) {
-            ShaderImporter::parsePushConstant(variable_layout, shader_program.reflected_push_constants);
-        }
-        else {
-            fe::logging::error("Slang -> Unified. Failed to reflect a shader\nUnknown slang::ParameterCategory : %i", category);
-            continue;
-        }
-    }
+    //    if (category == _slang_category::DescriptorTableSlot) {
+    //        auto& parameter = shader_program.reflected_parameters.emplace_back();
+    //        ShaderImporter::parseDescriptorTable(context, variable_layout, parameter);
+    //    }
+    //    else if (category == _slang_category::PushConstantBuffer) {
+    //        ShaderImporter::parsePushConstant(variable_layout, shader_program.reflected_push_constants);
+    //    }
+    //    else {
+    //        fe::logging::error("Slang -> Unified. Failed to reflect a shader\nUnknown slang::ParameterCategory : %i", category);
+    //        continue;
+    //    }
+    //}
 
     return true;
 }

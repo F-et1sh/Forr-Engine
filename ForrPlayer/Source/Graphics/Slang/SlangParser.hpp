@@ -19,6 +19,8 @@
 #include "slang-com-ptr.h"
 #include "slang-com-helper.h"
 
+#include "ResourceManagement/Resources.hpp"
+
 namespace fe {
     struct EntryPoint {
         Slang::ComPtr<slang::IEntryPoint> entry_point{};
@@ -58,9 +60,10 @@ namespace fe {
         bool reflectPipeline();
 
     private:
-        Slang::ComPtr<slang::ISession> m_Session{};
-        slang::IModule*                m_Module{};
+        Slang::ComPtr<slang::ISession>       m_Session{};
+        slang::IModule*                      m_Module{};
+        Slang::ComPtr<slang::IComponentType> m_CompusedProgram{};
         // this will be 'm_Module's layout by default, but if you compose a program - it will be layout of that program
-        slang::ProgramLayout*          m_RootLayout{};
+        slang::ProgramLayout* m_RootLayout{};
     };
 } // namespace fe

@@ -18,11 +18,11 @@ void fe::ResourceCreator::CreateDefaultResources() {
 }
 
 void fe::ResourceCreator::createDefaultMaterials() {
-    std::filesystem::path gltf_shader_path        = PATH.getDefaultShadersPath() / L"gLTF" / L"shader";
-    auto                  default_gltf_shader_ptr = m_Importer.ImportResource<resource::ShaderProgram>(gltf_shader_path.wstring() + PATH.getShaderExtension().wstring());
+    std::filesystem::path gltf_shader_path        = PATH.getDefaultShadersPath() / L"PBRMaterial" / L"shader";
+    auto                  default_gltf_shader_ptr = m_Importer.ImportResource<resource::ShaderReflectedData>(gltf_shader_path.wstring() + PATH.getShaderExtension().wstring());
 
     resource::Material gltf_material{};
-    gltf_material.shader_program_ptr = default_gltf_shader_ptr;
+    gltf_material.reflected_data_ptr = default_gltf_shader_ptr;
 
     glm::vec3 color{ 0.76f, 0.67f, 0.52f };
 
