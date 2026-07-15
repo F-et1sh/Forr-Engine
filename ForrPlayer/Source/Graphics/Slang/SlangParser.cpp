@@ -421,12 +421,8 @@ void fe::SlangParser::parseMemberRecursive(slang::VariableLayoutReflection* vari
 
     dst_reflected_data_node->name = variable_layout->getName() ? variable_layout->getName() : type_layout->getName();
 
-    // if offset is not zero, then it is most likely a member aka a field of a struct,
-    // so, we can cast it to 'shader::ReflectedMember*' and set its 'offset'
-    if (variable_layout->getOffset() != 0) {
-        shader::ReflectedMember* member = static_cast<shader::ReflectedMember*>(dst_reflected_data_node);
-        member->offset                  = variable_layout->getOffset();
-    }
+    shader::ReflectedMember* member = static_cast<shader::ReflectedMember*>(dst_reflected_data_node);
+    member->offset                  = variable_layout->getOffset();
 
     SlangParser::parseMemberRecursive(type_layout, dst_reflected_data_node);
 }
