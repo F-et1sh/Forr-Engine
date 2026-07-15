@@ -14,14 +14,14 @@
 #include "SlangParser.hpp"
 
 namespace fe {
-    using _shader_descriptor = shader::DescriptorType;
-    using _shader_value      = shader::ValueType;
-    using _shader_type       = shader::StageBits;
+    using shader_descriptor = shader::DescriptorType;
+    using shader_value      = shader::ValueType;
+    using shader_type       = shader::StageBits;
 
-    using _slang_kind      = slang::TypeReflection::Kind;
-    using _slang_decl_kind = slang::DeclReflection::Kind;
-    using _slang_scalar    = slang::TypeReflection::ScalarType;
-    using _slang_category  = slang::ParameterCategory;
+    using slang_kind      = slang::TypeReflection::Kind;
+    using slang_decl_kind = slang::DeclReflection::Kind;
+    using slang_scalar    = slang::TypeReflection::ScalarType;
+    using slang_category  = slang::ParameterCategory;
 } // namespace fe
 
 fe::SlangParser::SlangParser(GraphicsBackend graphics_backend) : m_GraphicsBackend(graphics_backend) {
@@ -145,14 +145,14 @@ bool fe::SlangParser::ReflectPipeline(shader::ReflectedPipelineLayout& pipeline_
                 continue;
             }
 
-            _slang_category category = variable_layout->getCategory();
+            slang_category category = variable_layout->getCategory();
 
-            if (category == _slang_category::DescriptorTableSlot) {
+            if (category == slang_category::DescriptorTableSlot) {
                 auto& parameter = pipeline_layout.descriptors.emplace_back();
                 SlangParser::parseDescriptorTable(variable_layout, parameter);
                 result = true;
             }
-            else if (category == _slang_category::PushConstantBuffer) {
+            else if (category == slang_category::PushConstantBuffer) {
                 SlangParser::parsePushConstant(variable_layout, pipeline_layout.push_constants);
                 result = true;
             }
@@ -176,10 +176,10 @@ bool fe::SlangParser::ReflectMaterials(std::unordered_map<std::string, shader::R
     auto list = module_reflection->getChildren();
     for (auto child : list) {
 
-        _slang_decl_kind kind = child->getKind();
+        slang_decl_kind kind = child->getKind();
 
         // there can be only 'Struct'
-        if (kind != _slang_decl_kind::Struct) continue;
+        if (kind != slang_decl_kind::Struct) continue;
 
         shader::ReflectedMaterialLayout material_layout{};
 
@@ -210,28 +210,28 @@ bool fe::SlangParser::ReflectMaterials(std::unordered_map<std::string, shader::R
 void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* variable_layout,
                                            shader::ReflectedDescriptor&     dst_descriptor) {
     assert(variable_layout);
-    assert(variable_layout->getCategory() == _slang_category::DescriptorTableSlot);
+    assert(variable_layout->getCategory() == slang_category::DescriptorTableSlot);
 
     dst_descriptor.set         = variable_layout->getBindingSpace();
     dst_descriptor.binding     = variable_layout->getBindingIndex();
     dst_descriptor.array_size  = 1;
-    dst_descriptor.stage_flags = static_cast<uint32_t>(_shader_type::NONE);
+    dst_descriptor.stage_flags = static_cast<uint32_t>(shader_type::NONE);
 
     // this doesn't work
     //SlangStage stage = variable_layout->getStage();
     //dst_descriptor.stage_flags =
-    //    ((stage & SLANG_STAGE_VERTEX) ? static_cast<uint32_t>(_shader_type::VERTEX) : 0) |
-    //    ((stage & SLANG_STAGE_FRAGMENT) ? static_cast<uint32_t>(_shader_type::FRAGMENT) : 0) |
-    //    ((stage & SLANG_STAGE_COMPUTE) ? static_cast<uint32_t>(_shader_type::COMPUTE) : 0) |
-    //    ((stage & SLANG_STAGE_GEOMETRY) ? static_cast<uint32_t>(_shader_type::GEOMETRY) : 0);
+    //    ((stage & SLANG_STAGE_VERTEX) ? static_cast<uint32_t>(shader_type::VERTEX) : 0) |
+    //    ((stage & SLANG_STAGE_FRAGMENT) ? static_cast<uint32_t>(shader_type::FRAGMENT) : 0) |
+    //    ((stage & SLANG_STAGE_COMPUTE) ? static_cast<uint32_t>(shader_type::COMPUTE) : 0) |
+    //    ((stage & SLANG_STAGE_GEOMETRY) ? static_cast<uint32_t>(shader_type::GEOMETRY) : 0);
 
-    dst_descriptor.stage_flags |= static_cast<uint32_t>(_shader_type::VERTEX);
-    dst_descriptor.stage_flags |= static_cast<uint32_t>(_shader_type::FRAGMENT);
-    dst_descriptor.stage_flags |= static_cast<uint32_t>(_shader_type::COMPUTE);
-    dst_descriptor.stage_flags |= static_cast<uint32_t>(_shader_type::GEOMETRY);
+    dst_descriptor.stage_flags |= static_cast<uint32_t>(shader_type::VERTEX);
+    dst_descriptor.stage_flags |= static_cast<uint32_t>(shader_type::FRAGMENT);
+    dst_descriptor.stage_flags |= static_cast<uint32_t>(shader_type::COMPUTE);
+    dst_descriptor.stage_flags |= static_cast<uint32_t>(shader_type::GEOMETRY);
 
     slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
-    _slang_kind                  kind        = type_layout->getKind();
+    slang_kind                  kind        = type_layout->getKind();
 
     // 24.06.2026 Slang has got a bug, so, now this will work like this
     //
@@ -254,44 +254,44 @@ void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* vari
     }
 
     switch (kind) {
-        case _slang_kind::ConstantBuffer:
-        case _slang_kind::ParameterBlock:
-            dst_descriptor.descriptor_type = _shader_descriptor::UNIFORM_BUFFER;
+        case slang_kind::ConstantBuffer:
+        case slang_kind::ParameterBlock:
+            dst_descriptor.descriptor_type = shader_descriptor::UNIFORM_BUFFER;
             SlangParser::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
             break;
 
-        case _slang_kind::ShaderStorageBuffer:
-            dst_descriptor.descriptor_type = _shader_descriptor::STORAGE_BUFFER;
+        case slang_kind::ShaderStorageBuffer:
+            dst_descriptor.descriptor_type = shader_descriptor::STORAGE_BUFFER;
             SlangParser::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
             break;
 
-        case _slang_kind::Array: {
-            // if you got '_slang_kind::Array' here that means that this is a bindless parameter
+        case slang_kind::Array: {
+            // if you got 'slang_kind::Array' here that means that this is a bindless parameter
             dst_descriptor.is_bindless = true;
             // when you pass 'slang::TypeLayoutReflection*' into 'fe::SlangParser::parseMemberRecursive()' instead of 'slang::VariableLayoutReflection*'
             //  you have to set 'array_size' yourself
             dst_descriptor.array_size = type_layout->getElementCount();
 
             slang::TypeLayoutReflection* array_element_type_layout = type_layout->getElementTypeLayout();
-            _slang_kind                  element_kind              = array_element_type_layout->getKind();
+            slang_kind                  element_kind              = array_element_type_layout->getKind();
 
-            if (element_kind == _slang_kind::Resource) {
+            if (element_kind == slang_kind::Resource) {
                 SlangResourceShape shape      = array_element_type_layout->getResourceShape();
                 unsigned int       shape_base = shape & SLANG_RESOURCE_BASE_SHAPE_MASK;
 
                 if (shape_base >= SLANG_TEXTURE_1D && shape_base <= SLANG_TEXTURE_CUBE) {
                     bool is_read_write             = array_element_type_layout->getResourceAccess() == SLANG_RESOURCE_ACCESS_READ_WRITE;
-                    dst_descriptor.descriptor_type = is_read_write ? _shader_descriptor::STORAGE_IMAGE : _shader_descriptor::COMBINED_IMAGE_SAMPLER;
+                    dst_descriptor.descriptor_type = is_read_write ? shader_descriptor::STORAGE_IMAGE : shader_descriptor::COMBINED_IMAGE_SAMPLER;
                 }
             }
             else {
-                dst_descriptor.descriptor_type = _shader_descriptor::UNIFORM_BUFFER;
+                dst_descriptor.descriptor_type = shader_descriptor::UNIFORM_BUFFER;
             }
 
             SlangParser::parseMemberRecursive(array_element_type_layout, static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
         } break;
 
-        case _slang_kind::Resource: {
+        case slang_kind::Resource: {
             // when you pass 'slang::TypeLayoutReflection*' into 'fe::SlangParser::parseMemberRecursive()' instead of 'slang::VariableLayoutReflection*'
             //  you have to set 'array_size' yourself
             dst_descriptor.array_size = type_layout->getElementCount();
@@ -305,19 +305,19 @@ void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* vari
                 shape_base <= SLANG_TEXTURE_CUBE) {
 
                 if (resource_access == SLANG_RESOURCE_ACCESS_READ_WRITE) {
-                    dst_descriptor.descriptor_type = _shader_descriptor::STORAGE_IMAGE;
+                    dst_descriptor.descriptor_type = shader_descriptor::STORAGE_IMAGE;
                 }
                 else {
-                    dst_descriptor.descriptor_type = _shader_descriptor::COMBINED_IMAGE_SAMPLER;
+                    dst_descriptor.descriptor_type = shader_descriptor::COMBINED_IMAGE_SAMPLER;
                 }
             }
             else if (shape_base == SLANG_STRUCTURED_BUFFER ||
                      shape_base == SLANG_BYTE_ADDRESS_BUFFER) {
 
-                dst_descriptor.descriptor_type = _shader_descriptor::STORAGE_BUFFER;
+                dst_descriptor.descriptor_type = shader_descriptor::STORAGE_BUFFER;
             }
             else if (shape_base == SLANG_ACCELERATION_STRUCTURE) {
-                dst_descriptor.descriptor_type = _shader_descriptor::ACCELERATION_STRUCTURE;
+                dst_descriptor.descriptor_type = shader_descriptor::ACCELERATION_STRUCTURE;
             }
             else {
                 assert(false);
@@ -326,14 +326,14 @@ void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* vari
             SlangParser::parseMemberRecursive(type_layout->getElementTypeLayout(), static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
         } break;
 
-        case _slang_kind::SamplerState:
-            dst_descriptor.descriptor_type = _shader_descriptor::SAMPLER;
+        case slang_kind::SamplerState:
+            dst_descriptor.descriptor_type = shader_descriptor::SAMPLER;
             SlangParser::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
             break;
 
         default:
             fe::logging::error("Slang -> Unified. Failed to reflect a shader\nUnknown descriptor resource kind : %i", kind);
-            dst_descriptor.descriptor_type = _shader_descriptor::UNKNOWN;
+            dst_descriptor.descriptor_type = shader_descriptor::UNKNOWN;
             break;
     }
 
@@ -351,48 +351,48 @@ void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* vari
 void fe::SlangParser::parsePushConstant(slang::VariableLayoutReflection* variable_layout,
                                         shader::ReflectedPushConstants&  dst_push_constants) {
     assert(variable_layout);
-    assert(variable_layout->getCategory() == _slang_category::PushConstantBuffer);
+    assert(variable_layout->getCategory() == slang_category::PushConstantBuffer);
 
     dst_push_constants.array_size  = 1;
-    dst_push_constants.stage_flags = static_cast<uint32_t>(_shader_type::NONE);
+    dst_push_constants.stage_flags = static_cast<uint32_t>(shader_type::NONE);
 
     // this doesn't work
     //SlangStage stage = variable_layout->getStage();
     //dst_push_constants.stage_flags =
-    //    ((stage & SLANG_STAGE_VERTEX) ? static_cast<uint32_t>(_shader_type::VERTEX) : 0) |
-    //    ((stage & SLANG_STAGE_FRAGMENT) ? static_cast<uint32_t>(_shader_type::FRAGMENT) : 0) |
-    //    ((stage & SLANG_STAGE_COMPUTE) ? static_cast<uint32_t>(_shader_type::COMPUTE) : 0) |
-    //    ((stage & SLANG_STAGE_GEOMETRY) ? static_cast<uint32_t>(_shader_type::GEOMETRY) : 0);
+    //    ((stage & SLANG_STAGE_VERTEX) ? static_cast<uint32_t>(shader_type::VERTEX) : 0) |
+    //    ((stage & SLANG_STAGE_FRAGMENT) ? static_cast<uint32_t>(shader_type::FRAGMENT) : 0) |
+    //    ((stage & SLANG_STAGE_COMPUTE) ? static_cast<uint32_t>(shader_type::COMPUTE) : 0) |
+    //    ((stage & SLANG_STAGE_GEOMETRY) ? static_cast<uint32_t>(shader_type::GEOMETRY) : 0);
 
-    dst_push_constants.stage_flags |= static_cast<uint32_t>(_shader_type::VERTEX);
-    dst_push_constants.stage_flags |= static_cast<uint32_t>(_shader_type::FRAGMENT);
-    dst_push_constants.stage_flags |= static_cast<uint32_t>(_shader_type::COMPUTE);
-    dst_push_constants.stage_flags |= static_cast<uint32_t>(_shader_type::GEOMETRY);
+    dst_push_constants.stage_flags |= static_cast<uint32_t>(shader_type::VERTEX);
+    dst_push_constants.stage_flags |= static_cast<uint32_t>(shader_type::FRAGMENT);
+    dst_push_constants.stage_flags |= static_cast<uint32_t>(shader_type::COMPUTE);
+    dst_push_constants.stage_flags |= static_cast<uint32_t>(shader_type::GEOMETRY);
 
     slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
-    _slang_kind                  kind        = type_layout->getKind();
+    slang_kind                  kind        = type_layout->getKind();
 
     switch (kind) {
-        case _slang_kind::ConstantBuffer:
-        case _slang_kind::ParameterBlock:
+        case slang_kind::ConstantBuffer:
+        case slang_kind::ParameterBlock:
             SlangParser::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<shader::ReflectedDataNode*>(&dst_push_constants));
             break;
 
-        case _slang_kind::ShaderStorageBuffer:
+        case slang_kind::ShaderStorageBuffer:
             SlangParser::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<shader::ReflectedDataNode*>(&dst_push_constants));
             break;
 
-        case _slang_kind::Array: {
+        case slang_kind::Array: {
             dst_push_constants.array_size = type_layout->getElementCount();
             SlangParser::parseMemberRecursive(type_layout->getElementTypeLayout(), static_cast<shader::ReflectedDataNode*>(&dst_push_constants));
         } break;
 
-        case _slang_kind::Resource: {
+        case slang_kind::Resource: {
             dst_push_constants.array_size = type_layout->getElementCount();
             SlangParser::parseMemberRecursive(type_layout->getElementTypeLayout(), static_cast<shader::ReflectedDataNode*>(&dst_push_constants));
         } break;
 
-        case _slang_kind::SamplerState:
+        case slang_kind::SamplerState:
             SlangParser::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<shader::ReflectedDataNode*>(&dst_push_constants));
             break;
 
@@ -443,21 +443,21 @@ void fe::SlangParser::parseMemberRecursive(slang::TypeLayoutReflection* type_lay
         }
     };
 
-    _slang_kind kind = type_layout->getKind();
+    slang_kind kind = type_layout->getKind();
 
     switch (kind) {
-        case _slang_kind::Struct:
-            dst_reflected_data_node->type = _shader_value::STRUCT;
+        case slang_kind::Struct:
+            dst_reflected_data_node->type = shader_value::STRUCT;
             parse_recursive(type_layout, dst_reflected_data_node->members);
             break;
 
-        case _slang_kind::Array: {
-            dst_reflected_data_node->type = _shader_value::STRUCT;
+        case slang_kind::Array: {
+            dst_reflected_data_node->type = shader_value::STRUCT;
 
             slang::TypeLayoutReflection* element_type_layout = type_layout->getElementTypeLayout();
             dst_reflected_data_node->array_size              = type_layout->getElementCount();
 
-            if (element_type_layout->getKind() == _slang_kind::Struct) {
+            if (element_type_layout->getKind() == slang_kind::Struct) {
                 parse_recursive(element_type_layout, dst_reflected_data_node->members);
             }
             else {
@@ -466,40 +466,40 @@ void fe::SlangParser::parseMemberRecursive(slang::TypeLayoutReflection* type_lay
         } break;
 
             // clang-format off
-        case _slang_kind::Matrix        : SlangParser::mapMatrix(type_layout, dst_reflected_data_node->type); break;
-        case _slang_kind::Vector        : SlangParser::mapVector(type_layout, dst_reflected_data_node->type); break;
-        case _slang_kind::Scalar        : SlangParser::mapScalar(type_layout, dst_reflected_data_node->type); break;
+        case slang_kind::Matrix        : SlangParser::mapMatrix(type_layout, dst_reflected_data_node->type); break;
+        case slang_kind::Vector        : SlangParser::mapVector(type_layout, dst_reflected_data_node->type); break;
+        case slang_kind::Scalar        : SlangParser::mapScalar(type_layout, dst_reflected_data_node->type); break;
         
-        case _slang_kind::SamplerState  : dst_reflected_data_node->type = _shader_value::UINT64     ; break;
-        case _slang_kind::Pointer       : dst_reflected_data_node->type = _shader_value::UINT_PTR   ; break;
+        case slang_kind::SamplerState  : dst_reflected_data_node->type = shader_value::UINT64     ; break;
+        case slang_kind::Pointer       : dst_reflected_data_node->type = shader_value::UINT_PTR   ; break;
             // clang-format on
 
-        case _slang_kind::Resource: {
+        case slang_kind::Resource: {
             SlangResourceShape shape      = type_layout->getResourceShape();
             unsigned int       shape_base = shape & SLANG_RESOURCE_BASE_SHAPE_MASK;
 
             if (shape_base >= SLANG_TEXTURE_1D &&
                 shape_base <= SLANG_TEXTURE_CUBE) {
 
-                dst_reflected_data_node->type = _shader_value::UINT32;
+                dst_reflected_data_node->type = shader_value::UINT32;
             }
             else if (shape_base == SLANG_STRUCTURED_BUFFER ||
                      shape_base == SLANG_BYTE_ADDRESS_BUFFER) {
 
-                dst_reflected_data_node->type = _shader_value::UINT_PTR;
+                dst_reflected_data_node->type = shader_value::UINT_PTR;
             }
         } break;
 
-        case _slang_kind::Enum:
+        case slang_kind::Enum:
             SlangParser::mapScalar(type_layout, dst_reflected_data_node->type);
 
-            if (dst_reflected_data_node->type == _shader_value::UNKNOWN)
-                dst_reflected_data_node->type = _shader_value::INT32;
+            if (dst_reflected_data_node->type == shader_value::UNKNOWN)
+                dst_reflected_data_node->type = shader_value::INT32;
             break;
 
         default:
             fe::logging::warning("Slang -> Unified. Unhandled member kind %i for '%s'. Setting as UNKNOWN", kind, dst_reflected_data_node->name.c_str());
-            dst_reflected_data_node->type = _shader_value::UNKNOWN;
+            dst_reflected_data_node->type = shader_value::UNKNOWN;
             break;
     }
 }
@@ -511,9 +511,9 @@ void fe::SlangParser::mapMatrix(slang::TypeLayoutReflection* type_layout, shader
     uint32_t cols = type_layout->getColumnCount();
 
     if (rows == 4 && cols == 4)
-        type = _shader_value::MAT4;
+        type = shader_value::MAT4;
     else if (rows == 3 && cols == 3)
-        type = _shader_value::MAT3;
+        type = shader_value::MAT3;
     else
         assert(false);
 }
@@ -521,24 +521,24 @@ void fe::SlangParser::mapMatrix(slang::TypeLayoutReflection* type_layout, shader
 void fe::SlangParser::mapVector(slang::TypeLayoutReflection* type_layout, shader::ValueType& type) {
     assert(type_layout);
 
-    _slang_scalar scalar          = type_layout->getScalarType();
+    slang_scalar scalar          = type_layout->getScalarType();
     uint32_t      component_count = type_layout->getElementCount();
 
     switch (scalar) {
-        case _slang_scalar::Float32:
-            if (component_count == 2) type = _shader_value::FLOAT2;
-            if (component_count == 3) type = _shader_value::FLOAT3;
-            if (component_count == 4) type = _shader_value::FLOAT4;
+        case slang_scalar::Float32:
+            if (component_count == 2) type = shader_value::FLOAT2;
+            if (component_count == 3) type = shader_value::FLOAT3;
+            if (component_count == 4) type = shader_value::FLOAT4;
             break;
-        case _slang_scalar::Int32:
-            if (component_count == 2) type = _shader_value::INT2;
-            if (component_count == 3) type = _shader_value::INT3;
-            if (component_count == 4) type = _shader_value::INT4;
+        case slang_scalar::Int32:
+            if (component_count == 2) type = shader_value::INT2;
+            if (component_count == 3) type = shader_value::INT3;
+            if (component_count == 4) type = shader_value::INT4;
             break;
-        case _slang_scalar::UInt32:
-            if (component_count == 2) type = _shader_value::UINT2;
-            if (component_count == 3) type = _shader_value::UINT3;
-            if (component_count == 4) type = _shader_value::UINT4;
+        case slang_scalar::UInt32:
+            if (component_count == 2) type = shader_value::UINT2;
+            if (component_count == 3) type = shader_value::UINT3;
+            if (component_count == 4) type = shader_value::UINT4;
             break;
         default:
             assert(false);
@@ -549,35 +549,35 @@ void fe::SlangParser::mapVector(slang::TypeLayoutReflection* type_layout, shader
 void fe::SlangParser::mapScalar(slang::TypeLayoutReflection* type_layout, shader::ValueType& type) {
     assert(type_layout);
 
-    _slang_scalar scalar = type_layout->getScalarType();
+    slang_scalar scalar = type_layout->getScalarType();
 
     // clang-format off
     switch (scalar) {
-        case _slang_scalar::Void     : type = _shader_value::VOID     ; break;
-        case _slang_scalar::Bool     : type = _shader_value::BOOL     ; break;
-        case _slang_scalar::Int32    : type = _shader_value::INT32    ; break;
-        case _slang_scalar::UInt32   : type = _shader_value::UINT32   ; break;
-        case _slang_scalar::Int64    : type = _shader_value::INT64    ; break;
-        case _slang_scalar::UInt64   : type = _shader_value::UINT64   ; break;
-        case _slang_scalar::Float16  : type = _shader_value::FLOAT16  ; break;
-        case _slang_scalar::Float32  : type = _shader_value::FLOAT32  ; break;
-        case _slang_scalar::Float64  : type = _shader_value::FLOAT64  ; break;
-        case _slang_scalar::Int8     : type = _shader_value::INT8     ; break;
-        case _slang_scalar::UInt8    : type = _shader_value::UINT8    ; break;
-        case _slang_scalar::Int16    : type = _shader_value::INT16    ; break;
-        case _slang_scalar::UInt16   : type = _shader_value::UINT16   ; break;
-        case _slang_scalar::IntPtr   : type = _shader_value::INT_PTR  ; break;
-        case _slang_scalar::UIntPtr  : type = _shader_value::UINT_PTR ; break;
-        //case _slang_scalar::BFloat16 : type = _shader_value::BFLOAT16 ; break;
-        //case _slang_scalar::FloatE4M3: type = _shader_value::FLOATE4M3; break;
-        //case _slang_scalar::FloatE5M2: type = _shader_value::FLOATE5M2; break;
-        case _slang_scalar::None:
+        case slang_scalar::Void     : type = shader_value::VOID     ; break;
+        case slang_scalar::Bool     : type = shader_value::BOOL     ; break;
+        case slang_scalar::Int32    : type = shader_value::INT32    ; break;
+        case slang_scalar::UInt32   : type = shader_value::UINT32   ; break;
+        case slang_scalar::Int64    : type = shader_value::INT64    ; break;
+        case slang_scalar::UInt64   : type = shader_value::UINT64   ; break;
+        case slang_scalar::Float16  : type = shader_value::FLOAT16  ; break;
+        case slang_scalar::Float32  : type = shader_value::FLOAT32  ; break;
+        case slang_scalar::Float64  : type = shader_value::FLOAT64  ; break;
+        case slang_scalar::Int8     : type = shader_value::INT8     ; break;
+        case slang_scalar::UInt8    : type = shader_value::UINT8    ; break;
+        case slang_scalar::Int16    : type = shader_value::INT16    ; break;
+        case slang_scalar::UInt16   : type = shader_value::UINT16   ; break;
+        case slang_scalar::IntPtr   : type = shader_value::INT_PTR  ; break;
+        case slang_scalar::UIntPtr  : type = shader_value::UINT_PTR ; break;
+        //case slang_scalar::BFloat16 : type = shader_value::BFLOAT16 ; break;
+        //case slang_scalar::FloatE4M3: type = shader_value::FLOATE4M3; break;
+        //case slang_scalar::FloatE5M2: type = shader_value::FLOATE5M2; break;
+        case slang_scalar::None:
             fe::logging::error("Slang -> Unified. Failed to reflect a shader\ngot slang::TypeReflection::ScalarType::None.\nSetting type as fe::shader::ValueType::UNKNOWN");
-            type = _shader_value::UNKNOWN;
+            type = shader_value::UNKNOWN;
             break;
         default:
             fe::logging::error("Slang -> Unified. Failed to reflect a shader\ngot unknown slang::TypeReflection::ScalarType.\nSetting type as fe::shader::ValueType::UNKNOWN");
-            type = _shader_value::UNKNOWN;
+            type = shader_value::UNKNOWN;
             break;
     }
     // clang-format on

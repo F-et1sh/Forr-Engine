@@ -107,6 +107,7 @@ call "$(SolutionDir)Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Targe
     <ClInclude Include="Include\Forr\Core\logging.hpp" />
     <ClInclude Include="Include\Forr\Core\path.hpp" />
     <ClInclude Include="Include\Forr\Core\pointer.hpp" />
+    <ClInclude Include="Include\Forr\Core\string.hpp" />
     <ClInclude Include="Include\Forr\Core\types.hpp" />
     <ClInclude Include="Include\Forr\ECS\Components.hpp" />
     <ClInclude Include="Include\Forr\ECS\Systems\RenderSystem.hpp" />
