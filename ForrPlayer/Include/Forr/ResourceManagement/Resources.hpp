@@ -291,7 +291,9 @@ namespace fe::resource {
     concept resource_t =
         (std::is_same_v<T, Texture>) ||
         (std::is_same_v<T, ShaderProgram>) ||
+        (std::is_same_v<T, MaterialLayout>) ||
         (std::is_same_v<T, Material>) ||
+        (std::is_same_v<T, ShaderReflectedData>) ||
         (std::is_same_v<T, Model>);
 
 #undef FORR_RESOURCE_BODY

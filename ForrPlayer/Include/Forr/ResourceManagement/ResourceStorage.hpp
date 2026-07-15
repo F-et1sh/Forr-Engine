@@ -22,22 +22,18 @@
 namespace fe {
     class ResourceImporter; // forward declaration
 
-    // a hack to see the type in Output after compilation
-    template <typename _Ty>
-    struct ShowType {};
-
     class ResourceStorage {
     public:
         ResourceStorage(ResourceManagementContext& context) : m_Context(context) {}
         ~ResourceStorage() = default;
 
-        template <typename T>
+        template <resource::resource_t T>
         FORR_NODISCARD fe::pointer<T> CreateResource(T&& value) {
             auto& storage = this->GetStorage<T>();
             return storage.create(std::move(value));
         }
 
-        template <typename T>
+        template <resource::resource_t T>
         FORR_NODISCARD fe::pointer<T> CreateResource()
             requires std::default_initializable<T>
         {
@@ -45,21 +41,21 @@ namespace fe {
             return storage.create();
         }
 
-        template <typename T>
+        template <resource::resource_t T>
         FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) {
             auto& storage = this->GetStorage<T>();
             if (!storage.is_valid(ptr)) return nullptr; // TODO : provide fallbacks
             return storage.get(ptr);
         }
 
-        template <typename T, typename Func>
+        template <resource::resource_t T, typename Func>
         void RunForEach(Func&& func) {
             auto& storage = this->GetStorage<T>();
             storage.for_each(func);
         }
 
         // unsafe helper function
-        template <typename T>
+        template <resource::resource_t T>
         fe::typed_pointer_storage<T>& GetStorage() {
             if constexpr (std::is_same_v<T, fe::resource::Texture>)
                 return m_Textures;
@@ -75,9 +71,7 @@ namespace fe {
                 return m_Models;
             else {
                 // TODO : provide code generation
-                static_assert(std::false_type::value && "Forgot to add some new resource or passing wrong value as an argument");
-
-                ShowType<T> missing_type{};
+                static_assert(std::false_type::value && "Forgot to add some new resource");
             }
         }
 

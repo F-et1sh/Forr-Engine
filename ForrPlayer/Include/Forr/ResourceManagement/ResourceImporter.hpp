@@ -25,7 +25,7 @@ namespace fe {
         void ImportResource(const std::filesystem::path& resource_full_path);
 
         // upload resource to the storage and get its pointer
-        template<typename T>
+        template<resource::resource_t T>
         fe::pointer<T> ImportResource(const std::filesystem::path& resource_full_path);
 
     private:
