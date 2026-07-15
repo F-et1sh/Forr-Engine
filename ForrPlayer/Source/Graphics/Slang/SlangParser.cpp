@@ -170,153 +170,41 @@ bool fe::SlangParser::ReflectMaterials(std::unordered_map<std::string, shader::R
     bool result = false;
 
     slang::DeclReflection* module_reflection = m_Module->getModuleReflection();
+    slang::ProgramLayout*  layout            = m_CompusedProgram->getLayout();
 
+    // unwrap first module - it always exists, even if the file is empty
     auto list = module_reflection->getChildren();
     for (auto child : list) {
-        if (this->parseDeclarationRecursive(child, material_layouts))
-            result = true;
+
+        _slang_decl_kind kind = child->getKind();
+
+        // there can be only 'Struct'
+        if (kind != _slang_decl_kind::Struct) continue;
+
+        shader::ReflectedMaterialLayout material_layout{};
+
+        slang::TypeReflection*       type        = child->getType();
+        slang::TypeLayoutReflection* type_layout = layout->getTypeLayout(type);
+
+        material_layout.name = type_layout->getName();
+        material_layout.size = type_layout->getSize();
+
+        unsigned int field_count = type_layout->getFieldCount();
+        material_layout.members.reserve(field_count);
+
+        for (unsigned int i = 0; i < field_count; i++) {
+            slang::VariableLayoutReflection* variable_layout = type_layout->getFieldByIndex(i);
+            auto&                            member          = material_layout.members.emplace_back();
+
+            SlangParser::parseMemberRecursive(variable_layout, static_cast<shader::ReflectedDataNode*>(&member));
+        }
+
+        material_layouts.emplace(material_layout.name, material_layout);
+
+        result = true;
     }
 
     return result;
-}
-
-bool fe::SlangParser::parseDeclarationRecursive(slang::DeclReflection* member, std::unordered_map<std::string, shader::ReflectedMaterialLayout>& material_layouts) {
-    assert(member);
-
-    // this variable is needed to not create 'fe::shader::ReflectionMaterialLayout',
-    //  if there is no structures in the Slang file
-    bool result = false;
-
-    slang::ProgramLayout* layout = m_CompusedProgram->getLayout();
-
-    auto parse_recursive = [&](slang::DeclReflection* _member, std::unordered_map<std::string, shader::ReflectedMaterialLayout>& _material_layouts) -> bool {
-        bool result_recursive = false;
-
-        auto list = _member->getChildren();
-        for (auto child : list) {
-            if (this->parseDeclarationRecursive(child, _material_layouts))
-                result_recursive = true;
-        }
-
-        return result_recursive;
-    };
-
-    _slang_decl_kind kind = member->getKind();
-
-    switch (kind) {
-        case _slang_decl_kind::Unsupported: // interfaces
-            return false;
-            break;
-        case _slang_decl_kind::Struct:
-            //auto& material_layout = material_layouts.emplace_back();
-            //parse_recursive(member, material_layout);
-
-            {
-                slang::TypeReflection*       type        = member->getType();
-                slang::TypeLayoutReflection* type_layout = layout->getTypeLayout(type);
-                fe::logging::info("%i", type_layout->getSize());
-            }
-            {
-                slang::VariableReflection*   variable    = member->asVariable();
-                slang::TypeReflection*       type        = variable->getType();
-                slang::TypeLayoutReflection* type_layout = layout->getTypeLayout(type);
-                fe::logging::info("%i", type_layout->getSize());
-            }
-
-            result = true;
-            break;
-        case _slang_decl_kind::Variable:
-            slang::VariableReflection* variable = member->asVariable();
-            this->parseVariableRecursive(variable);
-            result = true;
-            break;
-
-            //case _slang_decl_kind::Module:break;
-            //case _slang_decl_kind::Generic:break;
-            //case _slang_decl_kind::Func:break;
-            //case _slang_decl_kind::Namespace:break;
-            //case _slang_decl_kind::Enum:break;
-    }
-
-    return result;
-}
-
-void fe::SlangParser::parseVariableRecursive(slang::VariableReflection* member) {
-    assert(member);
-
-    slang::ProgramLayout* layout = m_CompusedProgram->getLayout();
-
-    slang::TypeReflection*       type        = member->getType();
-    slang::TypeLayoutReflection* type_layout = layout->getTypeLayout(type);
-
-    auto s = type_layout->getSize();
-
-    auto parse_recursive = [&](slang::TypeReflection* type) {
-        uint32_t field_count = type->getFieldCount();
-        for (uint32_t i = 0; i < field_count; i++) {
-            parseVariableRecursive(type->getFieldByIndex(i));
-        }
-    };
-
-    _slang_kind kind = type->getKind();
-
-    switch (kind) {
-        case _slang_kind::Struct:
-            //dst_reflected_data_node->type = _shader_value::STRUCT;
-            parse_recursive(type);
-            break;
-
-        case _slang_kind::Array: {
-            //dst_reflected_data_node->type = _shader_value::STRUCT;
-
-            slang::TypeReflection* element_type = type->getElementType();
-            //dst_reflected_data_node->array_size = type->getElementCount();
-
-            if (element_type->getKind() == _slang_kind::Struct) {
-                parse_recursive(element_type);
-            }
-            else {
-                //this->mapScalar(element_type, dst_reflected_data_node->type);
-            }
-        } break;
-
-            // clang-format off
-        //case _slang_kind::Matrix        : this->mapMatrix(type, dst_reflected_data_node->type); break;
-        //case _slang_kind::Vector        : this->mapVector(type, dst_reflected_data_node->type); break;
-        //case _slang_kind::Scalar        : this->mapScalar(type, dst_reflected_data_node->type); break;
-        
-        //case _slang_kind::SamplerState  : dst_reflected_data_node->type = _shader_value::UINT64     ; break;
-        //case _slang_kind::Pointer       : dst_reflected_data_node->type = _shader_value::UINT_PTR   ; break;
-            // clang-format on
-
-        case _slang_kind::Resource: {
-            SlangResourceShape shape      = type->getResourceShape();
-            unsigned int       shape_base = shape & SLANG_RESOURCE_BASE_SHAPE_MASK;
-
-            if (shape_base >= SLANG_TEXTURE_1D &&
-                shape_base <= SLANG_TEXTURE_CUBE) {
-
-                //dst_reflected_data_node->type = _shader_value::UINT32;
-            }
-            else if (shape_base == SLANG_STRUCTURED_BUFFER ||
-                     shape_base == SLANG_BYTE_ADDRESS_BUFFER) {
-
-                //dst_reflected_data_node->type = _shader_value::UINT_PTR;
-            }
-        } break;
-
-        case _slang_kind::Enum:
-            //this->mapScalar(type, dst_reflected_data_node->type);
-
-            //if (dst_reflected_data_node->type == _shader_value::UNKNOWN)
-            //dst_reflected_data_node->type = _shader_value::INT32;
-            break;
-
-        default:
-            //fe::logging::warning("Slang -> Unified. Unhandled member kind %i for '%s'. Setting as UNKNOWN", kind, dst_reflected_data_node->name.c_str());
-            //dst_reflected_data_node->type = _shader_value::UNKNOWN;
-            break;
-    }
 }
 
 void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* variable_layout,
@@ -460,7 +348,8 @@ void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* vari
     dst_descriptor.name = variable_layout->getName();
 }
 
-void fe::SlangParser::parsePushConstant(slang::VariableLayoutReflection* variable_layout, shader::ReflectedPushConstants& dst_push_constants) {
+void fe::SlangParser::parsePushConstant(slang::VariableLayoutReflection* variable_layout,
+                                        shader::ReflectedPushConstants&  dst_push_constants) {
     assert(variable_layout);
     assert(variable_layout->getCategory() == _slang_category::PushConstantBuffer);
 
@@ -523,7 +412,8 @@ void fe::SlangParser::parsePushConstant(slang::VariableLayoutReflection* variabl
     dst_push_constants.name = variable_layout->getName();
 }
 
-void fe::SlangParser::parseMemberRecursive(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDataNode* dst_reflected_data_node) {
+void fe::SlangParser::parseMemberRecursive(slang::VariableLayoutReflection* variable_layout,
+                                           shader::ReflectedDataNode*       dst_reflected_data_node) {
     assert(variable_layout);
     assert(dst_reflected_data_node);
 
