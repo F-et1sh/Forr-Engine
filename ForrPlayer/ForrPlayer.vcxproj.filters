@@ -45,6 +45,7 @@
     <ClInclude Include="Include\Forr\ECS\Systems\RenderSystem.hpp" />
     <ClInclude Include="Include\Forr\Graphics\RenderGraph.hpp" />
     <ClInclude Include="Source\Graphics\Slang\SlangParser.hpp" />
+    <ClInclude Include="Include\Forr\Core\string.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />

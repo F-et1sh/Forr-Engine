@@ -23,5 +23,6 @@
 #include "Core/types.hpp"
 #include "Core/path.hpp"
 #include "Core/guid.hpp"
+#include "Core/string.hpp"
 
 #include "entt/entt.hpp"
