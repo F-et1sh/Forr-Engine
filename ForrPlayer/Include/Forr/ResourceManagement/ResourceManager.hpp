@@ -34,22 +34,22 @@ namespace fe {
         void CreateDefaultResources();
         void SetupSceneResources(const std::vector<std::filesystem::path>& resource_full_paths);
 
-        template <typename T>
+        template <resource::resource_t T>
         FORR_NODISCARD fe::pointer<T> ImportResource(const std::filesystem::path& resource_full_path) {
             return m_Importer.ImportResource<T>(resource_full_path);
         }
 
-        template <typename T>
+        template <resource::resource_t T>
         FORR_NODISCARD fe::pointer<T> CreateResource(const T& value) {
             return m_Storage.CreateResource(value);
         }
 
-        template <typename T>
+        template <resource::resource_t T>
         FORR_NODISCARD fe::pointer<T> CreateResource(T&& value) {
             return m_Storage.CreateResource(std::move(value));
         }
 
-        template <typename T>
+        template <resource::resource_t T>
         FORR_NODISCARD fe::pointer<T> CreateResource()
             requires std::default_initializable<T>
         {
@@ -57,10 +57,10 @@ namespace fe {
 
         }
 
-        template <typename T>
+        template <resource::resource_t T>
         FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) { return m_Storage.GetResource(ptr); }
 
-        template <typename T, typename Func>
+        template <resource::resource_t T, typename Func>
         void RunForEach(Func&& func) { m_Storage.RunForEach<T>(func); }
 
     private:

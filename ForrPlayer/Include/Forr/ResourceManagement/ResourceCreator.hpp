@@ -31,7 +31,7 @@ namespace fe {
 
         void CreateDefaultResources();
 
-        template <typename T>
+        template <resource::resource_t T>
         void CreateMeta(fe::pointer<T> pointer, const std::filesystem::path& resource_relative_path) {
             std::filesystem::path resource_full_path = PATH.getEngineResourcesPath() / resource_relative_path;
             std::filesystem::path metadata_path      = resource_full_path += PATH.getMetadataExtension().wstring();
