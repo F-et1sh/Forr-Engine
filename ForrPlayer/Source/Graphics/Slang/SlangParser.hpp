@@ -67,9 +67,6 @@ namespace fe {
         void parseDescriptorTable(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDescriptor& dst_descriptor);
         void parsePushConstant(slang::VariableLayoutReflection* variable_layout, shader::ReflectedPushConstants& dst_push_constants);
 
-        bool parseDeclarationRecursive(slang::DeclReflection* member, std::unordered_map<std::string, shader::ReflectedMaterialLayout>& material_layouts);
-        void parseVariableRecursive(slang::VariableReflection* member);
-
         void parseMemberRecursive(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDataNode* dst_reflected_data_node);
         void parseMemberRecursive(slang::TypeLayoutReflection* type_layout, shader::ReflectedDataNode* dst_reflected_data_node);
 

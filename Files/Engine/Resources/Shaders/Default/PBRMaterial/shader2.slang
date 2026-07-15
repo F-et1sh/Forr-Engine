@@ -1,6 +1,10 @@
-﻿public struct StandardSurfaceData {
+﻿public struct SomeStruct {
     public float3 albedo;
-    public float  roughness;
+}
+
+public struct StandardSurfaceData {
+    SomeStruct some_struct;
+	public float  roughness;
 }
 
 public interface IMaterial {
@@ -12,7 +16,7 @@ public struct PBRMaterial : IMaterial {
 
     public StandardSurfaceData GetStandardData(float2 uv) {
         StandardSurfaceData data;
-        data.albedo = float3(1.0, 0.0, 1.0);
+        data.some_struct.albedo = float3(1.0, 0.0, 1.0);
         data.roughness = 0.5;
         return data;
     }

@@ -19,6 +19,7 @@
 ### Done
     ShaderImporter done
     bug fixed : 'resource::resource_t' replaced 'typename' in template functions of resource management
+    SlangParser done
 
 ### Problem
     -
