@@ -49,23 +49,26 @@ namespace fe {
         FORR_CLASS_MOVABLE(SlangParser)
         FORR_CLASS_NONCOPYABLE(SlangParser)
 
-        // primary processing : load .slang file, save its reflected and serialized data for the secondary processing
-        bool LoadFromFileAndReflect(const std::filesystem::path& resource_full_path, resource::ShaderReflectedData& shader_reflected_data);
+        bool LoadFromFile(const std::filesystem::path& resource_full_path);
+
+        bool ExtractSerializedData(std::vector<uint8_t>& dst_vector);
+
+        bool ComposeProgram();
+
+        // returns 'true', if actually found anything and 'false', if the argument is not changed
+        bool ReflectPipeline(shader::ReflectedPipelineLayout& pipeline_layout);
+
+        // returns 'true', if actually found anything and 'false', if the argument is not changed
+        bool ReflectMaterials(std::unordered_map<std::string, shader::ReflectedMaterialLayout>& material_layouts);
 
     private:
         std::vector<EntryPoint> findEntryPoints(std::vector<slang::IComponentType*>& component_types);
-        void                    reflect(resource::ShaderReflectedData& shader_reflected_data);
-
-        // returns 'true', if actually found anything and 'false', if the argument is not changed
-        bool reflectPipeline(shader::ReflectedPipelineLayout& pipeline_layout);
-        // returns 'true', if actually found anything and 'false', if the argument is not changed
-        bool reflectMaterial(shader::ReflectedMaterialLayout& material_layout);
-
-        bool parseDeclarationRecursive(slang::DeclReflection* member);
-        void parseVariableRecursive(slang::VariableReflection* member);
 
         void parseDescriptorTable(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDescriptor& dst_descriptor);
         void parsePushConstant(slang::VariableLayoutReflection* variable_layout, shader::ReflectedPushConstants& dst_push_constants);
+
+        bool parseDeclarationRecursive(slang::DeclReflection* member, std::unordered_map<std::string, shader::ReflectedMaterialLayout>& material_layouts);
+        void parseVariableRecursive(slang::VariableReflection* member);
 
         void parseMemberRecursive(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDataNode* dst_reflected_data_node);
         void parseMemberRecursive(slang::TypeLayoutReflection* type_layout, shader::ReflectedDataNode* dst_reflected_data_node);

@@ -23,10 +23,10 @@ fe::pointer<Texture> fe::TextureImporter::Import(ResourceStorage& storage, const
     int            components{};
     unsigned char* bytes{};
 
-    bytes = stbi_load(resource_full_path.string().c_str(), &width, &height, &components, 0);
+    bytes = stbi_load(resource_full_path.generic_string().c_str(), &width, &height, &components, 0);
 
     if (!bytes) {
-        fe::logging::error("STBI -> Unified. Failed to load a texture\nPath : %s", components, resource_full_path.string().c_str());
+        fe::logging::error("STBI -> Unified. Failed to load a texture\nPath : %s", components, resource_full_path.generic_string().c_str());
         return {};
     }
 
@@ -41,7 +41,7 @@ fe::pointer<Texture> fe::TextureImporter::Import(ResourceStorage& storage, const
         case 1: internal_format = Texture::InternalFormat::R8   ; data_format = Texture::DataFormat::RED ; break;
         default:
             fe::logging::error("STBI -> Unified. Failed to load a texture. Unsupported number of components %i. Using RGBA8 for internal format and RGBA for data format as default\nPath : %s", 
-                components, resource_full_path.string().c_str());
+                components, resource_full_path.generic_string().c_str());
 
             internal_format = Texture::InternalFormat::RGBA8;
             data_format = Texture::DataFormat::RGBA;

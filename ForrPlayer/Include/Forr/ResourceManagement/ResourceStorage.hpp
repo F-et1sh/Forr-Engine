@@ -22,6 +22,10 @@
 namespace fe {
     class ResourceImporter; // forward declaration
 
+    // a hack to see the type in Output after compilation
+    template <typename _Ty>
+    struct ShowType {};
+
     class ResourceStorage {
     public:
         ResourceStorage(ResourceManagementContext& context) : m_Context(context) {}
@@ -59,17 +63,22 @@ namespace fe {
         fe::typed_pointer_storage<T>& GetStorage() {
             if constexpr (std::is_same_v<T, fe::resource::Texture>)
                 return m_Textures;
-            else if constexpr (std::is_same_v<T, fe::resource::Material>)
-                return m_Materials;
-            else if constexpr (std::is_same_v<T, fe::resource::Model>)
-                return m_Models;
             else if constexpr (std::is_same_v<T, fe::resource::ShaderProgram>)
                 return m_ShaderPrograms;
+            else if constexpr (std::is_same_v<T, fe::resource::MaterialLayout>)
+                return m_MaterialLayouts;
+            else if constexpr (std::is_same_v<T, fe::resource::Material>)
+                return m_Materials;
             else if constexpr (std::is_same_v<T, fe::resource::ShaderReflectedData>)
                 return m_ShaderReflectedData;
-            else
+            else if constexpr (std::is_same_v<T, fe::resource::Model>)
+                return m_Models;
+            else {
                 // TODO : provide code generation
-                static_assert(false && "Forgot to add some new resource");
+                static_assert(std::false_type::value && "Forgot to add some new resource or passing wrong value as an argument");
+
+                ShowType<T> missing_type{};
+            }
         }
 
         const ResourceManagementContext& GetContext() const noexcept { return m_Context; }
@@ -78,10 +87,11 @@ namespace fe {
         ResourceManagementContext& m_Context;
 
         fe::typed_pointer_storage<fe::resource::Texture>             m_Textures{};
-        fe::typed_pointer_storage<fe::resource::Material>            m_Materials{};
-        fe::typed_pointer_storage<fe::resource::Model>               m_Models{};
         fe::typed_pointer_storage<fe::resource::ShaderProgram>       m_ShaderPrograms{};
+        fe::typed_pointer_storage<fe::resource::MaterialLayout>      m_MaterialLayouts{};
+        fe::typed_pointer_storage<fe::resource::Material>            m_Materials{};
         fe::typed_pointer_storage<fe::resource::ShaderReflectedData> m_ShaderReflectedData{};
+        fe::typed_pointer_storage<fe::resource::Model>               m_Models{};
 
         // you can call 'fe::Arena::reinitialize()' if you want increase or decrease arena size
         fe::Arena m_MaterialsBuffer{ 16 * 1024 };
