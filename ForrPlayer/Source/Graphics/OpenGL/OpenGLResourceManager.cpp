@@ -168,7 +168,7 @@ GLuint fe::OpenGLResourceManager::GetShaderBuffer(shader::ReflectedDescriptor& p
     auto it = m_ShaderBuffers.find(parameter);
     if (it != m_ShaderBuffers.end()) return it->second.get();
 
-    using _shader_descriptor = shader::DescriptorType;
+    using shader_descriptor = shader::DescriptorType;
 
     size_t buffer_size = 16 * 1024; // 16KB
 
@@ -179,10 +179,10 @@ GLuint fe::OpenGLResourceManager::GetShaderBuffer(shader::ReflectedDescriptor& p
     GLuint buffer_raw{};
     glCreateBuffers(1, &buffer_raw);
 
-    if (parameter.descriptor_type == _shader_descriptor::UNIFORM_BUFFER) {
+    if (parameter.descriptor_type == shader_descriptor::UNIFORM_BUFFER) {
         glNamedBufferData(buffer_raw, buffer_size, nullptr, GL_DYNAMIC_DRAW);
     }
-    else if (parameter.descriptor_type == _shader_descriptor::STORAGE_BUFFER) {
+    else if (parameter.descriptor_type == shader_descriptor::STORAGE_BUFFER) {
         GLbitfield flags = GL_MAP_WRITE_BIT |
                            GL_MAP_PERSISTENT_BIT |
                            GL_MAP_COHERENT_BIT;
