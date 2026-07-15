@@ -47,7 +47,7 @@ fe::SlangParser::SlangParser(GraphicsBackend graphics_backend) : m_GraphicsBacke
     session_desc.compilerOptionEntryCount = 0;
 
     // TODO : provide an interface for this
-    const char* search_paths = { (PATH.getDefaultShadersPath() / "PBRMaterial").string().c_str() };
+    const char* search_paths = { (PATH.getDefaultShadersPath() / "PBRMaterial").generic_string().c_str() };
 
     session_desc.searchPathCount = 1;
     session_desc.searchPaths     = &search_paths;
@@ -58,7 +58,7 @@ fe::SlangParser::SlangParser(GraphicsBackend graphics_backend) : m_GraphicsBacke
     }
 }
 
-bool fe::SlangParser::LoadFromFileAndReflect(const std::filesystem::path& resource_full_path, resource::ShaderReflectedData& shader_reflected_data) {
+bool fe::SlangParser::LoadFromFile(const std::filesystem::path& resource_full_path) {
     Slang::ComPtr<slang::IBlob> load_diagnostics{};
     m_Module = m_Session->loadModule(resource_full_path.generic_string().c_str(), load_diagnostics.writeRef());
     if (!m_Module) {
@@ -66,6 +66,10 @@ bool fe::SlangParser::LoadFromFileAndReflect(const std::filesystem::path& resour
         return false;
     }
 
+    return true;
+}
+
+bool fe::SlangParser::ExtractSerializedData(std::vector<uint8_t>& dst_vector) {
     Slang::ComPtr<ISlangBlob> serialized_blob{};
     if (SLANG_FAILED(m_Module->serialize(serialized_blob.writeRef()))) {
         fe::logging::error("Slang -> Unified. Failed to get serialized data from Slang");
@@ -76,8 +80,13 @@ bool fe::SlangParser::LoadFromFileAndReflect(const std::filesystem::path& resour
     size_t         buffer_size = serialized_blob->getBufferSize();
 
     // we store this data to compile the shader later
-    shader_reflected_data.slang_serialized_data.assign(buffer_data, buffer_data + buffer_size);
+    dst_vector.assign(buffer_data, buffer_data + buffer_size);
 
+    return true;
+}
+
+bool fe::SlangParser::ComposeProgram() {
+    // there is no need to search entry points here
     std::vector<slang::IComponentType*> component_types{};
     component_types.emplace_back(m_Module);
 
@@ -87,10 +96,9 @@ bool fe::SlangParser::LoadFromFileAndReflect(const std::filesystem::path& resour
                                                                                  m_CompusedProgram.writeRef(),
                                                                                  composition_diagnostics.writeRef());
     if (SLANG_FAILED(result)) {
-        fe::logging::warning("Slang -> Unified. Failed to create a composed program\n%s\nContinuing reflection", (const char*) composition_diagnostics->getBufferPointer());
+        fe::logging::error("Slang -> Unified. Failed to create a composed program\n%s", (const char*) composition_diagnostics->getBufferPointer());
+        return false;
     }
-
-    this->reflect(shader_reflected_data);
 
     return true;
 }
@@ -121,17 +129,7 @@ std::vector<fe::EntryPoint> fe::SlangParser::findEntryPoints(std::vector<slang::
     return entry_points;
 }
 
-void fe::SlangParser::reflect(resource::ShaderReflectedData& shader_reflected_data) {
-    shader::ReflectedPipelineLayout pipeline_layout{};
-    if (this->reflectPipeline(pipeline_layout))
-        shader_reflected_data.pipeline_layout = pipeline_layout;
-
-    shader::ReflectedMaterialLayout material_layout{};
-    if (this->reflectMaterial(material_layout))
-        shader_reflected_data.material_layout = material_layout;
-}
-
-bool fe::SlangParser::reflectPipeline(shader::ReflectedPipelineLayout& pipeline_layout) {
+bool fe::SlangParser::ReflectPipeline(shader::ReflectedPipelineLayout& pipeline_layout) {
     bool result = false;
 
     slang::ProgramLayout* layout          = m_CompusedProgram->getLayout();
@@ -168,33 +166,35 @@ bool fe::SlangParser::reflectPipeline(shader::ReflectedPipelineLayout& pipeline_
     return result;
 }
 
-bool fe::SlangParser::reflectMaterial(shader::ReflectedMaterialLayout& material_layout) {
+bool fe::SlangParser::ReflectMaterials(std::unordered_map<std::string, shader::ReflectedMaterialLayout>& material_layouts) {
     bool result = false;
 
     slang::DeclReflection* module_reflection = m_Module->getModuleReflection();
 
     auto list = module_reflection->getChildren();
     for (auto child : list) {
-        if (this->parseDeclarationRecursive(child))
+        if (this->parseDeclarationRecursive(child, material_layouts))
             result = true;
     }
 
     return result;
 }
 
-bool fe::SlangParser::parseDeclarationRecursive(slang::DeclReflection* member) {
+bool fe::SlangParser::parseDeclarationRecursive(slang::DeclReflection* member, std::unordered_map<std::string, shader::ReflectedMaterialLayout>& material_layouts) {
     assert(member);
 
     // this variable is needed to not create 'fe::shader::ReflectionMaterialLayout',
     //  if there is no structures in the Slang file
     bool result = false;
 
-    auto parse_recursive = [&](slang::DeclReflection* member) -> bool {
+    slang::ProgramLayout* layout = m_CompusedProgram->getLayout();
+
+    auto parse_recursive = [&](slang::DeclReflection* _member, std::unordered_map<std::string, shader::ReflectedMaterialLayout>& _material_layouts) -> bool {
         bool result_recursive = false;
 
-        auto list = member->getChildren();
+        auto list = _member->getChildren();
         for (auto child : list) {
-            if (this->parseDeclarationRecursive(child))
+            if (this->parseDeclarationRecursive(child, _material_layouts))
                 result_recursive = true;
         }
 
@@ -205,10 +205,24 @@ bool fe::SlangParser::parseDeclarationRecursive(slang::DeclReflection* member) {
 
     switch (kind) {
         case _slang_decl_kind::Unsupported: // interfaces
-            return;
+            return false;
             break;
         case _slang_decl_kind::Struct:
-            parse_recursive(member);
+            //auto& material_layout = material_layouts.emplace_back();
+            //parse_recursive(member, material_layout);
+
+            {
+                slang::TypeReflection*       type        = member->getType();
+                slang::TypeLayoutReflection* type_layout = layout->getTypeLayout(type);
+                fe::logging::info("%i", type_layout->getSize());
+            }
+            {
+                slang::VariableReflection*   variable    = member->asVariable();
+                slang::TypeReflection*       type        = variable->getType();
+                slang::TypeLayoutReflection* type_layout = layout->getTypeLayout(type);
+                fe::logging::info("%i", type_layout->getSize());
+            }
+
             result = true;
             break;
         case _slang_decl_kind::Variable:

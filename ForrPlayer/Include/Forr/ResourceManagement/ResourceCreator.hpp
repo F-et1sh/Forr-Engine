@@ -39,9 +39,9 @@ namespace fe {
             std::ofstream file(metadata_path);
             if (!file.good()) {
                 fe::logging::error("Unified -> %s. Failed create metadata\nResource relative path : %s\nResource full path : %s\nMetadata full path : %s",
-                                   metadata_path.extension().string().c_str(),
-                                   resource_relative_path.string().c_str(),
-                                   resource_full_path.string().c_str(),
+                                   metadata_path.extension().generic_string().c_str(),
+                                   resource_relative_path.generic_string().c_str(),
+                                   resource_full_path.generic_string().c_str(),
                                    metadata_path);
                 return;
             }

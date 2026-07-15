@@ -400,7 +400,7 @@ VkPipeline fe::VulkanResourceManager::createPipeline(VkPipelineLayout pipeline_l
     vertex_input_state_create_info.vertexAttributeDescriptionCount = vertex_input_attributs.size();
     vertex_input_state_create_info.pVertexAttributeDescriptions    = vertex_input_attributs.data();
 
-    auto& shader_program = *m_ResourceManager.GetResource(material.reflected_data_ptr);
+    //auto& shader_program = *m_ResourceManager.GetResource(material.reflected_data_ptr);
 
     std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_infos{};
     std::vector<fe::vk::ShaderModule>            shader_modules_raii{};

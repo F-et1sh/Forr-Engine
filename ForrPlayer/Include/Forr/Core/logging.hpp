@@ -6,6 +6,8 @@
     Role : util for logging info to console.
         Based on Donut, MIT License ( https://github.com/NVIDIA-RTX/Donut )
 
+        TODO : rewrite this using templates and std::format
+
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
 

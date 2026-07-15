@@ -120,10 +120,10 @@ namespace fe::resource {
         GPUHandle<ShaderProgram>        gpu_handle{};
         shader::ReflectedPipelineLayout reflected_layout{};
 
-        using SourceCode        = std::vector<uint8_t>;
-        using SourceCodeStorage = std::unordered_map<shader::StageBits, SourceCode>;
+        using _source_code         = std::vector<uint8_t>;
+        using _source_code_storage = std::unordered_map<shader::StageBits, _source_code>;
 
-        SourceCodeStorage source_codes{};
+        _source_code_storage source_codes{};
 
         ShaderProgram()  = default;
         ~ShaderProgram() = default;
@@ -134,7 +134,8 @@ namespace fe::resource {
     struct FORR_API MaterialLayout {
         shader::ReflectedMaterialLayout reflected_layout{};
 
-        MaterialLayout()  = default;
+        MaterialLayout() = default;
+        MaterialLayout(shader::ReflectedMaterialLayout reflected_layout) : reflected_layout(std::move(reflected_layout)) {}
         ~MaterialLayout() = default;
 
         FORR_RESOURCE_BODY(MaterialLayout)
@@ -173,11 +174,13 @@ namespace fe::resource {
     // this is a basic structure, created by 'fe::ShaderImporter', while importing a file
     struct FORR_API ShaderReflectedData {
     public:
-        using pipeline_ptr        = fe::pointer<resource::ShaderProgram>;
-        using material_layout_ptr = fe::pointer<resource::MaterialLayout>;
+        using _pipeline_ptr        = fe::pointer<resource::ShaderProgram>;
+        using _material_layout_ptr = fe::pointer<resource::MaterialLayout>;
 
-        std::optional<pipeline_ptr>                     pipeline_ptr{};
-        std::optional<std::vector<material_layout_ptr>> material_layout_ptrs{};
+        using _material_layouts_container = std::unordered_map<std::string, _material_layout_ptr>;
+
+        std::optional<_pipeline_ptr>               pipeline_ptr{};
+        std::optional<_material_layouts_container> material_layout_ptrs{};
 
         // this is needed to not accses disk twice
         std::vector<uint8_t> slang_serialized_data{};
