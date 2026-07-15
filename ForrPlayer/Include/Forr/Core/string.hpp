@@ -17,9 +17,9 @@
 #include "attributes.hpp"
 
 namespace fe {
-    using string_hash = std::uint32_t;
+    using StringHash = std::uint32_t;
 
-    FORR_NODISCARD constexpr string_hash const_hash(std::string_view str) noexcept {
+    FORR_NODISCARD constexpr StringHash const_hash(std::string_view str) noexcept {
         std::uint32_t hash = 2166136261u;
         for (const char c : str) {
             hash ^= static_cast<std::uint32_t>(static_cast<unsigned char>(c));

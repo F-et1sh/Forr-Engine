@@ -120,10 +120,10 @@ namespace fe::resource {
         GPUHandle<ShaderProgram>        gpu_handle{};
         shader::ReflectedPipelineLayout reflected_layout{};
 
-        using source_code         = std::vector<uint8_t>;
-        using source_code_storage = std::unordered_map<shader::StageBits, source_code>;
+        using SourceCode        = std::vector<uint8_t>;
+        using SourceCodeStorage = std::unordered_map<shader::StageBits, SourceCode>;
 
-        source_code_storage source_codes{};
+        SourceCodeStorage source_codes{};
 
         ShaderProgram()  = default;
         ~ShaderProgram() = default;
@@ -174,13 +174,13 @@ namespace fe::resource {
     // this is a basic structure, created by 'fe::ShaderImporter', while importing a file
     struct FORR_API ShaderReflectedData {
     public:
-        using shader_program_ptr  = fe::pointer<resource::ShaderProgram>;
-        using material_layout_ptr = fe::pointer<resource::MaterialLayout>;
+        using PipelinePtr       = fe::pointer<resource::ShaderProgram>;
+        using MaterialLayoutPtr = fe::pointer<resource::MaterialLayout>;
 
-        using material_layouts_container = std::unordered_map<std::string, material_layout_ptr>;
+        using MaterialLayoutsContainer = std::unordered_map<std::string, MaterialLayoutPtr>;
 
-        std::optional<shader_program_ptr>         pipeline_ptr{};
-        std::optional<material_layouts_container> material_layout_ptrs{};
+        std::optional<PipelinePtr>              pipeline_ptr{};
+        std::optional<MaterialLayoutsContainer> material_layout_ptrs{};
 
         // this is needed to not accses disk twice
         std::vector<uint8_t> slang_serialized_data{};
