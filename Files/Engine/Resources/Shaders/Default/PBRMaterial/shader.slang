@@ -20,8 +20,8 @@ struct SceneData {
 [[vk::push_constant]] int instance_index;
 
 struct VertexInput {
-    [[vk::location(0)]] float3 position    : POSITION;
-    [[vk::location(1)]] float3 normal      : NORMAL;
+    [[vk::location(0)]] float3 position      : POSITION;
+    [[vk::location(1)]] float3 normal        : NORMAL;
     [[vk::location(2)]] float2 texture_coord : TEXCOORD;
 };
 
