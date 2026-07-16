@@ -181,6 +181,8 @@ bool fe::SlangParser::ReflectMaterials(std::unordered_map<std::string, shader::R
         // there can be only 'Struct'
         if (kind != slang_decl_kind::Struct) continue;
 
+        // TODO : parse material *only* if it inherits IMaterial - I forgot to take it into account
+
         shader::ReflectedMaterialLayout material_layout{};
 
         slang::TypeReflection*       type        = child->getType();
