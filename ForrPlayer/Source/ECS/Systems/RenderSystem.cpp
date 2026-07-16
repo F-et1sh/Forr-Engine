@@ -3,7 +3,7 @@
     Forr Engine
 
     File : RenderSystem.cpp
-    Role : renderer system. Without EnTT for now
+    Role : renderer system
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.

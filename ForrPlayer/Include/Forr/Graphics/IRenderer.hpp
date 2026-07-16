@@ -17,6 +17,8 @@
 
 #include "ResourceManagement/ResourceManager.hpp"
 
+#include "RenderGraph.hpp"
+
 namespace fe {
     struct FORR_API RendererDesc {
         PlatformBackend platform_backend{};
