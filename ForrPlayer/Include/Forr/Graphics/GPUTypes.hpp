@@ -12,8 +12,10 @@
 
 #pragma once
 #include "Core/pointer.hpp"
+#include "Core/string.hpp"
 
 #include <variant>
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -60,7 +62,7 @@ namespace fe {
 
     //#pragma pack(pop) // pack(push, 1) // disabled for now
 
-    enum class RenderMode {
+    enum class RenderMode : uint8_t {
         POINTS,
         LINES,
         LINE_LOOP,
@@ -70,10 +72,71 @@ namespace fe {
         TRIANGLE_FAN,
     };
 
-    enum class RenderIndexType {
+    enum class RenderIndexType : uint8_t {
         UNSIGNED_BYTE,
         UNSIGNED_SHORT,
         UNSIGNED_INT,
+    };
+
+    enum class ResourceState {
+        UNDEFINED,
+
+        RENDER_TARGET,
+
+        DEPTH_WRITE,
+        DEPTH_READ,
+
+        SHADER_READ,
+
+        UNORDERED_ACCESS,
+
+        COPY_SRC,
+        COPY_DST
+    };
+
+    enum class ImageType : uint8_t {
+        IMAGE_TYPE_1D,
+        IMAGE_TYPE_2D,
+        IMAGE_TYPE_3D,
+    };
+
+    enum class Format : uint32_t {
+        Undefined,
+
+        RGBA8_UNORM,
+        RGBA8_SRGB,
+        BGRA8_UNORM,
+
+        RGBA16_SFLOAT,
+        R11G11B10_SFLOAT,
+        RG16_SFLOAT,
+
+        R32_UINT,
+        R32_SFLOAT,
+
+        D32_SFLOAT,
+        D24_UNORM_S8_UINT,
+        D32_SFLOAT_S8_UINT
+    };
+
+    enum class ImageUsageBits : uint32_t {
+        NONE             = 0,
+        RENDER_TARGET    = 1 << 0,
+        DEPTH_STENCIL    = 1 << 1,
+        SHADER_READ      = 1 << 2,
+        UNORDERED_ACCESS = 1 << 3,
+        COPY_SRC         = 1 << 4,
+        COPY_DST         = 1 << 5
+    };
+
+    enum class BufferUsageBits : uint32_t {
+        NONE = 0,
+        // ...
+    };
+
+    struct Rect2D {
+        glm::ivec2 offset{};
+        glm::ivec2 extent{};
     };
 
     using Vertices = std::vector<Vertex>;
@@ -137,11 +200,12 @@ namespace fe {
             std::vector<ReflectedMember> members{};
 
             // TODO : provide attribute name
-            std::string name{};
+            std::string    name{};
+            fe::StringHash name_hash{};
 
             ReflectedDataNode() = default;
             ReflectedDataNode(ValueType type, uint32_t array_size, uint32_t size, std::vector<ReflectedMember> members, std::string name)
-                : type(type), array_size(array_size), size(size), members(std::move(members)), name(std::move(name)) {}
+                : type(type), array_size(array_size), size(size), members(std::move(members)), name(std::move(name)), name_hash(fe::string_hash(name)) {}
 
             bool operator==(const ReflectedDataNode&) const noexcept = default;
         };
@@ -182,10 +246,10 @@ namespace fe {
 
         enum class StageBits : std::uint8_t {
             NONE     = 0,
-            VERTEX   = 1 << 0, // 1
-            GEOMETRY = 1 << 1, // 2
-            FRAGMENT = 1 << 2, // 4
-            COMPUTE  = 1 << 3, // 8
+            VERTEX   = 1 << 0,
+            GEOMETRY = 1 << 1,
+            FRAGMENT = 1 << 2,
+            COMPUTE  = 1 << 3,
         };
 
         struct ReflectedPipelineLayout {
