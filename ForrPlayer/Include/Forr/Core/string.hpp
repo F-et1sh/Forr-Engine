@@ -17,12 +17,12 @@
 #include "attributes.hpp"
 
 namespace fe {
-    using StringHash = std::uint32_t;
+    using StringHash = std::uint64_t;
 
     FORR_NODISCARD constexpr StringHash const_hash(std::string_view str) noexcept {
-        std::uint32_t hash = 2166136261u;
+        std::uint64_t hash = 2166136261u;
         for (const char c : str) {
-            hash ^= static_cast<std::uint32_t>(static_cast<unsigned char>(c));
+            hash ^= static_cast<std::uint64_t>(static_cast<unsigned char>(c));
             hash *= 16777619u;
         }
         return hash;
@@ -31,8 +31,11 @@ namespace fe {
     template <std::size_t N>
     struct fixed_string {
         static_assert(N > 0, "String size must be at least 1 for the null-terminator.");
-        
+
         std::array<char, N> data{};
+
+        fixed_string()  = default;
+        ~fixed_string() = default;
 
         constexpr fixed_string(const char (&str)[N]) noexcept {
             std::copy_n(str, N, data.begin());
@@ -49,8 +52,8 @@ namespace fe {
         }
 
         FORR_NODISCARD constexpr std::size_t size() const noexcept { return N - 1; }
-        FORR_NODISCARD constexpr bool empty() const noexcept { return size() == 0; }
-        
+        FORR_NODISCARD constexpr bool        empty() const noexcept { return size() == 0; }
+
         FORR_NODISCARD constexpr const char* c_str() const noexcept { return data.data(); }
         FORR_NODISCARD constexpr const char* data_ptr() const noexcept { return data.data(); }
 

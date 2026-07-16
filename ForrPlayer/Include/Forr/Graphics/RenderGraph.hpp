@@ -13,23 +13,58 @@
 #pragma once
 
 namespace fe {
-    // RenderPass :
-    //  Owns    - name, data
-    //  Needs   - context
-    //  Has     - Initialize() and Execute()
+    struct RenderGraphContext {
+        // ...
 
-    // RenderGraph :
-    //  Owns    - RenderPasses
-    //  Needs   - context
-    //  Has     - ...
+        RenderGraphContext()  = default;
+        ~RenderGraphContext() = default;
 
-    class FORR_API RenderGraph {
+        FORR_CLASS_MOVABLE(RenderGraphContext);
+        FORR_CLASS_NONCOPYABLE(RenderGraphContext);
+    };
+    
+    struct RenderGraphBuilder {
+        // ...
+
+        RenderGraphBuilder()  = default;
+        ~RenderGraphBuilder() = default;
+
+        FORR_CLASS_MOVABLE(RenderGraphBuilder);
+        FORR_CLASS_NONCOPYABLE(RenderGraphBuilder);
+    };
+
+    struct ForwardPassData {
+        // ...
+
+        ForwardPassData()  = default;
+        ~ForwardPassData() = default;
+    };
+
+    struct ForwardPass {
+        fe::fixed_string<32> name{};
+
+        void Initialize(RenderGraphContext& context, ForwardPassData& pass_data) const {
+            // ...
+        }
+
+        void Execute(RenderGraphContext& context, ForwardPassData& pass_data) const {
+            // ...
+        }
+
+        ForwardPass()  = default;
+        ~ForwardPass() = default;
+    };
+
+    class RenderGraph {
     public:
-        RenderGraph() = default;
+        RenderGraph()  = default;
         ~RenderGraph() = default;
 
-        private:
-            //std::vector<>
+        void AddPass() {
+        }
+
+    private:
+        fe::Arena m_Arena{ 32 * 16 };
     };
 
 } // namespace fe
