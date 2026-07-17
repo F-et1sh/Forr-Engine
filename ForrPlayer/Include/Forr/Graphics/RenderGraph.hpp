@@ -29,45 +29,30 @@ namespace fe {
         glm::ivec3     extent{};
         uint32_t       mip_levels{};
         ImageUsageBits usage{};
-
-        CreateImageCommand()  = default;
-        ~CreateImageCommand() = default;
     };
 
     struct CreateBufferCommand {
         BufferID        id{};
         uint64_t        size{};
         BufferUsageBits usage{};
-
-        CreateBufferCommand()  = default;
-        ~CreateBufferCommand() = default;
     };
 
     struct ImageBarrierCommand {
         ImageID       id{};
         ResourceState old_state{};
         ResourceState new_state{};
-
-        ImageBarrierCommand()  = default;
-        ~ImageBarrierCommand() = default;
     };
 
     struct BufferBarrierCommand {
         BufferID      id{};
         ResourceState old_state{};
         ResourceState new_state{};
-
-        BufferBarrierCommand()  = default;
-        ~BufferBarrierCommand() = default;
     };
 
     struct BeginRenderPassCommand {
         std::vector<ImageID>   color_attachments{};
         std::optional<ImageID> depth_attachment{};
         Rect2D                 render_area{};
-
-        BeginRenderPassCommand()  = default;
-        ~BeginRenderPassCommand() = default;
     };
 
     struct EndRenderPassCommand {};
@@ -132,19 +117,16 @@ namespace fe {
 
         fe::fixed_string<32> name{};
         void*                mapped_data{};
-        SetupFunction        setup_function{};
-        ExecuteFunction      execute_function{};
-        DestroyFunction      destroy_function{};
 
-        template <typename RenderPassData, RenderPassTraits<RenderPassData> RenderPassT>
-        void bind(std::string_view name, RenderPassData* mapped_data) {
-            this->name        = name;
-            this->mapped_data = mapped_data;
+        SetupFunction   setup_function{};
+        ExecuteFunction execute_function{};
+        DestroyFunction destroy_function{};
 
-            setup_function   = &RenderPassT::Setup;
-            execute_function = [](RenderGraphContext& context, void* ptr) { RenderPassT::Execute(context, *reinterpret_cast<RenderPassData*>(ptr)); };
-            destroy_function = [](void* ptr) { std::destroy_at(reinterpret_cast<RenderPassData*>(ptr)); };
-        }
+        RenderPass()  = default;
+        ~RenderPass() = default;
+
+        FORR_CLASS_MOVABLE(RenderPass);
+        FORR_CLASS_NONCOPYABLE(RenderPass);
     };
 
     class RenderGraph {
@@ -162,7 +144,11 @@ namespace fe {
             std::byte*      mapped_data_raw = m_RenderPassesData.allocate(sizeof(std::decay_t<RenderPassData>), alignof(RenderPassData));
             RenderPassData* mapped_data     = new (mapped_data_raw) RenderPassData();
 
-            render_pass.bind<RenderPassData, RenderPassT>(name, mapped_data);
+            render_pass.name             = name;
+            render_pass.mapped_data      = mapped_data;
+            render_pass.setup_function   = &RenderPassT::Setup;
+            render_pass.execute_function = [](RenderGraphContext& context, void* ptr) { RenderPassT::Execute(context, *reinterpret_cast<RenderPassData*>(ptr)); };
+            render_pass.destroy_function = [](void* ptr) { std::destroy_at(reinterpret_cast<RenderPassData*>(ptr)); };
 
             return mapped_data;
         }
@@ -182,9 +168,7 @@ namespace fe {
         fe::Arena               m_RenderPassesData{ 16 * 1024 };
     };
 
-    struct ForwardPassData {
-        float some_data{};
-    };
+    struct ForwardPassData {};
 
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder) {
@@ -197,12 +181,5 @@ namespace fe {
         ForwardPass()  = default;
         ~ForwardPass() = default;
     };
-
-    static void Example() {
-        RenderGraph render_graph{};
-
-        ForwardPassData* mapped_data = render_graph.AddPass<ForwardPassData, ForwardPass>("ForwardPass");
-        mapped_data->some_data       = 4;
-    }
 
 } // namespace fe
