@@ -200,12 +200,11 @@ namespace fe {
             std::vector<ReflectedMember> members{};
 
             // TODO : provide attribute name
-            std::string    name{};
-            fe::StringHash name_hash{};
+            fe::hashed_string name{};
 
             ReflectedDataNode() = default;
             ReflectedDataNode(ValueType type, uint32_t array_size, uint32_t size, std::vector<ReflectedMember> members, std::string name)
-                : type(type), array_size(array_size), size(size), members(std::move(members)), name(std::move(name)), name_hash(fe::string_hash(name)) {}
+                : type(type), array_size(array_size), size(size), members(std::move(members)), name(std::move(name)) {}
 
             bool operator==(const ReflectedDataNode&) const noexcept = default;
         };

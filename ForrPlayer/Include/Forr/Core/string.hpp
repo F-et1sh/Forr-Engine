@@ -36,7 +36,7 @@ namespace fe {
         hashed_string()  = default;
         ~hashed_string() = default;
 
-        hashed_string(const std::string& string) : string(string), hash(fe::string_hash(string)) {}
+        hashed_string(std::string string) : string(std::move(string)), hash(fe::string_hash(string)) {}
 
         FORR_NODISCARD operator std::string_view() const noexcept { return { string.data(), size() }; }
         FORR_NODISCARD operator std::string() const noexcept { return string; }
@@ -50,7 +50,9 @@ namespace fe {
 
         FORR_NODISCARD fe::StringHash get_hash() const noexcept { return hash; }
 
-        FORR_NODISCARD bool operator==(const hashed_string& other) const noexcept = default;
+        // this compares only hash
+        FORR_NODISCARD bool operator==(const hashed_string& other) const noexcept { return hash == other.hash; }
+        FORR_NODISCARD bool operator==(const std::string& other) const noexcept { return string == other; }
 
         hashed_string operator=(const hashed_string& other) noexcept {
             string = other.string;
@@ -79,6 +81,10 @@ namespace fe {
         ~fixed_string() = default;
 
         constexpr fixed_string(const char (&str)[N]) noexcept {
+            std::copy_n(str, N, data.begin());
+        }
+
+        constexpr fixed_string(const char* str) noexcept {
             std::copy_n(str, N, data.begin());
         }
 

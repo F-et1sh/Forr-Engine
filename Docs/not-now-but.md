@@ -1,5 +1,8 @@
 # Forr-Engine Not now, but :
 
+# Added 17.07.2026
+- migrate on std::expected ( SlangParser, ... )
+
 # Added 06.07.2026
 - add OpenGL Legacy backend
 

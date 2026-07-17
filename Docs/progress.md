@@ -19,6 +19,7 @@
 ### Done
     thinking about RenderGraph...
     hashed_string and fixed_hashed_string added
+    render graph skeleton logic done
 
 ### Problem
     -
