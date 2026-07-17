@@ -15,6 +15,9 @@
 #include <array>
 #include <functional>
 #include <span>
+#include <vector>
+#include <concepts>
+#include <variant>
 
 #include "Core/attributes.hpp"
 #include "Core/custom_allocators.hpp"

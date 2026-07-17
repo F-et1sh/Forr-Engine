@@ -11,14 +11,16 @@
 ===============================================*/
 
 #pragma once
-#include <vector>
-#include <variant>
 
 #include "GPUTypes.hpp"
 
 namespace fe {
-    using ImageID  = fe::StringHash;
-    using BufferID = fe::StringHash;
+    struct ImageID {
+        fe::StringHash hash{};
+    };
+    struct BufferID {
+        fe::StringHash hash{};
+    };
 
     struct CreateImageCommand {
         ImageID        id{};
@@ -117,45 +119,90 @@ namespace fe {
         friend class RenderGraph;
     };
 
+    template <typename T, typename DataT>
+    concept RenderPassTraits = requires(RenderGraphBuilder& builder, RenderGraphContext& context, DataT& render_pass_data) {
+        { T::Setup(builder) } -> std::same_as<void>;
+        { T::Execute(context, render_pass_data) } -> std::same_as<void>;
+    };
+
+    struct RenderPass {
+        using SetupFunction   = void (*)(RenderGraphBuilder& builder);
+        using ExecuteFunction = void (*)(RenderGraphContext& context, void*);
+        using DestroyFunction = void (*)(void*);
+
+        fe::fixed_string<32> name{};
+        void*                mapped_data{};
+        SetupFunction        setup_function{};
+        ExecuteFunction      execute_function{};
+        DestroyFunction      destroy_function{};
+
+        template <typename RenderPassData, RenderPassTraits<RenderPassData> RenderPassT>
+        void bind(std::string_view name, RenderPassData* mapped_data) {
+            this->name        = name;
+            this->mapped_data = mapped_data;
+
+            setup_function   = &RenderPassT::Setup;
+            execute_function = [](RenderGraphContext& context, void* ptr) { RenderPassT::Execute(context, *reinterpret_cast<RenderPassData*>(ptr)); };
+            destroy_function = [](void* ptr) { std::destroy_at(reinterpret_cast<RenderPassData*>(ptr)); };
+        }
+    };
+
     class RenderGraph {
     public:
-        RenderGraph()  = default;
-        ~RenderGraph() = default;
+        RenderGraph() = default;
+        ~RenderGraph() { this->Clear(); }
 
-        template <typename FuncSetup, typename FuncExecute, typename Data>
-        void AddPass(const fe::fixed_string<32>& name, FuncSetup&& setup_lambda, FuncExecute execute_lambda, Data& data) {
-            
+        FORR_CLASS_MOVABLE(RenderGraph);
+        FORR_CLASS_NONCOPYABLE(RenderGraph);
+
+        template <typename RenderPassData, RenderPassTraits<RenderPassData> RenderPassT>
+        FORR_NODISCARD RenderPassData* AddPass(std::string_view name) {
+            auto& render_pass = m_RenderPasses.emplace_back();
+
+            std::byte*      mapped_data_raw = m_RenderPassesData.allocate(sizeof(std::decay_t<RenderPassData>), alignof(RenderPassData));
+            RenderPassData* mapped_data     = new (mapped_data_raw) RenderPassData();
+
+            render_pass.bind<RenderPassData, RenderPassT>(name, mapped_data);
+
+            return mapped_data;
+        }
+
+        void Clear() {
+            for (auto& pass : m_RenderPasses) {
+                if (pass.destroy_function && pass.mapped_data) {
+                    pass.destroy_function(pass.mapped_data);
+                }
+            }
+            m_RenderPasses.clear();
+            m_RenderPassesData.reset();
         }
 
     private:
-        RenderGraphCommandList m_CommandList{};
+        std::vector<RenderPass> m_RenderPasses{};
+        fe::Arena               m_RenderPassesData{ 16 * 1024 };
     };
 
     struct ForwardPassData {
-        // ...
-
-        ForwardPassData()  = default;
-        ~ForwardPassData() = default;
+        float some_data{};
     };
 
     struct ForwardPass {
-        fe::fixed_string<32> name{};
-
-        void Setup(RenderGraphBuilder& builder) const {
+        static void Setup(RenderGraphBuilder& builder) {
             builder.WriteTexture(fe::string_hash("Color"));
         }
 
-        void Execute(RenderGraphContext& context, ForwardPassData& pass_data) const {
-            // ...
-
-            /*
-            auto& model_matrices = context.gpu_storage.GetShaderBuffer(fe::string_hash("model_matrices"));
-
-            */
+        static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
         }
 
         ForwardPass()  = default;
         ~ForwardPass() = default;
     };
+
+    static void Example() {
+        RenderGraph render_graph{};
+
+        ForwardPassData* mapped_data = render_graph.AddPass<ForwardPassData, ForwardPass>("ForwardPass");
+        mapped_data->some_data       = 4;
+    }
 
 } // namespace fe
