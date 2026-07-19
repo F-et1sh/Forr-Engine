@@ -86,7 +86,7 @@ namespace fe {
         DEPTH_WRITE,
         DEPTH_READ,
 
-        SHADER_READ,
+        SHADER_READ_ONLY,
 
         UNORDERED_ACCESS,
 
@@ -101,7 +101,7 @@ namespace fe {
     };
 
     enum class Format : uint32_t {
-        Undefined,
+        UNDEFINED,
 
         RGBA8_UNORM,
         RGBA8_SRGB,

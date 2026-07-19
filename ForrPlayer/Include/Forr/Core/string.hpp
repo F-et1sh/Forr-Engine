@@ -20,7 +20,7 @@
 #include "attributes.hpp"
 
 namespace fe {
-    using StringHash = uint64_t;
+    using StringHash = uint64_t; // TODO : I don't like this name
 
     FORR_NODISCARD constexpr StringHash string_hash(std::string_view str) noexcept {
         std::uint64_t hash = 14695981039346656037ULL;
@@ -36,7 +36,9 @@ namespace fe {
         hashed_string()  = default;
         ~hashed_string() = default;
 
-        hashed_string(std::string string) : string(std::move(string)), hash(fe::string_hash(string)) {}
+        hashed_string(const char* str) : string(str), hash(fe::string_hash(str)) {}
+        explicit hashed_string(std::string string) : string(std::move(string)), hash(fe::string_hash(string)) {}
+        explicit hashed_string(std::string_view string_view) : string(string_view), hash(fe::string_hash(string_view)) {}
 
         FORR_NODISCARD operator std::string_view() const noexcept { return { string.data(), size() }; }
         FORR_NODISCARD operator std::string() const noexcept { return string; }
@@ -57,6 +59,18 @@ namespace fe {
         hashed_string operator=(const hashed_string& other) noexcept {
             string = other.string;
             hash   = other.hash;
+            return *this;
+        }
+
+        hashed_string operator=(const char* str) noexcept {
+            string = str;
+            hash   = fe::string_hash(str);
+            return *this;
+        }
+
+        hashed_string operator=(std::string_view string_view) noexcept {
+            string = string_view.data();
+            hash   = fe::string_hash(string_view.data());
             return *this;
         }
 
