@@ -25,7 +25,7 @@ namespace fe {
                                   .mip_levels = 1,
                                   .usage      = fe::ImageUsageBits::RENDER_TARGET });
 
-            builder.readImage(fe::string_hash("Color"), fe::ResourceState::RENDER_TARGET);
+            builder.writeImage(fe::string_hash("Color"), fe::ResourceState::RENDER_TARGET);
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {

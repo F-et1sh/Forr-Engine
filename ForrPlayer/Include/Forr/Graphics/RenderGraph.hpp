@@ -35,18 +35,12 @@ namespace fe {
             ResourceState  to_state{};
         };
 
-        using BuilderCommand = std::variant<ImageDesc, ImageBarrier>;
-        std::vector<BuilderCommand> build_commands{};
+        std::vector<ImageBarrier> reads{};
+        std::vector<ImageBarrier> writes{};
+        std::vector<ImageDesc>    create_requests{};
 
         ImageDesc& createImage(const ImageDesc& desc) {
-            return std::get<ImageDesc>(build_commands.emplace_back(desc));
-        }
-
-        void writeImage(fe::StringHash hash, ResourceState to_state) {
-            assert(to_state != ResourceState::DEPTH_READ);
-            assert(to_state != ResourceState::SHADER_READ_ONLY);
-            assert(to_state != ResourceState::COPY_SRC);
-            build_commands.emplace_back(ImageBarrier{ hash, to_state });
+            return create_requests.emplace_back(desc);
         }
 
         void readImage(fe::StringHash hash, ResourceState to_state) {
@@ -54,13 +48,20 @@ namespace fe {
             assert(to_state != ResourceState::DEPTH_WRITE);
             assert(to_state != ResourceState::UNORDERED_ACCESS);
             assert(to_state != ResourceState::COPY_DST);
-            build_commands.emplace_back(ImageBarrier{ hash, to_state });
+            reads.emplace_back(ImageBarrier{ hash, to_state });
+        }
+
+        void writeImage(fe::StringHash hash, ResourceState to_state) {
+            assert(to_state != ResourceState::DEPTH_READ);
+            assert(to_state != ResourceState::SHADER_READ_ONLY);
+            assert(to_state != ResourceState::COPY_SRC);
+            writes.emplace_back(ImageBarrier{ hash, to_state });
         }
     };
 
     template <typename T, typename DataT>
-    concept RenderPassTraits = requires(RenderGraphContext& context, DataT& render_pass_data) {
-        { T::Setup(context) } -> std::same_as<void>;
+    concept RenderPassTraits = requires(RenderGraphBuilder& builder, RenderGraphContext& context, DataT& render_pass_data) {
+        { T::Setup(builder) } -> std::same_as<void>;
         { T::Execute(context, render_pass_data) } -> std::same_as<void>;
     };
 
@@ -79,8 +80,8 @@ namespace fe {
         RenderPass()  = default;
         ~RenderPass() = default;
 
-        FORR_CLASS_MOVABLE(RenderPass);
-        FORR_CLASS_NONCOPYABLE(RenderPass);
+        FORR_CLASS_MOVABLE(RenderPass)
+        FORR_CLASS_NONCOPYABLE(RenderPass)
     };
 
     class FORR_API RenderGraph {
@@ -101,27 +102,12 @@ namespace fe {
 
         using GPURequestCommand = std::variant<ImageDesc, ImageBarrier>;
 
-    private:
-        struct ResourceHandle {
-            fe::StringHash hash{};
-            uint32_t       version{};
-        };
-
-        struct Edge { // resource
-            ResourceHandle handle{};
-        };
-
-        struct Node { // render pass
-            std::vector<Edge> inputs{};
-            std::vector<Edge> outputs{};
-        };
-
     public:
         RenderGraph() = default;
         ~RenderGraph() { this->Clear(); }
 
-        FORR_CLASS_MOVABLE(RenderGraph);
-        FORR_CLASS_NONCOPYABLE(RenderGraph);
+        FORR_CLASS_MOVABLE(RenderGraph)
+        FORR_CLASS_NONCOPYABLE(RenderGraph)
 
         template <typename RenderPassData, RenderPassTraits<RenderPassData> RenderPass>
         FORR_NODISCARD RenderPassData* AddPass(std::string_view name) {
@@ -144,16 +130,10 @@ namespace fe {
         void Clear();
 
     private:
-        void gatherGraph();
-
-    private:
         std::vector<RenderPass> m_RenderPasses{};
         fe::Arena               m_RenderPassesData{ 16 * 1024 };
 
         std::vector<GPURequestCommand> m_RequestCommands{};
-
-        std::vector<Node> m_Nodes{};
-        std::vector<Edge> m_Edges{};
     };
 
 } // namespace fe
