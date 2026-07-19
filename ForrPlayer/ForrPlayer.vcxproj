@@ -112,6 +112,7 @@ call "$(SolutionDir)Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Targe
     <ClInclude Include="Include\Forr\ECS\Components.hpp" />
     <ClInclude Include="Include\Forr\ECS\Systems\RenderSystem.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Camera.hpp" />
+    <ClInclude Include="Include\Forr\Graphics\DefaultRenderPasses.hpp" />
     <ClInclude Include="Include\Forr\Graphics\IRenderer.hpp" />
     <ClInclude Include="Include\Forr\Graphics\RenderGraph.hpp" />
     <ClInclude Include="Include\Forr\Layer.hpp" />

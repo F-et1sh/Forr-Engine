@@ -9,8 +9,12 @@
         Resource structure - means that the structure has its own extension, like .png or .gltf.
         If the resource has a metadata file near, a part of the structure will be filled from it.
         For example, if .png ( example.png ) hasn't data about "min filter", so, the member
-            fe::resource::Texture::min_filter will be set to default, but if the resource manager find
+            fe::resource::Texture::min_filter will be set to default, but if the resource manager finds
             a metadata file near ( example.png.fs ) it will fill the structure from it.
+        Sometimes one file ( extension ) can create multiple resources. For example, ShaderProgram and 
+            MaterialLayout are both created from .slang file - if it happends, you have to create a 
+            structure, that will point to all of resources created by that 
+            file ( ShaderReflectedData in the case of .slang )
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
