@@ -18,16 +18,18 @@ namespace fe {
 
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder) {
-            builder.CreateImage("Color",
-                                { .type       = fe::ImageType::IMAGE_TYPE_2D,
+            builder.createImage({ .hash       = fe::string_hash("Color"),
+                                  .type       = fe::ImageType::IMAGE_TYPE_2D,
                                   .format     = fe::Format::RGBA8_SRGB,
                                   .extent     = glm::ivec3{ 1920, 1080, 1 },
                                   .mip_levels = 1,
                                   .usage      = fe::ImageUsageBits::RENDER_TARGET });
-            builder.WriteImage("Color");
+
+            builder.readImage(fe::string_hash("Color"), fe::ResourceState::RENDER_TARGET);
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
+            
         }
 
         ForwardPass()  = default;

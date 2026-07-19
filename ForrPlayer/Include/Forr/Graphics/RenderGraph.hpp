@@ -15,26 +15,14 @@
 #include "GPUTypes.hpp"
 
 namespace fe {
-    struct RenderGraphContext {
-        // ...
+    // a proxy to gather render commands from render pass
+    struct FORR_API RenderGraphContext {
     };
 
-    namespace render_graph {
-        struct ResourceHandle {
+    // a proxy to gather setup commands from render pass
+    struct FORR_API RenderGraphBuilder {
+        struct FORR_API ImageDesc {
             fe::StringHash hash{};
-            uint32_t       version{};
-        };
-
-        struct ImageHandle {
-            ResourceHandle handle{};
-        };
-
-        struct BufferHandle {
-            ResourceHandle handle{};
-        };
-
-        struct CreateImageCommand {
-            ImageHandle    handle{};
             ImageType      type{};
             Format         format{};
             glm::ivec3     extent{};
@@ -42,93 +30,37 @@ namespace fe {
             ImageUsageBits usage{};
         };
 
-        struct CreateBufferCommand {
-            BufferHandle    handle{};
-            uint64_t        size{};
-            BufferUsageBits usage{};
+        struct FORR_API ImageBarrier {
+            fe::StringHash hash{};
+            ResourceState  to_state{};
         };
 
-        struct ImageBarrierCommand {
-            ImageHandle   handle{};
-            ResourceState old_state{};
-            ResourceState new_state{};
-        };
+        using BuilderCommand = std::variant<ImageDesc, ImageBarrier>;
+        std::vector<BuilderCommand> build_commands{};
 
-        struct BufferBarrierCommand {
-            BufferHandle  handle{};
-            ResourceState old_state{};
-            ResourceState new_state{};
-        };
-
-        struct BeginRenderPassCommand {
-            std::vector<ImageHandle>   color_attachments{};
-            std::optional<ImageHandle> depth_attachment{};
-            Rect2D                     render_area{};
-        };
-
-        struct EndRenderPassCommand {};
-
-        struct ExecuteLambdaCommand {
-            std::move_only_function<void(RenderGraphContext&)> execute_function{};
-        };
-
-        using Command = std::variant<CreateImageCommand,
-                                     CreateBufferCommand,
-                                     ImageBarrierCommand,
-                                     BufferBarrierCommand,
-                                     BeginRenderPassCommand,
-                                     EndRenderPassCommand,
-                                     ExecuteLambdaCommand>;
-
-        using CommandList = std::vector<Command>;
-    } // namespace render_graph
-
-    class FORR_API RenderGraphBuilder {
-    public:
-        enum class SizeMode : std::uint8_t {
-            ABSOLUTE_PX,
-            RELATIVE_TO_SCREEN
-        };
-
-        struct ImageDesc {
-            SizeMode   size_mode{ SizeMode::RELATIVE_TO_SCREEN };
-            glm::vec2  scale{ 1.0f, 1.0f };
-            glm::ivec2 absolute_size{ 0, 0 };
-
-            fe::Format         format{ fe::Format::RGBA8_SRGB };
-            fe::ImageUsageBits usage{ fe::ImageUsageBits::RENDER_TARGET };
-        };
-
-        struct ImageCreationRequest {
-            fe::fixed_string<32> name;
-            ImageDesc            desc;
-        };
-
-    public:
-        RenderGraphBuilder()  = default;
-        ~RenderGraphBuilder() = default;
-
-        FORR_CLASS_MOVABLE(RenderGraphBuilder);
-        FORR_CLASS_NONCOPYABLE(RenderGraphBuilder);
-
-        render_graph::ImageHandle CreateImage(std::string_view name, const ImageDesc& desc) {
-
-            return render_graph::ImageHandle{};
+        ImageDesc& createImage(const ImageDesc& desc) {
+            return std::get<ImageDesc>(build_commands.emplace_back(desc));
         }
 
-    private:
-        std::vector<ImageDesc>  m_ImagesToCreate{};
-        std::vector<BufferDesc> m_BuffersToCreate{};
+        void writeImage(fe::StringHash hash, ResourceState to_state) {
+            assert(to_state != ResourceState::DEPTH_READ);
+            assert(to_state != ResourceState::SHADER_READ_ONLY);
+            assert(to_state != ResourceState::COPY_SRC);
+            build_commands.emplace_back(ImageBarrier{ hash, to_state });
+        }
 
-        std::vector<ImageBarrier>  m_ImageBarriers{};
-        std::vector<BufferBarrier> m_BufferBarriers{};
-
-        friend class RenderGraph;
+        void readImage(fe::StringHash hash, ResourceState to_state) {
+            assert(to_state != ResourceState::RENDER_TARGET);
+            assert(to_state != ResourceState::DEPTH_WRITE);
+            assert(to_state != ResourceState::UNORDERED_ACCESS);
+            assert(to_state != ResourceState::COPY_DST);
+            build_commands.emplace_back(ImageBarrier{ hash, to_state });
+        }
     };
 
     template <typename T, typename DataT>
-    concept RenderPassTraits = requires(RenderGraphBuilder& builder, RenderGraphContext& context, DataT& render_pass_data) {
-        { T::Setup(builder) } -> std::same_as<void>;
+    concept RenderPassTraits = requires(RenderGraphContext& context, DataT& render_pass_data) {
+        { T::Setup(context) } -> std::same_as<void>;
         { T::Execute(context, render_pass_data) } -> std::same_as<void>;
     };
 
@@ -152,6 +84,38 @@ namespace fe {
     };
 
     class FORR_API RenderGraph {
+    public:
+        struct FORR_API ImageDesc {
+            ImageType      type{};
+            Format         format{};
+            glm::ivec3     extent{};
+            uint32_t       mip_levels{};
+            ImageUsageBits usage{};
+        };
+
+        struct FORR_API ImageBarrier {
+            fe::StringHash hash{};
+            ResourceState  old_state{};
+            ResourceState  new_state{};
+        };
+
+        using GPURequestCommand = std::variant<ImageDesc, ImageBarrier>;
+
+    private:
+        struct ResourceHandle {
+            fe::StringHash hash{};
+            uint32_t       version{};
+        };
+
+        struct Edge { // resource
+            ResourceHandle handle{};
+        };
+
+        struct Node { // render pass
+            std::vector<Edge> inputs{};
+            std::vector<Edge> outputs{};
+        };
+
     public:
         RenderGraph() = default;
         ~RenderGraph() { this->Clear(); }
@@ -180,8 +144,16 @@ namespace fe {
         void Clear();
 
     private:
+        void gatherGraph();
+
+    private:
         std::vector<RenderPass> m_RenderPasses{};
         fe::Arena               m_RenderPassesData{ 16 * 1024 };
+
+        std::vector<GPURequestCommand> m_RequestCommands{};
+
+        std::vector<Node> m_Nodes{};
+        std::vector<Edge> m_Edges{};
     };
 
 } // namespace fe

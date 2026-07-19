@@ -14,15 +14,7 @@
 #include "Graphics/RenderGraph.hpp"
 
 void fe::RenderGraph::Compile() {
-    for (auto& render_pass : m_RenderPasses) {
-        RenderGraphBuilder builder{};
-        render_pass.setup_function(builder);
-        //builder.m_Writes;
-    }
-}
-
-void fe::RenderGraph::Execute(fe::RenderPacket& render_packet) {
-
+    this->gatherGraph();
 }
 
 void fe::RenderGraph::Clear() {
@@ -33,4 +25,26 @@ void fe::RenderGraph::Clear() {
     }
     m_RenderPasses.clear();
     m_RenderPassesData.reset();
+}
+
+void fe::RenderGraph::gatherGraph() {
+    for (auto& render_pass : m_RenderPasses) {
+        fe::RenderGraphBuilder builder{};
+
+        render_pass.setup_function(builder);
+
+        for (auto& build_command : builder.build_commands) {
+            std::visit([&](auto&& arg) {
+                using T = std::decay_t<decltype(arg)>;
+
+                if constexpr (std::is_same_v<T, RenderGraphBuilder::ImageDesc>) {
+                    m_RequestCommands.emplace_back(RenderGraph::ImageDesc{ arg.type, arg.format, arg.extent, arg.mip_levels, arg.usage });
+                }
+                else if constexpr (std::is_same_v<T, RenderGraphBuilder::ImageBarrier>) {
+                    
+                }
+            },
+                       build_command);
+        }
+    }
 }
