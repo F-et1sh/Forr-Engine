@@ -14,6 +14,7 @@
 
 #include <array>
 #include <functional>
+#include <queue>
 #include <span>
 #include <vector>
 #include <concepts>
