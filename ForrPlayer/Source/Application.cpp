@@ -32,7 +32,7 @@ fe::Application::Application(const ApplicationDesc& desc) {
     m_ResourceManager->RunForEach<resource::Model>([&](fe::pointer<resource::Model> model_ptr, const resource::Model& model) { // temp
         m_Object1 = m_Registry.create();
         m_Registry.emplace<TransformComponent>(m_Object1, glm::translate(glm::mat4(1.0f), glm::vec3(50, 0, 0)));
-        m_Registry.emplace<MeshComponent>(m_Object1, model_ptr/*, interesting_material_ptr*/);
+        m_Registry.emplace<MeshComponent>(m_Object1, model_ptr /*, interesting_material_ptr*/);
 
         m_Object2 = m_Registry.create();
         m_Registry.emplace<TransformComponent>(m_Object2, glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)));
@@ -65,6 +65,7 @@ void fe::Application::Run() {
 
         m_Renderer->BeginFrame();
         m_RenderSystem->Update();
+        //m_RenderGraph->Execute(m_RenderPacket);
         m_Renderer->EndFrame(m_RenderPacket);
 
         m_PrimaryWindow->PollEvents();
@@ -108,4 +109,8 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
 
     m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, *m_ResourceManager);
     m_Renderer->SetClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
+    m_RenderGraph                 = std::make_unique<RenderGraph>();
+    auto forward_pass_data_mapped = m_RenderGraph->AddPass<ForwardPassData, ForwardPass>("Forward Pass"); // TODO : make a storage for this mapped data
+    m_RenderGraph->Compile();
 }

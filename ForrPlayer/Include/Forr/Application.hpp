@@ -16,7 +16,10 @@
 
 #include "Platform/IPlatformSystem.hpp"
 #include "Graphics/IRenderer.hpp"
+#include "Graphics/RenderGraph.hpp"
 #include "ResourceManagement/ResourceManager.hpp"
+
+#include "Graphics/DefaultRenderPasses.hpp"
 
 #include "ECS/Components.hpp" // temp
 #include "ECS/Systems/RenderSystem.hpp" // temp
@@ -53,6 +56,7 @@ namespace fe {
     private:
         std::unique_ptr<IPlatformSystem> m_PlatformSystem{};
         std::unique_ptr<IRenderer>       m_Renderer{};
+        std::unique_ptr<RenderGraph>     m_RenderGraph{};
         std::unique_ptr<ResourceManager> m_ResourceManager{};
 
         size_t   m_PrimaryWindowID{};

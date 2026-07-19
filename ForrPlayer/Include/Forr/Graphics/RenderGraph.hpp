@@ -15,71 +15,93 @@
 #include "GPUTypes.hpp"
 
 namespace fe {
-    struct ImageID {
-        fe::StringHash hash{};
-    };
-    struct BufferID {
-        fe::StringHash hash{};
-    };
-
-    struct CreateImageCommand {
-        ImageID        id{};
-        ImageType      type{};
-        Format         format{};
-        glm::ivec3     extent{};
-        uint32_t       mip_levels{};
-        ImageUsageBits usage{};
-    };
-
-    struct CreateBufferCommand {
-        BufferID        id{};
-        uint64_t        size{};
-        BufferUsageBits usage{};
-    };
-
-    struct ImageBarrierCommand {
-        ImageID       id{};
-        ResourceState old_state{};
-        ResourceState new_state{};
-    };
-
-    struct BufferBarrierCommand {
-        BufferID      id{};
-        ResourceState old_state{};
-        ResourceState new_state{};
-    };
-
-    struct BeginRenderPassCommand {
-        std::vector<ImageID>   color_attachments{};
-        std::optional<ImageID> depth_attachment{};
-        Rect2D                 render_area{};
-    };
-
-    struct EndRenderPassCommand {};
-
     struct RenderGraphContext {
         // ...
     };
 
-    struct ExecuteLambdaCommand {
-        std::move_only_function<void(RenderGraphContext&)> execute_function{};
-    };
+    namespace render_graph {
+        struct ResourceHandle {
+            fe::StringHash hash{};
+            uint32_t       version{};
+        };
 
-    using RenderGraphCommand = std::variant<CreateImageCommand,
-                                            CreateBufferCommand,
-                                            ImageBarrierCommand,
-                                            BufferBarrierCommand,
-                                            BeginRenderPassCommand,
-                                            EndRenderPassCommand,
-                                            ExecuteLambdaCommand>;
+        struct ImageHandle {
+            ResourceHandle handle{};
+        };
 
-    using RenderGraphCommandList = std::vector<RenderGraphCommand>;
+        struct BufferHandle {
+            ResourceHandle handle{};
+        };
 
-    class RenderGraphBuilder {
-    private:
-        struct ResourceUsageInfo {
-            fe::StringHash texture_name{};
-            ResourceState  expected_state{};
+        struct CreateImageCommand {
+            ImageHandle    handle{};
+            ImageType      type{};
+            Format         format{};
+            glm::ivec3     extent{};
+            uint32_t       mip_levels{};
+            ImageUsageBits usage{};
+        };
+
+        struct CreateBufferCommand {
+            BufferHandle    handle{};
+            uint64_t        size{};
+            BufferUsageBits usage{};
+        };
+
+        struct ImageBarrierCommand {
+            ImageHandle   handle{};
+            ResourceState old_state{};
+            ResourceState new_state{};
+        };
+
+        struct BufferBarrierCommand {
+            BufferHandle  handle{};
+            ResourceState old_state{};
+            ResourceState new_state{};
+        };
+
+        struct BeginRenderPassCommand {
+            std::vector<ImageHandle>   color_attachments{};
+            std::optional<ImageHandle> depth_attachment{};
+            Rect2D                     render_area{};
+        };
+
+        struct EndRenderPassCommand {};
+
+        struct ExecuteLambdaCommand {
+            std::move_only_function<void(RenderGraphContext&)> execute_function{};
+        };
+
+        using Command = std::variant<CreateImageCommand,
+                                     CreateBufferCommand,
+                                     ImageBarrierCommand,
+                                     BufferBarrierCommand,
+                                     BeginRenderPassCommand,
+                                     EndRenderPassCommand,
+                                     ExecuteLambdaCommand>;
+
+        using CommandList = std::vector<Command>;
+    } // namespace render_graph
+
+    class FORR_API RenderGraphBuilder {
+    public:
+        enum class SizeMode : std::uint8_t {
+            ABSOLUTE_PX,
+            RELATIVE_TO_SCREEN
+        };
+
+        struct ImageDesc {
+            SizeMode   size_mode{ SizeMode::RELATIVE_TO_SCREEN };
+            glm::vec2  scale{ 1.0f, 1.0f };
+            glm::ivec2 absolute_size{ 0, 0 };
+
+            fe::Format         format{ fe::Format::RGBA8_SRGB };
+            fe::ImageUsageBits usage{ fe::ImageUsageBits::RENDER_TARGET };
+        };
+
+        struct ImageCreationRequest {
+            fe::fixed_string<32> name;
+            ImageDesc            desc;
         };
 
     public:
@@ -89,17 +111,17 @@ namespace fe {
         FORR_CLASS_MOVABLE(RenderGraphBuilder);
         FORR_CLASS_NONCOPYABLE(RenderGraphBuilder);
 
-        void ReadTexture(fe::StringHash texture_name) {
-            m_Reads.emplace_back(ResourceUsageInfo{ texture_name, ResourceState::SHADER_READ });
-        }
+        render_graph::ImageHandle CreateImage(std::string_view name, const ImageDesc& desc) {
 
-        void WriteTexture(fe::StringHash texture_name) {
-            m_Writes.emplace_back(ResourceUsageInfo{ texture_name, ResourceState::RENDER_TARGET });
+            return render_graph::ImageHandle{};
         }
 
     private:
-        std::vector<ResourceUsageInfo> m_Reads;
-        std::vector<ResourceUsageInfo> m_Writes;
+        std::vector<ImageDesc>  m_ImagesToCreate{};
+        std::vector<BufferDesc> m_BuffersToCreate{};
+
+        std::vector<ImageBarrier>  m_ImageBarriers{};
+        std::vector<BufferBarrier> m_BufferBarriers{};
 
         friend class RenderGraph;
     };
@@ -129,7 +151,7 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(RenderPass);
     };
 
-    class RenderGraph {
+    class FORR_API RenderGraph {
     public:
         RenderGraph() = default;
         ~RenderGraph() { this->Clear(); }
@@ -137,7 +159,7 @@ namespace fe {
         FORR_CLASS_MOVABLE(RenderGraph);
         FORR_CLASS_NONCOPYABLE(RenderGraph);
 
-        template <typename RenderPassData, RenderPassTraits<RenderPassData> RenderPassT>
+        template <typename RenderPassData, RenderPassTraits<RenderPassData> RenderPass>
         FORR_NODISCARD RenderPassData* AddPass(std::string_view name) {
             auto& render_pass = m_RenderPasses.emplace_back();
 
@@ -146,40 +168,20 @@ namespace fe {
 
             render_pass.name             = name;
             render_pass.mapped_data      = mapped_data;
-            render_pass.setup_function   = &RenderPassT::Setup;
-            render_pass.execute_function = [](RenderGraphContext& context, void* ptr) { RenderPassT::Execute(context, *reinterpret_cast<RenderPassData*>(ptr)); };
+            render_pass.setup_function   = &RenderPass::Setup;
+            render_pass.execute_function = [](RenderGraphContext& context, void* ptr) { RenderPass::Execute(context, *reinterpret_cast<RenderPassData*>(ptr)); };
             render_pass.destroy_function = [](void* ptr) { std::destroy_at(reinterpret_cast<RenderPassData*>(ptr)); };
 
             return mapped_data;
         }
 
-        void Clear() {
-            for (auto& pass : m_RenderPasses) {
-                if (pass.destroy_function && pass.mapped_data) {
-                    pass.destroy_function(pass.mapped_data);
-                }
-            }
-            m_RenderPasses.clear();
-            m_RenderPassesData.reset();
-        }
+        void Compile();
+
+        void Clear();
 
     private:
         std::vector<RenderPass> m_RenderPasses{};
         fe::Arena               m_RenderPassesData{ 16 * 1024 };
-    };
-
-    struct ForwardPassData {};
-
-    struct ForwardPass {
-        static void Setup(RenderGraphBuilder& builder) {
-            builder.WriteTexture(fe::string_hash("Color"));
-        }
-
-        static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
-        }
-
-        ForwardPass()  = default;
-        ~ForwardPass() = default;
     };
 
 } // namespace fe
