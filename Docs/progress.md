@@ -17,6 +17,7 @@
 ### Done
     RenderGraph in progress
     Kahn's algorithm implemented
+    RenderGraph::Compile() almost done
 
 ### Problem
     -

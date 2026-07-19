@@ -13,18 +13,52 @@
 #include "pch.hpp"
 #include "Graphics/RenderGraph.hpp"
 
-void fe::RenderGraph::Compile() {
-    struct Node { // render pass
-        std::vector<RenderGraphBuilder::ImageBarrier> reads{};
-        std::vector<RenderGraphBuilder::ImageBarrier> writes{};
-        std::vector<RenderGraphBuilder::ImageDesc>    create_requests{};
+struct ResourceHandle {
+    fe::StringHash hash{};
+    uint32_t       version{};
 
-        FORR_CLASS_MOVABLE(Node)
-        FORR_CLASS_NONCOPYABLE(Node)
+    ResourceHandle() = default;
+    ResourceHandle(fe::StringHash hash, uint32_t version) : hash(hash), version(version) {}
+
+    bool operator==(const ResourceHandle& other) const noexcept = default;
+};
+
+template <>
+struct std::hash<ResourceHandle> {
+    std::size_t operator()(const ResourceHandle& handle) const {
+        std::size_t h1 = hash<fe::StringHash>()(handle.hash);
+        std::size_t h2 = hash<uint32_t>()(handle.version);
+        return h1 ^ (h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2));
+    }
+};
+
+struct Node { // render pass
+    struct ImageBarrier {
+        ResourceHandle    handle{};
+        fe::ResourceState to_state{};
+
+        ImageBarrier() = default;
+        ImageBarrier(const ResourceHandle& handle, fe::ResourceState to_state) : handle(handle), to_state(to_state) {}
     };
 
+    std::vector<Node::ImageBarrier>                reads{};
+    std::vector<Node::ImageBarrier>                writes{};
+    std::vector<fe::RenderGraphBuilder::ImageDesc> create_requests{};
+
+    Node() = default;
+    Node(std::vector<Node::ImageBarrier> reads, std::vector<Node::ImageBarrier> writes, std::vector<fe::RenderGraphBuilder::ImageDesc> create_requests)
+        : reads(std::move(reads)), writes(std::move(writes)), create_requests(std::move(create_requests)) {}
+
+    FORR_CLASS_MOVABLE(Node)
+    FORR_CLASS_NONCOPYABLE(Node)
+};
+
+void fe::RenderGraph::Compile() {
     std::vector<Node> render_passes{};
     render_passes.reserve(m_RenderPasses.size());
+
+    // resource hash --> resource version
+    std::unordered_map<fe::StringHash, uint32_t> resource_versions{};
 
     for (auto& render_pass : m_RenderPasses) {
         RenderGraphBuilder builder{};
@@ -32,53 +66,64 @@ void fe::RenderGraph::Compile() {
 
         auto& this_render_pass = render_passes.emplace_back();
 
-        this_render_pass.reads           = std::move(builder.reads);
-        this_render_pass.writes          = std::move(builder.writes);
+        this_render_pass.reads.reserve(builder.reads.size());
+        this_render_pass.writes.reserve(builder.writes.size());
+
+        for (const auto& read_barrier : builder.reads) {
+            this_render_pass.reads.emplace_back(Node::ImageBarrier{ ResourceHandle{ read_barrier.hash, resource_versions[read_barrier.hash] }, read_barrier.to_state });
+        }
+        for (const auto& write_barrier : builder.writes) {
+            resource_versions[write_barrier.hash]++; // increasing version
+            this_render_pass.writes.emplace_back(Node::ImageBarrier{ ResourceHandle{ write_barrier.hash, resource_versions[write_barrier.hash] }, write_barrier.to_state });
+        }
+
         this_render_pass.create_requests = std::move(builder.create_requests);
     }
 
     // a map, there every render pass refers to its dependencies
     std::vector<std::vector<uint32_t>> map(render_passes.size());
 
-    // resource hash --> render pass index
-    std::unordered_map<fe::StringHash, uint32_t> last_writer{};
-    // resource hash --> render passes indices
-    std::unordered_map<fe::StringHash, std::vector<uint32_t>> current_readers{};
+    auto add_dependency = [&](uint32_t dependency_pass, uint32_t current_pass) {
+        auto& dependencies = map[dependency_pass];
+        if (dependencies.empty() || dependencies.back() != current_pass) {
+            dependencies.emplace_back(current_pass);
+        }
+    };
+
+    // resource handle --> render pass index
+    std::unordered_map<ResourceHandle, uint32_t> last_writer{};
+    // resource handle --> render passes indices
+    std::unordered_map<ResourceHandle, std::vector<uint32_t>> current_readers{};
 
     for (size_t i = 0; i < render_passes.size(); i++) {
         const auto& this_render_pass = render_passes[i];
 
         for (const auto& read_barrier : this_render_pass.reads) {
-            auto it = last_writer.find(read_barrier.hash);
+            auto it = last_writer.find(read_barrier.handle);
             if (it != last_writer.end()) {
-
-                uint32_t dependency_pass = it->second;
-                if (map[dependency_pass].empty() || map[dependency_pass].back() != i) {
-                    map[dependency_pass].emplace_back(i);
-                }
+                add_dependency(it->second, i);
             }
-
-            current_readers[read_barrier.hash].emplace_back(i);
+            current_readers[read_barrier.handle].emplace_back(i);
         }
 
         for (const auto& write_barrier : this_render_pass.writes) {
-            auto readers_it = current_readers.find(write_barrier.hash);
+            auto readers_it = current_readers.find(write_barrier.handle);
 
             if (readers_it != current_readers.end()) {
                 for (uint32_t reader_pass : readers_it->second) {
                     if (reader_pass != i) {
-                        map[reader_pass].emplace_back(i);
+                        add_dependency(reader_pass, i);
                     }
                 }
                 readers_it->second.clear();
             }
 
-            auto writer_it = last_writer.find(write_barrier.hash);
-            if (writer_it != last_writer.end() && writer_it->second != i) {
-                map[writer_it->second].emplace_back(i);
+            auto writer_it = last_writer.find(write_barrier.handle);
+            if (writer_it != last_writer.end()) {
+                add_dependency(writer_it->second, i);
             }
 
-            last_writer[write_barrier.hash] = i;
+            last_writer[write_barrier.handle] = i;
         }
     }
 
@@ -125,14 +170,17 @@ void fe::RenderGraph::Compile() {
         sorted_render_passes.emplace_back(std::move(render_passes[i]));
     }
 
+    // TODO : provde culling
+    // TODO : make command requests
+
     //
-    // Pass01 | read : []           , write ColorBuffer
-    // Pass02 | read : ColorBuffer  , write ColorBuffer
-    // Pass03 | read : ColorBuffer  , write OtherBuffer
-    // Pass04 | read : OtherBuffer  , write OtherBuffer2
-    // Pass05 | read : OtherBuffer2 , write ColorBuffer
-    // Pass06 | read : ColorBuffer  , write OtherBuffer3
-    // Pass07 | read : OtherBuffer3 , write ColorBuffer
+    // Pass01 | read : []               , write :  ColorBuffer_v0
+    // Pass02 | read :  ColorBuffer_v0  , write :  ColorBuffer_v1
+    // Pass03 | read :  ColorBuffer_v1  , write :  OtherBuffer_v0
+    // Pass04 | read :  OtherBuffer_v0  , write : OtherBuffer2_v0
+    // Pass05 | read : OtherBuffer2_v0  , write :  ColorBuffer_v2
+    // Pass06 | read :  ColorBuffer_v2  , write : OtherBuffer3_v0
+    // Pass07 | read : OtherBuffer3_v0  , write :  ColorBuffer_v3
     //
     // ColorBuffer --> Backbuffer
 }
@@ -145,4 +193,5 @@ void fe::RenderGraph::Clear() {
     }
     m_RenderPasses.clear();
     m_RenderPassesData.reset();
+    m_RequestCommands.clear();
 }
