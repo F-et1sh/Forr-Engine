@@ -83,7 +83,7 @@ void fe::RenderGraph::Compile() {
     // a map, there every render pass refers to its dependencies
     std::vector<std::vector<uint32_t>> map(render_passes.size());
 
-    auto add_dependency = [&](uint32_t dependency_pass, uint32_t current_pass) {
+    auto add_dependency_lambda = [&](uint32_t dependency_pass, uint32_t current_pass) {
         auto& dependencies = map[dependency_pass];
         if (dependencies.empty() || dependencies.back() != current_pass) {
             dependencies.emplace_back(current_pass);
@@ -101,7 +101,7 @@ void fe::RenderGraph::Compile() {
         for (const auto& read_barrier : this_render_pass.reads) {
             auto it = last_writer.find(read_barrier.handle);
             if (it != last_writer.end()) {
-                add_dependency(it->second, i);
+                add_dependency_lambda(it->second, i);
             }
             current_readers[read_barrier.handle].emplace_back(i);
         }
@@ -112,7 +112,7 @@ void fe::RenderGraph::Compile() {
             if (readers_it != current_readers.end()) {
                 for (uint32_t reader_pass : readers_it->second) {
                     if (reader_pass != i) {
-                        add_dependency(reader_pass, i);
+                        add_dependency_lambda(reader_pass, i);
                     }
                 }
                 readers_it->second.clear();
@@ -120,7 +120,7 @@ void fe::RenderGraph::Compile() {
 
             auto writer_it = last_writer.find(write_barrier.handle);
             if (writer_it != last_writer.end()) {
-                add_dependency(writer_it->second, i);
+                add_dependency_lambda(writer_it->second, i);
             }
 
             last_writer[write_barrier.handle] = i;
@@ -170,7 +170,36 @@ void fe::RenderGraph::Compile() {
         sorted_render_passes.emplace_back(std::move(render_passes[i]));
     }
 
-    // TODO : provde culling
+    render_passes.clear(); // use 'sorted_render_passes' instead
+
+    // TODO : rewrite culling
+
+    // culling
+    std::vector<Node> used_render_passes{};
+    used_render_passes.reserve(sorted_render_passes.size());
+
+    std::unordered_set<ResourceHandle> used_resources{};
+    auto                               add_used_resource_lambda = [&used_resources, &used_render_passes](Node& node) {
+        used_resources.reserve(used_resources.size() + node.reads.size());
+        for (const auto& read_barrier : node.reads)
+            used_resources.insert(read_barrier.handle);
+
+        used_render_passes.emplace_back(std::move(node));
+    };
+
+    add_used_resource_lambda(sorted_render_passes.back());
+
+    for (auto& render_pass : sorted_render_passes) {
+        std::ranges::any_of(render_pass.writes, [&](const Node::ImageBarrier& write_barrier) -> bool {
+            auto it = used_resources.find(write_barrier.handle);
+            if (it != used_resources.end()) {
+                add_used_resource_lambda(render_pass);
+                return true;
+            }
+            return false;
+        });
+    }
+
     // TODO : make command requests
 
     //

@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <unordered_set>
 #include <array>
 #include <functional>
 #include <map>
