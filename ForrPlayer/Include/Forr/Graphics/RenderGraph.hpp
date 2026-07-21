@@ -21,20 +21,6 @@ namespace fe {
 
     // a proxy to gather setup commands from render pass
     struct FORR_API RenderGraphBuilder {
-        struct FORR_API ImageDesc {
-            fe::StringHash hash{};
-            ImageType      type{};
-            Format         format{};
-            glm::ivec3     extent{};
-            uint32_t       mip_levels{};
-            ImageUsageBits usage{};
-        };
-
-        struct FORR_API ImageBarrier {
-            fe::StringHash hash{};
-            ResourceState  to_state{};
-        };
-
         std::vector<ImageBarrier> reads{};
         std::vector<ImageBarrier> writes{};
         std::vector<ImageDesc>    create_requests{};
@@ -48,14 +34,14 @@ namespace fe {
             assert(to_state != ResourceState::DEPTH_WRITE);
             assert(to_state != ResourceState::UNORDERED_ACCESS);
             assert(to_state != ResourceState::COPY_DST);
-            reads.emplace_back(ImageBarrier{ hash, to_state });
+            reads.emplace_back(ImageBarrier{ hash, ResourceState::UNDEFINED, to_state });
         }
 
         void writeImage(fe::StringHash hash, ResourceState to_state) {
             assert(to_state != ResourceState::DEPTH_READ);
             assert(to_state != ResourceState::SHADER_READ_ONLY);
             assert(to_state != ResourceState::COPY_SRC);
-            writes.emplace_back(ImageBarrier{ hash, to_state });
+            writes.emplace_back(ImageBarrier{ hash, ResourceState::UNDEFINED, to_state });
         }
     };
 
@@ -85,23 +71,6 @@ namespace fe {
     };
 
     class FORR_API RenderGraph {
-    public:
-        struct FORR_API ImageDesc {
-            ImageType      type{};
-            Format         format{};
-            glm::ivec3     extent{};
-            uint32_t       mip_levels{};
-            ImageUsageBits usage{};
-        };
-
-        struct FORR_API ImageBarrier {
-            fe::StringHash hash{};
-            ResourceState  old_state{};
-            ResourceState  new_state{};
-        };
-
-        using GPURequestCommand = std::variant<ImageDesc, ImageBarrier>;
-
     public:
         RenderGraph() = default;
         ~RenderGraph() { this->Clear(); }
