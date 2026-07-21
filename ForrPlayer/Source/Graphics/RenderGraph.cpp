@@ -172,33 +172,37 @@ void fe::RenderGraph::Compile() {
 
     render_passes.clear(); // use 'sorted_render_passes' instead
 
-    // TODO : rewrite culling
-
     // culling
     std::vector<Node> used_render_passes{};
     used_render_passes.reserve(sorted_render_passes.size());
 
     std::unordered_set<ResourceHandle> used_resources{};
-    auto                               add_used_resource_lambda = [&used_resources, &used_render_passes](Node& node) {
-        used_resources.reserve(used_resources.size() + node.reads.size());
-        for (const auto& read_barrier : node.reads)
-            used_resources.insert(read_barrier.handle);
 
+    constexpr static fe::StringHash final_resource_hash = fe::string_hash("ColorBuffer");
+    uint32_t                        final_version       = resource_versions[final_resource_hash];
+    used_resources.insert(ResourceHandle{ final_resource_hash, final_version });
+
+    auto add_used_resource_lambda = [&used_resources, &used_render_passes](Node& node) {
+        used_resources.reserve(used_resources.size() + node.reads.size());
+        for (const auto& read_barrier : node.reads) {
+            used_resources.insert(read_barrier.handle);
+        }
         used_render_passes.emplace_back(std::move(node));
     };
 
     add_used_resource_lambda(sorted_render_passes.back());
 
-    for (auto& render_pass : sorted_render_passes) {
-        std::ranges::any_of(render_pass.writes, [&](const Node::ImageBarrier& write_barrier) -> bool {
-            auto it = used_resources.find(write_barrier.handle);
-            if (it != used_resources.end()) {
-                add_used_resource_lambda(render_pass);
-                return true;
-            }
-            return false;
+    for (auto& render_pass : std::views::reverse(sorted_render_passes)) {
+        bool is_needed = std::ranges::any_of(render_pass.writes, [&](const Node::ImageBarrier& write_barrier) {
+            return used_resources.contains(write_barrier.handle);
         });
+
+        if (is_needed) {
+            add_used_resource_lambda(render_pass);
+        }
     }
+
+    std::ranges::reverse(used_render_passes);
 
     // TODO : make command requests
 
