@@ -1,6 +1,6 @@
 ﻿# Forr-Engine Devlog
 
-## 20.07.2026
+## 21.07.2026
 ### Goal
     allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
         allocate big SSBO ( AZDO ) in renderer for materials;
@@ -15,7 +15,7 @@
     ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
 
 ### Done
-    -
+    culling done
 
 ### Problem
     -
