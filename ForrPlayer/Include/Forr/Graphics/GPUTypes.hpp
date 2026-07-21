@@ -25,7 +25,7 @@
 
 namespace fe {
     //#pragma pack(push, 1) // disabled for now
-    struct Vertex {
+    struct FORR_API Vertex {
         glm::vec3 position{};
         glm::vec3 normal{};
         glm::vec2 texture_coord{};
@@ -40,7 +40,7 @@ namespace fe {
         ~Vertex() = default;
     };
 
-    struct alignas(16) GPULight {
+    struct alignas(16) FORR_API GPULight {
         //uint32_t type{};
 
         //float range{};
@@ -54,7 +54,7 @@ namespace fe {
 
     // this structure only helps to calculate offsets while loading glTF model
     // you don't have to create structures like this, if you want to create your own material
-    struct alignas(16) GPUPBRMaterial {
+    struct alignas(16) FORR_API GPUPBRMaterial {
         std::uint64_t base_color_texture_handle{};
     };
 
@@ -62,7 +62,7 @@ namespace fe {
 
     //#pragma pack(pop) // pack(push, 1) // disabled for now
 
-    enum class RenderMode : uint8_t {
+    enum class FORR_API RenderMode : uint8_t {
         POINTS,
         LINES,
         LINE_LOOP,
@@ -72,13 +72,13 @@ namespace fe {
         TRIANGLE_FAN,
     };
 
-    enum class RenderIndexType : uint8_t {
+    enum class FORR_API RenderIndexType : uint8_t {
         UNSIGNED_BYTE,
         UNSIGNED_SHORT,
         UNSIGNED_INT,
     };
 
-    enum class ResourceState {
+    enum class FORR_API ResourceState {
         UNDEFINED,
 
         RENDER_TARGET,
@@ -94,13 +94,13 @@ namespace fe {
         COPY_DST
     };
 
-    enum class ImageType : uint8_t {
+    enum class FORR_API ImageType : uint8_t {
         IMAGE_TYPE_1D,
         IMAGE_TYPE_2D,
         IMAGE_TYPE_3D,
     };
 
-    enum class Format : uint32_t {
+    enum class FORR_API Format : uint32_t {
         UNDEFINED,
 
         RGBA8_UNORM,
@@ -119,7 +119,7 @@ namespace fe {
         D32_SFLOAT_S8_UINT
     };
 
-    enum class ImageUsageBits : uint32_t {
+    enum class FORR_API ImageUsageBits : uint32_t {
         NONE             = 0,
         RENDER_TARGET    = 1 << 0,
         DEPTH_STENCIL    = 1 << 1,
@@ -129,12 +129,12 @@ namespace fe {
         COPY_DST         = 1 << 5
     };
 
-    enum class BufferUsageBits : uint32_t {
+    enum class FORR_API BufferUsageBits : uint32_t {
         NONE = 0,
         // ...
     };
 
-    struct Rect2D {
+    struct FORR_API Rect2D {
         glm::ivec2 offset{};
         glm::ivec2 extent{};
     };
@@ -142,8 +142,40 @@ namespace fe {
     using Vertices = std::vector<Vertex>;
     using Indices  = std::vector<Index>;
 
+    struct FORR_API ImageDesc {
+        fe::StringHash hash{};
+        ImageType      type{};
+        Format         format{};
+        glm::ivec3     extent{};
+        uint32_t       mip_levels{};
+        ImageUsageBits usage{};
+
+        ImageDesc() = default;
+        ImageDesc(fe::StringHash    hash,
+                  ImageType         type,
+                  Format            format,
+                  const glm::ivec3& extent,
+                  uint32_t          mip_levels,
+                  ImageUsageBits    usage)
+            : hash(hash), type(type), format(format), extent(extent), mip_levels(mip_levels), usage(usage) {}
+    };
+
+    struct FORR_API ImageBarrier {
+        fe::StringHash hash{};
+        ResourceState  old_state{};
+        ResourceState  new_state{};
+
+        ImageBarrier() = default;
+        ImageBarrier(fe::StringHash hash,
+                     ResourceState  old_state,
+                     ResourceState  new_state)
+            : hash(hash), old_state(old_state), new_state(new_state) {}
+    };
+
+    using GPURequestCommand = std::variant<ImageDesc, ImageBarrier>;
+
     namespace shader {
-        enum class DescriptorType : std::uint8_t {
+        enum class FORR_API DescriptorType : std::uint8_t {
             UNIFORM_BUFFER,
             STORAGE_BUFFER,
 
@@ -158,7 +190,7 @@ namespace fe {
         };
 
         // clang-format off
-        enum class ValueType : std::uint8_t {
+        enum class FORR_API ValueType : std::uint8_t {
             VOID,
 
             BOOL,
@@ -190,7 +222,7 @@ namespace fe {
         struct ReflectedMember; // forward declaration
 
         // base struct for reflection
-        struct ReflectedDataNode {
+        struct FORR_API ReflectedDataNode {
             ValueType type{ ValueType::UNKNOWN };
 
             uint32_t array_size{ 1 };
@@ -210,13 +242,13 @@ namespace fe {
         };
 
         // may be a field of a shader struct
-        struct ReflectedMember : public ReflectedDataNode {
+        struct FORR_API ReflectedMember : public ReflectedDataNode {
             uint32_t offset{};
 
             bool operator==(const ReflectedMember&) const noexcept = default;
         };
 
-        struct ReflectedDescriptor : public ReflectedDataNode {
+        struct FORR_API ReflectedDescriptor : public ReflectedDataNode {
             DescriptorType descriptor_type{ DescriptorType::UNKNOWN };
 
             uint32_t set{};
@@ -233,7 +265,7 @@ namespace fe {
             bool operator==(const ReflectedDescriptor&) const noexcept = default;
         };
 
-        struct ReflectedPushConstants : public ReflectedDataNode {
+        struct FORR_API ReflectedPushConstants : public ReflectedDataNode {
             uint8_t stage_flags{};
 
             ReflectedPushConstants() = default;
@@ -243,7 +275,7 @@ namespace fe {
             bool operator==(const ReflectedPushConstants&) const noexcept = default;
         };
 
-        enum class StageBits : std::uint8_t {
+        enum class FORR_API StageBits : std::uint8_t {
             NONE     = 0,
             VERTEX   = 1 << 0,
             GEOMETRY = 1 << 1,
@@ -251,7 +283,7 @@ namespace fe {
             COMPUTE  = 1 << 3,
         };
 
-        struct ReflectedPipelineLayout {
+        struct FORR_API ReflectedPipelineLayout {
             std::vector<shader::ReflectedDescriptor> descriptors{};
             shader::ReflectedPushConstants           push_constants{};
 
@@ -262,7 +294,7 @@ namespace fe {
             bool operator==(const ReflectedPipelineLayout&) const noexcept = default;
         };
 
-        struct ReflectedMaterialLayout {
+        struct FORR_API ReflectedMaterialLayout {
             uint32_t                             size{};
             std::vector<shader::ReflectedMember> members{};
             std::string                          name{};

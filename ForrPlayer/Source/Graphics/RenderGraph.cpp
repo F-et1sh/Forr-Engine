@@ -41,12 +41,12 @@ struct Node { // render pass
         ImageBarrier(const ResourceHandle& handle, fe::ResourceState to_state) : handle(handle), to_state(to_state) {}
     };
 
-    std::vector<Node::ImageBarrier>                reads{};
-    std::vector<Node::ImageBarrier>                writes{};
-    std::vector<fe::RenderGraphBuilder::ImageDesc> create_requests{};
+    std::vector<Node::ImageBarrier> reads{};
+    std::vector<Node::ImageBarrier> writes{};
+    std::vector<fe::ImageDesc>      create_requests{};
 
     Node() = default;
-    Node(std::vector<Node::ImageBarrier> reads, std::vector<Node::ImageBarrier> writes, std::vector<fe::RenderGraphBuilder::ImageDesc> create_requests)
+    Node(std::vector<Node::ImageBarrier> reads, std::vector<Node::ImageBarrier> writes, std::vector<fe::ImageDesc> create_requests)
         : reads(std::move(reads)), writes(std::move(writes)), create_requests(std::move(create_requests)) {}
 
     FORR_CLASS_MOVABLE(Node)
@@ -178,7 +178,7 @@ void fe::RenderGraph::Compile() {
 
     std::unordered_set<ResourceHandle> used_resources{};
 
-    constexpr static fe::StringHash final_resource_hash = fe::string_hash("ColorBuffer");
+    constexpr static fe::StringHash final_resource_hash = fe::string_hash("ColorBuffer"); // TODO : rewrite this - use 'main' color image instead
     uint32_t                        final_version       = resource_versions[final_resource_hash];
     used_resources.insert(ResourceHandle{ final_resource_hash, final_version });
 
@@ -193,7 +193,7 @@ void fe::RenderGraph::Compile() {
     add_used_resource_lambda(sorted_render_passes.back());
 
     for (auto& render_pass : std::views::reverse(sorted_render_passes)) {
-        bool is_needed = std::ranges::any_of(render_pass.writes, [&](const Node::ImageBarrier& write_barrier) {
+        bool is_needed = std::ranges::any_of(render_pass.writes, [&used_resources](const Node::ImageBarrier& write_barrier) {
             return used_resources.contains(write_barrier.handle);
         });
 
@@ -204,7 +204,11 @@ void fe::RenderGraph::Compile() {
 
     std::ranges::reverse(used_render_passes);
 
-    // TODO : make command requests
+    for (Node& render_pass : used_render_passes) {
+        for (ImageDesc& desc : render_pass.create_requests) {
+            m_RequestCommands.emplace_back(desc);
+        }
+    }
 
     //
     // Pass01 | read : []               , write :  ColorBuffer_v0
