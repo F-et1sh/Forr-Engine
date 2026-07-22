@@ -15,6 +15,28 @@
 #include "GPUTypes.hpp"
 
 namespace fe {
+    struct ResourceHandle {
+        fe::StringHash hash{};
+        uint32_t       version{};
+
+        ResourceHandle() = default;
+        ResourceHandle(fe::StringHash hash, uint32_t version) : hash(hash), version(version) {}
+
+        bool operator==(const ResourceHandle& other) const noexcept = default;
+    };
+} // namespace fe
+
+// this should be in 'std::' namespace, so it's outside of 'fe::'
+template <>
+struct std::hash<fe::ResourceHandle> {
+    std::size_t operator()(const fe::ResourceHandle& handle) const {
+        std::size_t h1 = hash<fe::StringHash>()(handle.hash);
+        std::size_t h2 = hash<uint32_t>()(handle.version);
+        return h1 ^ (h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2));
+    }
+};
+
+namespace fe {
     // a proxy to gather render commands from render pass
     struct FORR_API RenderGraphContext {
     };
@@ -72,6 +94,28 @@ namespace fe {
 
     class FORR_API RenderGraph {
     public:
+        struct Node { // render pass
+            struct ImageBarrier {
+                ResourceHandle    handle{};
+                fe::ResourceState to_state{};
+
+                ImageBarrier() = default;
+                ImageBarrier(const ResourceHandle& handle, fe::ResourceState to_state) : handle(handle), to_state(to_state) {}
+            };
+
+            std::vector<Node::ImageBarrier> reads{};
+            std::vector<Node::ImageBarrier> writes{};
+            std::vector<fe::ImageDesc>      create_requests{};
+
+            Node() = default;
+            Node(std::vector<Node::ImageBarrier> reads, std::vector<Node::ImageBarrier> writes, std::vector<fe::ImageDesc> create_requests)
+                : reads(std::move(reads)), writes(std::move(writes)), create_requests(std::move(create_requests)) {}
+
+            FORR_CLASS_MOVABLE(Node)
+            FORR_CLASS_NONCOPYABLE(Node)
+        };
+
+    public:
         RenderGraph() = default;
         ~RenderGraph() { this->Clear(); }
 
@@ -97,6 +141,14 @@ namespace fe {
         void Compile();
 
         void Clear();
+
+    private:
+        // run Setup() for every added render pass and collect its required resources via fe::RenderGraphBuilder
+        void collectRenderPasses(std::vector<Node>& render_passes_dst, std::unordered_map<fe::StringHash, uint32_t>& resource_versions_map);
+        // run Kahn's algorithm
+        void sortRenderSasses(std::vector<Node>& render_passes_dst);
+        // run culling : remove unused render passes
+        void removeUnusedRenderPasses(std::vector<Node>& render_passes_dst, std::unordered_map<fe::StringHash, uint32_t>& resource_versions_map);
 
     private:
         std::vector<RenderPass> m_RenderPasses{};
