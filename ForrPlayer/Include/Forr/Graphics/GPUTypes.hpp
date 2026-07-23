@@ -62,117 +62,125 @@ namespace fe {
 
     //#pragma pack(pop) // pack(push, 1) // disabled for now
 
-    enum class FORR_API RenderMode : uint8_t {
-        POINTS,
-        LINES,
-        LINE_LOOP,
-        LINE_STRIP,
-        TRIANGLES,
-        TRIANGLE_STRIP,
-        TRIANGLE_FAN,
-    };
-
-    enum class FORR_API RenderIndexType : uint8_t {
-        UNSIGNED_BYTE,
-        UNSIGNED_SHORT,
-        UNSIGNED_INT,
-    };
-
-    enum class FORR_API ResourceState {
-        UNDEFINED,
-
-        RENDER_TARGET,
-
-        DEPTH_WRITE,
-        DEPTH_READ,
-
-        SHADER_READ_ONLY,
-
-        UNORDERED_ACCESS,
-
-        COPY_SRC,
-        COPY_DST
-    };
-
-    enum class FORR_API ImageType : uint8_t {
-        IMAGE_TYPE_1D,
-        IMAGE_TYPE_2D,
-        IMAGE_TYPE_3D,
-    };
-
-    enum class FORR_API Format : uint32_t {
-        UNDEFINED,
-
-        RGBA8_UNORM,
-        RGBA8_SRGB,
-        BGRA8_UNORM,
-
-        RGBA16_SFLOAT,
-        R11G11B10_SFLOAT,
-        RG16_SFLOAT,
-
-        R32_UINT,
-        R32_SFLOAT,
-
-        D32_SFLOAT,
-        D24_UNORM_S8_UINT,
-        D32_SFLOAT_S8_UINT
-    };
-
-    enum class FORR_API ImageUsageBits : uint32_t {
-        NONE             = 0,
-        RENDER_TARGET    = 1 << 0,
-        DEPTH_STENCIL    = 1 << 1,
-        SHADER_READ      = 1 << 2,
-        UNORDERED_ACCESS = 1 << 3,
-        COPY_SRC         = 1 << 4,
-        COPY_DST         = 1 << 5
-    };
-
-    enum class FORR_API BufferUsageBits : uint32_t {
-        NONE = 0,
-        // ...
-    };
-
-    struct FORR_API Rect2D {
-        glm::ivec2 offset{};
-        glm::ivec2 extent{};
-    };
-
     using Vertices = std::vector<Vertex>;
     using Indices  = std::vector<Index>;
 
-    struct FORR_API ImageDesc {
-        fe::StringHash hash{};
-        ImageType      type{};
-        Format         format{};
-        glm::ivec3     extent{};
-        uint32_t       mip_levels{};
-        ImageUsageBits usage{};
+    namespace render_graph {
+        enum class FORR_API RenderMode : uint8_t {
+            POINTS,
+            LINES,
+            LINE_LOOP,
+            LINE_STRIP,
+            TRIANGLES,
+            TRIANGLE_STRIP,
+            TRIANGLE_FAN,
+        };
 
-        ImageDesc() = default;
-        ImageDesc(fe::StringHash    hash,
-                  ImageType         type,
-                  Format            format,
-                  const glm::ivec3& extent,
-                  uint32_t          mip_levels,
-                  ImageUsageBits    usage)
-            : hash(hash), type(type), format(format), extent(extent), mip_levels(mip_levels), usage(usage) {}
-    };
+        enum class FORR_API RenderIndexType : uint8_t {
+            UNSIGNED_BYTE,
+            UNSIGNED_SHORT,
+            UNSIGNED_INT,
+        };
 
-    struct FORR_API ImageBarrier {
-        fe::StringHash hash{};
-        ResourceState  old_state{};
-        ResourceState  new_state{};
+        enum class FORR_API ResourceState {
+            UNDEFINED,
 
-        ImageBarrier() = default;
-        ImageBarrier(fe::StringHash hash,
-                     ResourceState  old_state,
-                     ResourceState  new_state)
-            : hash(hash), old_state(old_state), new_state(new_state) {}
-    };
+            RENDER_TARGET,
 
-    using GPURequestCommand = std::variant<ImageDesc, ImageBarrier>;
+            DEPTH_WRITE,
+            DEPTH_READ,
+
+            SHADER_READ_ONLY,
+
+            UNORDERED_ACCESS,
+
+            COPY_SRC,
+            COPY_DST
+        };
+
+        enum class FORR_API ImageType : uint8_t {
+            IMAGE_TYPE_1D,
+            IMAGE_TYPE_2D,
+            IMAGE_TYPE_3D,
+        };
+
+        enum class FORR_API Format : uint32_t {
+            UNDEFINED,
+
+            RGBA8_UNORM,
+            RGBA8_SRGB,
+            BGRA8_UNORM,
+
+            RGBA16_SFLOAT,
+            R11G11B10_SFLOAT,
+            RG16_SFLOAT,
+
+            R32_UINT,
+            R32_SFLOAT,
+
+            D32_SFLOAT,
+            D24_UNORM_S8_UINT,
+            D32_SFLOAT_S8_UINT
+        };
+
+        enum class FORR_API ImageUsageBits : uint32_t {
+            NONE             = 0,
+            RENDER_TARGET    = 1 << 0,
+            DEPTH_STENCIL    = 1 << 1,
+            SHADER_READ      = 1 << 2,
+            UNORDERED_ACCESS = 1 << 3,
+            COPY_SRC         = 1 << 4,
+            COPY_DST         = 1 << 5
+        };
+
+        enum class FORR_API BufferUsageBits : uint32_t {
+            NONE = 0,
+            // ...
+        };
+
+        struct FORR_API Rect2D {
+            glm::ivec2 offset{};
+            glm::ivec2 extent{};
+        };
+
+        struct FORR_API ImageDesc {
+            fe::StringHash hash{};
+            ImageType      type{};
+            Format         format{};
+            glm::ivec3     extent{};
+            uint32_t       mip_levels{};
+            ImageUsageBits usage{};
+
+            ImageDesc() = default;
+            ImageDesc(fe::StringHash    hash,
+                      ImageType         type,
+                      Format            format,
+                      const glm::ivec3& extent,
+                      uint32_t          mip_levels,
+                      ImageUsageBits    usage)
+                : hash(hash), type(type), format(format), extent(extent), mip_levels(mip_levels), usage(usage) {}
+        };
+
+        struct FORR_API ImageBarrier {
+            fe::StringHash hash{};
+            ResourceState  old_state{};
+            ResourceState  new_state{};
+
+            ImageBarrier() = default;
+            ImageBarrier(fe::StringHash hash,
+                         ResourceState  old_state,
+                         ResourceState  new_state)
+                : hash(hash), old_state(old_state), new_state(new_state) {}
+        };
+
+        // CreateCommands are used when RenderGraph compiles ( fe::RenderGraph::Compile() )   
+        using CreateCommand     = std::variant<ImageDesc>; // TODO : add BufferDesc
+        using CreateCommandList = std::vector<CreateCommand>;
+
+        // RenderCommands are used every frame by RenderGraph ( ...TODO : add functions to work with fe::IRenderer ) 
+        using RenderCommand     = std::variant<ImageBarrier>; // TODO : add BufferBarrier
+        using RenderCommandList = std::vector<RenderCommand>;
+    } // namespace render_graph
 
     namespace shader {
         enum class FORR_API DescriptorType : std::uint8_t {
