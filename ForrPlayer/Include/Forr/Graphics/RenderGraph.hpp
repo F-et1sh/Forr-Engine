@@ -43,27 +43,27 @@ namespace fe {
 
     // a proxy to gather setup commands from render pass
     struct FORR_API RenderGraphBuilder {
-        std::vector<ImageBarrier> reads{};
-        std::vector<ImageBarrier> writes{};
-        std::vector<ImageDesc>    create_requests{};
+        std::vector<render_graph::ImageBarrier> reads{};
+        std::vector<render_graph::ImageBarrier> writes{};
+        std::vector<render_graph::ImageDesc>    create_requests{};
 
-        ImageDesc& createImage(const ImageDesc& desc) {
+        render_graph::ImageDesc& createImage(const render_graph::ImageDesc& desc) {
             return create_requests.emplace_back(desc);
         }
 
-        void readImage(fe::StringHash hash, ResourceState to_state) {
-            assert(to_state != ResourceState::RENDER_TARGET);
-            assert(to_state != ResourceState::DEPTH_WRITE);
-            assert(to_state != ResourceState::UNORDERED_ACCESS);
-            assert(to_state != ResourceState::COPY_DST);
-            reads.emplace_back(ImageBarrier{ hash, ResourceState::UNDEFINED, to_state });
+        void readImage(fe::StringHash hash, render_graph::ResourceState to_state) {
+            assert(to_state != render_graph::ResourceState::RENDER_TARGET);
+            assert(to_state != render_graph::ResourceState::DEPTH_WRITE);
+            assert(to_state != render_graph::ResourceState::UNORDERED_ACCESS);
+            assert(to_state != render_graph::ResourceState::COPY_DST);
+            reads.emplace_back(render_graph::ImageBarrier{ hash, render_graph::ResourceState::UNDEFINED, to_state });
         }
 
-        void writeImage(fe::StringHash hash, ResourceState to_state) {
-            assert(to_state != ResourceState::DEPTH_READ);
-            assert(to_state != ResourceState::SHADER_READ_ONLY);
-            assert(to_state != ResourceState::COPY_SRC);
-            writes.emplace_back(ImageBarrier{ hash, ResourceState::UNDEFINED, to_state });
+        void writeImage(fe::StringHash hash, render_graph::ResourceState to_state) {
+            assert(to_state != render_graph::ResourceState::DEPTH_READ);
+            assert(to_state != render_graph::ResourceState::SHADER_READ_ONLY);
+            assert(to_state != render_graph::ResourceState::COPY_SRC);
+            writes.emplace_back(render_graph::ImageBarrier{ hash, render_graph::ResourceState::UNDEFINED, to_state });
         }
     };
 
@@ -85,6 +85,8 @@ namespace fe {
         ExecuteFunction execute_function{};
         DestroyFunction destroy_function{};
 
+        std::span<render_graph::RenderCommandList> render_commands{};
+
         RenderPass()  = default;
         ~RenderPass() = default;
 
@@ -96,19 +98,21 @@ namespace fe {
     public:
         struct Node { // render pass
             struct ImageBarrier {
-                ResourceHandle    handle{};
-                fe::ResourceState to_state{};
+                ResourceHandle              handle{};
+                render_graph::ResourceState old_state{};
+                render_graph::ResourceState new_state{};
 
                 ImageBarrier() = default;
-                ImageBarrier(const ResourceHandle& handle, fe::ResourceState to_state) : handle(handle), to_state(to_state) {}
+                ImageBarrier(const ResourceHandle& handle, render_graph::ResourceState old_state, render_graph::ResourceState new_state)
+                    : handle(handle), old_state(old_state), new_state(new_state) {}
             };
 
-            std::vector<Node::ImageBarrier> reads{};
-            std::vector<Node::ImageBarrier> writes{};
-            std::vector<fe::ImageDesc>      create_requests{};
+            std::vector<Node::ImageBarrier>      reads{};
+            std::vector<Node::ImageBarrier>      writes{};
+            std::vector<render_graph::ImageDesc> create_requests{};
 
             Node() = default;
-            Node(std::vector<Node::ImageBarrier> reads, std::vector<Node::ImageBarrier> writes, std::vector<fe::ImageDesc> create_requests)
+            Node(std::vector<Node::ImageBarrier> reads, std::vector<Node::ImageBarrier> writes, std::vector<render_graph::ImageDesc> create_requests)
                 : reads(std::move(reads)), writes(std::move(writes)), create_requests(std::move(create_requests)) {}
 
             FORR_CLASS_MOVABLE(Node)
@@ -145,8 +149,10 @@ namespace fe {
     private:
         // run Setup() for every added render pass and collect its required resources via fe::RenderGraphBuilder
         void collectRenderPasses(std::vector<Node>& render_passes_dst, std::unordered_map<fe::StringHash, uint32_t>& resource_versions_map);
+
         // run Kahn's algorithm
         void sortRenderSasses(std::vector<Node>& render_passes_dst);
+
         // run culling : remove unused render passes
         void removeUnusedRenderPasses(std::vector<Node>& render_passes_dst, std::unordered_map<fe::StringHash, uint32_t>& resource_versions_map);
 
@@ -154,7 +160,7 @@ namespace fe {
         std::vector<RenderPass> m_RenderPasses{};
         fe::Arena               m_RenderPassesData{ 16 * 1024 };
 
-        std::vector<GPURequestCommand> m_RequestCommands{};
+        render_graph::RenderCommandList m_RenderCommands{};
     };
 
 } // namespace fe

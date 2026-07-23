@@ -14,20 +14,46 @@
 #include "Graphics/RenderGraph.hpp"
 
 void fe::RenderGraph::Compile() {
+    this->Clear();
+
     std::vector<Node> render_passes{};
     render_passes.reserve(m_RenderPasses.size());
 
     // resource hash --> resource version
-    std::unordered_map<fe::StringHash, uint32_t> resource_versions{};
+    std::unordered_map<fe::StringHash, uint32_t> resource_versions_map{};
 
     // run Setup() for every added render pass and collect its required resources via fe::RenderGraphBuilder
-    this->collectRenderPasses(render_passes, resource_versions);
+    this->collectRenderPasses(render_passes, resource_versions_map);
 
     // run Kahn's algorithm
     this->sortRenderSasses(render_passes);
 
     // run culling : remove unused render passes
-    this->removeUnusedRenderPasses(render_passes, resource_versions);
+    this->removeUnusedRenderPasses(render_passes, resource_versions_map);
+
+    render_graph::CreateCommandList create_command_list{};
+    // forecast that every render pass wants to create 2 resources
+    create_command_list.reserve(render_passes.size() * 2);
+    // forecast that every render pass has around 10 render commands
+    m_RenderCommands.reserve(render_passes.size() * 10);
+
+    for (const Node& node : render_passes) {
+        for (const Node::ImageBarrier& write_barrier : node.writes) {
+            // has to convert fe::Node::ImageBarrier to fe::render_graph::ImageBarrier
+            // ( fe::Node::ImageBarrier has fe::ResourceHandle instead of just hash. This is needed to store resource's version for culling )
+            m_RenderCommands.emplace_back(render_graph::ImageBarrier{ write_barrier.handle.hash, write_barrier.old_state, write_barrier.new_state });
+        }
+
+        for (const Node::ImageBarrier& read_barrier : node.reads) {
+            // has to convert fe::Node::ImageBarrier to fe::render_graph::ImageBarrier
+            // ( fe::Node::ImageBarrier has fe::ResourceHandle instead of just hash. This is needed to store resource's version for culling )
+            m_RenderCommands.emplace_back(render_graph::ImageBarrier{ read_barrier.handle.hash, read_barrier.old_state, read_barrier.new_state });
+        }
+
+        for (const render_graph::ImageDesc& create_request : node.create_requests) {
+            create_command_list.emplace_back(create_request);
+        }
+    }
 
     //
     // Pass01 | read : []               , write :  ColorBuffer_v0
@@ -49,7 +75,7 @@ void fe::RenderGraph::Clear() {
     }
     m_RenderPasses.clear();
     m_RenderPassesData.reset();
-    m_RequestCommands.clear();
+    m_RenderCommands.clear();
 }
 
 void fe::RenderGraph::collectRenderPasses(std::vector<Node>&                            render_passes_dst,
@@ -64,12 +90,12 @@ void fe::RenderGraph::collectRenderPasses(std::vector<Node>&                    
         this_render_pass.writes.reserve(builder.writes.size());
 
         for (const auto& read_barrier : builder.reads) {
-            this_render_pass.reads.emplace_back(Node::ImageBarrier{ ResourceHandle{ read_barrier.hash, resource_versions_map[read_barrier.hash] }, read_barrier.new_state });
+            this_render_pass.reads.emplace_back(Node::ImageBarrier{ ResourceHandle{ read_barrier.hash, resource_versions_map[read_barrier.hash] }, read_barrier.old_state, read_barrier.new_state });
         }
 
         for (const auto& write_barrier : builder.writes) {
             resource_versions_map[write_barrier.hash]++; // increasing version
-            this_render_pass.writes.emplace_back(Node::ImageBarrier{ ResourceHandle{ write_barrier.hash, resource_versions_map[write_barrier.hash] }, write_barrier.new_state });
+            this_render_pass.writes.emplace_back(Node::ImageBarrier{ ResourceHandle{ write_barrier.hash, resource_versions_map[write_barrier.hash] }, write_barrier.old_state, write_barrier.new_state });
         }
 
         this_render_pass.create_requests = std::move(builder.create_requests);
@@ -200,4 +226,6 @@ void fe::RenderGraph::removeUnusedRenderPasses(std::vector<Node>&               
     }
 
     std::ranges::reverse(used_render_passes);
+
+    render_passes_dst = std::move(used_render_passes);
 }
