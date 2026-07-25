@@ -100,17 +100,19 @@ void fe::Application::InitializePrimaryWindow(const ApplicationDesc& desc) {
 }
 
 void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
-    RendererDesc renderer_desc{};
-    renderer_desc.platform_backend    = desc.platform_backend;
-    renderer_desc.graphics_backend    = desc.graphics_backend;
-    renderer_desc.application_name    = desc.application_name;
-    renderer_desc.primary_window_desc = desc.primary_window_desc;
-    renderer_desc.validation_enabled  = desc.validation_enabled;
-
-    m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, *m_ResourceManager);
-    m_Renderer->SetClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
     m_RenderGraph                 = std::make_unique<RenderGraph>();
+    auto shadow_pass_data_mapped = m_RenderGraph->AddPass<ShadowPassData, ShadowPass>("Shadow Pass"); // TODO : make a storage for this mapped data
     auto forward_pass_data_mapped = m_RenderGraph->AddPass<ForwardPassData, ForwardPass>("Forward Pass"); // TODO : make a storage for this mapped data
     m_RenderGraph->Compile();
+
+    // BROKEN
+    //RendererDesc renderer_desc{};
+    //renderer_desc.platform_backend    = desc.platform_backend;
+    //renderer_desc.graphics_backend    = desc.graphics_backend;
+    //renderer_desc.application_name    = desc.application_name;
+    //renderer_desc.primary_window_desc = desc.primary_window_desc;
+    //renderer_desc.validation_enabled  = desc.validation_enabled;
+
+    //m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, *m_ResourceManager);
+    //m_Renderer->SetClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 }

@@ -15,28 +15,6 @@
 #include "GPUTypes.hpp"
 
 namespace fe {
-    struct ResourceHandle {
-        fe::StringHash hash{};
-        uint32_t       version{};
-
-        ResourceHandle() = default;
-        ResourceHandle(fe::StringHash hash, uint32_t version) : hash(hash), version(version) {}
-
-        bool operator==(const ResourceHandle& other) const noexcept = default;
-    };
-} // namespace fe
-
-// this should be in 'std::' namespace, so it's outside of 'fe::'
-template <>
-struct std::hash<fe::ResourceHandle> {
-    std::size_t operator()(const fe::ResourceHandle& handle) const {
-        std::size_t h1 = hash<fe::StringHash>()(handle.hash);
-        std::size_t h2 = hash<uint32_t>()(handle.version);
-        return h1 ^ (h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2));
-    }
-};
-
-namespace fe {
     // a proxy to gather render commands from render pass
     struct FORR_API RenderGraphContext {
     };
@@ -51,19 +29,19 @@ namespace fe {
             return create_requests.emplace_back(desc);
         }
 
-        void readImage(fe::StringHash hash, render_graph::ResourceState to_state) {
-            assert(to_state != render_graph::ResourceState::RENDER_TARGET);
-            assert(to_state != render_graph::ResourceState::DEPTH_WRITE);
-            assert(to_state != render_graph::ResourceState::UNORDERED_ACCESS);
-            assert(to_state != render_graph::ResourceState::COPY_DST);
-            reads.emplace_back(render_graph::ImageBarrier{ hash, render_graph::ResourceState::UNDEFINED, to_state });
+        void readImage(fe::StringHash hash, ResourceState to_state) {
+            assert(to_state != ResourceState::RENDER_TARGET);
+            assert(to_state != ResourceState::DEPTH_WRITE);
+            assert(to_state != ResourceState::UNORDERED_ACCESS);
+            assert(to_state != ResourceState::COPY_DST);
+            reads.emplace_back(render_graph::ImageBarrier{ hash, ResourceState::UNDEFINED, to_state });
         }
 
-        void writeImage(fe::StringHash hash, render_graph::ResourceState to_state) {
-            assert(to_state != render_graph::ResourceState::DEPTH_READ);
-            assert(to_state != render_graph::ResourceState::SHADER_READ_ONLY);
-            assert(to_state != render_graph::ResourceState::COPY_SRC);
-            writes.emplace_back(render_graph::ImageBarrier{ hash, render_graph::ResourceState::UNDEFINED, to_state });
+        void writeImage(fe::StringHash hash, ResourceState to_state) {
+            assert(to_state != ResourceState::DEPTH_READ);
+            assert(to_state != ResourceState::SHADER_READ_ONLY);
+            assert(to_state != ResourceState::COPY_SRC);
+            writes.emplace_back(render_graph::ImageBarrier{ hash, ResourceState::UNDEFINED, to_state });
         }
     };
 
@@ -85,7 +63,7 @@ namespace fe {
         ExecuteFunction execute_function{};
         DestroyFunction destroy_function{};
 
-        std::span<render_graph::RenderCommandList> render_commands{};
+        std::vector<render_graph::ImageBarrier> compiled_barriers{};
 
         RenderPass()  = default;
         ~RenderPass() = default;
@@ -96,14 +74,37 @@ namespace fe {
 
     class FORR_API RenderGraph {
     public:
+        // this structure is used to access resources in a map
+        // different versions of the same resource cannot be accessed
+        struct ResourceHandle {
+            fe::StringHash hash{};
+            uint32_t       version{};
+
+            ResourceHandle() = default;
+            ResourceHandle(fe::StringHash hash, uint32_t version) : hash(hash), version(version) {}
+
+            bool operator==(const ResourceHandle& other) const noexcept = default;
+        };
+
+        // this structure is used to hold version and the previous state of the resource
+        struct Resource {
+            uint32_t      version{};
+            ResourceState old_state{};
+
+            Resource() = default;
+            Resource(uint32_t version, ResourceState old_state) : version(version), old_state(old_state) {}
+
+            bool operator==(const Resource& other) const noexcept = default;
+        };
+
         struct Node { // render pass
             struct ImageBarrier {
-                ResourceHandle              handle{};
-                render_graph::ResourceState old_state{};
-                render_graph::ResourceState new_state{};
+                ResourceHandle handle{};
+                ResourceState  old_state{};
+                ResourceState  new_state{};
 
                 ImageBarrier() = default;
-                ImageBarrier(const ResourceHandle& handle, render_graph::ResourceState old_state, render_graph::ResourceState new_state)
+                ImageBarrier(const ResourceHandle& handle, ResourceState old_state, ResourceState new_state)
                     : handle(handle), old_state(old_state), new_state(new_state) {}
             };
 
@@ -148,13 +149,13 @@ namespace fe {
 
     private:
         // run Setup() for every added render pass and collect its required resources via fe::RenderGraphBuilder
-        void collectRenderPasses(std::vector<Node>& render_passes_dst, std::unordered_map<fe::StringHash, uint32_t>& resource_versions_map);
+        void collectRenderPasses(std::vector<Node>& render_passes_dst, std::unordered_map<fe::StringHash, Resource>& resources_map);
 
         // run Kahn's algorithm
         void sortRenderSasses(std::vector<Node>& render_passes_dst);
 
         // run culling : remove unused render passes
-        void removeUnusedRenderPasses(std::vector<Node>& render_passes_dst, std::unordered_map<fe::StringHash, uint32_t>& resource_versions_map);
+        void removeUnusedRenderPasses(std::vector<Node>& render_passes_dst, std::unordered_map<fe::StringHash, Resource>& resources_map);
 
     private:
         std::vector<RenderPass> m_RenderPasses{};
@@ -164,3 +165,12 @@ namespace fe {
     };
 
 } // namespace fe
+
+template <>
+struct std::hash<fe::RenderGraph::ResourceHandle> {
+    std::size_t operator()(const fe::RenderGraph::ResourceHandle& handle) const {
+        std::size_t h1 = hash<fe::StringHash>()(handle.hash);
+        std::size_t h2 = hash<uint32_t>()(handle.version);
+        return h1 ^ (h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2));
+    }
+};

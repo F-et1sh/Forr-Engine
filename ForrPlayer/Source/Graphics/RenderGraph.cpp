@@ -14,28 +14,35 @@
 #include "Graphics/RenderGraph.hpp"
 
 void fe::RenderGraph::Compile() {
-    this->Clear();
-
     std::vector<Node> render_passes{};
     render_passes.reserve(m_RenderPasses.size());
 
-    // resource hash --> resource version
-    std::unordered_map<fe::StringHash, uint32_t> resource_versions_map{};
+    // resource hash --> { resource version, previous state }
+    std::unordered_map<fe::StringHash, Resource> resources_map{};
 
     // run Setup() for every added render pass and collect its required resources via fe::RenderGraphBuilder
-    this->collectRenderPasses(render_passes, resource_versions_map);
+    this->collectRenderPasses(render_passes, resources_map);
 
     // run Kahn's algorithm
     this->sortRenderSasses(render_passes);
 
     // run culling : remove unused render passes
-    this->removeUnusedRenderPasses(render_passes, resource_versions_map);
+    this->removeUnusedRenderPasses(render_passes, resources_map);
 
     render_graph::CreateCommandList create_command_list{};
     // forecast that every render pass wants to create 2 resources
     create_command_list.reserve(render_passes.size() * 2);
     // forecast that every render pass has around 10 render commands
     m_RenderCommands.reserve(render_passes.size() * 10);
+
+    // create all resources
+    for (const Node& node : render_passes) {
+        for (const render_graph::ImageDesc& create_request : node.create_requests) {
+            create_command_list.emplace_back(create_request);
+        }
+    }
+
+
 
     for (const Node& node : render_passes) {
         for (const Node::ImageBarrier& write_barrier : node.writes) {
@@ -48,10 +55,6 @@ void fe::RenderGraph::Compile() {
             // has to convert fe::Node::ImageBarrier to fe::render_graph::ImageBarrier
             // ( fe::Node::ImageBarrier has fe::ResourceHandle instead of just hash. This is needed to store resource's version for culling )
             m_RenderCommands.emplace_back(render_graph::ImageBarrier{ read_barrier.handle.hash, read_barrier.old_state, read_barrier.new_state });
-        }
-
-        for (const render_graph::ImageDesc& create_request : node.create_requests) {
-            create_command_list.emplace_back(create_request);
         }
     }
 
@@ -79,7 +82,7 @@ void fe::RenderGraph::Clear() {
 }
 
 void fe::RenderGraph::collectRenderPasses(std::vector<Node>&                            render_passes_dst,
-                                          std::unordered_map<fe::StringHash, uint32_t>& resource_versions_map) {
+                                          std::unordered_map<fe::StringHash, Resource>& resources_map) {
     for (auto& render_pass : m_RenderPasses) {
         RenderGraphBuilder builder{};
         render_pass.setup_function(builder);
@@ -90,12 +93,16 @@ void fe::RenderGraph::collectRenderPasses(std::vector<Node>&                    
         this_render_pass.writes.reserve(builder.writes.size());
 
         for (const auto& read_barrier : builder.reads) {
-            this_render_pass.reads.emplace_back(Node::ImageBarrier{ ResourceHandle{ read_barrier.hash, resource_versions_map[read_barrier.hash] }, read_barrier.old_state, read_barrier.new_state });
+            this_render_pass.reads.emplace_back(Node::ImageBarrier{ ResourceHandle{ read_barrier.hash, resources_map[read_barrier.hash].version },
+                                                                    resources_map[read_barrier.hash].old_state,
+                                                                    read_barrier.new_state });
         }
 
         for (const auto& write_barrier : builder.writes) {
-            resource_versions_map[write_barrier.hash]++; // increasing version
-            this_render_pass.writes.emplace_back(Node::ImageBarrier{ ResourceHandle{ write_barrier.hash, resource_versions_map[write_barrier.hash] }, write_barrier.old_state, write_barrier.new_state });
+            resources_map[write_barrier.hash].version++; // increasing version
+            this_render_pass.writes.emplace_back(Node::ImageBarrier{ ResourceHandle{ write_barrier.hash, resources_map[write_barrier.hash].version },
+                                                                     resources_map[write_barrier.hash].old_state,
+                                                                     write_barrier.new_state });
         }
 
         this_render_pass.create_requests = std::move(builder.create_requests);
@@ -197,14 +204,14 @@ void fe::RenderGraph::sortRenderSasses(std::vector<Node>& render_passes_dst) {
 }
 
 void fe::RenderGraph::removeUnusedRenderPasses(std::vector<Node>&                            render_passes_dst,
-                                               std::unordered_map<fe::StringHash, uint32_t>& resource_versions_map) {
+                                               std::unordered_map<fe::StringHash, Resource>& resources_map) {
     std::vector<Node> used_render_passes{};
     used_render_passes.reserve(render_passes_dst.size());
 
     std::unordered_set<ResourceHandle> used_resources{};
 
-    constexpr static fe::StringHash final_resource_hash = fe::string_hash("ColorBuffer"); // TODO : rewrite this - use 'main' color image instead
-    uint32_t                        final_version       = resource_versions_map[final_resource_hash];
+    constexpr static fe::StringHash final_resource_hash = fe::string_hash("ColorBuffer"); // TODO : rewrite this - use main color image logic instead
+    uint32_t                        final_version       = resources_map[final_resource_hash].version;
     used_resources.insert(ResourceHandle{ final_resource_hash, final_version });
 
     auto add_used_resource_lambda = [&used_resources, &used_render_passes](Node& node) {
