@@ -65,39 +65,39 @@ namespace fe {
     using Vertices = std::vector<Vertex>;
     using Indices  = std::vector<Index>;
 
+    enum class FORR_API RenderMode : uint8_t {
+        POINTS,
+        LINES,
+        LINE_LOOP,
+        LINE_STRIP,
+        TRIANGLES,
+        TRIANGLE_STRIP,
+        TRIANGLE_FAN,
+    };
+
+    enum class FORR_API RenderIndexType : uint8_t {
+        UNSIGNED_BYTE,
+        UNSIGNED_SHORT,
+        UNSIGNED_INT,
+    };
+
+    enum class FORR_API ResourceState : uint8_t {
+        UNDEFINED,
+
+        RENDER_TARGET,
+
+        DEPTH_WRITE,
+        DEPTH_READ,
+
+        SHADER_READ_ONLY,
+
+        UNORDERED_ACCESS,
+
+        COPY_SRC,
+        COPY_DST
+    };
+
     namespace render_graph {
-        enum class FORR_API RenderMode : uint8_t {
-            POINTS,
-            LINES,
-            LINE_LOOP,
-            LINE_STRIP,
-            TRIANGLES,
-            TRIANGLE_STRIP,
-            TRIANGLE_FAN,
-        };
-
-        enum class FORR_API RenderIndexType : uint8_t {
-            UNSIGNED_BYTE,
-            UNSIGNED_SHORT,
-            UNSIGNED_INT,
-        };
-
-        enum class FORR_API ResourceState {
-            UNDEFINED,
-
-            RENDER_TARGET,
-
-            DEPTH_WRITE,
-            DEPTH_READ,
-
-            SHADER_READ_ONLY,
-
-            UNORDERED_ACCESS,
-
-            COPY_SRC,
-            COPY_DST
-        };
-
         enum class FORR_API ImageType : uint8_t {
             IMAGE_TYPE_1D,
             IMAGE_TYPE_2D,
@@ -173,11 +173,11 @@ namespace fe {
                 : hash(hash), old_state(old_state), new_state(new_state) {}
         };
 
-        // CreateCommands are used when RenderGraph compiles ( fe::RenderGraph::Compile() )   
+        // CreateCommands are used when RenderGraph compiles ( fe::RenderGraph::Compile() )
         using CreateCommand     = std::variant<ImageDesc>; // TODO : add BufferDesc
         using CreateCommandList = std::vector<CreateCommand>;
 
-        // RenderCommands are used every frame by RenderGraph ( ...TODO : add functions to work with fe::IRenderer ) 
+        // RenderCommands are used every frame by RenderGraph ( ...TODO : add functions to work with fe::IRenderer )
         using RenderCommand     = std::variant<ImageBarrier>; // TODO : add BufferBarrier
         using RenderCommandList = std::vector<RenderCommand>;
     } // namespace render_graph

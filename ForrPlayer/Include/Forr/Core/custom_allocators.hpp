@@ -23,7 +23,6 @@ namespace fe {
         size_t offset{};
     };
 
-    // TODO : provide re-initialization
     class Arena { // mostly per-frame container
     public:
         explicit Arena(size_t capacity) : m_capacity(capacity) {
