@@ -72,7 +72,7 @@ fe::render_graph::CreateCommandList fe::RenderGraph::Compile() {
                 resources_map[this_barrier.hash].old_state = write_barrier.new_state;
             }
 
-            used_render_passes.emplace_back(std::move(it));
+            used_render_passes.emplace_back(std::move(*it));
         }
     }
 
