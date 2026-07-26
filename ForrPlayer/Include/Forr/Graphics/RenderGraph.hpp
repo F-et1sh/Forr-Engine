@@ -17,6 +17,9 @@
 namespace fe {
     // a proxy to gather render commands from render pass
     struct FORR_API RenderGraphContext {
+        render_graph::RenderCommandList render_command_list{};
+
+
     };
 
     // a proxy to gather setup commands from render pass
@@ -146,6 +149,8 @@ namespace fe {
         }
 
         render_graph::CreateCommandList Compile();
+
+        render_graph::RenderCommandList Execute();
 
         void Clear();
 
