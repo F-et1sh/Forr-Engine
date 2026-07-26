@@ -79,8 +79,8 @@ namespace fe {
         virtual void BeginFrame()                                = 0;
         virtual void EndFrame(const RenderPacket& render_packet) = 0;
 
-        //virtual void RenderGraph(const GPUCreateCommandList& create_command_list) = 0;
-        //virtual void RG_Draw(const GPURenderCommandList& render_command_list) = 0;
+        //virtual void ExecuteCreateCommandList(render_graph::CreateCommandList& create_command_list) = 0;
+        //virtual void ExecuteRenderCommandList(render_graph::RenderCommandList& render_command_list) = 0;
 
         // TODO : remove this. It should work other way
         virtual void InitializeGPUResources() = 0;

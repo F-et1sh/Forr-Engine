@@ -34,7 +34,6 @@ namespace fe {
     };
 
     struct ForwardPassData {};
-
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder) {
             builder.createImage(render_graph::ImageDesc{ fe::string_hash("ColorBuffer"),

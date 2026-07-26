@@ -18,8 +18,6 @@ namespace fe {
     // a proxy to gather render commands from render pass
     struct FORR_API RenderGraphContext {
         render_graph::RenderCommandList render_command_list{};
-
-
     };
 
     // a proxy to gather setup commands from render pass
@@ -73,6 +71,21 @@ namespace fe {
 
         FORR_CLASS_MOVABLE(RenderPass)
         FORR_CLASS_NONCOPYABLE(RenderPass)
+    };
+
+    // this is the structure you get in 'fe::RenderGraph::AddPass<>' to
+    //  access your mapped data and render pass' index in the array
+    template <typename RenderPassData>
+    struct RenderPassHandle {
+        RenderPassData* mapped_data{};
+        // render pass' index in 'fe::RenderGraph::m_RenderPasses'
+        uint32_t render_pass_index{};
+
+        RenderPassHandle()  = default;
+        ~RenderPassHandle() = default;
+
+        FORR_CLASS_MOVABLE(RenderPassHandle)
+        FORR_CLASS_NONCOPYABLE(RenderPassHandle)
     };
 
     class FORR_API RenderGraph {
@@ -133,7 +146,7 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(RenderGraph)
 
         template <typename RenderPassData, RenderPassTraits<RenderPassData> RenderPass>
-        FORR_NODISCARD RenderPassData* AddPass(std::string_view name) {
+        FORR_NODISCARD RenderPassHandle<RenderPassData> AddPass(std::string_view name) {
             auto& render_pass = m_RenderPasses.emplace_back();
 
             std::byte*      mapped_data_raw = m_RenderPassesData.allocate(sizeof(std::decay_t<RenderPassData>), alignof(RenderPassData));
@@ -145,7 +158,11 @@ namespace fe {
             render_pass.execute_function = [](RenderGraphContext& context, void* ptr) { RenderPass::Execute(context, *reinterpret_cast<RenderPassData*>(ptr)); };
             render_pass.destroy_function = [](void* ptr) { std::destroy_at(reinterpret_cast<RenderPassData*>(ptr)); };
 
-            return mapped_data;
+            RenderPassHandle<RenderPassData> render_pass_handle{};
+            render_pass_handle.mapped_data       = mapped_data;
+            render_pass_handle.render_pass_index = m_RenderPasses.size() - 1;
+
+            return render_pass_handle;
         }
 
         render_graph::CreateCommandList Compile();

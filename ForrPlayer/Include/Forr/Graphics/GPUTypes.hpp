@@ -177,7 +177,7 @@ namespace fe {
         using CreateCommand     = std::variant<ImageDesc>; // TODO : add BufferDesc
         using CreateCommandList = std::vector<CreateCommand>;
 
-        // RenderCommands are used every frame by RenderGraph ( ...TODO : add functions to work with fe::IRenderer )
+        // RenderCommands are used every frame by RenderGraph ( fe::RenderGraph::Execute() )
         using RenderCommand     = std::variant<ImageBarrier>; // TODO : add BufferBarrier
         using RenderCommandList = std::vector<RenderCommand>;
     } // namespace render_graph
