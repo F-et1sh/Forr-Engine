@@ -93,6 +93,21 @@ fe::render_graph::CreateCommandList fe::RenderGraph::Compile() {
     return create_command_list;
 }
 
+fe::render_graph::RenderCommandList fe::RenderGraph::Execute() {
+    render_graph::RenderCommandList render_command_list{};
+    render_command_list.reserve(m_RenderPasses.size() * 10);
+
+    for (auto& render_pass : m_RenderPasses) {
+        RenderGraphContext context{};
+        render_pass.execute_function(context, render_pass.mapped_data);
+
+        render_command_list.append_range(context.render_command_list);
+        render_command_list.append_range(render_pass.compiled_barriers);
+    }
+
+    return render_command_list;
+}
+
 void fe::RenderGraph::Clear() {
     for (auto& pass : m_RenderPasses) {
         if (pass.destroy_function && pass.mapped_data) {
