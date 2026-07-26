@@ -13,7 +13,7 @@
 #include "pch.hpp"
 #include "Graphics/RenderGraph.hpp"
 
-void fe::RenderGraph::Compile() {
+fe::render_graph::CreateCommandList fe::RenderGraph::Compile() {
     std::vector<Node> render_passes{};
     render_passes.reserve(m_RenderPasses.size());
 
@@ -28,35 +28,56 @@ void fe::RenderGraph::Compile() {
 
     // run culling : remove unused render passes
     this->removeUnusedRenderPasses(render_passes, resources_map);
+    // after culling 'resource_map' is broken, so we can't use it anymore
+    resources_map.clear();
 
     render_graph::CreateCommandList create_command_list{};
     // forecast that every render pass wants to create 2 resources
     create_command_list.reserve(render_passes.size() * 2);
-    // forecast that every render pass has around 10 render commands
-    m_RenderCommands.reserve(render_passes.size() * 10);
+
+    std::vector<RenderPass> used_render_passes{};
+    used_render_passes.reserve(render_passes.size());
 
     // create all resources
     for (const Node& node : render_passes) {
         for (const render_graph::ImageDesc& create_request : node.create_requests) {
             create_command_list.emplace_back(create_request);
         }
+
+        // find this render pass in 'fe::RenderGraph::m_RenderPasses'
+        auto it = std::ranges::find_if(m_RenderPasses, [&node](const RenderPass& render_pass) -> bool {
+            return render_pass.name == node.name;
+        });
+
+        if (it != m_RenderPasses.end()) {
+            it->compiled_barriers.reserve(node.reads.size() + node.writes.size());
+
+            for (const Node::ImageBarrier& read_barrier : node.reads) {
+                auto& this_barrier = it->compiled_barriers.emplace_back();
+
+                this_barrier.hash      = read_barrier.handle.hash;
+                this_barrier.old_state = resources_map[this_barrier.hash].old_state;
+                this_barrier.new_state = read_barrier.new_state;
+
+                resources_map[this_barrier.hash].old_state = read_barrier.new_state;
+            }
+
+            for (const Node::ImageBarrier& write_barrier : node.writes) {
+                auto& this_barrier = it->compiled_barriers.emplace_back();
+
+                this_barrier.hash      = write_barrier.handle.hash;
+                this_barrier.old_state = resources_map[this_barrier.hash].old_state;
+                this_barrier.new_state = write_barrier.new_state;
+
+                resources_map[this_barrier.hash].old_state = write_barrier.new_state;
+            }
+
+            used_render_passes.emplace_back(std::move(it));
+        }
     }
 
-
-
-    for (const Node& node : render_passes) {
-        for (const Node::ImageBarrier& write_barrier : node.writes) {
-            // has to convert fe::Node::ImageBarrier to fe::render_graph::ImageBarrier
-            // ( fe::Node::ImageBarrier has fe::ResourceHandle instead of just hash. This is needed to store resource's version for culling )
-            m_RenderCommands.emplace_back(render_graph::ImageBarrier{ write_barrier.handle.hash, write_barrier.old_state, write_barrier.new_state });
-        }
-
-        for (const Node::ImageBarrier& read_barrier : node.reads) {
-            // has to convert fe::Node::ImageBarrier to fe::render_graph::ImageBarrier
-            // ( fe::Node::ImageBarrier has fe::ResourceHandle instead of just hash. This is needed to store resource's version for culling )
-            m_RenderCommands.emplace_back(render_graph::ImageBarrier{ read_barrier.handle.hash, read_barrier.old_state, read_barrier.new_state });
-        }
-    }
+    m_RenderPasses.clear();
+    m_RenderPasses = std::move(used_render_passes);
 
     //
     // Pass01 | read : []               , write :  ColorBuffer_v0
@@ -68,6 +89,8 @@ void fe::RenderGraph::Compile() {
     // Pass07 | read : OtherBuffer3_v0  , write :  ColorBuffer_v3
     //
     // ColorBuffer --> Backbuffer
+
+    return create_command_list;
 }
 
 void fe::RenderGraph::Clear() {
@@ -94,18 +117,21 @@ void fe::RenderGraph::collectRenderPasses(std::vector<Node>&                    
 
         for (const auto& read_barrier : builder.reads) {
             this_render_pass.reads.emplace_back(Node::ImageBarrier{ ResourceHandle{ read_barrier.hash, resources_map[read_barrier.hash].version },
-                                                                    resources_map[read_barrier.hash].old_state,
+                                                                    resources_map[read_barrier.hash].old_state, // 'read_barrier.old_state' won't work here because it set by default
                                                                     read_barrier.new_state });
+            resources_map[read_barrier.hash].old_state = read_barrier.new_state;
         }
 
         for (const auto& write_barrier : builder.writes) {
-            resources_map[write_barrier.hash].version++; // increasing version
+            resources_map[write_barrier.hash].version++; // increasing version because while writing the resource is changes
             this_render_pass.writes.emplace_back(Node::ImageBarrier{ ResourceHandle{ write_barrier.hash, resources_map[write_barrier.hash].version },
-                                                                     resources_map[write_barrier.hash].old_state,
+                                                                     resources_map[write_barrier.hash].old_state, // 'read_barrier.old_state' won't work here because it set by default
                                                                      write_barrier.new_state });
+            resources_map[write_barrier.hash].old_state = write_barrier.new_state;
         }
 
         this_render_pass.create_requests = std::move(builder.create_requests);
+        this_render_pass.name            = render_pass.name;
     }
 }
 

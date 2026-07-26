@@ -120,6 +120,11 @@ namespace fe {
         FORR_NODISCARD constexpr const char* c_str() const noexcept { return data.data(); }
         FORR_NODISCARD constexpr const char* data_ptr() const noexcept { return data.data(); }
 
+        fixed_string<N> operator=(const fixed_string<N>& other) noexcept {
+            std::copy_n(other.data.data(), N, data.begin());
+            return *this;
+        }
+
         template <std::size_t M>
         FORR_NODISCARD constexpr bool operator==(const fixed_string<M>& other) const noexcept {
             return std::string_view(*this) == std::string_view(other);
