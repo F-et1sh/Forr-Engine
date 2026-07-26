@@ -93,12 +93,12 @@ fe::render_graph::CreateCommandList fe::RenderGraph::Compile() {
     return create_command_list;
 }
 
-fe::render_graph::RenderCommandList fe::RenderGraph::Execute() {
+fe::render_graph::RenderCommandList fe::RenderGraph::Execute(const entt::registry& render_data) {
     render_graph::RenderCommandList render_command_list{};
     render_command_list.reserve(m_RenderPasses.size() * 10);
 
     for (auto& render_pass : m_RenderPasses) {
-        RenderGraphContext context{};
+        RenderGraphContext context{ render_data };
         render_pass.execute_function(context, render_pass.mapped_data);
 
         render_command_list.append_range(context.render_command_list);

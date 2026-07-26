@@ -48,6 +48,7 @@ namespace fe {
         ~DrawCommand() = default;
     };
 
+    // TODO : remove this
     struct RenderPacket {
         std::vector<glm::mat4>   object_transforms{};
         std::vector<DrawCommand> draw_commands{};

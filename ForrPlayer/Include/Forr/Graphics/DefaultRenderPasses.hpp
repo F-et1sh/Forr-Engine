@@ -47,6 +47,8 @@ namespace fe {
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
+            auto view = context.render_data.view<MeshComponent>();
+            // ...
         }
 
         ForwardPass()  = default;

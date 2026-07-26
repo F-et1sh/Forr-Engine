@@ -18,6 +18,13 @@ namespace fe {
     // a proxy to gather render commands from render pass
     struct FORR_API RenderGraphContext {
         render_graph::RenderCommandList render_command_list{};
+        const entt::registry&           render_data{};
+
+        RenderGraphContext(const entt::registry& render_data) : render_data(render_data) {}
+        ~RenderGraphContext() = default;
+
+        FORR_CLASS_MOVABLE(RenderGraphContext)
+        FORR_CLASS_NONCOPYABLE(RenderGraphContext)
     };
 
     // a proxy to gather setup commands from render pass
@@ -167,7 +174,7 @@ namespace fe {
 
         render_graph::CreateCommandList Compile();
 
-        render_graph::RenderCommandList Execute();
+        render_graph::RenderCommandList Execute(const entt::registry& render_data);
 
         void Clear();
 

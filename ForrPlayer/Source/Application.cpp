@@ -1,6 +1,7 @@
 ﻿#include "pch.hpp"
 #include "Application.hpp"
 
+// TODO : remove this. This should be in 'main.cpp' of the user
 namespace fe {
     static entt::entity m_Object1{}; // temp
     static entt::entity m_Object2{}; // temp
@@ -65,7 +66,11 @@ void fe::Application::Run() {
 
         m_Renderer->BeginFrame();
         m_RenderSystem->Update();
-        //m_RenderGraph->Execute(m_RenderPacket);
+
+        //entt::snapshot render_data{m_Registry};
+        // TODO : take a snapshot of needed components here
+        m_RenderGraph->Execute(m_Registry);
+        
         m_Renderer->EndFrame(m_RenderPacket);
 
         m_PrimaryWindow->PollEvents();
