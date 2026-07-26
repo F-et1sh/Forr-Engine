@@ -89,7 +89,7 @@ namespace fe {
         // this structure is used to hold version and the previous state of the resource
         struct Resource {
             uint32_t      version{};
-            ResourceState old_state{};
+            ResourceState old_state{ ResourceState::UNDEFINED };
 
             Resource() = default;
             Resource(uint32_t version, ResourceState old_state) : version(version), old_state(old_state) {}
@@ -108,13 +108,15 @@ namespace fe {
                     : handle(handle), old_state(old_state), new_state(new_state) {}
             };
 
+            fe::fixed_string<32> name{};
+
             std::vector<Node::ImageBarrier>      reads{};
             std::vector<Node::ImageBarrier>      writes{};
             std::vector<render_graph::ImageDesc> create_requests{};
 
             Node() = default;
-            Node(std::vector<Node::ImageBarrier> reads, std::vector<Node::ImageBarrier> writes, std::vector<render_graph::ImageDesc> create_requests)
-                : reads(std::move(reads)), writes(std::move(writes)), create_requests(std::move(create_requests)) {}
+            Node(std::string_view name, std::vector<Node::ImageBarrier> reads, std::vector<Node::ImageBarrier> writes, std::vector<render_graph::ImageDesc> create_requests)
+                : name(name), reads(std::move(reads)), writes(std::move(writes)), create_requests(std::move(create_requests)) {}
 
             FORR_CLASS_MOVABLE(Node)
             FORR_CLASS_NONCOPYABLE(Node)
@@ -143,7 +145,7 @@ namespace fe {
             return mapped_data;
         }
 
-        void Compile();
+        render_graph::CreateCommandList Compile();
 
         void Clear();
 
