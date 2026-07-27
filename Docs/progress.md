@@ -17,6 +17,7 @@
 ### Done
     RenderPassHandle added. RenderGraph seems work well
     RenderGraphContext got render_data
+    RenderGraphCollector added
 
 ### Problem
     -

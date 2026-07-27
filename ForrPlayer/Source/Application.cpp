@@ -65,13 +65,12 @@ void fe::Application::Run() {
         m_RenderPacket.lights.clear();
 
         m_Renderer->BeginFrame();
-        m_RenderSystem->Update();
 
-        //entt::snapshot render_data{m_Registry};
-        // TODO : take a snapshot of needed components here
-        m_RenderGraph->Execute(m_Registry);
-        
-        m_Renderer->EndFrame(m_RenderPacket);
+        auto render_command_list = m_RenderGraph->Execute(RenderGraphCollector<TransformComponent,
+                                                                               MeshComponent,
+                                                                               LightComponent>{ m_Registry });
+
+        m_Renderer->EndFrame(render_command_list);
 
         m_PrimaryWindow->PollEvents();
         t++;

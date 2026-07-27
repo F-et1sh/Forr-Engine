@@ -15,12 +15,17 @@
 #include "GPUTypes.hpp"
 
 namespace fe {
+    template<typename... Components>
+    struct FORR_API RenderGraphCollector {
+        
+    };
+
     // a proxy to gather render commands from render pass
     struct FORR_API RenderGraphContext {
         render_graph::RenderCommandList render_command_list{};
-        const entt::registry&           render_data{};
+        const entt::registry&           render_registry{};
 
-        RenderGraphContext(const entt::registry& render_data) : render_data(render_data) {}
+        RenderGraphContext(const entt::registry& render_registry) : render_registry(render_registry) {}
         ~RenderGraphContext() = default;
 
         FORR_CLASS_MOVABLE(RenderGraphContext)
