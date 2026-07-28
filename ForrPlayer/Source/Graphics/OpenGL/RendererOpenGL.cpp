@@ -62,6 +62,10 @@ void fe::RendererOpenGL::SetClearColor(float red, float green, float blue, float
     glClearColor(red, green, blue, alpha);
 }
 
+void fe::RendererOpenGL::CreateGPUResources(const render_graph::CreateCommandList& create_command_list) {
+    for ()
+}
+
 void fe::RendererOpenGL::BeginFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
