@@ -143,6 +143,13 @@ namespace fe {
             glm::ivec2 extent{};
         };
 
+        // create commands
+
+        enum class FORR_API CreateCommandType : uint8_t {
+            Image,
+            Buffer
+        };
+
         struct FORR_API ImageDesc {
             fe::StringHash hash{};
             ImageType      type{};
@@ -161,6 +168,14 @@ namespace fe {
                 : hash(hash), type(type), format(format), extent(extent), mip_levels(mip_levels), usage(usage) {}
         };
 
+        // render commands
+
+        enum class FORR_API RenderCommandType : uint8_t {
+            ImageBarrier,
+            BufferBarrier,
+            DrawIndexed
+        };
+
         struct FORR_API ImageBarrier {
             fe::StringHash hash{};
             ResourceState  old_state{};
@@ -171,6 +186,32 @@ namespace fe {
                          ResourceState  old_state,
                          ResourceState  new_state)
                 : hash(hash), old_state(old_state), new_state(new_state) {}
+        };
+
+        class RenderCommandList {
+        public:
+            RenderCommandList()  = default;
+            ~RenderCommandList() = default;
+
+            FORR_CLASS_MOVABLE(RenderCommandList)
+            FORR_CLASS_NONCOPYABLE(RenderCommandList)
+
+            template <typename T, typename... Args>
+            void enqueue(RenderCommandType type, Args&&... args) {
+                m_storage.push_back(static_cast<uint8_t>(type));
+                size_t offset = m_storage.size();
+                m_storage.resize(offset + sizeof(T));
+                new (&m_storage[offset]) T{ std::forward<Args>(args)... };
+            }
+
+            void clear() noexcept { m_storage.clear(); }
+            bool empty() const noexcept { return m_storage.empty(); }
+
+            const uint8_t* data() const noexcept { return m_storage.data(); }
+            size_t         size() const noexcept { return m_storage.size(); }
+
+        private:
+            std::vector<uint8_t> m_storage;
         };
 
         // CreateCommands are used when RenderGraph compiles ( fe::RenderGraph::Compile() )
