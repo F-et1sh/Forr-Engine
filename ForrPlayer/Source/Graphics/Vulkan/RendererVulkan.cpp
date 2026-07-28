@@ -109,8 +109,8 @@ void fe::RendererVulkan::BeginFrame() {
     vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 }
 
-void fe::RendererVulkan::EndFrame(const RenderPacket& render_packet) {
-    this->handleRenderQueue(render_packet);
+void fe::RendererVulkan::EndFrame(const render_graph::RenderCommandList& render_command_list) {
+    //this->handleRenderQueue(render_packet);
 
     const VkCommandBuffer command_buffer = m_FrameData[m_CurrentFrame].command_buffer;
 

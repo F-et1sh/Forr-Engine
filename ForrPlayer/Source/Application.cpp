@@ -66,9 +66,9 @@ void fe::Application::Run() {
 
         m_Renderer->BeginFrame();
 
-        auto render_command_list = m_RenderGraph->Execute(RenderGraphCollector<TransformComponent,
-                                                                               MeshComponent,
-                                                                               LightComponent>{ m_Registry });
+        RenderGraphCollector<TransformComponent, MeshComponent, LightComponent> collector{ m_Registry };
+
+        auto render_command_list = m_RenderGraph->Execute(collector.getRegistry());
 
         m_Renderer->EndFrame(render_command_list);
 

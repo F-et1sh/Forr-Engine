@@ -70,10 +70,12 @@ void fe::RendererOpenGL::BeginFrame() {
     }
 }
 
-void fe::RendererOpenGL::EndFrame(const RenderPacket& render_packet) {
+void fe::RendererOpenGL::EndFrame(const render_graph::RenderCommandList& render_command_list) {
+    for (const auto& render_command : render_command_list) {
+        
+    }
 
-
-    this->handleRenderQueue(render_packet);
+    //this->handleRenderQueue(render_packet);
 
     m_FrameData[m_CurrentFrame].sync.reset();
     GLsync sync_raw = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
