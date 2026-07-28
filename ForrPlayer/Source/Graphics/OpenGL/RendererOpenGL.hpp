@@ -33,6 +33,8 @@ namespace fe {
         ~RendererOpenGL();
 
         void SetClearColor(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
+        
+        void CreateGPUResources(const render_graph::CreateCommandList& create_command_list) override;
 
         void BeginFrame() override;
         void EndFrame(const render_graph::RenderCommandList& render_command_list) override;

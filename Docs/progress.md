@@ -2,6 +2,7 @@
 
 ## 28.07.2026
 ### Goal
+    rewrite RenderGraph commands
     implement fe::IRenderer::CreateGPUResources() in fe::RendererOpenGL
     allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
         allocate big SSBO ( AZDO ) in renderer for materials;
