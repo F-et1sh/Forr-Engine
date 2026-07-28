@@ -35,7 +35,7 @@ namespace fe {
         void SetClearColor(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
 
         void BeginFrame() override;
-        void EndFrame(const RenderPacket& render_packet) override;
+        void EndFrame(const render_graph::RenderCommandList& render_command_list) override;
 
         void InitializeGPUResources() override;
 

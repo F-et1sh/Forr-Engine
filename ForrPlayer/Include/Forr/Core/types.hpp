@@ -34,7 +34,7 @@ namespace fe {
         GPUHandle()  = default;
         ~GPUHandle() = default;
 
-        explicit GPUHandle(size_t index) : index(index) {}
+        explicit GPUHandle(std::size_t index) : index(index) {}
 
         bool operator==(GPUHandle<T> other) const noexcept { return index == other.index; }
         bool operator!=(GPUHandle<T> other) const noexcept { return index != other.index; }

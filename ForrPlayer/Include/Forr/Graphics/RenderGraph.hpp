@@ -15,9 +15,34 @@
 #include "GPUTypes.hpp"
 
 namespace fe {
-    template<typename... Components>
+    template <typename... Components>
     struct FORR_API RenderGraphCollector {
-        
+    private:
+        entt::registry render_registry{};
+
+    public:
+        RenderGraphCollector(entt::registry& source_registry) {
+            for (auto entity : source_registry.view()) {
+                render_registry.create(entity);
+            }
+            (copyComponent<Components>(source_registry), ...);
+        }
+        ~RenderGraphCollector() = default;
+
+        FORR_CLASS_MOVABLE(RenderGraphCollector)
+        FORR_CLASS_NONCOPYABLE(RenderGraphCollector)
+
+        const entt::registry& getRegistry() const { return render_registry; }
+
+    private:
+        template <typename T>
+        void copyComponent(entt::registry& source_registry) {
+            auto view = source_registry.view<T>();
+            for (auto entity : view) {
+                const auto& component = view.get<T>(entity);
+                render_registry.emplace<T>(entity, component);
+            }
+        }
     };
 
     // a proxy to gather render commands from render pass
