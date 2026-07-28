@@ -17,7 +17,7 @@ namespace fe {
     struct ShadowPassData {};
     struct ShadowPass {
         static void Setup(RenderGraphBuilder& builder) {
-            builder.createImage(render_graph::ImageDesc{ fe::string_hash("ShadowMap"),
+            builder.createImage(render_graph::ImageDesc{ fe::string_hash("ShadowMap1"),
                                                          render_graph::ImageType::IMAGE_TYPE_2D,
                                                          render_graph::Format::RGBA8_SRGB,
                                                          glm::ivec3{ 3840, 2160, 1 },
@@ -47,7 +47,7 @@ namespace fe {
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
-            auto view = context.render_data.view<MeshComponent>();
+            //auto view = context.render_data.view<MeshComponent>();
             // ...
         }
 
