@@ -20,6 +20,7 @@
     RenderGraphCollector done
     fe::IRenderer::CreateGPUResources() added
     scripts fixed : Visual Studio 17 2022 -> Visual Studio 18 2026
+    CommandList added
 
 ### Problem
     -

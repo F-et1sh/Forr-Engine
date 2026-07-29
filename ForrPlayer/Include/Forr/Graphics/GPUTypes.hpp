@@ -143,7 +143,7 @@ namespace fe {
             glm::ivec2 extent{};
         };
 
-        // create commands
+        // create commands - they are used when RenderGraph compiles ( fe::RenderGraph::Compile() )
 
         enum class FORR_API CreateCommandType : uint8_t {
             Image,
@@ -168,7 +168,7 @@ namespace fe {
                 : hash(hash), type(type), format(format), extent(extent), mip_levels(mip_levels), usage(usage) {}
         };
 
-        // render commands
+        // render commands - they are used every frame by RenderGraph ( fe::RenderGraph::Execute() )
 
         enum class FORR_API RenderCommandType : uint8_t {
             ImageBarrier,
@@ -188,27 +188,31 @@ namespace fe {
                 : hash(hash), old_state(old_state), new_state(new_state) {}
         };
 
-        class RenderCommandList {
+        //
+
+        // TODO : move this to RenderGraph.hpp
+        class CommandList {
         public:
-            RenderCommandList()  = default;
-            ~RenderCommandList() = default;
+            CommandList()  = default;
+            ~CommandList() = default;
 
-            FORR_CLASS_MOVABLE(RenderCommandList)
-            FORR_CLASS_NONCOPYABLE(RenderCommandList)
+            FORR_CLASS_MOVABLE(CommandList)
+            FORR_CLASS_NONCOPYABLE(CommandList)
 
-            template <typename T, typename... Args>
-            void enqueue(RenderCommandType type, Args&&... args) {
-                m_storage.push_back(static_cast<uint8_t>(type));
+            template <typename Command, typename CommandType, typename... Args>
+                requires std::is_same_v<std::underlying_type_t<CommandType>, uint8_t> && std::is_trivial_v<Command>
+            void enqueue(CommandType type, Args&&... args) {
+                m_storage.emplace_back(static_cast<uint8_t>(type));
                 size_t offset = m_storage.size();
-                m_storage.resize(offset + sizeof(T));
-                new (&m_storage[offset]) T{ std::forward<Args>(args)... };
+                m_storage.resize(offset + sizeof(Command));
+                new (&m_storage[offset]) Command{ std::forward<Args>(args)... };
             }
 
-            void clear() noexcept { m_storage.clear(); }
-            bool empty() const noexcept { return m_storage.empty(); }
+            void                clear() noexcept { m_storage.clear(); }
+            FORR_NODISCARD bool empty() const noexcept { return m_storage.empty(); }
 
-            const uint8_t* data() const noexcept { return m_storage.data(); }
-            size_t         size() const noexcept { return m_storage.size(); }
+            FORR_NODISCARD const uint8_t* data() const noexcept { return m_storage.data(); }
+            FORR_NODISCARD size_t         size() const noexcept { return m_storage.size(); }
 
         private:
             std::vector<uint8_t> m_storage;
