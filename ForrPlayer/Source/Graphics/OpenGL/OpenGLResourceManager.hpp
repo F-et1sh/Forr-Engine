@@ -77,7 +77,7 @@ namespace fe {
         const OpenGLMaterial& GetResource(GPUHandle<resource::Material> handle) const;
         const OpenGLTexture&  GetResource(GPUHandle<resource::Texture> handle) const;
 
-        void GetOrCreateImage(const render_graph::ImageDesc& image_desc);
+        StringHash GetOrCreateImage(const render_graph::ImageDesc& image_desc);
 
         GLuint GetShaderBuffer(shader::ReflectedDescriptor& parameter);
 
@@ -106,7 +106,11 @@ namespace fe {
         std::vector<OpenGLMesh>     m_StorageMeshes{};
         std::vector<OpenGLTexture>  m_StorageTextures{};
 
-        std::unordered_map<render_graph::ImageDesc, uint32_t> m_ImagePool{};
+        struct PoolImage {
+            gl::Texture texture{};
+            bool        is_busy{};
+        };
+        std::unordered_map<render_graph::ImageDesc, std::vector<PoolImage>> m_ImagePool{};
 
         // shader buffers : SSBOs and UBOs
         std::unordered_map<shader::ReflectedDescriptor, gl::Buffer> m_ShaderBuffers{};

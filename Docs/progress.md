@@ -21,6 +21,7 @@
     CommandList in progress
     fe::render_graph::CommandList::handle_all<>() added
     fe::TransientPool --> fe::OpenGLResourceManager
+    fe::RenderGraph::calculateResourceLifetimes() done
 
 ### Problem
     -
