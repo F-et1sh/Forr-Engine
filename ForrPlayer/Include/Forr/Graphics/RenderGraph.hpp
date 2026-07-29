@@ -17,6 +17,9 @@
 #include "entt/entt.hpp"
 
 namespace fe {
+    // this structure is needed to collect only necessary components ( for example, MeshComponent ),
+    //  ignoring others. And after collecting them, continue ECS calculation for frame N+1, while renderer
+    //  is working on frame N
     template <typename... Components>
     struct FORR_API RenderGraphCollector {
     private:
@@ -53,6 +56,7 @@ namespace fe {
         render_graph::CommandList command_list{};
         const entt::registry&     render_registry{};
 
+        // TODO :
         //void drawIndices(...) { command_list.enqueue(...) }
 
         RenderGraphContext(const entt::registry& render_registry) : render_registry(render_registry) {}
@@ -174,7 +178,7 @@ namespace fe {
             bool operator==(const ResourceLifetime& other) const noexcept = default;
         };
 
-        struct Node { // render pass
+        struct CompiledRenderPass { // render pass
             struct ImageBarrier {
                 ResourceHandle handle{};
                 ResourceState  old_state{};
@@ -187,16 +191,16 @@ namespace fe {
 
             fe::fixed_string<32> name{};
 
-            std::vector<Node::ImageBarrier>      reads{};
-            std::vector<Node::ImageBarrier>      writes{};
+            std::vector<CompiledRenderPass::ImageBarrier>      reads{};
+            std::vector<CompiledRenderPass::ImageBarrier>      writes{};
             std::vector<render_graph::ImageDesc> create_requests{};
 
-            Node() = default;
-            Node(std::string_view name, std::vector<Node::ImageBarrier> reads, std::vector<Node::ImageBarrier> writes, std::vector<render_graph::ImageDesc> create_requests)
+            CompiledRenderPass() = default;
+            CompiledRenderPass(std::string_view name, std::vector<CompiledRenderPass::ImageBarrier> reads, std::vector<CompiledRenderPass::ImageBarrier> writes, std::vector<render_graph::ImageDesc> create_requests)
                 : name(name), reads(std::move(reads)), writes(std::move(writes)), create_requests(std::move(create_requests)) {}
 
-            FORR_CLASS_MOVABLE(Node)
-            FORR_CLASS_NONCOPYABLE(Node)
+            FORR_CLASS_MOVABLE(CompiledRenderPass)
+            FORR_CLASS_NONCOPYABLE(CompiledRenderPass)
         };
 
     public:
@@ -234,16 +238,16 @@ namespace fe {
 
     private:
         // run Setup() for every added render pass and collect its required resources via fe::RenderGraphBuilder
-        void collectRenderPasses(std::vector<Node>& render_passes_dst, std::unordered_map<fe::StringHash, Resource>& resources_map);
+        void collectRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::StringHash, Resource>& resources_map);
 
         // run Kahn's algorithm
-        void sortRenderSasses(std::vector<Node>& render_passes_dst);
+        void sortRenderSasses(std::vector<CompiledRenderPass>& render_passes_dst);
 
         // run culling : remove unused render passes
-        void removeUnusedRenderPasses(std::vector<Node>& render_passes_dst, std::unordered_map<fe::StringHash, Resource>& resources_map);
+        void removeUnusedRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::StringHash, Resource>& resources_map);
 
         // setup create commands, set resource right states in 'resources_map' and find all used render passes
-        void createAllResources(std::vector<Node>&                            render_passes,
+        void createAllResources(std::vector<CompiledRenderPass>&                            render_passes,
                                 std::unordered_map<fe::StringHash, Resource>& resources_map_dst,
                                 render_graph::CommandList&                    create_command_list_dst,
                                 std::vector<RenderPass>                       used_render_passes_dst);

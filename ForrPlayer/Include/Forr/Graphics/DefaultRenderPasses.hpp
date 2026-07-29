@@ -17,7 +17,7 @@ namespace fe {
     struct ShadowPassData {};
     struct ShadowPass {
         static void Setup(RenderGraphBuilder& builder) {
-            builder.createImage(render_graph::ImageDesc{ fe::string_hash("ShadowMap1"),
+            builder.createImage(render_graph::ImageDesc{ fe::string_hash("ShadowMap"),
                                                          render_graph::ImageType::IMAGE_TYPE_2D,
                                                          render_graph::Format::RGBA8_SRGB,
                                                          glm::ivec3{ 3840, 2160, 1 },

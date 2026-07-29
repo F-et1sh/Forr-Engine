@@ -23,6 +23,7 @@
     fe::TransientPool --> fe::OpenGLResourceManager
     fe::RenderGraph::calculateResourceLifetimes() done
     fe::OpenGLResourceManager::GetOrCreateImage() added
+    fe::RenderGraph::Node --> fe::RenderGraph::CompiledRenderPass
 
 ### Problem
     -
