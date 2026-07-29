@@ -163,10 +163,20 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
     this->storeResource(texture.gpu_handle, opengl_texture, m_StorageTextures);
 }
 
-void fe::OpenGLResourceManager::GetOrCreateImage(const render_graph::ImageDesc& image_desc) {
+const fe::OpenGLTexture& fe::OpenGLResourceManager::GetOrCreateImage(const render_graph::ImageDesc& image_desc) {
     auto it = m_ImagePool.find(image_desc);
     if (it != m_ImagePool.end()) {
-        // ...
+        for (const auto& image_info : it->second) {
+            if (!image_info.is_busy)
+                return m_StorageTextures[image_info.texture_index];
+        }
+
+        auto& this_image_info = it->second.emplace_back();
+        this_image_info.is_busy     = true;
+        this_image_info.texture_index = m_StorageTextures.size();
+        
+        auto& this_texture = m_StorageTextures.emplace_back();
+        // TODO : create OpenGL texture - this_texture.texture
     }
 }
 

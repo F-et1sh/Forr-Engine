@@ -25,6 +25,8 @@ namespace fe {
         GLFW
     };
 
+    // TODO : move this to GPUTypes.hpp
+    //
     // GPU handle to be put in CPU resource
     // this is needed for GPU resource managers
     template <typename T>
