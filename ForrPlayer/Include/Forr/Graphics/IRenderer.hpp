@@ -79,7 +79,7 @@ namespace fe {
 
         virtual void CreateGPUResources(const render_graph::CommandList& create_command_list) = 0;
 
-        virtual void BeginFrame()                                                         = 0;
+        virtual void BeginFrame()                                                   = 0;
         virtual void EndFrame(const render_graph::CommandList& render_command_list) = 0;
 
         // TODO : remove this. It should work other way

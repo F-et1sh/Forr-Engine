@@ -17,6 +17,7 @@
 
 ### Done
     CommandList in progress
+    fe::render_graph::CommandList::handle_all<>() added
 
 ### Problem
     -

@@ -174,7 +174,7 @@ namespace fe {
                          ResourceState  new_state)
                 : hash(hash), old_state(old_state), new_state(new_state) {}
         };
-        
+
         // To add a command write its structure and add it here
 #define FORR_RENDER_COMMANDS_LIST(X)                                                              \
     /*create commands - they are used when RenderGraph compiles(fe::RenderGraph::Compile()) */    \
@@ -209,7 +209,8 @@ namespace fe {
             FORR_CLASS_MOVABLE(CommandList)
             FORR_CLASS_NONCOPYABLE(CommandList)
 
-            template <typename Command> requires std::is_trivially_copyable_v<Command>
+            template <typename Command>
+                requires std::is_trivially_copyable_v<Command>
             void enqueue(const Command& command) {
                 constexpr CommandType type = CommandTraits<Command>::Type;
 
@@ -219,17 +220,57 @@ namespace fe {
                 new (&m_storage[offset]) Command{ command };
             }
 
+            template <typename Func>
+            void handle_all(Func&& func)const {
+                if (this->empty()) return;
+
+                const uint8_t* buffer     = this->data();
+                const size_t   total_size = this->size();
+                size_t         offset     = 0;
+
+                while (offset < total_size) {
+                    render_graph::CommandType type = static_cast<render_graph::CommandType>(buffer[offset]);
+                    offset += sizeof(render_graph::CommandType);
+
+                    switch (type) {
+#define GENERATE_CASE(EnumName, StructName)                                                   \
+    case render_graph::CommandType::EnumName: {                                               \
+        const auto* cmd = reinterpret_cast<const render_graph::StructName*>(&buffer[offset]); \
+        func(*cmd);                                                                           \
+        offset += sizeof(render_graph::StructName);                                           \
+        break;                                                                                \
+    }
+
+                        FORR_RENDER_COMMANDS_LIST(GENERATE_CASE)
+#undef GENERATE_CASE
+                        default:
+                            fe::logging::error("Failed to handle a command in fe::RendererOpenGL::EndFrame() : unknown command %i", type);
+                            break;
+                    }
+                }
+            }
+
             void append_range(const CommandList& command_list) {
                 m_storage.append_range(command_list.m_storage);
             }
 
-            void                clear() noexcept { m_storage.clear(); }
-            FORR_NODISCARD bool empty() const noexcept { return m_storage.empty(); }
+            void clear() noexcept {
+                m_storage.clear();
+            }
+            FORR_NODISCARD bool empty() const noexcept {
+                return m_storage.empty();
+            }
 
-            void reserve(size_t bytes_count) { m_storage.reserve(bytes_count); }
+            void reserve(size_t bytes_count) {
+                m_storage.reserve(bytes_count);
+            }
 
-            FORR_NODISCARD const uint8_t* data() const noexcept { return m_storage.data(); }
-            FORR_NODISCARD size_t         size() const noexcept { return m_storage.size(); }
+            FORR_NODISCARD const uint8_t* data() const noexcept {
+                return m_storage.data();
+            }
+            FORR_NODISCARD size_t size() const noexcept {
+                return m_storage.size();
+            }
 
         private:
             std::vector<uint8_t> m_storage;

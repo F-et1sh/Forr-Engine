@@ -42,6 +42,9 @@ namespace fe {
         void InitializeGPUResources() override;
 
     private:
+        void handleCommand(const render_graph::ImageDesc& image_desc);
+        void handleCommand(const render_graph::ImageBarrier& image_barrier);
+
         void handleRenderQueue(const RenderPacket& render_packet);
 
     private:
