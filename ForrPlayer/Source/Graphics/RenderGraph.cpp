@@ -38,43 +38,9 @@ fe::render_graph::CommandList fe::RenderGraph::Compile() {
     std::vector<RenderPass> used_render_passes{};
     used_render_passes.reserve(render_passes.size());
 
-    // create all resources
-    for (const Node& node : render_passes) {
-        for (const render_graph::ImageDesc& create_request : node.create_requests) {
-            create_command_list.enqueue(create_request);
-        }
+    this->createAllResources(render_passes, resources_map, create_command_list, used_render_passes);
 
-        // find this render pass in 'fe::RenderGraph::m_RenderPasses'
-        auto it = std::ranges::find_if(m_RenderPasses, [&node](const RenderPass& render_pass) -> bool {
-            return render_pass.name == node.name;
-        });
-
-        if (it != m_RenderPasses.end()) {
-            it->compiled_barriers.reserve(node.reads.size() + node.writes.size());
-
-            for (const Node::ImageBarrier& read_barrier : node.reads) {
-                auto& this_barrier = it->compiled_barriers.emplace_back();
-
-                this_barrier.hash      = read_barrier.handle.hash;
-                this_barrier.old_state = resources_map[this_barrier.hash].old_state;
-                this_barrier.new_state = read_barrier.new_state;
-
-                resources_map[this_barrier.hash].old_state = read_barrier.new_state;
-            }
-
-            for (const Node::ImageBarrier& write_barrier : node.writes) {
-                auto& this_barrier = it->compiled_barriers.emplace_back();
-
-                this_barrier.hash      = write_barrier.handle.hash;
-                this_barrier.old_state = resources_map[this_barrier.hash].old_state;
-                this_barrier.new_state = write_barrier.new_state;
-
-                resources_map[this_barrier.hash].old_state = write_barrier.new_state;
-            }
-
-            used_render_passes.emplace_back(std::move(*it));
-        }
-    }
+    this->calculateResourceLifetimes();
 
     m_RenderPasses.clear();
     m_RenderPasses = std::move(used_render_passes);
@@ -151,7 +117,6 @@ void fe::RenderGraph::collectRenderPasses(std::vector<Node>&                    
         this_render_pass.name            = render_pass.name;
     }
 }
-
 
 void fe::RenderGraph::sortRenderSasses(std::vector<Node>& render_passes_dst) {
     // a map, there every render pass refers to its dependencies
@@ -279,4 +244,62 @@ void fe::RenderGraph::removeUnusedRenderPasses(std::vector<Node>&               
     std::ranges::reverse(used_render_passes);
 
     render_passes_dst = std::move(used_render_passes);
+}
+
+void fe::RenderGraph::createAllResources(std::vector<Node>&                            render_passes,
+                                         std::unordered_map<fe::StringHash, Resource>& resources_map_dst,
+                                         render_graph::CommandList&                    create_command_list_dst,
+                                         std::vector<RenderPass>                       used_render_passes_dst) {
+    for (const Node& node : render_passes) {
+        for (const render_graph::ImageDesc& create_request : node.create_requests) {
+            create_command_list_dst.enqueue(create_request);
+        }
+
+        // find this render pass in 'fe::RenderGraph::m_RenderPasses'
+        auto it = std::ranges::find_if(m_RenderPasses, [&node](const RenderPass& render_pass) -> bool {
+            return render_pass.name == node.name;
+        });
+
+        if (it != m_RenderPasses.end()) {
+            it->compiled_barriers.reserve(node.reads.size() + node.writes.size());
+
+            for (const Node::ImageBarrier& read_barrier : node.reads) {
+                auto& this_barrier = it->compiled_barriers.emplace_back();
+
+                this_barrier.hash      = read_barrier.handle.hash;
+                this_barrier.old_state = resources_map_dst[this_barrier.hash].old_state;
+                this_barrier.new_state = read_barrier.new_state;
+
+                resources_map_dst[this_barrier.hash].old_state = read_barrier.new_state;
+            }
+
+            for (const Node::ImageBarrier& write_barrier : node.writes) {
+                auto& this_barrier = it->compiled_barriers.emplace_back();
+
+                this_barrier.hash      = write_barrier.handle.hash;
+                this_barrier.old_state = resources_map_dst[this_barrier.hash].old_state;
+                this_barrier.new_state = write_barrier.new_state;
+
+                resources_map_dst[this_barrier.hash].old_state = write_barrier.new_state;
+            }
+
+            used_render_passes_dst.emplace_back(std::move(*it));
+        }
+    }
+}
+
+void fe::RenderGraph::calculateResourceLifetimes() {
+    for (size_t i = 0; i < m_RenderPasses.size(); i++) {
+        const RenderPass& render_pass = m_RenderPasses[i];
+
+        for (const render_graph::ImageBarrier& image_barrier : render_pass.compiled_barriers) {
+            auto& lifetime = m_ResourceLifetimes[image_barrier.hash];
+
+            if (lifetime.first_pass_index == std::numeric_limits<uint32_t>::max()) {
+                lifetime.first_pass_index = i;
+            }
+
+            lifetime.last_pass_index = i;
+        }
+    }
 }

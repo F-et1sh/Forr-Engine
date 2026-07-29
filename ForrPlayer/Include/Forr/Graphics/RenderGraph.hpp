@@ -163,6 +163,17 @@ namespace fe {
             bool operator==(const Resource& other) const noexcept = default;
         };
 
+        struct ResourceLifetime {
+            uint32_t first_pass_index = std::numeric_limits<uint32_t>::max();
+            uint32_t last_pass_index  = 0;
+
+            ResourceLifetime() = default;
+            ResourceLifetime(uint32_t first_pass_index, uint32_t last_pass_index)
+                : first_pass_index(first_pass_index), last_pass_index(last_pass_index) {}
+
+            bool operator==(const ResourceLifetime& other) const noexcept = default;
+        };
+
         struct Node { // render pass
             struct ImageBarrier {
                 ResourceHandle handle{};
@@ -231,11 +242,21 @@ namespace fe {
         // run culling : remove unused render passes
         void removeUnusedRenderPasses(std::vector<Node>& render_passes_dst, std::unordered_map<fe::StringHash, Resource>& resources_map);
 
+        // setup create commands, set resource right states in 'resources_map' and find all used render passes
+        void createAllResources(std::vector<Node>&                            render_passes,
+                                std::unordered_map<fe::StringHash, Resource>& resources_map_dst,
+                                render_graph::CommandList&                    create_command_list_dst,
+                                std::vector<RenderPass>                       used_render_passes_dst);
+
+        void calculateResourceLifetimes();
+
     private:
         std::vector<RenderPass> m_RenderPasses{};
         fe::Arena               m_RenderPassesData{ 16 * 1024 };
 
         render_graph::CommandList m_RenderCommands{};
+
+        std::unordered_map<fe::StringHash, ResourceLifetime> m_ResourceLifetimes{};
     };
 
 } // namespace fe
