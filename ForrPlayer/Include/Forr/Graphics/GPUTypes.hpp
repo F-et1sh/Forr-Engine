@@ -221,7 +221,7 @@ namespace fe {
             }
 
             template <typename Func>
-            void handle_all(Func&& func)const {
+            void handle_all(Func&& func) const {
                 if (this->empty()) return;
 
                 const uint8_t* buffer     = this->data();
@@ -257,6 +257,7 @@ namespace fe {
             void clear() noexcept {
                 m_storage.clear();
             }
+
             FORR_NODISCARD bool empty() const noexcept {
                 return m_storage.empty();
             }
@@ -268,6 +269,7 @@ namespace fe {
             FORR_NODISCARD const uint8_t* data() const noexcept {
                 return m_storage.data();
             }
+
             FORR_NODISCARD size_t size() const noexcept {
                 return m_storage.size();
             }

@@ -2,6 +2,7 @@
 
 ## 29.07.2026
 ### Goal
+    create fe::TransientPool for fe::RendererOpenGL
     implement fe::IRenderer::CreateGPUResources() in fe::RendererOpenGL
     allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
         allocate big SSBO ( AZDO ) in renderer for materials;

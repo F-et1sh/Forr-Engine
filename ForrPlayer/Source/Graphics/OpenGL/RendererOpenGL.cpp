@@ -116,6 +116,7 @@ void fe::RendererOpenGL::InitializeGPUResources() {
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::ImageDesc& image_desc) {
+    
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& image_barrier) {
