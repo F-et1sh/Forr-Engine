@@ -62,7 +62,7 @@ void fe::RendererOpenGL::SetClearColor(float red, float green, float blue, float
     glClearColor(red, green, blue, alpha);
 }
 
-void fe::RendererOpenGL::CreateGPUResources(const render_graph::CreateCommandList& create_command_list) {
+void fe::RendererOpenGL::CreateGPUResources(const render_graph::CommandList& create_command_list) {
     for ()
 }
 
@@ -74,10 +74,9 @@ void fe::RendererOpenGL::BeginFrame() {
     }
 }
 
-void fe::RendererOpenGL::EndFrame(const render_graph::RenderCommandList& render_command_list) {
-    for (const auto& render_command : render_command_list) {
-        
-    }
+void fe::RendererOpenGL::EndFrame(const render_graph::CommandList& render_command_list) {
+    const auto& command_list_raw = render_command_list.data();
+
 
     //this->handleRenderQueue(render_packet);
 

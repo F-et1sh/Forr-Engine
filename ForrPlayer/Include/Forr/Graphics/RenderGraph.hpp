@@ -3,7 +3,7 @@
     Forr Engine
 
     File : RenderGraph.hpp
-    Role : render graph and an interface for render passes
+    Role : render graph, interface for render passes and other helpers
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -50,8 +50,8 @@ namespace fe {
 
     // a proxy to gather render commands from render pass
     struct FORR_API RenderGraphContext {
-        render_graph::RenderCommandList render_command_list{};
-        const entt::registry&           render_registry{};
+        render_graph::CommandList render_command_list{};
+        const entt::registry&     render_registry{};
 
         RenderGraphContext(const entt::registry& render_registry) : render_registry(render_registry) {}
         ~RenderGraphContext() = default;
@@ -205,9 +205,9 @@ namespace fe {
             return render_pass_handle;
         }
 
-        render_graph::CreateCommandList Compile();
+        render_graph::CommandList Compile();
 
-        render_graph::RenderCommandList Execute(const entt::registry& render_data);
+        render_graph::CommandList Execute(const entt::registry& render_data);
 
         void Clear();
 
@@ -225,7 +225,7 @@ namespace fe {
         std::vector<RenderPass> m_RenderPasses{};
         fe::Arena               m_RenderPassesData{ 16 * 1024 };
 
-        render_graph::RenderCommandList m_RenderCommands{};
+        render_graph::CommandList m_RenderCommands{};
     };
 
 } // namespace fe

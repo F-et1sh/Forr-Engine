@@ -77,10 +77,10 @@ namespace fe {
                                    float blue  = 1.0f,
                                    float alpha = 1.0f) = 0;
 
-        virtual void CreateGPUResources(const render_graph::CreateCommandList& create_command_list) = 0;
+        virtual void CreateGPUResources(const render_graph::CommandList& create_command_list) = 0;
 
         virtual void BeginFrame()                                                         = 0;
-        virtual void EndFrame(const render_graph::RenderCommandList& render_command_list) = 0;
+        virtual void EndFrame(const render_graph::CommandList& render_command_list) = 0;
 
         // TODO : remove this. It should work other way
         virtual void InitializeGPUResources() = 0;
