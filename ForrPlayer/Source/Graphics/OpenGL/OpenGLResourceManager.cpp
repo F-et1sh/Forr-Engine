@@ -163,7 +163,14 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
     this->storeResource(texture.gpu_handle, opengl_texture, m_StorageTextures);
 }
 
-// TODO : this about this again
+void fe::OpenGLResourceManager::GetOrCreateImage(const render_graph::ImageDesc& image_desc) {
+    auto it = m_ImagePool.find(image_desc);
+    if (it != m_ImagePool.end()) {
+        // ...
+    }
+}
+
+// TODO : this about this again | 29.07.2026 what did I mean ?
 GLuint fe::OpenGLResourceManager::GetShaderBuffer(shader::ReflectedDescriptor& parameter) {
     auto it = m_ShaderBuffers.find(parameter);
     if (it != m_ShaderBuffers.end()) return it->second.get();

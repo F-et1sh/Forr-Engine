@@ -101,7 +101,7 @@ fe::render_graph::CommandList fe::RenderGraph::Execute(const entt::registry& ren
         RenderGraphContext context{ render_data };
         render_pass.execute_function(context, render_pass.mapped_data);
 
-        render_command_list.append_range(context.render_command_list);
+        render_command_list.append_range(context.command_list);
 
         for (const auto& barrier : render_pass.compiled_barriers)
             render_command_list.enqueue(barrier);
@@ -151,6 +151,7 @@ void fe::RenderGraph::collectRenderPasses(std::vector<Node>&                    
         this_render_pass.name            = render_pass.name;
     }
 }
+
 
 void fe::RenderGraph::sortRenderSasses(std::vector<Node>& render_passes_dst) {
     // a map, there every render pass refers to its dependencies

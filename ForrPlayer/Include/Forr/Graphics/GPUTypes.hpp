@@ -211,13 +211,15 @@ namespace fe {
 
             template <typename Command>
                 requires std::is_trivially_copyable_v<Command>
-            void enqueue(const Command& command) {
+            Command& enqueue(const Command& command) {
                 constexpr CommandType type = CommandTraits<Command>::Type;
 
                 m_storage.emplace_back(static_cast<uint8_t>(type));
                 size_t offset = m_storage.size();
                 m_storage.resize(offset + sizeof(Command));
                 new (&m_storage[offset]) Command{ command };
+
+                return reinterpret_cast<Command&>(m_storage[offset]);
             }
 
             template <typename Func>
