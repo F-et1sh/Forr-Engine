@@ -24,6 +24,7 @@
     fe::RenderGraph::calculateResourceLifetimes() done
     fe::OpenGLResourceManager::GetOrCreateImage() added
     fe::RenderGraph::Node --> fe::RenderGraph::CompiledRenderPass
+    fe::render_graph::ImageBarrier::texture_index provided as union
 
 ### Problem
     -

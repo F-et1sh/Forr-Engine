@@ -147,11 +147,11 @@ namespace fe {
         // this structure is used to access resources in a map
         // different versions of the same resource cannot be accessed
         struct ResourceHandle {
-            fe::StringHash hash{};
+            fe::StringHash hashed_name{};
             uint32_t       version{};
 
             ResourceHandle() = default;
-            ResourceHandle(fe::StringHash hash, uint32_t version) : hash(hash), version(version) {}
+            ResourceHandle(fe::StringHash hashed_name, uint32_t version) : hashed_name(hashed_name), version(version) {}
 
             bool operator==(const ResourceHandle& other) const noexcept = default;
         };
@@ -178,7 +178,7 @@ namespace fe {
             bool operator==(const ResourceLifetime& other) const noexcept = default;
         };
 
-        struct CompiledRenderPass { // render pass
+        struct CompiledRenderPass { // a node for sorting algorithm
             struct ImageBarrier {
                 ResourceHandle handle{};
                 ResourceState  old_state{};
@@ -241,7 +241,7 @@ namespace fe {
         void collectRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::StringHash, Resource>& resources_map);
 
         // run Kahn's algorithm
-        void sortRenderSasses(std::vector<CompiledRenderPass>& render_passes_dst);
+        void sortRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst);
 
         // run culling : remove unused render passes
         void removeUnusedRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::StringHash, Resource>& resources_map);
@@ -269,7 +269,7 @@ namespace fe {
 template <>
 struct std::hash<fe::RenderGraph::ResourceHandle> {
     std::size_t operator()(const fe::RenderGraph::ResourceHandle& handle) const {
-        std::size_t h1 = hash<fe::StringHash>()(handle.hash);
+        std::size_t h1 = hash<fe::StringHash>()(handle.hashed_name);
         std::size_t h2 = hash<uint32_t>()(handle.version);
         return h1 ^ (h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2));
     }
