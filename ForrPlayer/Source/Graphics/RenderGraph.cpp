@@ -13,7 +13,7 @@
 #include "pch.hpp"
 #include "Graphics/RenderGraph.hpp"
 
-fe::render_graph::CreateCommandList fe::RenderGraph::Compile() {
+fe::render_graph::CommandList fe::RenderGraph::Compile() {
     std::vector<Node> render_passes{};
     render_passes.reserve(m_RenderPasses.size());
 
@@ -31,9 +31,9 @@ fe::render_graph::CreateCommandList fe::RenderGraph::Compile() {
     // after culling 'resource_map' is broken, so we can't use it anymore
     resources_map.clear();
 
-    render_graph::CreateCommandList create_command_list{};
+    render_graph::CommandList create_command_list{};
     // forecast that every render pass wants to create 2 resources
-    create_command_list.reserve(render_passes.size() * 2);
+    create_command_list.reserve(render_passes.size() * 1024);
 
     std::vector<RenderPass> used_render_passes{};
     used_render_passes.reserve(render_passes.size());
@@ -41,7 +41,7 @@ fe::render_graph::CreateCommandList fe::RenderGraph::Compile() {
     // create all resources
     for (const Node& node : render_passes) {
         for (const render_graph::ImageDesc& create_request : node.create_requests) {
-            create_command_list.emplace_back(create_request);
+            create_command_list.enqueue(create_request);
         }
 
         // find this render pass in 'fe::RenderGraph::m_RenderPasses'
@@ -93,16 +93,18 @@ fe::render_graph::CreateCommandList fe::RenderGraph::Compile() {
     return create_command_list;
 }
 
-fe::render_graph::RenderCommandList fe::RenderGraph::Execute(const entt::registry& render_data) {
-    render_graph::RenderCommandList render_command_list{};
-    render_command_list.reserve(m_RenderPasses.size() * 10);
+fe::render_graph::CommandList fe::RenderGraph::Execute(const entt::registry& render_data) {
+    render_graph::CommandList render_command_list{};
+    render_command_list.reserve(m_RenderPasses.size() * 1024);
 
     for (auto& render_pass : m_RenderPasses) {
         RenderGraphContext context{ render_data };
         render_pass.execute_function(context, render_pass.mapped_data);
 
         render_command_list.append_range(context.render_command_list);
-        render_command_list.append_range(render_pass.compiled_barriers);
+
+        for (const auto& barrier : render_pass.compiled_barriers)
+            render_command_list.enqueue(barrier);
     }
 
     return render_command_list;

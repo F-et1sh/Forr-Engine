@@ -143,12 +143,7 @@ namespace fe {
             glm::ivec2 extent{};
         };
 
-        // create commands - they are used when RenderGraph compiles ( fe::RenderGraph::Compile() )
-
-        enum class FORR_API CreateCommandType : uint8_t {
-            Image,
-            Buffer
-        };
+        // commands
 
         struct FORR_API ImageDesc {
             fe::StringHash hash{};
@@ -168,14 +163,6 @@ namespace fe {
                 : hash(hash), type(type), format(format), extent(extent), mip_levels(mip_levels), usage(usage) {}
         };
 
-        // render commands - they are used every frame by RenderGraph ( fe::RenderGraph::Execute() )
-
-        enum class FORR_API RenderCommandType : uint8_t {
-            ImageBarrier,
-            BufferBarrier,
-            DrawIndexed
-        };
-
         struct FORR_API ImageBarrier {
             fe::StringHash hash{};
             ResourceState  old_state{};
@@ -187,10 +174,33 @@ namespace fe {
                          ResourceState  new_state)
                 : hash(hash), old_state(old_state), new_state(new_state) {}
         };
+        
+        // To add a command write its structure and add it here
+#define FORR_RENDER_COMMANDS_LIST(X)                                                              \
+    /*create commands - they are used when RenderGraph compiles(fe::RenderGraph::Compile()) */    \
+    X(ImageDesc, ImageDesc)                                                                       \
+    /* render commands - theys are used every frame by RenderGraph(fe::RenderGraph::Execute()) */ \
+    X(ImageBarrier, ImageBarrier)
 
-        //
+        enum class CommandType : uint8_t {
+#define GENERATE_ENUM(EnumName, StructName) EnumName,
+            FORR_RENDER_COMMANDS_LIST(GENERATE_ENUM)
+#undef GENERATE_ENUM
+        };
 
-        // TODO : move this to RenderGraph.hpp
+        template <typename T>
+        struct CommandTraits;
+
+#define GENERATE_TRAITS(EnumName, StructName)                           \
+    template <>                                                         \
+    struct CommandTraits<StructName> {                                  \
+        static constexpr CommandType      Type = CommandType::EnumName; \
+        static constexpr std::string_view Name = #EnumName;             \
+    };
+
+        FORR_RENDER_COMMANDS_LIST(GENERATE_TRAITS)
+#undef GENERATE_TRAITS
+
         class CommandList {
         public:
             CommandList()  = default;
@@ -199,17 +209,24 @@ namespace fe {
             FORR_CLASS_MOVABLE(CommandList)
             FORR_CLASS_NONCOPYABLE(CommandList)
 
-            template <typename Command, typename CommandType, typename... Args>
-                requires std::is_same_v<std::underlying_type_t<CommandType>, uint8_t> && std::is_trivial_v<Command>
-            void enqueue(CommandType type, Args&&... args) {
+            template <typename Command> requires std::is_trivially_copyable_v<Command>
+            void enqueue(const Command& command) {
+                constexpr CommandType type = CommandTraits<Command>::Type;
+
                 m_storage.emplace_back(static_cast<uint8_t>(type));
                 size_t offset = m_storage.size();
                 m_storage.resize(offset + sizeof(Command));
-                new (&m_storage[offset]) Command{ std::forward<Args>(args)... };
+                new (&m_storage[offset]) Command{ command };
+            }
+
+            void append_range(const CommandList& command_list) {
+                m_storage.append_range(command_list.m_storage);
             }
 
             void                clear() noexcept { m_storage.clear(); }
             FORR_NODISCARD bool empty() const noexcept { return m_storage.empty(); }
+
+            void reserve(size_t bytes_count) { m_storage.reserve(bytes_count); }
 
             FORR_NODISCARD const uint8_t* data() const noexcept { return m_storage.data(); }
             FORR_NODISCARD size_t         size() const noexcept { return m_storage.size(); }
@@ -218,13 +235,6 @@ namespace fe {
             std::vector<uint8_t> m_storage;
         };
 
-        // CreateCommands are used when RenderGraph compiles ( fe::RenderGraph::Compile() )
-        using CreateCommand     = std::variant<ImageDesc>; // TODO : add BufferDesc
-        using CreateCommandList = std::vector<CreateCommand>;
-
-        // RenderCommands are used every frame by RenderGraph ( fe::RenderGraph::Execute() )
-        using RenderCommand     = std::variant<ImageBarrier>; // TODO : add BufferBarrier
-        using RenderCommandList = std::vector<RenderCommand>;
     } // namespace render_graph
 
     namespace shader {
