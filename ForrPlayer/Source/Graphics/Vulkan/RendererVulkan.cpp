@@ -51,6 +51,9 @@ void fe::RendererVulkan::SetClearColor(float red, float green, float blue, float
     m_Context.clear_color = { red, green, blue, alpha }; // clear_color
 }
 
+void fe::RendererVulkan::CreateGPUResources(const render_graph::CommandList& create_command_list) {
+}
+
 void fe::RendererVulkan::BeginFrame() {
     std::array<VkFence, 1> fences{ m_FrameData[m_CurrentFrame].wait_fence };
 
@@ -109,7 +112,7 @@ void fe::RendererVulkan::BeginFrame() {
     vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 }
 
-void fe::RendererVulkan::EndFrame(const render_graph::RenderCommandList& render_command_list) {
+void fe::RendererVulkan::EndFrame(const render_graph::CommandList& render_command_list) {
     //this->handleRenderQueue(render_packet);
 
     const VkCommandBuffer command_buffer = m_FrameData[m_CurrentFrame].command_buffer;

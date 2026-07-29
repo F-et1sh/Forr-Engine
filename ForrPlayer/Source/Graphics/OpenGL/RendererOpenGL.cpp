@@ -63,7 +63,7 @@ void fe::RendererOpenGL::SetClearColor(float red, float green, float blue, float
 }
 
 void fe::RendererOpenGL::CreateGPUResources(const render_graph::CommandList& create_command_list) {
-    for ()
+    create_command_list.handle_all([&](const auto& command) { this->handleCommand(command); });
 }
 
 void fe::RendererOpenGL::BeginFrame() {
@@ -75,10 +75,7 @@ void fe::RendererOpenGL::BeginFrame() {
 }
 
 void fe::RendererOpenGL::EndFrame(const render_graph::CommandList& render_command_list) {
-    const auto& command_list_raw = render_command_list.data();
-
-
-    //this->handleRenderQueue(render_packet);
+    render_command_list.handle_all([&](const auto& command) { this->handleCommand(command); });
 
     m_FrameData[m_CurrentFrame].sync.reset();
     GLsync sync_raw = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
@@ -108,7 +105,7 @@ void fe::RendererOpenGL::InitializeGPUResources() {
     });
 
     //m_ResourceManager.RunForEach<resource::ShaderProgram>([&](resource::ShaderProgram& shader_program) {
-        //m_OpenGLResourceManager.CreateResource(shader_program);
+    //m_OpenGLResourceManager.CreateResource(shader_program);
     //});
 
     m_ResourceManager.RunForEach<resource::Model>([&](resource::Model& model) {
@@ -118,9 +115,14 @@ void fe::RendererOpenGL::InitializeGPUResources() {
     });
 }
 
+void fe::RendererOpenGL::handleCommand(const render_graph::ImageDesc& image_desc) {
+}
+
+void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& image_barrier) {
+}
+
 void fe::RendererOpenGL::handleRenderQueue(const RenderPacket& render_packet) {
     //uint8_t* materials_data = m_ResourceManager.GetMaterialsData();
-
 
     constexpr static std::size_t object_binding_index = 0;
     constexpr static std::size_t lights_binding_index = 1;
