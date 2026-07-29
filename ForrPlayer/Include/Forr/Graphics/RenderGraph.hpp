@@ -191,9 +191,9 @@ namespace fe {
 
             fe::fixed_string<32> name{};
 
-            std::vector<CompiledRenderPass::ImageBarrier>      reads{};
-            std::vector<CompiledRenderPass::ImageBarrier>      writes{};
-            std::vector<render_graph::ImageDesc> create_requests{};
+            std::vector<CompiledRenderPass::ImageBarrier> reads{};
+            std::vector<CompiledRenderPass::ImageBarrier> writes{};
+            std::vector<render_graph::ImageDesc>          create_requests{};
 
             CompiledRenderPass() = default;
             CompiledRenderPass(std::string_view name, std::vector<CompiledRenderPass::ImageBarrier> reads, std::vector<CompiledRenderPass::ImageBarrier> writes, std::vector<render_graph::ImageDesc> create_requests)
@@ -247,10 +247,10 @@ namespace fe {
         void removeUnusedRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::StringHash, Resource>& resources_map);
 
         // setup create commands, set resource right states in 'resources_map' and find all used render passes
-        void createAllResources(std::vector<CompiledRenderPass>&                            render_passes,
+        void createAllResources(std::vector<CompiledRenderPass>&              render_passes,
                                 std::unordered_map<fe::StringHash, Resource>& resources_map_dst,
                                 render_graph::CommandList&                    create_command_list_dst,
-                                std::vector<RenderPass>                       used_render_passes_dst);
+                                std::vector<RenderPass>&                      used_render_passes_dst);
 
         // setup 'fe::RenderGraph::m_ResourceLifetimes'
         void calculateResourceLifetimes();

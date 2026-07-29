@@ -108,7 +108,7 @@ void fe::RenderGraph::Clear() {
     m_ResourceLifetimes.clear();
 }
 
-void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&                            render_passes_dst,
+void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&              render_passes_dst,
                                           std::unordered_map<fe::StringHash, Resource>& resources_map) {
     for (auto& render_pass : m_RenderPasses) {
         RenderGraphBuilder builder{};
@@ -121,16 +121,16 @@ void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&      
 
         for (const auto& read_barrier : builder.reads) {
             this_render_pass.reads.emplace_back(CompiledRenderPass::ImageBarrier{ ResourceHandle{ read_barrier.hash, resources_map[read_barrier.hash].version },
-                                                                    resources_map[read_barrier.hash].old_state, // 'read_barrier.old_state' won't work here because it set by default
-                                                                    read_barrier.new_state });
+                                                                                  resources_map[read_barrier.hash].old_state, // 'read_barrier.old_state' won't work here because it set by default
+                                                                                  read_barrier.new_state });
             resources_map[read_barrier.hash].old_state = read_barrier.new_state;
         }
 
         for (const auto& write_barrier : builder.writes) {
             resources_map[write_barrier.hash].version++; // increasing version because while writing the resource is changes
             this_render_pass.writes.emplace_back(CompiledRenderPass::ImageBarrier{ ResourceHandle{ write_barrier.hash, resources_map[write_barrier.hash].version },
-                                                                     resources_map[write_barrier.hash].old_state, // 'read_barrier.old_state' won't work here because it set by default
-                                                                     write_barrier.new_state });
+                                                                                   resources_map[write_barrier.hash].old_state, // 'read_barrier.old_state' won't work here because it set by default
+                                                                                   write_barrier.new_state });
             resources_map[write_barrier.hash].old_state = write_barrier.new_state;
         }
 
@@ -233,7 +233,7 @@ void fe::RenderGraph::sortRenderSasses(std::vector<CompiledRenderPass>& render_p
     render_passes_dst = std::move(sorted_render_passes);
 }
 
-void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>&                            render_passes_dst,
+void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>&              render_passes_dst,
                                                std::unordered_map<fe::StringHash, Resource>& resources_map) {
     std::vector<CompiledRenderPass> used_render_passes{};
     used_render_passes.reserve(render_passes_dst.size());
@@ -267,10 +267,10 @@ void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>& 
     render_passes_dst = std::move(used_render_passes);
 }
 
-void fe::RenderGraph::createAllResources(std::vector<CompiledRenderPass>&                            render_passes,
+void fe::RenderGraph::createAllResources(std::vector<CompiledRenderPass>&              render_passes,
                                          std::unordered_map<fe::StringHash, Resource>& resources_map_dst,
                                          render_graph::CommandList&                    create_command_list_dst,
-                                         std::vector<RenderPass>                       used_render_passes_dst) {
+                                         std::vector<RenderPass>&                      used_render_passes_dst) {
     for (const CompiledRenderPass& CompiledRenderPass : render_passes) {
         for (const render_graph::ImageDesc& create_request : CompiledRenderPass.create_requests) {
             create_command_list_dst.enqueue(create_request);
