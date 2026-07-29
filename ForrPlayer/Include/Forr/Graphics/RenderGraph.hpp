@@ -50,8 +50,10 @@ namespace fe {
 
     // a proxy to gather render commands from render pass
     struct FORR_API RenderGraphContext {
-        render_graph::CommandList render_command_list{};
+        render_graph::CommandList command_list{};
         const entt::registry&     render_registry{};
+
+        //void drawIndices(...) { command_list.enqueue(...) }
 
         RenderGraphContext(const entt::registry& render_registry) : render_registry(render_registry) {}
         ~RenderGraphContext() = default;
@@ -62,6 +64,8 @@ namespace fe {
 
     // a proxy to gather setup commands from render pass
     struct FORR_API RenderGraphBuilder {
+        // fe::RenderGraphBuilder is used for building RenderGraph, that's why there is no 'render_graph::CommandList'
+        //  instead, all comands are separated
         std::vector<render_graph::ImageBarrier> reads{};
         std::vector<render_graph::ImageBarrier> writes{};
         std::vector<render_graph::ImageDesc>    create_requests{};
@@ -84,6 +88,12 @@ namespace fe {
             assert(to_state != ResourceState::COPY_SRC);
             writes.emplace_back(render_graph::ImageBarrier{ hash, ResourceState::UNDEFINED, to_state });
         }
+
+        RenderGraphBuilder()  = default;
+        ~RenderGraphBuilder() = default;
+
+        FORR_CLASS_MOVABLE(RenderGraphBuilder)
+        FORR_CLASS_NONCOPYABLE(RenderGraphBuilder)
     };
 
     template <typename T, typename DataT>

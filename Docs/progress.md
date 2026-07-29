@@ -3,6 +3,7 @@
 ## 29.07.2026
 ### Goal
     create fe::TransientPool for fe::RendererOpenGL
+    implement resources' lifetime tracking
     implement fe::IRenderer::CreateGPUResources() in fe::RendererOpenGL
     allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
         allocate big SSBO ( AZDO ) in renderer for materials;
@@ -19,6 +20,7 @@
 ### Done
     CommandList in progress
     fe::render_graph::CommandList::handle_all<>() added
+    fe::TransientPool --> fe::OpenGLResourceManager
 
 ### Problem
     -

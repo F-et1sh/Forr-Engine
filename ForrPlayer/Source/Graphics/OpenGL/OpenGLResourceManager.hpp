@@ -35,6 +35,25 @@ namespace std {
             return seed;
         }
     };
+
+    template <>
+    struct hash<fe::render_graph::ImageDesc> {
+        std::size_t operator()(const fe::render_graph::ImageDesc& p) const {
+            std::size_t seed{};
+
+            // don't use 'fe::render_graph::ImageDesc::hash' here
+
+            hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(p.type)));
+            hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(p.format)));
+            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.x)));
+            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.y)));
+            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.z)));
+            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.mip_levels)));
+            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.usage)));
+
+            return seed;
+        }
+    };
 } // namespace std
 
 namespace fe {
@@ -57,6 +76,8 @@ namespace fe {
         const OpenGLMesh&     GetResource(GPUHandle<resource::Model::Mesh> handle) const;
         const OpenGLMaterial& GetResource(GPUHandle<resource::Material> handle) const;
         const OpenGLTexture&  GetResource(GPUHandle<resource::Texture> handle) const;
+
+        void GetOrCreateImage(const render_graph::ImageDesc& image_desc);
 
         GLuint GetShaderBuffer(shader::ReflectedDescriptor& parameter);
 
@@ -84,6 +105,8 @@ namespace fe {
         std::vector<OpenGLMaterial> m_StorageMaterials{};
         std::vector<OpenGLMesh>     m_StorageMeshes{};
         std::vector<OpenGLTexture>  m_StorageTextures{};
+
+        std::unordered_map<render_graph::ImageDesc, uint32_t> m_ImagePool{};
 
         // shader buffers : SSBOs and UBOs
         std::unordered_map<shader::ReflectedDescriptor, gl::Buffer> m_ShaderBuffers{};
