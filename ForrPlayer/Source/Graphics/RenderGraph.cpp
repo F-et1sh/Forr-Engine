@@ -38,12 +38,16 @@ fe::render_graph::CommandList fe::RenderGraph::Compile() {
     std::vector<RenderPass> used_render_passes{};
     used_render_passes.reserve(render_passes.size());
 
+    // setup create commands, set resource right states in 'resources_map' and find all used render passes
     this->createAllResources(render_passes, resources_map, create_command_list, used_render_passes);
-
-    this->calculateResourceLifetimes();
 
     m_RenderPasses.clear();
     m_RenderPasses = std::move(used_render_passes);
+
+    // setup 'fe::RenderGraph::m_ResourceLifetimes'
+    this->calculateResourceLifetimes();
+
+
 
     //
     // Pass01 | read : []               , write :  ColorBuffer_v0
@@ -63,7 +67,22 @@ fe::render_graph::CommandList fe::RenderGraph::Execute(const entt::registry& ren
     render_graph::CommandList render_command_list{};
     render_command_list.reserve(m_RenderPasses.size() * 1024);
 
-    for (auto& render_pass : m_RenderPasses) {
+    // resource's hashed name --> physical index in GPU resource manager
+    std::unordered_map<fe::StringHash, uint32_t> virtual_to_physical_map{};
+
+    for (size_t i = 0; i < m_RenderPasses.size(); i++) {
+        auto& render_pass = m_RenderPasses[i];
+
+        for (const auto& [hashed_name, lifetime] : m_ResourceLifetimes) {
+            if (lifetime.first_pass_index == i) {
+                render_graph::ImageDesc desc = m_ResourceDescs[hashed_name];
+
+                uint32_t storage_index = resource_manager.AcquireTransientImage(desc);
+
+                virtual_to_physical_map[hashed_name] = storage_index;
+            }
+        }
+
         RenderGraphContext context{ render_data };
         render_pass.execute_function(context, render_pass.mapped_data);
 
@@ -71,6 +90,15 @@ fe::render_graph::CommandList fe::RenderGraph::Execute(const entt::registry& ren
 
         for (const auto& barrier : render_pass.compiled_barriers)
             render_command_list.enqueue(barrier);
+
+        //for (const auto& [hashed_name, lifetime] : m_ResourceLifetimes) {
+        //    if (lifetime.last_pass_index == i) {
+        //        render_graph::ImageDesc desc = m_ResourceDescs[hashed_name];
+        //        uint32_t storage_index = virtual_to_physical_map[hashed_name];
+
+        //        resource_manager.ReleaseTransientImage(desc, storage_index);
+        //    }
+        //}
     }
 
     return render_command_list;

@@ -248,6 +248,7 @@ namespace fe {
                                 render_graph::CommandList&                    create_command_list_dst,
                                 std::vector<RenderPass>                       used_render_passes_dst);
 
+        // setup 'fe::RenderGraph::m_ResourceLifetimes'
         void calculateResourceLifetimes();
 
     private:
