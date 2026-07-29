@@ -164,15 +164,22 @@ namespace fe {
         };
 
         struct FORR_API ImageBarrier {
-            fe::StringHash hash{};
-            ResourceState  old_state{};
-            ResourceState  new_state{};
+
+            union {
+                // hashed name - used for user interface ( fe::string_hash("ShadowMap") )
+                fe::StringHash hashed_name{};
+                // texture's index in GPU resource manager's strage - used, when render passes are already compiled
+                size_t texture_index;
+            };
+
+            ResourceState old_state{};
+            ResourceState new_state{};
 
             ImageBarrier() = default;
             ImageBarrier(fe::StringHash hash,
                          ResourceState  old_state,
                          ResourceState  new_state)
-                : hash(hash), old_state(old_state), new_state(new_state) {}
+                : hashed_name(hashed_name), old_state(old_state), new_state(new_state) {}
         };
 
         // To add a command write its structure and add it here
@@ -252,7 +259,7 @@ namespace fe {
                 }
             }
 
-            void append_range(const CommandList& command_list) {
+            void append_command_list(const CommandList& command_list) {
                 m_storage.append_range(command_list.m_storage);
             }
 
