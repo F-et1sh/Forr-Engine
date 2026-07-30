@@ -62,8 +62,15 @@ void fe::RendererOpenGL::SetClearColor(float red, float green, float blue, float
     glClearColor(red, green, blue, alpha);
 }
 
-void fe::RendererOpenGL::CreateGPUResources(const render_graph::CommandList& create_command_list) {
-    create_command_list.handle_all([&](const auto& command) { this->handleCommand(command); });
+fe::RenderGraphBindings fe::RendererOpenGL::CreateGPUResources(const RenderGraphCompileResult& compile_result) {
+    RenderGraphBindings bindings{};
+    bindings.bindings.reserve(compile_result.image_descs.size());
+
+    for (const render_graph::ImageDesc& image_desc : compile_result.image_descs) {
+        bindings.bindings[image_desc.hashed_name] = m_OpenGLResourceManager.CreateImage(image_desc);
+    }
+
+    return bindings;
 }
 
 void fe::RendererOpenGL::BeginFrame() {

@@ -119,6 +119,6 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
     auto forward_pass_data_mapped = m_RenderGraph->AddPass<ForwardPassData, ForwardPass>("Forward Pass"); // TODO : make a storage for this mapped data
 
     auto create_command_list = m_RenderGraph->Compile();
-    auto mapping_result = m_Renderer->CreateGPUResources(create_command_list);
-    m_RenderGraph->EnsureRenderPasses(mapping_result);
+    auto mapping_result      = std::move(m_Renderer->CreateGPUResources(create_command_list));
+    m_RenderGraph->SetupResourceBindings(mapping_result);
 }

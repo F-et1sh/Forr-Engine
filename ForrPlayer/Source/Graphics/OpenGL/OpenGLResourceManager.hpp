@@ -74,7 +74,8 @@ namespace fe {
         ///@}
 
         // this is for render graph
-        const OpenGLTexture& GetOrCreateImage(const render_graph::ImageDesc& image_desc);
+        size_t CreateImage(const render_graph::ImageDesc& image_desc);
+        const OpenGLTexture& GetImage(size_t texture_storage_index);
 
         const OpenGLMesh&     GetResource(GPUHandle<resource::Model::Mesh> handle) const;
         const OpenGLMaterial& GetResource(GPUHandle<resource::Material> handle) const;

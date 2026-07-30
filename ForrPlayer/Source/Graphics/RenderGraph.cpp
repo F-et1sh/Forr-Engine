@@ -51,7 +51,7 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
 
     for (const auto& render_pass : render_passes) {
         for (const auto& image_desc : render_pass.create_requests) {
-            resource_hashed_desc_map[image_desc.hash] = render_graph::image_desc_hash(image_desc);
+            resource_hashed_desc_map[image_desc.hashed_name] = render_graph::image_desc_hash(image_desc);
         }
     }
 
