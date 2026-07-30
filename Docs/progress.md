@@ -26,6 +26,7 @@
     gray screen done
     unused removed
     BeginRenderPass, EndRenderPass added
+    framebuffers logic almost done
 
 ### Problem
     -

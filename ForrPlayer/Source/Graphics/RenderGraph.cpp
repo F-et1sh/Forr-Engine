@@ -113,6 +113,11 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
         }
     }
 
+    for (const RenderPass& render_pass : m_RenderPasses) {
+        //render_pass.begin_command
+        //render_pass.end_command
+    }
+
     //
     // Pass01 | read : []               , write :  ColorBuffer_v0
     // Pass02 | read :  ColorBuffer_v0  , write :  ColorBuffer_v1
@@ -151,10 +156,14 @@ fe::render_graph::CommandList fe::RenderGraph::Execute(const entt::registry& ren
         RenderGraphContext context{ render_data };
         render_pass.execute_function(context, render_pass.mapped_data);
 
+        render_command_list.enqueue(render_pass.begin_command);
+
         for (const auto& barrier : render_pass.compiled_barriers)
             render_command_list.enqueue(barrier);
 
         render_command_list.append_command_list(context.command_list);
+
+        render_command_list.enqueue(render_pass.end_command);
     }
 
     return render_command_list;

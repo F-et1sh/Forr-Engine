@@ -222,6 +222,14 @@ namespace fe {
 
         struct FORR_API BeginRenderPass {
             bool is_to_screen{};
+            bool is_clears_color{};
+            bool is_clears_depth{};
+            bool has_depth{};
+
+            Rect2D viewport{};
+
+            glm::vec4 color{};
+            double    depth_value{};
         };
 
         struct FORR_API EndRenderPass {

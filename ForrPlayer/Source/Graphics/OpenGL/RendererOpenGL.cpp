@@ -123,5 +123,123 @@ void fe::RendererOpenGL::InitializeGPUResources() {
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& image_barrier) {
+    const auto& opengl_texture = m_OpenGLResourceManager.GetImage(image_barrier.texture_index);
+    uint64_t    resident_id    = opengl_texture.resident_id;
 
+    if (image_barrier.new_state == ResourceState::SHADER_READ_ONLY) {
+        if (!glIsTextureHandleResidentARB(resident_id)) {
+            glMakeTextureHandleResidentARB(resident_id);
+        }
+
+        if (image_barrier.old_state == ResourceState::UNORDERED_ACCESS) {
+            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+        }
+    }
+    else if (image_barrier.new_state == ResourceState::RENDER_TARGET ||
+             image_barrier.new_state == ResourceState::DEPTH_READ) {
+
+        if (glIsTextureHandleResidentARB(resident_id)) {
+            glMakeTextureHandleNonResidentARB(resident_id);
+        }
+    }
+    else if (image_barrier.old_state == ResourceState::RENDER_TARGET &&
+             image_barrier.new_state == ResourceState::UNORDERED_ACCESS) {
+
+        glMemoryBarrier(GL_FRAMEBUFFER_BARRIER_BIT);
+    }
+}
+
+void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& begin_render_pass) {
+    if (begin_render_pass.is_to_screen) {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glViewport(begin_render_pass.viewport.offset.x,
+                   begin_render_pass.viewport.offset.y,
+                   begin_render_pass.viewport.extent.x,
+                   begin_render_pass.viewport.extent.y);
+
+        GLbitfield clear_mask{};
+        if (begin_render_pass.is_clears_color) {
+            glClearColor(begin_render_pass.color.r,
+                         begin_render_pass.color.g,
+                         begin_render_pass.color.b,
+                         begin_render_pass.color.a);
+            clear_mask |= GL_COLOR_BUFFER_BIT;
+        }
+
+        if (begin_render_pass.is_clears_depth) {
+            glClearDepth(begin_render_pass.depth_value);
+            clear_mask |= GL_DEPTH_BUFFER_BIT;
+        }
+
+        if (clear_mask != 0) glClear(clear_mask);
+
+        return;
+    }
+
+    GLuint framebuffer_raw{};
+
+    uint64_t framebuffer_hash = hash(begin_render_pass.color_targets,
+                                     begin_render_pass.depth_target);
+
+    auto it = m_FramebuffersCache.find(framebuffer_hash);
+    if (it != m_FramebuffersCache.end()) {
+        framebuffer_raw = it->second.get();
+    }
+    else {
+        glCreateFramebuffers(1, &framebuffer_raw);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_raw);
+
+        for (size_t i = 0; i < begin_render_pass.color_targets.size(); i++) {
+            size_t               texture_index  = begin_render_pass.color_targets[i];
+            const OpenGLTexture& opengl_texture = m_OpenGLResourceManager.GetImage(texture_index);
+
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, opengl_texture.texture, 0);
+        }
+
+        if (begin_render_pass.has_depth) {
+            const OpenGLTexture& opengl_texture = m_OpenGLResourceManager.GetImage(begin_render_pass.depth_target);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, opengl_texture.texture, 0);
+        }
+
+        std::vector<GLenum> attachments{};
+        for (size_t i = 0; i < begin_render_pass.color_targets.size(); i++) {
+            attachments.push_back(GL_COLOR_ATTACHMENT0 + i);
+        }
+        if (attachments.empty()) {
+            glDrawBuffer(GL_NONE);
+            glReadBuffer(GL_NONE);
+        }
+        else {
+            glDrawBuffers(static_cast<GLsizei>(attachments.size()), attachments.data());
+        }
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            fe::logging::error("Unified RenderGraph -> OpenGL. Framebuffer status is incomplete");
+        }
+
+        m_FramebuffersCache[framebuffer_hash] = std::move(gl::Framebuffer{ framebuffer_raw });
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_raw);
+    glViewport(0, 0, begin_render_pass.viewport.extent.x, begin_render_pass.viewport.extent.y);
+
+    GLbitfield clear_mask{};
+    if (begin_render_pass.is_clears_color) {
+        glClearColor(begin_render_pass.color.r,
+                     begin_render_pass.color.g,
+                     begin_render_pass.color.b,
+                     begin_render_pass.color.a);
+        clear_mask |= GL_COLOR_BUFFER_BIT;
+    }
+
+    if (begin_render_pass.is_clears_depth) {
+        glClearDepth(begin_render_pass.depth_value);
+        clear_mask |= GL_DEPTH_BUFFER_BIT;
+    }
+
+    if (clear_mask != 0) glClear(clear_mask);
+}
+
+void fe::RendererOpenGL::handleCommand(const render_graph::EndRenderPass& end_render_pass) {
 }
