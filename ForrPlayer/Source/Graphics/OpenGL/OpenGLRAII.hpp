@@ -89,8 +89,14 @@ namespace fe::gl {
             if (glIsTextureHandleResidentARB(resident_id)) {
                 glMakeTextureHandleNonResidentARB(resident_id);
             }
-            
+
             glDeleteTextures(1, &handle);
+        }
+    };
+
+    struct Framebuffer {
+        void operator()(GLuint handle) const noexcept {
+            glDeleteFramebuffers(1, &handle);
         }
     };
 
@@ -99,4 +105,5 @@ namespace fe::gl {
     using Buffer        = Handle<BufferDestroy>;
     using Sync          = Handle<SyncDestroy, GLsync>;
     using Texture       = Handle<TextureDestroy>;
+    using Framebuffer   = Handle<Framebuffer>;
 } // namespace fe::gl

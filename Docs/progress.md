@@ -24,6 +24,8 @@
     fe::RenderGraph::setupVirtualIndices() done
     RenderGraph's "upper part" done
     gray screen done
+    unused removed
+    BeginRenderPass, EndRenderPass added
 
 ### Problem
     -

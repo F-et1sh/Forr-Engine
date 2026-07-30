@@ -148,7 +148,6 @@ fe::render_graph::CommandList fe::RenderGraph::Execute(const entt::registry& ren
     render_command_list.reserve(m_RenderPasses.size() * 1024);
 
     for (const RenderPass& render_pass : m_RenderPasses) {
-
         RenderGraphContext context{ render_data };
         render_pass.execute_function(context, render_pass.mapped_data);
 
