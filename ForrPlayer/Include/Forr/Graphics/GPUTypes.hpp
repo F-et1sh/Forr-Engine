@@ -13,6 +13,7 @@
 #pragma once
 #include "Core/pointer.hpp"
 #include "Core/string.hpp"
+#include "Core/logging.hpp"
 
 #include <variant>
 
@@ -146,13 +147,11 @@ namespace fe {
         // commands
 
         struct FORR_API ImageDesc {
-            union {
-                // hashed name - used for user interface ( fe::string_hash("ShadowMap") )
-                fe::StringHash hashed_name{};
+            // hashed name - used for user interface ( fe::string_hash("ShadowMap") )
+            fe::StringHash hashed_name{};
 
-                // texture's index in GPU resource manager's strage - used, when render passes are already compiled
-                size_t texture_index;
-            };
+            // texture's index in GPU resource manager's strage - used, when render passes are already compiled
+            size_t texture_index{};
 
             ImageType      type{};
             Format         format{};
@@ -200,20 +199,17 @@ namespace fe {
         }
 
         struct FORR_API ImageBarrier {
+            // hashed name - used for user interface ( fe::string_hash("ShadowMap") )
+            fe::StringHash hashed_name{};
 
-            union {
-                // hashed name - used for user interface ( fe::string_hash("ShadowMap") )
-                fe::StringHash hashed_name{};
-
-                // texture's index in GPU resource manager's strage - used, when render passes are already compiled
-                size_t texture_index;
-            };
+            // texture's index in GPU resource manager's strage - used, when render passes are already compiled
+            size_t texture_index{};
 
             ResourceState old_state{};
             ResourceState new_state{};
 
             ImageBarrier() = default;
-            ImageBarrier(fe::StringHash hash,
+            ImageBarrier(fe::StringHash hashed_name,
                          ResourceState  old_state,
                          ResourceState  new_state)
                 : hashed_name(hashed_name), old_state(old_state), new_state(new_state) {}

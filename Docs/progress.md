@@ -23,6 +23,7 @@
     fe::IRenderer::CreateGPUResources() done
     fe::RenderGraph::setupVirtualIndices() done
     RenderGraph's "upper part" done
+    gray screen done
 
 ### Problem
     -
