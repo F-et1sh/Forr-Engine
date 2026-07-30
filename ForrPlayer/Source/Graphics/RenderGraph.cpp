@@ -113,9 +113,46 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
         }
     }
 
-    for (const RenderPass& render_pass : m_RenderPasses) {
-        //render_pass.begin_command
-        //render_pass.end_command
+    for (size_t i = 0; i < m_RenderPasses.size(); i++) {
+        RenderPass&         render_pass          = m_RenderPasses[i];
+        CompiledRenderPass& compiled_render_pass = render_passes[i]; // using this index here will work
+
+        render_graph::BeginRenderPass& begin_command = render_pass.compiled_begin_command;
+
+        begin_command.is_clears_color   = true;
+        begin_command.is_clears_depth   = true;
+        begin_command.clear_color_value = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+        begin_command.clear_depth_value = 1.0f;
+
+        if (!compiled_render_pass.writes.empty()) {
+            auto it = hashed_to_desc_map.find(compiled_render_pass.writes[0].handle.hashed_name); // taking the first one
+            if (it != hashed_to_desc_map.end()) {
+                begin_command.viewport.extent = it->second.extent;
+            }
+        }
+        else {
+            begin_command.is_to_screen    = true;
+            begin_command.viewport.extent = glm::ivec3(1920, 1080, 1); // TODO : use window's size
+        }
+
+        for (size_t j = 0; j < compiled_render_pass.writes.size(); j++) {
+            if (j >= MAX_COLOR_ATTACHMENTS + 1) {              // plus one is depth stencil
+                fe::logging::fatal("Too much render targets"); // TODO : rewrite this
+            }
+
+            CompiledRenderPass::ImageBarrier& image_barrier = compiled_render_pass.writes[j];
+
+            if (image_barrier.new_state == ResourceState::DEPTH_WRITE ||
+                image_barrier.new_state == ResourceState::DEPTH_READ) {
+
+                begin_command.depth_target     = image_barrier.handle.hashed_name;
+                begin_command.has_depth_target = true;
+            }
+            else {
+                begin_command.color_targets[j] = image_barrier.handle.hashed_name;
+                begin_command.color_targets_count++;
+            }
+        }
     }
 
     //
@@ -135,14 +172,40 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
 void fe::RenderGraph::SetupResourceBindings(const RenderGraphBindings& bindings) {
     for (RenderPass& render_pass : m_RenderPasses) {
         for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_barriers) {
-            auto it = bindings.bindings.find(image_barrier.hashed_name);
+            auto it = bindings.bindings.find(image_barrier.hashed_name); // here it's a hashed name
 
             if (it != bindings.bindings.end()) {
-                image_barrier.texture_index = it->second;
+                image_barrier.texture_index = it->second; // here it's already an actual GPU index
             }
             else {
                 fe::logging::error("Failed to set image barrier's texture index in fe::RenderGraph::SetupResourceBindings. Binding is missing for hash : %llu",
                                    image_barrier.hashed_name);
+            }
+        }
+
+        render_graph::BeginRenderPass& begin_command = render_pass.compiled_begin_command;
+
+        for (size_t i = 0; i < begin_command.color_targets_count; i++) {
+            size_t& color_target = begin_command.color_targets[i]; // here it's a hashed name
+
+            auto it = bindings.bindings.find(color_target);
+            if (it != bindings.bindings.end()) {
+                color_target = it->second; // here it's already an actual GPU index
+            }
+            else {
+                fe::logging::error("Failed to set color target's texture index in fe::RenderGraph::SetupResourceBindings. Missing binding for color target hash : %llu",
+                                   color_target);
+            }
+        }
+
+        if (begin_command.has_depth_target) {
+            auto it = bindings.bindings.find(begin_command.depth_target); // here it's a hashed name
+            if (it != bindings.bindings.end()) {
+                begin_command.depth_target = it->second; // here it's already an actual GPU index
+            }
+            else {
+                fe::logging::error("Failed to set depth target's texture index in fe::RenderGraph::SetupResourceBindings. Missing binding for depth target hash : %llu",
+                                   begin_command.depth_target);
             }
         }
     }
@@ -156,14 +219,12 @@ fe::render_graph::CommandList fe::RenderGraph::Execute(const entt::registry& ren
         RenderGraphContext context{ render_data };
         render_pass.execute_function(context, render_pass.mapped_data);
 
-        render_command_list.enqueue(render_pass.begin_command);
-
         for (const auto& barrier : render_pass.compiled_barriers)
             render_command_list.enqueue(barrier);
 
+        render_command_list.enqueue(render_pass.compiled_begin_command);
         render_command_list.append_command_list(context.command_list);
-
-        render_command_list.enqueue(render_pass.end_command);
+        render_command_list.enqueue(render_pass.compiled_end_command);
     }
 
     return render_command_list;
@@ -177,7 +238,6 @@ void fe::RenderGraph::Clear() {
     }
     m_RenderPasses.clear();
     m_RenderPassesData.reset();
-    m_RenderCommands.clear();
 }
 
 void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&              render_passes_dst,
