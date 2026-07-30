@@ -28,18 +28,15 @@ fe::render_graph::CommandList fe::RenderGraph::Compile() {
 
     // run culling : remove unused render passes
     this->removeUnusedRenderPasses(render_passes, resources_map);
-    // after culling 'resource_map' is broken, so we can't use it anymore
+    // after culling 'resources_map' is broken, so we can't use it anymore
     resources_map.clear();
 
-    render_graph::CommandList create_command_list{};
-    // forecast that every render pass wants to create 2 resources
-    create_command_list.reserve(render_passes.size() * 1024);
-
+    // this is needed to translate 'fe::RenderGraph::CompiledRenderPass' to 'fe::RenderPass'
     std::vector<RenderPass> used_render_passes{};
     used_render_passes.reserve(render_passes.size());
 
-    // setup create commands, set resource right states in 'resources_map' and find all used render passes
-    this->createAllResources(render_passes, resources_map, create_command_list, used_render_passes);
+    // translate 'fe::RenderGraph::CompiledRenderPass' to 'fe::RenderPass' and setup 'fe::RenderPass::compiled_barriers'
+    this->translateRenderPasses(render_passes, resources_map, used_render_passes);
 
     m_RenderPasses.clear();
     m_RenderPasses = std::move(used_render_passes);
@@ -71,20 +68,20 @@ fe::render_graph::CommandList fe::RenderGraph::Compile() {
     for (size_t i = 0; i < m_RenderPasses.size(); i++) {
         RenderPass& render_pass = m_RenderPasses[i];
 
-        for (auto& [name, lifetime] : resource_lifetimes) {
+        for (auto& [hashed_name, lifetime] : resource_lifetimes) {
             if (lifetime.first_pass_index == i) {
-                uint64_t hashed_desc = resource_hashed_desc_map[name];
+                uint64_t hashed_desc = resource_hashed_desc_map[hashed_name];
 
                 std::vector<PoolResource>& pool_vectors = resource_pool[hashed_desc];
 
                 for (auto& info : pool_vectors) {
                     if (!info.is_busy) {
-                        info.is_busy                  = true;
-                        virtual_to_physical_map[name] = info.resource_index;
+                        info.is_busy                         = true;
+                        virtual_to_physical_map[hashed_name] = info.resource_index;
                     }
                 }
 
-                pool_vectors.emplace_back(PoolResource{ .resource_index = new_index, .is_busy = true });
+                pool_vectors.emplace_back(PoolResource{ .resource_index = gpu_resource_manager.createImage(), .is_busy = true });
             }
         }
 
@@ -95,7 +92,7 @@ fe::render_graph::CommandList fe::RenderGraph::Compile() {
 
         for (auto& [name, lifetime] : resource_lifetimes) {
             if (lifetime.last_pass_index == i) {
-                uint64_t                hashed_desc  = resource_hashed_desc_map[name];
+                uint64_t                   hashed_desc  = resource_hashed_desc_map[name];
                 std::vector<PoolResource>& pool_vectors = resource_pool[hashed_desc];
 
                 for (auto& info : pool_vectors) {
@@ -310,20 +307,14 @@ void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>& 
     render_passes_dst = std::move(used_render_passes);
 }
 
-void fe::RenderGraph::createAllResources(std::vector<CompiledRenderPass>&              render_passes,
-                                         std::unordered_map<fe::StringHash, Resource>& resources_map_dst,
-                                         render_graph::CommandList&                    create_command_list_dst,
-                                         std::vector<RenderPass>&                      used_render_passes_dst) {
+void fe::RenderGraph::translateRenderPasses(std::vector<CompiledRenderPass>&              render_passes,
+                                            std::unordered_map<fe::StringHash, Resource>& resources_map_dst,
+                                            std::vector<RenderPass>&                      used_render_passes_dst) {
 
     for (const CompiledRenderPass& render_pass : render_passes) {
-
-        for (const render_graph::ImageDesc& create_request : render_pass.create_requests) {
-            create_command_list_dst.enqueue(create_request);
-        }
-
         // find this render pass in 'fe::RenderGraph::m_RenderPasses'
-        auto it = std::ranges::find_if(m_RenderPasses, [&render_pass](const RenderPass& render_pass) -> bool {
-            return render_pass.name == render_pass.name;
+        auto it = std::ranges::find_if(m_RenderPasses, [&render_pass](const RenderPass& this_render_pass) -> bool {
+            return render_pass.name == this_render_pass.name;
         });
 
         if (it != m_RenderPasses.end()) {
