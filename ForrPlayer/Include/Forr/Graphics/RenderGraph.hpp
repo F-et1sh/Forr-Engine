@@ -246,10 +246,9 @@ namespace fe {
         // run culling : remove unused render passes
         void removeUnusedRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::StringHash, Resource>& resources_map);
 
-        // setup create commands, set resource right states in 'resources_map' and find all used render passes
-        void createAllResources(std::vector<CompiledRenderPass>&              render_passes,
+        // translate 'fe::RenderGraph::CompiledRenderPass' to 'fe::RenderPass' and setup 'fe::RenderPass::compiled_barriers'
+        void translateRenderPasses(std::vector<CompiledRenderPass>&              render_passes,
                                 std::unordered_map<fe::StringHash, Resource>& resources_map_dst,
-                                render_graph::CommandList&                    create_command_list_dst,
                                 std::vector<RenderPass>&                      used_render_passes_dst);
 
         // setup resource lifetimes
