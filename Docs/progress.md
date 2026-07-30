@@ -17,6 +17,7 @@
 
 ### Done
     render_graph::image_desc_hash added
+    fe::TransientPool ( fe::OpenGLResourceManager ) --> fe::RenderGraph ( Unified )
 
 ### Problem
     -

@@ -252,16 +252,14 @@ namespace fe {
                                 render_graph::CommandList&                    create_command_list_dst,
                                 std::vector<RenderPass>&                      used_render_passes_dst);
 
-        // setup 'fe::RenderGraph::m_ResourceLifetimes'
-        void calculateResourceLifetimes();
+        // setup resource lifetimes
+        void calculateResourceLifetimes(std::unordered_map<fe::StringHash, ResourceLifetime>& resource_lifetimes);
 
     private:
         std::vector<RenderPass> m_RenderPasses{};
         fe::Arena               m_RenderPassesData{ 16 * 1024 };
 
         render_graph::CommandList m_RenderCommands{};
-
-        std::unordered_map<fe::StringHash, ResourceLifetime> m_ResourceLifetimes{};
     };
 
 } // namespace fe
