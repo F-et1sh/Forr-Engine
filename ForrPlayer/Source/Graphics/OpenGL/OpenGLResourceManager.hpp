@@ -35,25 +35,6 @@ namespace std {
             return seed;
         }
     };
-
-    template <>
-    struct hash<fe::render_graph::ImageDesc> {
-        std::size_t operator()(const fe::render_graph::ImageDesc& p) const {
-            std::size_t seed{};
-
-            // don't use 'fe::render_graph::ImageDesc::hash' here
-
-            hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(p.type)));
-            hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(p.format)));
-            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.x)));
-            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.y)));
-            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.z)));
-            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.mip_levels)));
-            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.usage)));
-
-            return seed;
-        }
-    };
 } // namespace std
 
 namespace fe {
