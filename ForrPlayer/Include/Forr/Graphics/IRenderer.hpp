@@ -77,7 +77,7 @@ namespace fe {
                                    float blue  = 1.0f,
                                    float alpha = 1.0f) = 0;
 
-        virtual void CreateGPUResources(const render_graph::CommandList& create_command_list) = 0;
+        virtual RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) = 0;
 
         virtual void BeginFrame()                                                   = 0;
         virtual void EndFrame(const render_graph::CommandList& render_command_list) = 0;

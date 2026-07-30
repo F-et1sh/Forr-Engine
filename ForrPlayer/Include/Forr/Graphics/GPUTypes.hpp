@@ -146,7 +146,7 @@ namespace fe {
         // commands
 
         struct FORR_API ImageDesc {
-            fe::StringHash hash{};
+            fe::StringHash hashed_name{};
             ImageType      type{};
             Format         format{};
             glm::ivec3     extent{};
@@ -154,13 +154,13 @@ namespace fe {
             ImageUsageBits usage{};
 
             ImageDesc() = default;
-            ImageDesc(fe::StringHash    hash,
+            ImageDesc(fe::StringHash    hashed_name,
                       ImageType         type,
                       Format            format,
                       const glm::ivec3& extent,
                       uint32_t          mip_levels,
                       ImageUsageBits    usage)
-                : hash(hash), type(type), format(format), extent(extent), mip_levels(mip_levels), usage(usage) {}
+                : hashed_name(hashed_name), type(type), format(format), extent(extent), mip_levels(mip_levels), usage(usage) {}
         };
 
         inline static constexpr void hash_combine(std::size_t& seed, std::size_t value) noexcept {

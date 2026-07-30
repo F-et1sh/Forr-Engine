@@ -163,21 +163,18 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
     this->storeResource(texture.gpu_handle, opengl_texture, m_StorageTextures);
 }
 
-const fe::OpenGLTexture& fe::OpenGLResourceManager::GetOrCreateImage(const render_graph::ImageDesc& image_desc) {
-    auto it = m_ImagePool.find(image_desc);
-    if (it != m_ImagePool.end()) {
-        for (const auto& image_info : it->second) {
-            if (!image_info.is_busy)
-                return m_StorageTextures[image_info.texture_index];
-        }
+size_t fe::OpenGLResourceManager::CreateImage(const render_graph::ImageDesc& image_desc) {
+    auto& this_texture = m_StorageTextures.emplace_back();
+    // TODO : create OpenGL texture - this_texture.texture
+    return m_StorageTextures.size() - 1;
+}
 
-        auto& this_image_info = it->second.emplace_back();
-        this_image_info.is_busy     = true;
-        this_image_info.texture_index = m_StorageTextures.size();
-        
-        auto& this_texture = m_StorageTextures.emplace_back();
-        // TODO : create OpenGL texture - this_texture.texture
+// TODO : provide fallbacks
+const fe::OpenGLTexture& fe::OpenGLResourceManager::GetImage(size_t texture_storage_index) {
+    if (m_StorageTextures.size() <= texture_storage_index) {
+        fe::logging::fatal("Out of range");
     }
+    return m_StorageTextures[texture_storage_index];
 }
 
 // TODO : this about this again | 29.07.2026 what did I mean ?

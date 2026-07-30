@@ -20,6 +20,7 @@
     fe::TransientPool ( fe::OpenGLResourceManager ) --> fe::RenderGraph ( Unified )
     fe::RenderGraph::createAllResources() --> fe::RenderGraph::translateRenderPasses()
     fe::RenderGraphCompileResult, fe::RenderGraphBindings and fe::RenderGraph::SetupResourceBindings() are added
+    fe::IRenderer::CreateGPUResources() done
 
 ### Problem
     -
