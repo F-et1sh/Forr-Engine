@@ -22,6 +22,7 @@
     fe::RenderGraphCompileResult, fe::RenderGraphBindings and fe::RenderGraph::SetupResourceBindings() are added
     fe::IRenderer::CreateGPUResources() done
     fe::RenderGraph::setupVirtualIndices() done
+    RenderGraph's "upper part" done
 
 ### Problem
     -

@@ -52,6 +52,7 @@ void fe::RendererVulkan::SetClearColor(float red, float green, float blue, float
 }
 
 fe::RenderGraphBindings fe::RendererVulkan::CreateGPUResources(const RenderGraphCompileResult& compile_result) {
+    return {};
 }
 
 void fe::RendererVulkan::BeginFrame() {

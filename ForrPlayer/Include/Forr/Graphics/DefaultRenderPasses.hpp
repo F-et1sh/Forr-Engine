@@ -12,6 +12,7 @@
 
 #pragma once
 #include "RenderGraph.hpp"
+#include "ECS/Components.hpp"
 
 namespace fe {
     struct ShadowPassData {};

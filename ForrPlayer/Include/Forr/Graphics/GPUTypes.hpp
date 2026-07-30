@@ -168,6 +168,15 @@ namespace fe {
                       uint32_t          mip_levels,
                       ImageUsageBits    usage)
                 : hashed_name(hashed_name), type(type), format(format), extent(extent), mip_levels(mip_levels), usage(usage) {}
+
+            bool operator==(const ImageDesc& other) const noexcept {
+                return hashed_name == other.hashed_name &&
+                       type == other.type &&
+                       format == other.format &&
+                       extent == other.extent &&
+                       mip_levels == other.mip_levels &&
+                       usage == other.usage;
+            }
         };
 
         inline static constexpr void hash_combine(std::size_t& seed, std::size_t value) noexcept {

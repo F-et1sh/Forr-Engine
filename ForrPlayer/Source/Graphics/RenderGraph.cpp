@@ -59,12 +59,15 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
     // returns image virtual storage index
     auto acquire_image_labmda = [&image_pool, &virtual_storage_index_number](const render_graph::ImageDesc& image_desc) -> size_t {
         auto& pool_vector = image_pool[image_desc];
+
         for (auto& pool_image_info : pool_vector) {
             if (!pool_image_info.is_busy) {
+
                 pool_image_info.is_busy = true;
                 return pool_image_info.image_storage_index;
             }
         }
+
         PoolImageInfo& pool_image_info      = pool_vector.emplace_back();
         pool_image_info.is_busy             = true;
         pool_image_info.image_storage_index = virtual_storage_index_number++;
@@ -92,6 +95,7 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
     // hashed name --> virtual storage index
     std::unordered_map<fe::StringHash, size_t> hashed_to_virtual_map{};
 
+    // setup virtual indices
     this->setupVirtualIndices(acquire_image_labmda,
                               release_image_lambda,
                               resource_lifetimes,
@@ -126,7 +130,7 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
 void fe::RenderGraph::SetupResourceBindings(const RenderGraphBindings& bindings) {
     for (RenderPass& render_pass : m_RenderPasses) {
         for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_barriers) {
-            auto it = bindings.bindings.find(image_barrier.texture_index);
+            auto it = bindings.bindings.find(image_barrier.hashed_name);
 
             if (it != bindings.bindings.end()) {
                 image_barrier.texture_index = it->second;
