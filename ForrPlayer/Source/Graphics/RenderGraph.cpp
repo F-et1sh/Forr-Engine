@@ -44,8 +44,10 @@ fe::render_graph::CommandList fe::RenderGraph::Compile() {
     m_RenderPasses.clear();
     m_RenderPasses = std::move(used_render_passes);
 
-    // setup 'fe::RenderGraph::m_ResourceLifetimes'
-    this->calculateResourceLifetimes();
+    std::unordered_map<fe::StringHash, ResourceLifetime> resource_lifetimes{};
+
+    // setup resource lifetimes
+    this->calculateResourceLifetimes(resource_lifetimes);
 
     // resource hash --> resource hashed desc
     std::unordered_map<fe::StringHash, uint64_t> resource_hashed_desc_map{};
@@ -56,26 +58,53 @@ fe::render_graph::CommandList fe::RenderGraph::Compile() {
         }
     }
 
+    struct PoolResource {
+        // resource index in GPU storage
+        uint32_t resource_index{};
+        bool     is_busy{};
+    };
+    // resource hashed desc --> { resource storage index, is busy }
+    std::unordered_map<uint64_t, std::vector<PoolResource>> resource_pool{};
+
     std::unordered_map<fe::StringHash, size_t> virtual_to_physical_map{};
 
     for (size_t i = 0; i < m_RenderPasses.size(); i++) {
-        for (auto& [name, lifetime] : m_ResourceLifetimes) {
+        RenderPass& render_pass = m_RenderPasses[i];
+
+        for (auto& [name, lifetime] : resource_lifetimes) {
             if (lifetime.first_pass_index == i) {
-                virtual_to_physical_map[name] = gpu_resource_manager.AcquireTransientImage(resource_hashed_desc_map[name]);
+                uint64_t hashed_desc = resource_hashed_desc_map[name];
+
+                std::vector<PoolResource>& pool_vectors = resource_pool[hashed_desc];
+
+                for (auto& info : pool_vectors) {
+                    if (!info.is_busy) {
+                        info.is_busy                  = true;
+                        virtual_to_physical_map[name] = info.resource_index;
+                    }
+                }
+
+                pool_vectors.emplace_back(PoolResource{ .resource_index = new_index, .is_busy = true });
             }
         }
 
-        for (auto& [name, lifetime] : m_ResourceLifetimes) {
-            if (lifetime.last_pass_index == i) {
-                gpu_resource_manager.ReleaseTransientImage(resource_hashed_desc_map[name], virtual_to_physical_map[name]);
-            }
-        }
-    }
-
-    // change hashed names to texture indices ( it's a union )
-    for (RenderPass& render_pass : m_RenderPasses) {
+        // change hashed names to texture indices ( it's a union )
         for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_barriers) {
             image_barrier.texture_index = virtual_to_physical_map[image_barrier.hashed_name];
+        }
+
+        for (auto& [name, lifetime] : resource_lifetimes) {
+            if (lifetime.last_pass_index == i) {
+                uint64_t                hashed_desc  = resource_hashed_desc_map[name];
+                std::vector<PoolResource>& pool_vectors = resource_pool[hashed_desc];
+
+                for (auto& info : pool_vectors) {
+                    if (info.resource_index == virtual_to_physical_map[name]) {
+                        info.is_busy = false;
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -120,7 +149,6 @@ void fe::RenderGraph::Clear() {
     m_RenderPasses.clear();
     m_RenderPassesData.reset();
     m_RenderCommands.clear();
-    m_ResourceLifetimes.clear();
 }
 
 void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&              render_passes_dst,
@@ -326,13 +354,13 @@ void fe::RenderGraph::createAllResources(std::vector<CompiledRenderPass>&       
     }
 }
 
-void fe::RenderGraph::calculateResourceLifetimes() {
-    m_ResourceLifetimes.reserve(m_RenderPasses.size() * 5);
+void fe::RenderGraph::calculateResourceLifetimes(std::unordered_map<fe::StringHash, ResourceLifetime>& resource_lifetimes) {
+    resource_lifetimes.reserve(m_RenderPasses.size() * 5);
     for (size_t i = 0; i < m_RenderPasses.size(); i++) {
         const RenderPass& render_pass = m_RenderPasses[i];
 
         for (const render_graph::ImageBarrier& image_barrier : render_pass.compiled_barriers) {
-            auto& lifetime = m_ResourceLifetimes[image_barrier.hashed_name];
+            auto& lifetime = resource_lifetimes[image_barrier.hashed_name];
 
             if (lifetime.first_pass_index == std::numeric_limits<uint32_t>::max()) {
                 lifetime.first_pass_index = i;

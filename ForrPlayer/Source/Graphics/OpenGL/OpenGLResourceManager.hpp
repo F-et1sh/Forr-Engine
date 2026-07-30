@@ -107,13 +107,6 @@ namespace fe {
         std::vector<OpenGLMesh>     m_StorageMeshes{};
         std::vector<OpenGLTexture>  m_StorageTextures{};
 
-        struct PoolImage {
-            // texture index in 'fe::OpenGLResourceManager::m_StorageTextures'
-            uint32_t texture_index{};
-            bool     is_busy{};
-        };
-        std::unordered_map<render_graph::ImageDesc, std::vector<PoolImage>> m_ImagePool{};
-
         // shader buffers : SSBOs and UBOs
         std::unordered_map<shader::ReflectedDescriptor, gl::Buffer> m_ShaderBuffers{};
     };
