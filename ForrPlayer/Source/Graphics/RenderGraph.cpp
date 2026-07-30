@@ -13,7 +13,7 @@
 #include "pch.hpp"
 #include "Graphics/RenderGraph.hpp"
 
-fe::render_graph::CommandList fe::RenderGraph::Compile() {
+fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
     std::vector<CompiledRenderPass> render_passes{};
     render_passes.reserve(m_RenderPasses.size());
 
@@ -81,7 +81,7 @@ fe::render_graph::CommandList fe::RenderGraph::Compile() {
                     }
                 }
 
-                pool_vectors.emplace_back(PoolResource{ .resource_index = gpu_resource_manager.createImage(), .is_busy = true });
+                pool_vectors.emplace_back(PoolResource{ .resource_index = /*gpu_resource_manager.createImage()*/, .is_busy = true });
             }
         }
 
@@ -116,7 +116,15 @@ fe::render_graph::CommandList fe::RenderGraph::Compile() {
     //
     // ColorBuffer --> Backbuffer
 
-    return create_command_list;
+    return /*create_command_list*/;
+}
+
+void fe::RenderGraph::SetupResourceBindings(RenderGraphBindings& bindings) {
+    for (RenderPass& render_pass : m_RenderPasses) {
+        for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_barriers) {
+            image_barrier.texture_index = bindings.bindings[image_barrier.hashed_name];
+        }
+    }
 }
 
 fe::render_graph::CommandList fe::RenderGraph::Execute(const entt::registry& render_data) {

@@ -100,6 +100,30 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(RenderGraphBuilder)
     };
 
+    // this structure is needed for the 'fe::RenderGraph::Compile()'
+    //  it is used by the renderer to create all resources
+    struct FORR_API RenderGraphCompileResult {
+        std::vector<render_graph::ImageDesc> image_descs{}; // create requests
+
+        RenderGraphCompileResult()  = default;
+        ~RenderGraphCompileResult() = default;
+
+        FORR_CLASS_MOVABLE(RenderGraphCompileResult)
+        FORR_CLASS_NONCOPYABLE(RenderGraphCompileResult)
+    };
+
+    // this structure is needed for the 'fe::RenderGraph::SetupResourceBindings()'
+    struct FORR_API RenderGraphBindings {
+        // resource hash --> GPU storage index
+        std::unordered_map<fe::StringHash, size_t> bindings{};
+
+        RenderGraphBindings()  = default;
+        ~RenderGraphBindings() = default;
+
+        FORR_CLASS_MOVABLE(RenderGraphBindings)
+        FORR_CLASS_NONCOPYABLE(RenderGraphBindings)
+    };
+
     template <typename T, typename DataT>
     concept RenderPassTraits = requires(RenderGraphBuilder& builder, RenderGraphContext& context, DataT& render_pass_data) {
         { T::Setup(builder) } -> std::same_as<void>;
@@ -230,7 +254,11 @@ namespace fe {
             return render_pass_handle;
         }
 
-        render_graph::CommandList Compile();
+        RenderGraphCompileResult Compile();
+        // after 'fe::RenderGraph::Compile()' you get 'fe::RenderGraphCompileResult' - you have to pass it into the renderer
+        //  renderer should get you 'fe::RenderGraphBindings' to use it here
+        // basically, this function changes 'fe::RenderPass::compiled_barriers->hashed_name' to 'fe::RenderPass::compiled_barriers->texture_index' ( it is a union )
+        void SetupResourceBindings(RenderGraphBindings& bindings);
 
         render_graph::CommandList Execute(const entt::registry& render_data);
 
@@ -248,8 +276,8 @@ namespace fe {
 
         // translate 'fe::RenderGraph::CompiledRenderPass' to 'fe::RenderPass' and setup 'fe::RenderPass::compiled_barriers'
         void translateRenderPasses(std::vector<CompiledRenderPass>&              render_passes,
-                                std::unordered_map<fe::StringHash, Resource>& resources_map_dst,
-                                std::vector<RenderPass>&                      used_render_passes_dst);
+                                   std::unordered_map<fe::StringHash, Resource>& resources_map_dst,
+                                   std::vector<RenderPass>&                      used_render_passes_dst);
 
         // setup resource lifetimes
         void calculateResourceLifetimes(std::unordered_map<fe::StringHash, ResourceLifetime>& resource_lifetimes);
