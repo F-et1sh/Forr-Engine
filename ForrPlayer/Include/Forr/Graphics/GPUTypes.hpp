@@ -163,6 +163,26 @@ namespace fe {
                 : hash(hash), type(type), format(format), extent(extent), mip_levels(mip_levels), usage(usage) {}
         };
 
+        inline static constexpr void hash_combine(std::size_t& seed, std::size_t value) noexcept {
+            seed ^= value + 0x9e3779b97f4a7c15 + (seed << 6) + (seed >> 2);
+        }
+
+        inline static std::size_t image_desc_hash(const ImageDesc& image_desc) {
+            std::size_t seed{};
+
+            // don't use 'fe::render_graph::ImageDesc::hash' here
+
+            hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(image_desc.type)));
+            hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(image_desc.format)));
+            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(image_desc.extent.x)));
+            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(image_desc.extent.y)));
+            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(image_desc.extent.z)));
+            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(image_desc.mip_levels)));
+            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(image_desc.usage)));
+
+            return seed;
+        }
+
         struct FORR_API ImageBarrier {
 
             union {

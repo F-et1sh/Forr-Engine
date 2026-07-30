@@ -47,21 +47,37 @@ fe::render_graph::CommandList fe::RenderGraph::Compile() {
     // setup 'fe::RenderGraph::m_ResourceLifetimes'
     this->calculateResourceLifetimes();
 
-    std::unordered_map<fe::StringHash, size_t> virtual_to_physical_map{};
-    
-    //for (size_t i = 0; i < m_RenderPasses.size(); i++) {
-    //    for (auto& [name, lifetime] : m_ResourceLifetimes) {
-    //        if (lifetime.first_pass_index == i) {
-    //            virtual_to_physical_map[name] = resource_manager.AcquireTransientImage(m_ResourceDescs[name]);
-    //        }
-    //    }
+    // resource hash --> resource hashed desc
+    std::unordered_map<fe::StringHash, uint64_t> resource_hashed_desc_map{};
 
-    //    for (auto& [name, lifetime] : m_ResourceLifetimes) {
-    //        if (lifetime.last_pass_index == i) {
-    //            resource_manager.ReleaseTransientImage(m_ResourceDescs[name], virtual_to_physical_map[name]);
-    //        }
-    //    }
-    //}
+    for (const auto& render_pass : render_passes) {
+        for (const auto& image_desc : render_pass.create_requests) {
+            resource_hashed_desc_map[image_desc.hash] = render_graph::image_desc_hash(image_desc);
+        }
+    }
+
+    std::unordered_map<fe::StringHash, size_t> virtual_to_physical_map{};
+
+    for (size_t i = 0; i < m_RenderPasses.size(); i++) {
+        for (auto& [name, lifetime] : m_ResourceLifetimes) {
+            if (lifetime.first_pass_index == i) {
+                virtual_to_physical_map[name] = gpu_resource_manager.AcquireTransientImage(resource_hashed_desc_map[name]);
+            }
+        }
+
+        for (auto& [name, lifetime] : m_ResourceLifetimes) {
+            if (lifetime.last_pass_index == i) {
+                gpu_resource_manager.ReleaseTransientImage(resource_hashed_desc_map[name], virtual_to_physical_map[name]);
+            }
+        }
+    }
+
+    // change hashed names to texture indices ( it's a union )
+    for (RenderPass& render_pass : m_RenderPasses) {
+        for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_barriers) {
+            image_barrier.texture_index = virtual_to_physical_map[image_barrier.hashed_name];
+        }
+    }
 
     //
     // Pass01 | read : []               , write :  ColorBuffer_v0
@@ -271,36 +287,36 @@ void fe::RenderGraph::createAllResources(std::vector<CompiledRenderPass>&       
                                          render_graph::CommandList&                    create_command_list_dst,
                                          std::vector<RenderPass>&                      used_render_passes_dst) {
 
-    for (const CompiledRenderPass& CompiledRenderPass : render_passes) {
+    for (const CompiledRenderPass& render_pass : render_passes) {
 
-        for (const render_graph::ImageDesc& create_request : CompiledRenderPass.create_requests) {
+        for (const render_graph::ImageDesc& create_request : render_pass.create_requests) {
             create_command_list_dst.enqueue(create_request);
         }
 
         // find this render pass in 'fe::RenderGraph::m_RenderPasses'
-        auto it = std::ranges::find_if(m_RenderPasses, [&CompiledRenderPass](const RenderPass& render_pass) -> bool {
-            return render_pass.name == CompiledRenderPass.name;
+        auto it = std::ranges::find_if(m_RenderPasses, [&render_pass](const RenderPass& render_pass) -> bool {
+            return render_pass.name == render_pass.name;
         });
 
         if (it != m_RenderPasses.end()) {
-            it->compiled_barriers.reserve(CompiledRenderPass.reads.size() + CompiledRenderPass.writes.size());
+            it->compiled_barriers.reserve(render_pass.reads.size() + render_pass.writes.size());
 
-            for (const CompiledRenderPass::ImageBarrier& read_barrier : CompiledRenderPass.reads) {
+            for (const CompiledRenderPass::ImageBarrier& read_barrier : render_pass.reads) {
                 auto& this_barrier = it->compiled_barriers.emplace_back();
 
-                this_barrier.hashed_name      = read_barrier.handle.hashed_name;
-                this_barrier.old_state = resources_map_dst[this_barrier.hashed_name].old_state;
-                this_barrier.new_state = read_barrier.new_state;
+                this_barrier.hashed_name = read_barrier.handle.hashed_name;
+                this_barrier.old_state   = resources_map_dst[this_barrier.hashed_name].old_state;
+                this_barrier.new_state   = read_barrier.new_state;
 
                 resources_map_dst[this_barrier.hashed_name].old_state = read_barrier.new_state;
             }
 
-            for (const CompiledRenderPass::ImageBarrier& write_barrier : CompiledRenderPass.writes) {
+            for (const CompiledRenderPass::ImageBarrier& write_barrier : render_pass.writes) {
                 auto& this_barrier = it->compiled_barriers.emplace_back();
 
-                this_barrier.hashed_name      = write_barrier.handle.hashed_name;
-                this_barrier.old_state = resources_map_dst[this_barrier.hashed_name].old_state;
-                this_barrier.new_state = write_barrier.new_state;
+                this_barrier.hashed_name = write_barrier.handle.hashed_name;
+                this_barrier.old_state   = resources_map_dst[this_barrier.hashed_name].old_state;
+                this_barrier.new_state   = write_barrier.new_state;
 
                 resources_map_dst[this_barrier.hashed_name].old_state = write_barrier.new_state;
             }
@@ -311,6 +327,7 @@ void fe::RenderGraph::createAllResources(std::vector<CompiledRenderPass>&       
 }
 
 void fe::RenderGraph::calculateResourceLifetimes() {
+    m_ResourceLifetimes.reserve(m_RenderPasses.size() * 5);
     for (size_t i = 0; i < m_RenderPasses.size(); i++) {
         const RenderPass& render_pass = m_RenderPasses[i];
 
