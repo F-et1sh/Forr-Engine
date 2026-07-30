@@ -146,7 +146,14 @@ namespace fe {
         // commands
 
         struct FORR_API ImageDesc {
-            fe::StringHash hashed_name{};
+            union {
+                // hashed name - used for user interface ( fe::string_hash("ShadowMap") )
+                fe::StringHash hashed_name{};
+
+                // texture's index in GPU resource manager's strage - used, when render passes are already compiled
+                size_t texture_index;
+            };
+
             ImageType      type{};
             Format         format{};
             glm::ivec3     extent{};
@@ -188,6 +195,7 @@ namespace fe {
             union {
                 // hashed name - used for user interface ( fe::string_hash("ShadowMap") )
                 fe::StringHash hashed_name{};
+
                 // texture's index in GPU resource manager's strage - used, when render passes are already compiled
                 size_t texture_index;
             };

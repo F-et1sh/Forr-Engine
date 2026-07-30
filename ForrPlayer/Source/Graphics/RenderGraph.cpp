@@ -46,62 +46,66 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
     // setup resource lifetimes
     this->calculateResourceLifetimes(resource_lifetimes);
 
-    // resource hash --> resource hashed desc
-    std::unordered_map<fe::StringHash, uint64_t> resource_hashed_desc_map{};
+    struct PoolImageInfo {
+        bool   is_busy{};
+        size_t image_storage_index{}; // this is a virtual storage index
+    };
+    // image desc --> { is busy,  }
+    std::unordered_map<render_graph::ImageDesc, std::vector<PoolImageInfo>> image_pool{};
 
+    // this value is used to generate virtual storage indices
+    size_t virtual_storage_index_number{};
+
+    // returns image virtual storage index
+    auto acquire_image_labmda = [&image_pool, &virtual_storage_index_number](const render_graph::ImageDesc& image_desc) -> size_t {
+        auto& pool_vector = image_pool[image_desc];
+        for (auto& pool_image_info : pool_vector) {
+            if (!pool_image_info.is_busy) {
+                pool_image_info.is_busy = true;
+                return pool_image_info.image_storage_index;
+            }
+        }
+        PoolImageInfo& pool_image_info      = pool_vector.emplace_back();
+        pool_image_info.is_busy             = true;
+        pool_image_info.image_storage_index = virtual_storage_index_number++;
+
+        return pool_image_info.image_storage_index;
+    };
+
+    auto release_image_lambda = [&image_pool](const render_graph::ImageDesc& image_desc, size_t image_storage_index) {
+        auto& pool_vector = image_pool[image_desc];
+        for (auto& pool_image_info : pool_vector) {
+            if (pool_image_info.image_storage_index == image_storage_index)
+                pool_image_info.is_busy = false;
+        }
+    };
+
+    // hashed name --> image desc
+    std::unordered_map<fe::StringHash, render_graph::ImageDesc> hashed_to_desc_map{};
+    hashed_to_desc_map.reserve(render_passes.size() * 5);
     for (const auto& render_pass : render_passes) {
-        for (const auto& image_desc : render_pass.create_requests) {
-            resource_hashed_desc_map[image_desc.hashed_name] = render_graph::image_desc_hash(image_desc);
+        for (const auto& create_request : render_pass.create_requests) {
+            hashed_to_desc_map[create_request.hashed_name] = create_request;
         }
     }
 
-    struct PoolResource {
-        // resource index in GPU storage
-        uint32_t resource_index{};
-        bool     is_busy{};
-    };
-    // resource hashed desc --> { resource storage index, is busy }
-    std::unordered_map<uint64_t, std::vector<PoolResource>> resource_pool{};
+    // hashed name --> virtual storage index
+    std::unordered_map<fe::StringHash, size_t> hashed_to_virtual_map{};
 
-    std::unordered_map<fe::StringHash, size_t> virtual_to_physical_map{};
+    this->setupVirtualIndices(acquire_image_labmda,
+                              release_image_lambda,
+                              resource_lifetimes,
+                              hashed_to_desc_map,
+                              hashed_to_virtual_map);
 
-    for (size_t i = 0; i < m_RenderPasses.size(); i++) {
-        RenderPass& render_pass = m_RenderPasses[i];
+    RenderGraphCompileResult result{};
+    result.image_descs.reserve(render_passes.size() * 5);
 
-        for (auto& [hashed_name, lifetime] : resource_lifetimes) {
-            if (lifetime.first_pass_index == i) {
-                uint64_t hashed_desc = resource_hashed_desc_map[hashed_name];
+    for (CompiledRenderPass& render_pass : render_passes) {
+        for (render_graph::ImageDesc& image_desc : render_pass.create_requests) {
 
-                std::vector<PoolResource>& pool_vectors = resource_pool[hashed_desc];
-
-                for (auto& info : pool_vectors) {
-                    if (!info.is_busy) {
-                        info.is_busy                         = true;
-                        virtual_to_physical_map[hashed_name] = info.resource_index;
-                    }
-                }
-
-                pool_vectors.emplace_back(PoolResource{ .resource_index = /*gpu_resource_manager.createImage()*/, .is_busy = true });
-            }
-        }
-
-        // change hashed names to texture indices ( it's a union )
-        for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_barriers) {
-            image_barrier.texture_index = virtual_to_physical_map[image_barrier.hashed_name];
-        }
-
-        for (auto& [name, lifetime] : resource_lifetimes) {
-            if (lifetime.last_pass_index == i) {
-                uint64_t                   hashed_desc  = resource_hashed_desc_map[name];
-                std::vector<PoolResource>& pool_vectors = resource_pool[hashed_desc];
-
-                for (auto& info : pool_vectors) {
-                    if (info.resource_index == virtual_to_physical_map[name]) {
-                        info.is_busy = false;
-                        break;
-                    }
-                }
-            }
+            image_desc.texture_index = hashed_to_virtual_map[image_desc.hashed_name];
+            result.image_descs.emplace_back(image_desc);
         }
     }
 
@@ -116,13 +120,21 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
     //
     // ColorBuffer --> Backbuffer
 
-    return /*create_command_list*/;
+    return result;
 }
 
-void fe::RenderGraph::SetupResourceBindings(RenderGraphBindings& bindings) {
+void fe::RenderGraph::SetupResourceBindings(const RenderGraphBindings& bindings) {
     for (RenderPass& render_pass : m_RenderPasses) {
         for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_barriers) {
-            image_barrier.texture_index = bindings.bindings[image_barrier.hashed_name];
+            auto it = bindings.bindings.find(image_barrier.texture_index);
+
+            if (it != bindings.bindings.end()) {
+                image_barrier.texture_index = it->second;
+            }
+            else {
+                fe::logging::error("Failed to set image barrier's texture index in fe::RenderGraph::SetupResourceBindings. Binding is missing for hash : %llu",
+                                   image_barrier.hashed_name);
+            }
         }
     }
 }

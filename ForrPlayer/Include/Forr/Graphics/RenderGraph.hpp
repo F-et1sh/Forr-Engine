@@ -114,8 +114,8 @@ namespace fe {
 
     // this structure is needed for the 'fe::RenderGraph::SetupResourceBindings()'
     struct FORR_API RenderGraphBindings {
-        // resource hash --> GPU storage index
-        std::unordered_map<fe::StringHash, size_t> bindings{};
+        // virtual storage index --> GPU storage index
+        std::unordered_map<size_t, size_t> bindings{};
 
         RenderGraphBindings()  = default;
         ~RenderGraphBindings() = default;
@@ -220,7 +220,10 @@ namespace fe {
             std::vector<render_graph::ImageDesc>          create_requests{};
 
             CompiledRenderPass() = default;
-            CompiledRenderPass(std::string_view name, std::vector<CompiledRenderPass::ImageBarrier> reads, std::vector<CompiledRenderPass::ImageBarrier> writes, std::vector<render_graph::ImageDesc> create_requests)
+            CompiledRenderPass(std::string_view                              name,
+                               std::vector<CompiledRenderPass::ImageBarrier> reads,
+                               std::vector<CompiledRenderPass::ImageBarrier> writes,
+                               std::vector<render_graph::ImageDesc>          create_requests)
                 : name(name), reads(std::move(reads)), writes(std::move(writes)), create_requests(std::move(create_requests)) {}
 
             FORR_CLASS_MOVABLE(CompiledRenderPass)
@@ -258,7 +261,7 @@ namespace fe {
         // after 'fe::RenderGraph::Compile()' you get 'fe::RenderGraphCompileResult' - you have to pass it into the renderer
         //  renderer should get you 'fe::RenderGraphBindings' to use it here
         // basically, this function changes 'fe::RenderPass::compiled_barriers->hashed_name' to 'fe::RenderPass::compiled_barriers->texture_index' ( it is a union )
-        void SetupResourceBindings(RenderGraphBindings& bindings);
+        void SetupResourceBindings(const RenderGraphBindings& bindings);
 
         render_graph::CommandList Execute(const entt::registry& render_data);
 
@@ -282,6 +285,37 @@ namespace fe {
         // setup resource lifetimes
         void calculateResourceLifetimes(std::unordered_map<fe::StringHash, ResourceLifetime>& resource_lifetimes);
 
+        template <typename AcquireFn, typename ReleaseFn>
+        void setupVirtualIndices(AcquireFn&&                                                  acquire_func,
+                                 ReleaseFn&&                                                  release_func,
+                                 std::unordered_map<fe::StringHash, ResourceLifetime>&        resource_lifetimes,
+                                 std::unordered_map<fe::StringHash, render_graph::ImageDesc>& hashed_to_desc_map,
+                                 std::unordered_map<fe::StringHash, size_t>&                  hashed_to_virtual_map_dst) {
+
+            for (size_t i = 0; i < m_RenderPasses.size(); i++) {
+                RenderPass& render_pass = m_RenderPasses[i];
+
+                for (const auto& [hashed_name, lifetime] : resource_lifetimes) {
+                    if (lifetime.first_pass_index == i) {
+                        const render_graph::ImageDesc& image_desc = hashed_to_desc_map[hashed_name];
+                        hashed_to_virtual_map_dst[hashed_name]    = acquire_func(image_desc);
+                    }
+                }
+
+                for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_barriers) {
+                    image_barrier.texture_index = hashed_to_virtual_map_dst[image_barrier.hashed_name];
+                }
+
+                for (const auto& [hashed_name, lifetime] : resource_lifetimes) {
+                    if (lifetime.last_pass_index == i) {
+                        const render_graph::ImageDesc& image_desc            = hashed_to_desc_map[hashed_name];
+                        size_t                         virtual_storage_index = hashed_to_virtual_map_dst[hashed_name];
+                        release_func(image_desc, virtual_storage_index);
+                    }
+                }
+            }
+        }
+
     private:
         std::vector<RenderPass> m_RenderPasses{};
         fe::Arena               m_RenderPassesData{ 16 * 1024 };
@@ -297,5 +331,24 @@ struct std::hash<fe::RenderGraph::ResourceHandle> {
         std::size_t h1 = hash<fe::StringHash>()(handle.hashed_name);
         std::size_t h2 = hash<uint32_t>()(handle.version);
         return h1 ^ (h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2));
+    }
+};
+
+template <>
+struct std::hash<fe::render_graph::ImageDesc> {
+    std::size_t operator()(const fe::render_graph::ImageDesc& p) const {
+        std::size_t seed{};
+
+        // don't use 'fe::render_graph::ImageDesc::hash' here
+
+        hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(p.type)));
+        hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(p.format)));
+        hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.x)));
+        hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.y)));
+        hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.z)));
+        hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.mip_levels)));
+        hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.usage)));
+
+        return seed;
     }
 };

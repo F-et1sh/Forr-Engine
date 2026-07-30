@@ -21,6 +21,7 @@
     fe::RenderGraph::createAllResources() --> fe::RenderGraph::translateRenderPasses()
     fe::RenderGraphCompileResult, fe::RenderGraphBindings and fe::RenderGraph::SetupResourceBindings() are added
     fe::IRenderer::CreateGPUResources() done
+    fe::RenderGraph::setupVirtualIndices() done
 
 ### Problem
     -

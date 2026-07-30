@@ -118,7 +118,7 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
     auto shadow_pass_data_mapped  = m_RenderGraph->AddPass<ShadowPassData, ShadowPass>("Shadow Pass");    // TODO : make a storage for this mapped data
     auto forward_pass_data_mapped = m_RenderGraph->AddPass<ForwardPassData, ForwardPass>("Forward Pass"); // TODO : make a storage for this mapped data
 
-    auto create_command_list = m_RenderGraph->Compile();
+    auto create_command_list = std::move(m_RenderGraph->Compile());
     auto mapping_result      = std::move(m_Renderer->CreateGPUResources(create_command_list));
     m_RenderGraph->SetupResourceBindings(mapping_result);
 }
