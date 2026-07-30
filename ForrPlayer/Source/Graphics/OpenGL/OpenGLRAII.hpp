@@ -94,7 +94,7 @@ namespace fe::gl {
         }
     };
 
-    struct Framebuffer {
+    struct FramebufferDestroy {
         void operator()(GLuint handle) const noexcept {
             glDeleteFramebuffers(1, &handle);
         }
@@ -105,5 +105,5 @@ namespace fe::gl {
     using Buffer        = Handle<BufferDestroy>;
     using Sync          = Handle<SyncDestroy, GLsync>;
     using Texture       = Handle<TextureDestroy>;
-    using Framebuffer   = Handle<Framebuffer>;
+    using Framebuffer   = Handle<FramebufferDestroy>;
 } // namespace fe::gl

@@ -68,7 +68,7 @@ namespace fe {
 
     // a proxy to gather setup commands from render pass
     struct FORR_API RenderGraphBuilder {
-        // fe::RenderGraphBuilder is used for building RenderGraph, that's why there is no 'render_graph::CommandList'
+        // fe::RenderGraphBuilder is used for building RenderGraph, that's why there is no need in 'render_graph::CommandList'
         //  instead, all comands are separated
         std::vector<render_graph::ImageBarrier> reads{};
         std::vector<render_graph::ImageBarrier> writes{};
@@ -142,8 +142,8 @@ namespace fe {
         ExecuteFunction execute_function{};
         DestroyFunction destroy_function{};
 
-        render_graph::BeginRenderPass begin_command{};
-        render_graph::EndRenderPass   end_command{};
+        render_graph::BeginRenderPass compiled_begin_command{};
+        render_graph::EndRenderPass   compiled_end_command{};
 
         std::vector<render_graph::ImageBarrier> compiled_barriers{};
 
@@ -323,8 +323,6 @@ namespace fe {
     private:
         std::vector<RenderPass> m_RenderPasses{};
         fe::Arena               m_RenderPassesData{ 16 * 1024 };
-
-        render_graph::CommandList m_RenderCommands{};
     };
 
 } // namespace fe

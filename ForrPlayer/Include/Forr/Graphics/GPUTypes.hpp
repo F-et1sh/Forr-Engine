@@ -66,6 +66,8 @@ namespace fe {
     using Vertices = std::vector<Vertex>;
     using Indices  = std::vector<Index>;
 
+    inline static constexpr size_t MAX_COLOR_ATTACHMENTS = 16;
+
     enum class FORR_API RenderMode : uint8_t {
         POINTS,
         LINES,
@@ -220,17 +222,38 @@ namespace fe {
         // TODO : add this later
         //struct FORR_API BufferBarrier {};
 
+        // TODO : try unions for this code
+
         struct FORR_API BeginRenderPass {
             bool is_to_screen{};
             bool is_clears_color{};
             bool is_clears_depth{};
-            bool has_depth{};
+            bool has_depth_target{};
 
             Rect2D viewport{};
 
-            glm::vec4 color{};
-            double    depth_value{};
+            glm::vec4 clear_color_value{};
+            double    clear_depth_value{};
+
+            std::array<size_t, MAX_COLOR_ATTACHMENTS> color_targets{};
+            size_t                                    color_targets_count{}; // TODO : it this really needed ?
+
+            size_t depth_target{};
         };
+
+        // TODO : rewrite this
+        inline static std::size_t color_depth_targets_hash(const std::array<size_t, MAX_COLOR_ATTACHMENTS>& color_targets,
+                                                           size_t                                           color_targets_count,
+                                                           size_t                                           depth_target) {
+            std::size_t seed{};
+
+            for (size_t i = 0; i < color_targets_count; i++) {
+                hash_combine(seed, std::hash<uint64_t>{}(static_cast<uint64_t>(color_targets[i])));
+            }
+            hash_combine(seed, std::hash<uint64_t>{}(static_cast<uint64_t>(depth_target)));
+
+            return seed;
+        }
 
         struct FORR_API EndRenderPass {
         };

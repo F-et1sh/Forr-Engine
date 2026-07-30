@@ -74,8 +74,6 @@ fe::RenderGraphBindings fe::RendererOpenGL::CreateGPUResources(const RenderGraph
 }
 
 void fe::RendererOpenGL::BeginFrame() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     if (m_FrameData[m_CurrentFrame].sync) {
         glClientWaitSync(m_FrameData[m_CurrentFrame].sync, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
     }
@@ -160,15 +158,15 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& begi
 
         GLbitfield clear_mask{};
         if (begin_render_pass.is_clears_color) {
-            glClearColor(begin_render_pass.color.r,
-                         begin_render_pass.color.g,
-                         begin_render_pass.color.b,
-                         begin_render_pass.color.a);
+            glClearColor(begin_render_pass.clear_color_value.r,
+                         begin_render_pass.clear_color_value.g,
+                         begin_render_pass.clear_color_value.b,
+                         begin_render_pass.clear_color_value.a);
             clear_mask |= GL_COLOR_BUFFER_BIT;
         }
 
         if (begin_render_pass.is_clears_depth) {
-            glClearDepth(begin_render_pass.depth_value);
+            glClearDepth(begin_render_pass.clear_depth_value);
             clear_mask |= GL_DEPTH_BUFFER_BIT;
         }
 
@@ -179,8 +177,9 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& begi
 
     GLuint framebuffer_raw{};
 
-    uint64_t framebuffer_hash = hash(begin_render_pass.color_targets,
-                                     begin_render_pass.depth_target);
+    uint64_t framebuffer_hash = render_graph::color_depth_targets_hash(begin_render_pass.color_targets,
+                                                                       begin_render_pass.color_targets_count,
+                                                                       begin_render_pass.depth_target);
 
     auto it = m_FramebuffersCache.find(framebuffer_hash);
     if (it != m_FramebuffersCache.end()) {
@@ -190,22 +189,24 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& begi
         glCreateFramebuffers(1, &framebuffer_raw);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_raw);
 
-        for (size_t i = 0; i < begin_render_pass.color_targets.size(); i++) {
+        for (size_t i = 0; i < begin_render_pass.color_targets_count; i++) {
             size_t               texture_index  = begin_render_pass.color_targets[i];
             const OpenGLTexture& opengl_texture = m_OpenGLResourceManager.GetImage(texture_index);
 
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, opengl_texture.texture, 0);
         }
 
-        if (begin_render_pass.has_depth) {
+        if (begin_render_pass.has_depth_target) {
             const OpenGLTexture& opengl_texture = m_OpenGLResourceManager.GetImage(begin_render_pass.depth_target);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, opengl_texture.texture, 0);
         }
 
         std::vector<GLenum> attachments{};
-        for (size_t i = 0; i < begin_render_pass.color_targets.size(); i++) {
+
+        for (size_t i = 0; i < begin_render_pass.color_targets_count; i++) {
             attachments.push_back(GL_COLOR_ATTACHMENT0 + i);
         }
+
         if (attachments.empty()) {
             glDrawBuffer(GL_NONE);
             glReadBuffer(GL_NONE);
@@ -226,15 +227,15 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& begi
 
     GLbitfield clear_mask{};
     if (begin_render_pass.is_clears_color) {
-        glClearColor(begin_render_pass.color.r,
-                     begin_render_pass.color.g,
-                     begin_render_pass.color.b,
-                     begin_render_pass.color.a);
+        glClearColor(begin_render_pass.clear_color_value.r,
+                     begin_render_pass.clear_color_value.g,
+                     begin_render_pass.clear_color_value.b,
+                     begin_render_pass.clear_color_value.a);
         clear_mask |= GL_COLOR_BUFFER_BIT;
     }
 
     if (begin_render_pass.is_clears_depth) {
-        glClearDepth(begin_render_pass.depth_value);
+        glClearDepth(begin_render_pass.clear_depth_value);
         clear_mask |= GL_DEPTH_BUFFER_BIT;
     }
 
