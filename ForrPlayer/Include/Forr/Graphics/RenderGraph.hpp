@@ -285,6 +285,7 @@ namespace fe {
         // setup resource lifetimes
         void calculateResourceLifetimes(std::unordered_map<fe::StringHash, ResourceLifetime>& resource_lifetimes);
 
+        // setup virtual indices
         template <typename AcquireFn, typename ReleaseFn>
         void setupVirtualIndices(AcquireFn&&                                                  acquire_func,
                                  ReleaseFn&&                                                  release_func,
@@ -292,7 +293,7 @@ namespace fe {
                                  std::unordered_map<fe::StringHash, render_graph::ImageDesc>& hashed_to_desc_map,
                                  std::unordered_map<fe::StringHash, size_t>&                  hashed_to_virtual_map_dst) {
 
-            for (size_t i = 0; i < m_RenderPasses.size(); i++) {
+            for (uint32_t i = 0; i < m_RenderPasses.size(); i++) {
                 RenderPass& render_pass = m_RenderPasses[i];
 
                 for (const auto& [hashed_name, lifetime] : resource_lifetimes) {
@@ -341,13 +342,13 @@ struct std::hash<fe::render_graph::ImageDesc> {
 
         // don't use 'fe::render_graph::ImageDesc::hash' here
 
-        hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(p.type)));
-        hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(p.format)));
-        hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.x)));
-        hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.y)));
-        hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.z)));
-        hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.mip_levels)));
-        hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.usage)));
+        fe::render_graph::hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(p.type)));
+        fe::render_graph::hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(p.format)));
+        fe::render_graph::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.x)));
+        fe::render_graph::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.y)));
+        fe::render_graph::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.z)));
+        fe::render_graph::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.mip_levels)));
+        fe::render_graph::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.usage)));
 
         return seed;
     }
