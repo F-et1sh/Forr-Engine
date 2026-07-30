@@ -164,26 +164,32 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
 }
 
 size_t fe::OpenGLResourceManager::CreateImage(const render_graph::ImageDesc& image_desc) {
-     auto& this_texture = m_StorageTextures.emplace_back();
+    auto& this_texture = m_StorageTextures.emplace_back();
 
-    GLuint texture_id_raw{};
+    GLuint opengl_texture_raw{};
     GLenum target{};
 
     switch (image_desc.type) {
-        case render_graph::ImageType::IMAGE_TYPE_1D: target = GL_TEXTURE_1D; break;
-        case render_graph::ImageType::IMAGE_TYPE_2D: target = GL_TEXTURE_2D; break;
-        case render_graph::ImageType::IMAGE_TYPE_3D: target = GL_TEXTURE_3D; break;
+        case render_graph::ImageType::IMAGE_TYPE_1D:
+            target = GL_TEXTURE_1D;
+            break;
+        case render_graph::ImageType::IMAGE_TYPE_2D:
+            target = GL_TEXTURE_2D;
+            break;
+        case render_graph::ImageType::IMAGE_TYPE_3D:
+            target = GL_TEXTURE_3D;
+            break;
         default:
             fe::logging::error("Unified RenderGraph -> OpenGL. Unsupported image type %i. Using GL_TEXTURE_2D as default", image_desc.type);
             target = GL_TEXTURE_2D;
     }
 
-    glCreateTextures(target, 1, &texture_id_raw);
-    glBindTexture(target, texture_id_raw);
+    glCreateTextures(target, 1, &opengl_texture_raw);
+    glBindTexture(target, opengl_texture_raw);
 
     GLenum internal_format = GL_RGBA8;
-    GLenum data_format = GL_RGBA;
-    GLenum data_type = GL_UNSIGNED_BYTE;
+    GLenum data_format     = GL_RGBA;
+    GLenum data_type       = GL_UNSIGNED_BYTE;
 
     // clang-format off
     switch (image_desc.format) {
@@ -220,8 +226,9 @@ size_t fe::OpenGLResourceManager::CreateImage(const render_graph::ImageDesc& ima
 
     glBindTexture(target, 0);
 
-    this_texture.texture.attach(texture_id_raw);
-    
+    this_texture.resident_id = glGetTextureHandleARB(opengl_texture_raw);
+    this_texture.texture.attach(opengl_texture_raw);
+
     return m_StorageTextures.size() - 1;
 }
 

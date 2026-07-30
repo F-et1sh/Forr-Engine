@@ -142,6 +142,9 @@ namespace fe {
         ExecuteFunction execute_function{};
         DestroyFunction destroy_function{};
 
+        render_graph::BeginRenderPass begin_command{};
+        render_graph::EndRenderPass   end_command{};
+
         std::vector<render_graph::ImageBarrier> compiled_barriers{};
 
         RenderPass()  = default;

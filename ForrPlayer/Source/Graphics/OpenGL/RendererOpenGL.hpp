@@ -43,6 +43,8 @@ namespace fe {
 
     private:
         void handleCommand(const render_graph::ImageBarrier& image_barrier);
+        void handleCommand(const render_graph::BeginRenderPass& begin_render_pass);
+        void handleCommand(const render_graph::EndRenderPass& end_render_pass);
 
     private:
         struct FrameData {
@@ -59,7 +61,7 @@ namespace fe {
         IPlatformSystem& m_PlatformSystem;
         IWindow&         m_PrimaryWindow;
 
-        GLFWwindow* m_GLFWwindow;
+        GLFWwindow* m_GLFWwindow = nullptr;
 
         OpenGLResourceManager m_OpenGLResourceManager{ m_ResourceManager };
 
@@ -69,6 +71,9 @@ namespace fe {
         GPUHandle<resource::Model::Mesh> m_CurrentMesh{};
 
         std::array<FrameData, MAX_CONCURRENT_FRAMES> m_FrameData{};
+
+        // for render graph | temp
+        std::unordered_map<uint64_t, gl::Framebuffer> m_FramebuffersCache{};
 
         uint32_t m_CurrentFrame{};
     };
