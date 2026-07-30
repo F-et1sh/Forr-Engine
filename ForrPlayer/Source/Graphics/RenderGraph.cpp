@@ -152,10 +152,10 @@ fe::render_graph::CommandList fe::RenderGraph::Execute(const entt::registry& ren
         RenderGraphContext context{ render_data };
         render_pass.execute_function(context, render_pass.mapped_data);
 
-        render_command_list.append_command_list(context.command_list);
-
         for (const auto& barrier : render_pass.compiled_barriers)
             render_command_list.enqueue(barrier);
+
+        render_command_list.append_command_list(context.command_list);
     }
 
     return render_command_list;
@@ -308,12 +308,12 @@ void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>& 
     uint32_t                        final_version       = resources_map[final_resource_hash].version;
     used_resources.insert(ResourceHandle{ final_resource_hash, final_version });
 
-    auto add_used_resource_lambda = [&used_resources, &used_render_passes](CompiledRenderPass& CompiledRenderPass) {
-        used_resources.reserve(used_resources.size() + CompiledRenderPass.reads.size());
-        for (const auto& read_barrier : CompiledRenderPass.reads) {
+    auto add_used_resource_lambda = [&used_resources, &used_render_passes](CompiledRenderPass& render_pass) {
+        used_resources.reserve(used_resources.size() + render_pass.reads.size());
+        for (const auto& read_barrier : render_pass.reads) {
             used_resources.insert(read_barrier.handle);
         }
-        used_render_passes.emplace_back(std::move(CompiledRenderPass));
+        used_render_passes.emplace_back(std::move(render_pass));
     };
 
     for (auto& render_pass : std::views::reverse(render_passes_dst)) {

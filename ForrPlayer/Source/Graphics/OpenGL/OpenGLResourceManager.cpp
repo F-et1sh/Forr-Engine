@@ -77,7 +77,7 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
         case Texture::MinFilter::NEAREST_MIPMAP_LINEAR : min_filter = GL_NEAREST_MIPMAP_LINEAR ; break;
         case Texture::MinFilter::LINEAR_MIPMAP_LINEAR  : min_filter = GL_LINEAR_MIPMAP_LINEAR  ; break;
         default:
-            fe::logging::warning("Unified -> OpenGL. Unsupported min filter %i. Using GL_LINEAR as default", texture.min_filter);
+            fe::logging::error("Unified -> OpenGL. Unsupported min filter %i. Using GL_LINEAR as default", texture.min_filter);
             min_filter = GL_LINEAR;
     }
 
@@ -86,7 +86,7 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
         case Texture::MagFilter::NEAREST: mag_filter = GL_NEAREST; break;
         case Texture::MagFilter::LINEAR : mag_filter = GL_LINEAR ; break;
         default:
-            fe::logging::warning("Unified -> OpenGL. Unsupported mag filter %i. Using GL_LINEAR as default", texture.mag_filter);
+            fe::logging::error("Unified -> OpenGL. Unsupported mag filter %i. Using GL_LINEAR as default", texture.mag_filter);
             mag_filter = GL_LINEAR;
     }
     // clang-format on
@@ -97,7 +97,7 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
         case Texture::Wrap::MIRRORED_REPEAT: wrap_s = GL_MIRRORED_REPEAT; break;
         case Texture::Wrap::REPEAT         : wrap_s = GL_REPEAT         ; break;
         default:
-            fe::logging::warning("Unified -> OpenGL. Unsupported wrap s %i. Using GL_REPEAT as default", texture.wrap_s);
+            fe::logging::error("Unified -> OpenGL. Unsupported wrap s %i. Using GL_REPEAT as default", texture.wrap_s);
             wrap_s = GL_REPEAT;
     }
     // clang-format on
@@ -108,7 +108,7 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
         case Texture::Wrap::MIRRORED_REPEAT: wrap_t = GL_MIRRORED_REPEAT; break;
         case Texture::Wrap::REPEAT         : wrap_t = GL_REPEAT         ; break;
         default:
-            fe::logging::warning("Unified -> OpenGL. Unsupported wrap t %i. Using GL_REPEAT as default", texture.wrap_t);
+            fe::logging::error("Unified -> OpenGL. Unsupported wrap t %i. Using GL_REPEAT as default", texture.wrap_t);
             wrap_t = GL_REPEAT;
     }
     // clang-format on
@@ -122,7 +122,7 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
         case Texture::InternalFormat::SRGB8_ALPHA8: internal_format = GL_SRGB8_ALPHA8; break;
         case Texture::InternalFormat::SRGB8       : internal_format = GL_SRGB8       ; break;
         default:
-            fe::logging::warning("Unified -> OpenGL. Unsupported internal format %i. Using GL_RGBA8 as default", texture.internal_format);
+            fe::logging::error("Unified -> OpenGL. Unsupported internal format %i. Using GL_RGBA8 as default", texture.internal_format);
             internal_format = GL_RGBA8;
     }
     // clang-format on
@@ -134,7 +134,7 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
         case Texture::DataFormat::RG  : data_format = GL_RG  ; break;
         case Texture::DataFormat::RED : data_format = GL_RED ; break;
         default:
-            fe::logging::warning("Unified -> OpenGL. Unsupported data format %i. Using GL_RGBA as default", texture.data_format);
+            fe::logging::error("Unified -> OpenGL. Unsupported data format %i. Using GL_RGBA as default", texture.data_format);
             data_format = GL_RGBA;
     }
     // clang-format on
@@ -164,8 +164,64 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
 }
 
 size_t fe::OpenGLResourceManager::CreateImage(const render_graph::ImageDesc& image_desc) {
-    auto& this_texture = m_StorageTextures.emplace_back();
-    // TODO : create OpenGL texture - this_texture.texture
+     auto& this_texture = m_StorageTextures.emplace_back();
+
+    GLuint texture_id_raw{};
+    GLenum target{};
+
+    switch (image_desc.type) {
+        case render_graph::ImageType::IMAGE_TYPE_1D: target = GL_TEXTURE_1D; break;
+        case render_graph::ImageType::IMAGE_TYPE_2D: target = GL_TEXTURE_2D; break;
+        case render_graph::ImageType::IMAGE_TYPE_3D: target = GL_TEXTURE_3D; break;
+        default:
+            fe::logging::error("Unified RenderGraph -> OpenGL. Unsupported image type %i. Using GL_TEXTURE_2D as default", image_desc.type);
+            target = GL_TEXTURE_2D;
+    }
+
+    glCreateTextures(target, 1, &texture_id_raw);
+    glBindTexture(target, texture_id_raw);
+
+    GLenum internal_format = GL_RGBA8;
+    GLenum data_format = GL_RGBA;
+    GLenum data_type = GL_UNSIGNED_BYTE;
+
+    // clang-format off
+    switch (image_desc.format) {
+        case render_graph::Format::RGBA8_UNORM       : internal_format = GL_RGBA8                ; data_format = GL_RGBA             ; data_type = GL_UNSIGNED_BYTE                  ; break;
+        case render_graph::Format::RGBA8_SRGB        : internal_format = GL_SRGB8_ALPHA8         ; data_format = GL_RGBA             ; data_type = GL_UNSIGNED_BYTE                  ; break;
+        case render_graph::Format::BGRA8_UNORM       : internal_format = GL_RGBA8                ; data_format = GL_BGRA             ; data_type = GL_UNSIGNED_BYTE                  ; break;
+        case render_graph::Format::RGBA16_SFLOAT     : internal_format = GL_RGBA16F              ; data_format = GL_RGBA             ; data_type = GL_FLOAT                          ; break;
+        case render_graph::Format::R11G11B10_SFLOAT  : internal_format = GL_R11F_G11F_B10F       ; data_format = GL_RGB              ; data_type = GL_FLOAT                          ; break;
+        case render_graph::Format::RG16_SFLOAT       : internal_format = GL_RG16F                ; data_format = GL_RG               ; data_type = GL_FLOAT                          ; break;
+        case render_graph::Format::R32_UINT          : internal_format = GL_R32UI                ; data_format = GL_RED_INTEGER      ; data_type = GL_UNSIGNED_INT                   ; break;
+        case render_graph::Format::R32_SFLOAT        : internal_format = GL_R32F                 ; data_format = GL_RED              ; data_type = GL_FLOAT                          ; break;
+        case render_graph::Format::D32_SFLOAT        : internal_format = GL_DEPTH_COMPONENT32F   ; data_format = GL_DEPTH_COMPONENT  ; data_type = GL_FLOAT                          ; break;
+        case render_graph::Format::D24_UNORM_S8_UINT : internal_format = GL_DEPTH24_STENCIL8     ; data_format = GL_DEPTH_STENCIL    ; data_type = GL_UNSIGNED_INT_24_8              ; break;
+        case render_graph::Format::D32_SFLOAT_S8_UINT: internal_format = GL_DEPTH32F_STENCIL8    ; data_format = GL_DEPTH_STENCIL    ; data_type = GL_FLOAT_32_UNSIGNED_INT_24_8_REV ; break;
+        
+        default:
+            fe::logging::warning("Unified RenderGraph -> OpenGL. Unsupported format %i. Using GL_RGBA8 as default", image_desc.format);
+    }
+    // clang-format on
+
+    // clang-format off
+    switch (image_desc.type) {
+        case render_graph::ImageType::IMAGE_TYPE_1D: glTexImage1D(GL_TEXTURE_1D, 0, internal_format, image_desc.extent.x                                          , 0, data_format, data_type, nullptr); break;
+        case render_graph::ImageType::IMAGE_TYPE_2D: glTexImage2D(GL_TEXTURE_2D, 0, internal_format, image_desc.extent.x, image_desc.extent.y                     , 0, data_format, data_type, nullptr); break;
+        case render_graph::ImageType::IMAGE_TYPE_3D: glTexImage3D(GL_TEXTURE_3D, 0, internal_format, image_desc.extent.x, image_desc.extent.y, image_desc.extent.z, 0, data_format, data_type, nullptr); break;
+    }
+    // clang-format on
+
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(target, 0);
+
+    this_texture.texture.attach(texture_id_raw);
+    
     return m_StorageTextures.size() - 1;
 }
 
