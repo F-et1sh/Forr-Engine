@@ -198,6 +198,8 @@ namespace fe {
             return seed;
         }
 
+        // render commands
+
         struct FORR_API ImageBarrier {
             // hashed name - used for user interface ( fe::string_hash("ShadowMap") )
             fe::StringHash hashed_name{};
@@ -215,12 +217,22 @@ namespace fe {
                 : hashed_name(hashed_name), old_state(old_state), new_state(new_state) {}
         };
 
+        // TODO : add this later
+        //struct FORR_API BufferBarrier {};
+
+        struct FORR_API BeginRenderPass {
+            bool is_to_screen{};
+        };
+
+        struct FORR_API EndRenderPass {
+        };
+
         // To add a command write its structure and add it here
-#define FORR_RENDER_COMMANDS_LIST(X)                                                              \
-    /*create commands - they are used when RenderGraph compiles(fe::RenderGraph::Compile()) */    \
-    X(ImageDesc, ImageDesc)                                                                       \
-    /* render commands - theys are used every frame by RenderGraph(fe::RenderGraph::Execute()) */ \
-    X(ImageBarrier, ImageBarrier)
+// render commands - theys are used every frame by RenderGraph(fe::RenderGraph::Execute())
+#define FORR_RENDER_COMMANDS_LIST(X)    \
+    X(ImageBarrier, ImageBarrier)       \
+    X(BeginRenderPass, BeginRenderPass) \
+    X(EndRenderPass, EndRenderPass)
 
         enum class CommandType : uint8_t {
 #define GENERATE_ENUM(EnumName, StructName) EnumName,
