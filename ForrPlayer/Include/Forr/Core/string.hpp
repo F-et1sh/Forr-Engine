@@ -31,7 +31,9 @@ namespace fe {
         return hash;
     }
 
-    class hashed_string { // mostly for GUI
+    // this is like std::string but it uses hash to compare.
+    // used mostly for GUI
+    class hashed_string {
     public:
         hashed_string()  = default;
         ~hashed_string() = default;
@@ -54,6 +56,7 @@ namespace fe {
 
         // this compares only hash
         FORR_NODISCARD bool operator==(const hashed_string& other) const noexcept { return hash == other.hash; }
+
         FORR_NODISCARD bool operator==(const std::string& string) const noexcept { return string == string; }
         FORR_NODISCARD bool operator==(const char* str) const noexcept { return string == str; }
         FORR_NODISCARD bool operator==(std::string_view string_view) const noexcept { return string == string_view; }
