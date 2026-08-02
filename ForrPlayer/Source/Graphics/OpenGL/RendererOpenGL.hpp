@@ -25,6 +25,7 @@
 namespace fe {
     class RendererOpenGL : public IRenderer {
         constexpr inline static size_t MAX_CONCURRENT_FRAMES = 2;
+
     public:
         RendererOpenGL(const RendererDesc& desc,
                        IPlatformSystem&    platform_system,
@@ -33,7 +34,7 @@ namespace fe {
         ~RendererOpenGL();
 
         void SetClearColor(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
-        
+
         RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) override;
 
         void BeginFrame() override;
@@ -45,6 +46,8 @@ namespace fe {
         void handleCommand(const render_graph::ImageBarrier& image_barrier);
         void handleCommand(const render_graph::BeginRenderPass& begin_render_pass);
         void handleCommand(const render_graph::EndRenderPass& end_render_pass);
+        void handleCommand(const render_graph::DrawIndexed& draw_indices);
+        void handleCommand(const render_graph::BindPipeline& bind_pipeline);
 
     private:
         struct FrameData {

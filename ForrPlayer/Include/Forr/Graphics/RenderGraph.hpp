@@ -56,8 +56,10 @@ namespace fe {
         render_graph::CommandList command_list{};
         const entt::registry&     render_registry{};
 
-        // TODO :
-        //void drawIndices(...) { command_list.enqueue(...) }
+        RenderGraphContext& DrawIndexed(const render_graph::DrawIndexed& draw_indexed) {
+            command_list.enqueue(draw_indexed);
+            return *this;
+        }
 
         RenderGraphContext(const entt::registry& render_registry) : render_registry(render_registry) {}
         ~RenderGraphContext() = default;

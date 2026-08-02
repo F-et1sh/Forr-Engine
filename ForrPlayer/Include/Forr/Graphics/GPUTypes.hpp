@@ -180,6 +180,12 @@ namespace fe {
             }
         };
 
+        struct FORR_API PipelineStateDesc {
+            fe::pointer<resource::ShaderProgram> shader_program_ptr{};
+
+            PipelineStateDesc() = default;
+        };
+
         inline static constexpr void hash_combine(std::size_t& seed, std::size_t value) noexcept {
             seed ^= value + 0x9e3779b97f4a7c15 + (seed << 6) + (seed >> 2);
         }
@@ -258,12 +264,25 @@ namespace fe {
         struct FORR_API EndRenderPass {
         };
 
+        struct FORR_API DrawIndexed {
+            uint32_t index_count{};
+            uint32_t instance_count{};
+            uint32_t first_index{};
+            int32_t  vertex_offset{};
+            uint32_t first_instance{};
+        };
+
+        struct FORR_API BindPipeline {
+        };
+
         // To add a command write its structure and add it here
 // render commands - theys are used every frame by RenderGraph(fe::RenderGraph::Execute())
 #define FORR_RENDER_COMMANDS_LIST(X)    \
     X(ImageBarrier, ImageBarrier)       \
     X(BeginRenderPass, BeginRenderPass) \
-    X(EndRenderPass, EndRenderPass)
+    X(EndRenderPass, EndRenderPass)     \
+    X(DrawIndexed, DrawIndexed)         \
+    X(BindPipeline, BindPipeline)
 
         enum class CommandType : uint8_t {
 #define GENERATE_ENUM(EnumName, StructName) EnumName,
