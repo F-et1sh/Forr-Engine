@@ -86,9 +86,6 @@ void fe::RendererOpenGL::EndFrame(const render_graph::CommandList& render_comman
     GLsync sync_raw = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     m_FrameData[m_CurrentFrame].sync.attach(sync_raw);
 
-    glBindVertexArray(0);
-    glUseProgram(0);
-
     glfwSwapBuffers(m_GLFWwindow);
 
     // reset
@@ -243,4 +240,19 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& begi
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::EndRenderPass& end_render_pass) {
+    glBindVertexArray(0);
+    glUseProgram(0);
+}
+
+void fe::RendererOpenGL::handleCommand(const render_graph::DrawIndexed& draw_indices) {
+    glDrawElementsInstancedBaseVertexBaseInstance(GL_TRIANGLES,
+                                                  draw_indices.index_count,
+                                                  GL_UNSIGNED_INT,
+                                                  reinterpret_cast<void*>(static_cast<uintptr_t>(draw_indices.first_index * sizeof(uint32_t))),
+                                                  draw_indices.instance_count,
+                                                  draw_indices.vertex_offset,
+                                                  draw_indices.first_instance);
+}
+
+void fe::RendererOpenGL::handleCommand(const render_graph::BindPipeline& bind_pipeline) {
 }

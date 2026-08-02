@@ -1,8 +1,9 @@
 ﻿# Forr-Engine Devlog
 
-## 31.07.2026
+## 02.08.2026
 ### Goal
-    provide : bindPipeline(), drawIndices(), per-frame, per-pass, per-object and per-draw bindings
+    create PipelineStateDesc
+    provide : BindPipeline(), DrawIndexed(), per-frame, per-pass, per-object and per-draw bindings
     implement fe::IRenderer::CreateGPUResources() in fe::RendererOpenGL
     allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
         allocate big SSBO ( AZDO ) in renderer for materials;
@@ -17,7 +18,7 @@
     ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
 
 ### Done
-    -
+    BindPipeline and DrawIndexed added
 
 ### Problem
     -
