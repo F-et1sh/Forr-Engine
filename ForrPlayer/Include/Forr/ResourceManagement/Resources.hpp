@@ -181,7 +181,7 @@ namespace fe::resource {
         using PipelinePtr       = fe::pointer<resource::ShaderProgram>;
         using MaterialLayoutPtr = fe::pointer<resource::MaterialLayout>;
 
-        using MaterialLayoutsContainer = std::unordered_map<std::string, MaterialLayoutPtr>;
+        using MaterialLayoutsContainer = std::unordered_map<fe::hashed_string, MaterialLayoutPtr>;
 
         std::optional<PipelinePtr>              pipeline_ptr{};
         std::optional<MaterialLayoutsContainer> material_layout_ptrs{};
