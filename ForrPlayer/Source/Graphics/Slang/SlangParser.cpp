@@ -166,7 +166,7 @@ bool fe::SlangParser::ReflectPipeline(shader::ReflectedPipelineLayout& pipeline_
     return result;
 }
 
-bool fe::SlangParser::ReflectMaterials(std::unordered_map<std::string, shader::ReflectedMaterialLayout>& material_layouts) {
+bool fe::SlangParser::ReflectMaterials(std::unordered_map<fe::hashed_string, shader::ReflectedMaterialLayout>& material_layouts) {
     bool result = false;
 
     slang::DeclReflection* module_reflection = m_Module->getModuleReflection();

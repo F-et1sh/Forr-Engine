@@ -14,7 +14,7 @@
         Sometimes one file ( extension ) can create multiple resources. For example, ShaderProgram and 
             MaterialLayout are both created from .slang file - if it happends, you have to create a 
             structure, that will point to all of resources created by that 
-            file ( ShaderReflectedData in the case of .slang )
+            file ( ShaderFileData in the case of .slang )
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -119,10 +119,14 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Texture)
     };
 
+    struct ShaderFileData; // forward declaration
+
     struct FORR_API ShaderProgram {
     public:
         GPUHandle<ShaderProgram>        gpu_handle{};
         shader::ReflectedPipelineLayout reflected_layout{};
+
+        fe::pointer<ShaderFileData> shader_file_data_ptr{};
 
         using SourceCode        = std::vector<uint8_t>;
         using SourceCodeStorage = std::unordered_map<shader::StageBits, SourceCode>;
@@ -137,6 +141,8 @@ namespace fe::resource {
 
     struct FORR_API MaterialLayout {
         shader::ReflectedMaterialLayout reflected_layout{};
+
+        fe::pointer<ShaderFileData> shader_file_data_ptr{};
 
         MaterialLayout() = default;
         MaterialLayout(shader::ReflectedMaterialLayout reflected_layout) : reflected_layout(std::move(reflected_layout)) {}
@@ -176,7 +182,7 @@ namespace fe::resource {
     };
 
     // this is a basic structure, created by 'fe::ShaderImporter', while importing a file
-    struct FORR_API ShaderReflectedData {
+    struct FORR_API ShaderFileData {
     public:
         using PipelinePtr       = fe::pointer<resource::ShaderProgram>;
         using MaterialLayoutPtr = fe::pointer<resource::MaterialLayout>;
@@ -189,10 +195,10 @@ namespace fe::resource {
         // this is needed to not accses disk twice
         std::vector<uint8_t> slang_serialized_data{};
 
-        ShaderReflectedData()  = default;
-        ~ShaderReflectedData() = default;
+        ShaderFileData()  = default;
+        ~ShaderFileData() = default;
 
-        FORR_RESOURCE_BODY(ShaderReflectedData)
+        FORR_RESOURCE_BODY(ShaderFileData)
     };
 
     struct FORR_API Model {
@@ -297,7 +303,7 @@ namespace fe::resource {
         (std::is_same_v<T, ShaderProgram>) ||
         (std::is_same_v<T, MaterialLayout>) ||
         (std::is_same_v<T, Material>) ||
-        (std::is_same_v<T, ShaderReflectedData>) ||
+        (std::is_same_v<T, ShaderFileData>) ||
         (std::is_same_v<T, Model>);
 
 #undef FORR_RESOURCE_BODY

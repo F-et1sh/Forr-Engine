@@ -172,3 +172,10 @@ namespace fe {
     fixed_hashed_string(const char (&)[N]) -> fixed_hashed_string<N>;
 
 } // namespace fe
+
+template <>
+struct std::hash<fe::hashed_string> {
+    std::size_t operator()(const fe::hashed_string& handle) const {
+        return handle.get_hash();
+    }
+};

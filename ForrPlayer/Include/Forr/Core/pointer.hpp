@@ -25,7 +25,7 @@
 #include "attributes.hpp"
 
 namespace fe {
-    using handle_t = uint32_t; // can't be replaced by uint64_t
+    using handle_t = uint32_t; // this type can't be replaced by uint64_t
 
     template <typename _Ty>
     concept storable_t =
@@ -56,7 +56,7 @@ namespace fe {
         }
 
         // the pointer is going to be changed after unpacking
-        // it's not just getting you an unpacked pointer<_Ty>
+        // it is not just letting you get an unpacked pointer<_Ty>
         constexpr pointer<_Ty> unpack(uint64_t packed) noexcept {
             m_index      = static_cast<uint32_t>(packed >> 32);
             m_generation = static_cast<uint32_t>(packed & 0xFFFFFFFF);

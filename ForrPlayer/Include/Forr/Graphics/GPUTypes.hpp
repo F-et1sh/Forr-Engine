@@ -100,6 +100,10 @@ namespace fe {
         COPY_DST
     };
 
+    namespace resource {
+        struct ShaderFileData; // forward declaration
+    }
+
     namespace render_graph {
         enum class FORR_API ImageType : uint8_t {
             IMAGE_TYPE_1D,
@@ -181,7 +185,7 @@ namespace fe {
         };
 
         struct FORR_API PipelineStateDesc {
-            fe::pointer<resource::ShaderProgram> shader_program_ptr{};
+            fe::pointer<resource::ShaderFileData> shader_file_data_ptr{};
 
             PipelineStateDesc() = default;
         };
@@ -193,7 +197,7 @@ namespace fe {
         inline static std::size_t image_desc_hash(const ImageDesc& image_desc) {
             std::size_t seed{};
 
-            // don't use 'fe::render_graph::ImageDesc::hash' here
+            // don't use 'fe::render_graph::ImageDesc::hashed_name' here
 
             hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(image_desc.type)));
             hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(image_desc.format)));
@@ -241,6 +245,8 @@ namespace fe {
             glm::vec4 clear_color_value{};
             double    clear_depth_value{};
 
+            // TODO : now I use 'std::array' here to make the structure plain data-oriented object
+            //          but I would like to use 'std::vector' here
             std::array<size_t, MAX_COLOR_ATTACHMENTS> color_targets{};
             size_t                                    color_targets_count{}; // TODO : it this really needed ?
 
@@ -507,10 +513,10 @@ namespace fe {
         struct FORR_API ReflectedMaterialLayout {
             uint32_t                             size{};
             std::vector<shader::ReflectedMember> members{};
-            std::string                          name{};
+            fe::hashed_string                    name{};
 
             ReflectedMaterialLayout() = default;
-            ReflectedMaterialLayout(uint32_t size, std::vector<ReflectedMember> members, std::string name)
+            ReflectedMaterialLayout(uint32_t size, std::vector<ReflectedMember> members, fe::hashed_string name)
                 : size(size), members(std::move(members)), name(std::move(name)) {}
 
             bool operator==(const ReflectedMaterialLayout&) const noexcept = default;

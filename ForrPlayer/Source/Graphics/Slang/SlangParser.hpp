@@ -59,7 +59,7 @@ namespace fe {
         bool ReflectPipeline(shader::ReflectedPipelineLayout& pipeline_layout);
 
         // returns 'true', if actually found anything and 'false', if the argument is not changed
-        bool ReflectMaterials(std::unordered_map<std::string, shader::ReflectedMaterialLayout>& material_layouts);
+        bool ReflectMaterials(std::unordered_map<fe::hashed_string, shader::ReflectedMaterialLayout>& material_layouts);
 
     private:
         std::vector<EntryPoint> findEntryPoints(std::vector<slang::IComponentType*>& component_types);

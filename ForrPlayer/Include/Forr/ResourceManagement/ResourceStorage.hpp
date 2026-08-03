@@ -65,8 +65,8 @@ namespace fe {
                 return m_MaterialLayouts;
             else if constexpr (std::is_same_v<T, fe::resource::Material>)
                 return m_Materials;
-            else if constexpr (std::is_same_v<T, fe::resource::ShaderReflectedData>)
-                return m_ShaderReflectedData;
+            else if constexpr (std::is_same_v<T, fe::resource::ShaderFileData>)
+                return m_ShaderFileData;
             else if constexpr (std::is_same_v<T, fe::resource::Model>)
                 return m_Models;
             else {
@@ -80,12 +80,12 @@ namespace fe {
     private:
         ResourceManagementContext& m_Context;
 
-        fe::typed_pointer_storage<fe::resource::Texture>             m_Textures{};
-        fe::typed_pointer_storage<fe::resource::ShaderProgram>       m_ShaderPrograms{};
-        fe::typed_pointer_storage<fe::resource::MaterialLayout>      m_MaterialLayouts{};
-        fe::typed_pointer_storage<fe::resource::Material>            m_Materials{};
-        fe::typed_pointer_storage<fe::resource::ShaderReflectedData> m_ShaderReflectedData{};
-        fe::typed_pointer_storage<fe::resource::Model>               m_Models{};
+        fe::typed_pointer_storage<fe::resource::Texture>        m_Textures{};
+        fe::typed_pointer_storage<fe::resource::ShaderProgram>  m_ShaderPrograms{};
+        fe::typed_pointer_storage<fe::resource::MaterialLayout> m_MaterialLayouts{};
+        fe::typed_pointer_storage<fe::resource::Material>       m_Materials{};
+        fe::typed_pointer_storage<fe::resource::ShaderFileData> m_ShaderFileData{};
+        fe::typed_pointer_storage<fe::resource::Model>          m_Models{};
 
         // you can call 'fe::Arena::reinitialize()' if you want increase or decrease arena size
         fe::Arena m_MaterialsBuffer{ 16 * 1024 };
