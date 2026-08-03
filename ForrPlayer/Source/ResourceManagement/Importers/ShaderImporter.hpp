@@ -23,6 +23,6 @@ namespace fe {
         ShaderImporter()  = default;
         ~ShaderImporter() = default;
 
-        static fe::pointer<resource::ShaderReflectedData> Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path);
+        static fe::pointer<resource::ShaderFileData> Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path);
     };
 } // namespace fe

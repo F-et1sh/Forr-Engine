@@ -15,8 +15,8 @@
 
 #include "Graphics/Slang/SlangParser.hpp"
 
-fe::pointer<fe::resource::ShaderReflectedData> fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
-    resource::ShaderReflectedData shader_reflected_data{};
+fe::pointer<fe::resource::ShaderFileData> fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
+    resource::ShaderFileData shader_file_data{};
 
     SlangParser parser{ storage.GetContext().graphics_backend };
     if (!parser.LoadFromFile(resource_full_path)) {
@@ -24,7 +24,7 @@ fe::pointer<fe::resource::ShaderReflectedData> fe::ShaderImporter::Import(Resour
         return {};
     }
 
-    if (!parser.ExtractSerializedData(shader_reflected_data.slang_serialized_data)) {
+    if (!parser.ExtractSerializedData(shader_file_data.slang_serialized_data)) {
         fe::logging::error("Slang -> Unified. Failed to extract serialized data\nPath : %s", resource_full_path.generic_string().c_str());
         return {};
     }
@@ -41,13 +41,13 @@ fe::pointer<fe::resource::ShaderReflectedData> fe::ShaderImporter::Import(Resour
         shader_program.reflected_layout = pipeline_layout;
 
         auto pipeline_ptr                  = storage.CreateResource(std::move(shader_program));
-        shader_reflected_data.pipeline_ptr = pipeline_ptr;
+        shader_file_data.pipeline_ptr = pipeline_ptr;
     }
 
-    std::unordered_map<std::string, shader::ReflectedMaterialLayout> material_layouts{};
+    std::unordered_map<fe::hashed_string, shader::ReflectedMaterialLayout> material_layouts{};
     if (parser.ReflectMaterials(material_layouts)) {
 
-        auto& material_layout_ptrs = shader_reflected_data.material_layout_ptrs.emplace();
+        auto& material_layout_ptrs = shader_file_data.material_layout_ptrs.emplace();
         material_layout_ptrs.reserve(material_layouts.size());
 
         for (auto& [material_name, material_layout] : material_layouts) {
@@ -57,6 +57,6 @@ fe::pointer<fe::resource::ShaderReflectedData> fe::ShaderImporter::Import(Resour
         }
     }
 
-    auto ptr = storage.CreateResource(std::move(shader_reflected_data));
+    auto ptr = storage.CreateResource(std::move(shader_file_data));
     return ptr;
 }

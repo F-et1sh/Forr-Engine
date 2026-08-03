@@ -343,7 +343,7 @@ struct std::hash<fe::render_graph::ImageDesc> {
     std::size_t operator()(const fe::render_graph::ImageDesc& p) const {
         std::size_t seed{};
 
-        // don't use 'fe::render_graph::ImageDesc::hash' here
+        // don't use 'fe::render_graph::ImageDesc::hashed_name' here
 
         fe::render_graph::hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(p.type)));
         fe::render_graph::hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(p.format)));
