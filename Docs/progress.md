@@ -2,6 +2,8 @@
 
 ## 07.08.2026
 ### Goal
+    remove fe::OpenGLMaterial and create fe::OpenGLPipeline instead
+    create pipeline cache for OpenGL
     separate 'fe::render_graph::ImageDesc'/'fe::render_graph::BufferDesc' and 'fe::render_graph::PipelineDesc'
     provide PSO creation
     provide : per-frame, per-pass, per-object and per-draw bindings

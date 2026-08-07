@@ -26,7 +26,6 @@ namespace fe {
         GLuint64        resident_id{};
 
         OpenGLTexture()  = default;
-        ~OpenGLTexture() = default;
 
         FORR_RESOURCE_BODY(OpenGLTexture)
     };
@@ -46,7 +45,6 @@ namespace fe {
         std::vector<Binding> bindings{};
 
         OpenGLShaderBuffer()  = default;
-        ~OpenGLShaderBuffer() = default;
 
         FORR_RESOURCE_BODY(OpenGLShaderBuffer)
     };
@@ -58,9 +56,16 @@ namespace fe {
         // std::vector<uint8_t> buffer{}; - take this from the CPU material ( fe::resource::Material ) when drawing
 
         OpenGLMaterial()  = default;
-        ~OpenGLMaterial() = default;
 
         FORR_RESOURCE_BODY(OpenGLMaterial)
+    };
+
+    struct OpenGLPipeline {
+
+
+        OpenGLPipeline()  = default;
+
+        FORR_RESOURCE_BODY(OpenGLPipeline)
     };
 
     struct OpenGLPrimitive {
@@ -70,7 +75,6 @@ namespace fe {
         uint32_t index_count{};
 
         OpenGLPrimitive()  = default;
-        ~OpenGLPrimitive() = default;
 
         FORR_RESOURCE_BODY(OpenGLPrimitive)
     };
@@ -83,8 +87,9 @@ namespace fe {
         std::vector<OpenGLPrimitive> primitives{};
 
         OpenGLMesh()  = default;
-        ~OpenGLMesh() = default;
 
         FORR_RESOURCE_BODY(OpenGLMesh)
     };
+
+    #undef FORR_RESOURCE_BODY
 } // namespace fe
