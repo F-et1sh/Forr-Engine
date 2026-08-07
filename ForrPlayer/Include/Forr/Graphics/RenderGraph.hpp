@@ -70,29 +70,39 @@ namespace fe {
 
     // a proxy to gather setup commands from render pass
     struct FORR_API RenderGraphBuilder {
-        // fe::RenderGraphBuilder is used for building RenderGraph, that's why there is no need in 'render_graph::CommandList'
-        //  instead, all comands are separated
-        std::vector<render_graph::ImageBarrier> reads{};
-        std::vector<render_graph::ImageBarrier> writes{};
-        std::vector<render_graph::ImageDesc>    create_requests{};
+        std::vector<render_graph::ImageBarrier> image_reads{};
+        std::vector<render_graph::ImageBarrier> image_writes{};
 
-        render_graph::ImageDesc& createImage(const render_graph::ImageDesc& desc) {
-            return create_requests.emplace_back(desc);
+        std::vector<render_graph::BufferBarrier> buffer_reads{};
+        std::vector<render_graph::BufferBarrier> buffer_writes{};
+
+        render_graph::CreationCommandList create_requests{};
+
+        RenderGraphBuilder& createPipeline(const render_graph::PipelineDesc& desc) {
+            create_requests.emplace_back(desc);
+            return *this;
         }
 
-        void readImage(fe::StringHash hash, ResourceState to_state) {
+        RenderGraphBuilder& createImage(const render_graph::ImageDesc& desc) {
+            create_requests.emplace_back(desc);
+            return *this;
+        }
+
+        RenderGraphBuilder& readImage(fe::StringHash hash, ResourceState to_state) {
             assert(to_state != ResourceState::RENDER_TARGET);
             assert(to_state != ResourceState::DEPTH_WRITE);
             assert(to_state != ResourceState::UNORDERED_ACCESS);
             assert(to_state != ResourceState::COPY_DST);
-            reads.emplace_back(render_graph::ImageBarrier{ hash, ResourceState::UNDEFINED, to_state });
+            image_reads.emplace_back(render_graph::ImageBarrier{ hash, ResourceState::UNDEFINED, to_state });
+            return *this;
         }
 
-        void writeImage(fe::StringHash hash, ResourceState to_state) {
+        RenderGraphBuilder& writeImage(fe::StringHash hash, ResourceState to_state) {
             assert(to_state != ResourceState::DEPTH_READ);
             assert(to_state != ResourceState::SHADER_READ_ONLY);
             assert(to_state != ResourceState::COPY_SRC);
-            writes.emplace_back(render_graph::ImageBarrier{ hash, ResourceState::UNDEFINED, to_state });
+            image_writes.emplace_back(render_graph::ImageBarrier{ hash, ResourceState::UNDEFINED, to_state });
+            return *this;
         }
 
         RenderGraphBuilder()  = default;
@@ -105,7 +115,23 @@ namespace fe {
     // this structure is needed for the 'fe::RenderGraph::Compile()'
     //  it is used by the renderer to create all resources
     struct FORR_API RenderGraphCompileResult {
-        std::vector<render_graph::ImageDesc> image_descs{}; // create requests
+        template <typename T>
+        struct FORR_API Traits;
+
+        template <typename... Args>
+        struct FORR_API Traits<std::tuple<Args...>> {
+            using type = std::tuple<std::vector<Args>...>;
+        };
+
+        using CreationCommandVectors = typename Traits<render_graph::CreationCommands>::type;
+
+        CreationCommandVectors creation_command_vectors{};
+
+        template <typename T>
+        std::vector<T>& get_desc_vector() { return std::get<std::vector<T>>(creation_command_vectors); }
+
+        template <typename T>
+        const std::vector<T>& get_desc_vector() const { return std::get<std::vector<T>>(creation_command_vectors); }
 
         RenderGraphCompileResult()  = default;
         ~RenderGraphCompileResult() = default;
@@ -116,8 +142,23 @@ namespace fe {
 
     // this structure is needed for the 'fe::RenderGraph::SetupResourceBindings()'
     struct FORR_API RenderGraphBindings {
-        // virtual storage index --> GPU storage index
-        std::unordered_map<size_t, size_t> bindings{};
+        template <typename T>
+        struct FORR_API Traits;
+
+        template <typename... Args>
+        struct FORR_API Traits<std::tuple<Args...>> {
+            using type = std::tuple<std::unordered_map<size_t, size_t>...>;
+        };
+
+        using ResourceMaps = typename Traits<render_graph::CreationCommands>::type;
+
+        ResourceMaps bindings{};
+
+        template <typename T>
+        std::unordered_map<size_t, size_t>& get_descs_vector() { return std::get<std::vector<T>>(bindings); }
+
+        template <typename T>
+        const std::unordered_map<size_t, size_t>& get_descs_vector() const { return std::get<std::unordered_map<size_t, size_t>>(bindings); }
 
         RenderGraphBindings()  = default;
         ~RenderGraphBindings() = default;
@@ -147,7 +188,8 @@ namespace fe {
         render_graph::BeginRenderPass compiled_begin_command{};
         render_graph::EndRenderPass   compiled_end_command{};
 
-        std::vector<render_graph::ImageBarrier> compiled_barriers{};
+        std::vector<render_graph::ImageBarrier>  compiled_image_barriers{};
+        std::vector<render_graph::BufferBarrier> compiled_buffer_barriers{};
 
         RenderPass()  = default;
         ~RenderPass() = default;
@@ -208,28 +250,42 @@ namespace fe {
         };
 
         struct CompiledRenderPass { // a node for sorting algorithm
-            struct ImageBarrier {
+            struct ResourceBarrier {
                 ResourceHandle handle{};
                 ResourceState  old_state{};
                 ResourceState  new_state{};
 
-                ImageBarrier() = default;
-                ImageBarrier(const ResourceHandle& handle, ResourceState old_state, ResourceState new_state)
+                ResourceBarrier() = default;
+                ResourceBarrier(const ResourceHandle& handle, ResourceState old_state, ResourceState new_state)
                     : handle(handle), old_state(old_state), new_state(new_state) {}
             };
 
+            using ImageBarrier  = ResourceBarrier;
+            using BufferBarrier = ResourceBarrier;
+
             fe::fixed_string<32> name{};
 
-            std::vector<CompiledRenderPass::ImageBarrier> reads{};
-            std::vector<CompiledRenderPass::ImageBarrier> writes{};
-            std::vector<render_graph::ImageDesc>          create_requests{};
+            std::vector<ImageBarrier> image_reads{};
+            std::vector<ImageBarrier> image_writes{};
+
+            std::vector<BufferBarrier> buffer_reads{};
+            std::vector<BufferBarrier> buffer_writes{};
+
+            render_graph::CreationCommandList create_requests{};
 
             CompiledRenderPass() = default;
-            CompiledRenderPass(std::string_view                              name,
-                               std::vector<CompiledRenderPass::ImageBarrier> reads,
-                               std::vector<CompiledRenderPass::ImageBarrier> writes,
-                               std::vector<render_graph::ImageDesc>          create_requests)
-                : name(name), reads(std::move(reads)), writes(std::move(writes)), create_requests(std::move(create_requests)) {}
+            CompiledRenderPass(std::string_view                  name,
+                               std::vector<ImageBarrier>         image_reads,
+                               std::vector<ImageBarrier>         image_writes,
+                               std::vector<BufferBarrier>        buffer_reads,
+                               std::vector<BufferBarrier>        buffer_writes,
+                               render_graph::CreationCommandList create_requests)
+                : name(name),
+                  image_reads(std::move(image_reads)),
+                  image_writes(std::move(image_writes)),
+                  buffer_reads(std::move(buffer_reads)),
+                  buffer_writes(std::move(buffer_writes)),
+                  create_requests(std::move(create_requests)) {}
 
             FORR_CLASS_MOVABLE(CompiledRenderPass)
             FORR_CLASS_NONCOPYABLE(CompiledRenderPass)
@@ -265,7 +321,8 @@ namespace fe {
         RenderGraphCompileResult Compile();
         // after 'fe::RenderGraph::Compile()' you get 'fe::RenderGraphCompileResult' - you have to pass it into the renderer
         //  renderer should get you 'fe::RenderGraphBindings' to use it here
-        // basically, this function changes 'fe::RenderPass::compiled_barriers->hashed_name' to 'fe::RenderPass::compiled_barriers->texture_index' ( it is a union )
+        // basically, this function changes 'fe::RenderPass::compiled_image_barriers->hashed_name' to 'fe::RenderPass::compiled_image_barriers->texture_index'
+        //  and the same for 'fe::RenderPass::compiled_buffer_barriers'
         void SetupResourceBindings(const RenderGraphBindings& bindings);
 
         render_graph::CommandList Execute(const entt::registry& render_data);
@@ -282,7 +339,7 @@ namespace fe {
         // run culling : remove unused render passes
         void removeUnusedRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::StringHash, Resource>& resources_map);
 
-        // translate 'fe::RenderGraph::CompiledRenderPass' to 'fe::RenderPass' and setup 'fe::RenderPass::compiled_barriers'
+        // translate 'fe::RenderGraph::CompiledRenderPass' to 'fe::RenderPass' and setup 'fe::RenderPass::compiled_image_barriers' and 'fe::RenderPass::compiled_buffer_barriers'
         void translateRenderPasses(std::vector<CompiledRenderPass>&              render_passes,
                                    std::unordered_map<fe::StringHash, Resource>& resources_map_dst,
                                    std::vector<RenderPass>&                      used_render_passes_dst);
@@ -292,31 +349,35 @@ namespace fe {
 
         // setup virtual indices
         template <typename AcquireFn, typename ReleaseFn>
-        void setupVirtualIndices(AcquireFn&&                                                  acquire_func,
-                                 ReleaseFn&&                                                  release_func,
-                                 std::unordered_map<fe::StringHash, ResourceLifetime>&        resource_lifetimes,
-                                 std::unordered_map<fe::StringHash, render_graph::ImageDesc>& hashed_to_desc_map,
-                                 std::unordered_map<fe::StringHash, size_t>&                  hashed_to_virtual_map_dst) {
+        void setupVirtualIndices(AcquireFn&&                                                        acquire_func,
+                                 ReleaseFn&&                                                        release_func,
+                                 std::unordered_map<fe::StringHash, ResourceLifetime>&              resource_lifetimes,
+                                 std::unordered_map<fe::StringHash, render_graph::CreationCommand>& hashed_to_desc_map,
+                                 std::unordered_map<fe::StringHash, size_t>&                        hashed_to_virtual_map_dst) {
 
             for (uint32_t i = 0; i < m_RenderPasses.size(); i++) {
                 RenderPass& render_pass = m_RenderPasses[i];
 
                 for (const auto& [hashed_name, lifetime] : resource_lifetimes) {
                     if (lifetime.first_pass_index == i) {
-                        const render_graph::ImageDesc& image_desc = hashed_to_desc_map[hashed_name];
-                        hashed_to_virtual_map_dst[hashed_name]    = acquire_func(image_desc);
+                        const render_graph::CreationCommand& desc = hashed_to_desc_map[hashed_name];
+                        hashed_to_virtual_map_dst[hashed_name]    = acquire_func(desc);
                     }
                 }
 
-                for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_barriers) {
-                    image_barrier.texture_index = hashed_to_virtual_map_dst[image_barrier.hashed_name];
+                for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_image_barriers) {
+                    image_barrier.handle.index = hashed_to_virtual_map_dst[image_barrier.handle.hashed_name];
+                }
+
+                for (render_graph::BufferBarrier& buffer_barrier : render_pass.compiled_buffer_barriers) {
+                    buffer_barrier.handle.index = hashed_to_virtual_map_dst[buffer_barrier.handle.hashed_name];
                 }
 
                 for (const auto& [hashed_name, lifetime] : resource_lifetimes) {
                     if (lifetime.last_pass_index == i) {
-                        const render_graph::ImageDesc& image_desc            = hashed_to_desc_map[hashed_name];
-                        size_t                         virtual_storage_index = hashed_to_virtual_map_dst[hashed_name];
-                        release_func(image_desc, virtual_storage_index);
+                        const render_graph::CreationCommand& desc                  = hashed_to_desc_map[hashed_name];
+                        size_t                               virtual_storage_index = hashed_to_virtual_map_dst[hashed_name];
+                        release_func(desc, virtual_storage_index);
                     }
                 }
             }
@@ -335,24 +396,5 @@ struct std::hash<fe::RenderGraph::ResourceHandle> {
         std::size_t h1 = hash<fe::StringHash>()(handle.hashed_name);
         std::size_t h2 = hash<uint32_t>()(handle.version);
         return h1 ^ (h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2));
-    }
-};
-
-template <>
-struct std::hash<fe::render_graph::ImageDesc> {
-    std::size_t operator()(const fe::render_graph::ImageDesc& p) const {
-        std::size_t seed{};
-
-        // don't use 'fe::render_graph::ImageDesc::hashed_name' here
-
-        fe::render_graph::hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(p.type)));
-        fe::render_graph::hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(p.format)));
-        fe::render_graph::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.x)));
-        fe::render_graph::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.y)));
-        fe::render_graph::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.extent.z)));
-        fe::render_graph::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.mip_levels)));
-        fe::render_graph::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(p.usage)));
-
-        return seed;
     }
 };

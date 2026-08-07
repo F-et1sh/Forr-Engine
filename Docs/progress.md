@@ -1,10 +1,80 @@
 ﻿# Forr-Engine Devlog
 
+## 07.08.2026
+### Goal
+    separate 'fe::render_graph::ImageDesc'/'fe::render_graph::BufferDesc' and 'fe::render_graph::PipelineDesc'
+    provide PSO creation
+    provide : per-frame, per-pass, per-object and per-draw bindings
+    allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
+        allocate big SSBO ( AZDO ) in renderer for materials;
+        see something on the screen
+    make a video for YouTube, when see something on the screen
+    fix Vukan VMA error
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+    ( provide string_pool and use std::string_view instead of always using std::string - helps to decrease allocations )
+
+    ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
+
+### Done
+    -
+
+### Problem
+    -
+
+## 06.08.2026
+### Goal
+    provide PSO creation
+    provide : per-frame, per-pass, per-object and per-draw bindings
+    allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
+        allocate big SSBO ( AZDO ) in renderer for materials;
+        see something on the screen
+    make a video for YouTube, when see something on the screen
+    fix Vukan VMA error
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+    ( provide string_pool and use std::string_view instead of always using std::string - helps to decrease allocations )
+
+    ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
+
+### Done
+    GPUTypes.hpp::render_graph logic rewritten
+    fe::render_graph::CommandList aligment fixed
+    buffers added
+    RenderGraph's logic is dangling now
+
+### Problem
+    -
+
+## 05.08.2026
+### Goal
+    provide PSO creation
+    provide : per-frame, per-pass, per-object and per-draw bindings
+    allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
+        allocate big SSBO ( AZDO ) in renderer for materials;
+        see something on the screen
+    make a video for YouTube, when see something on the screen
+    fix Vukan VMA error
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+    ( provide string_pool and use std::string_view instead of always using std::string - helps to decrease allocations )
+
+    ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
+
+### Done
+    YouTube video in progress
+
+### Problem
+    -
+
 ## 03.08.2026
 ### Goal
     create PipelineStateDesc
     provide PSO creation
-    provide : BindPipeline(), DrawIndexed(), per-frame, per-pass, per-object and per-draw bindings
+    provide : per-frame, per-pass, per-object and per-draw bindings
     implement fe::IRenderer::CreateGPUResources() in fe::RendererOpenGL
     allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
         allocate big SSBO ( AZDO ) in renderer for materials;
@@ -20,6 +90,7 @@
 
 ### Done
     ShaderReflectedData --> ShaderFileData
+    PipelineStateDesc --> PipelineDesc
 
 ### Problem
     -
@@ -42,7 +113,7 @@
     ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
 
 ### Done
-    BindPipeline and DrawIndexed added
+    bindPipeline and drawIndexed added
 
 ### Problem
     -

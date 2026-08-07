@@ -19,6 +19,10 @@
 #include "attributes.hpp"
 
 namespace fe {
+    constexpr size_t align_up(size_t alignment, size_t offset) noexcept {
+        return (offset + alignment - 1) & ~(alignment - 1);
+    }
+
     struct ArenaMarker {
         size_t offset{};
     };
@@ -61,7 +65,7 @@ namespace fe {
         FORR_NODISCARD std::byte* allocate(size_t size, size_t alignment = alignof(std::max_align_t)) {
             assert(alignment > 0 && (alignment & (alignment - 1)) == 0); // check that it's a power of two
 
-            size_t aligned_offset = (m_offset + alignment - 1) & ~(alignment - 1);
+            size_t aligned_offset = fe::align_up(alignment, m_offset);
 
             if (aligned_offset + size > m_capacity) {
                 return nullptr;

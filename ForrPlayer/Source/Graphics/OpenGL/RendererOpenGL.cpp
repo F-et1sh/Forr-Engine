@@ -67,7 +67,7 @@ fe::RenderGraphBindings fe::RendererOpenGL::CreateGPUResources(const RenderGraph
     bindings.bindings.reserve(compile_result.image_descs.size());
 
     for (const render_graph::ImageDesc& image_desc : compile_result.image_descs) {
-        bindings.bindings[image_desc.hashed_name] = m_OpenGLResourceManager.CreateImage(image_desc);
+        bindings.bindings[image_desc.handle.hashed_name] = m_OpenGLResourceManager.CreateImage(image_desc);
     }
 
     return bindings;
@@ -118,7 +118,7 @@ void fe::RendererOpenGL::InitializeGPUResources() {
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& image_barrier) {
-    const auto& opengl_texture = m_OpenGLResourceManager.GetImage(image_barrier.texture_index);
+    const auto& opengl_texture = m_OpenGLResourceManager.GetImage(image_barrier.handle.index);
     uint64_t    resident_id    = opengl_texture.resident_id;
 
     if (image_barrier.new_state == ResourceState::SHADER_READ_ONLY) {
@@ -142,6 +142,9 @@ void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& image_b
 
         glMemoryBarrier(GL_FRAMEBUFFER_BARRIER_BIT);
     }
+}
+
+void fe::RendererOpenGL::handleCommand(const render_graph::BufferBarrier& buffer_barrier) {
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& begin_render_pass) {

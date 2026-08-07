@@ -44,6 +44,7 @@ namespace fe {
 
     private:
         void handleCommand(const render_graph::ImageBarrier& image_barrier);
+        void handleCommand(const render_graph::BufferBarrier& buffer_barrier);
         void handleCommand(const render_graph::BeginRenderPass& begin_render_pass);
         void handleCommand(const render_graph::EndRenderPass& end_render_pass);
         void handleCommand(const render_graph::DrawIndexed& draw_indices);

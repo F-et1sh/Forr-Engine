@@ -25,6 +25,11 @@
 #include <glm/gtx/vector_angle.hpp>
 
 namespace fe {
+    // TODO : move this into Core
+    static constexpr void hash_combine(std::size_t& seed, std::size_t value) noexcept {
+        seed ^= value + 0x9e3779b97f4a7c15 + (seed << 6) + (seed >> 2);
+    };
+
     //#pragma pack(push, 1) // disabled for now
     struct FORR_API Vertex {
         glm::vec3 position{};
@@ -100,9 +105,11 @@ namespace fe {
         COPY_DST
     };
 
+    /* forward declarations */
     namespace resource {
-        struct ShaderFileData; // forward declaration
-    }
+        struct ShaderFileData;
+        struct ShaderProgram;
+    } // namespace resource
 
     namespace render_graph {
         enum class FORR_API ImageType : uint8_t {
@@ -152,73 +159,59 @@ namespace fe {
 
         // commands
 
-        struct FORR_API ImageDesc {
+        // this needs for 'RenderGraph ( and user interface ) <-> GPU resource manager' connection
+        template <typename T>
+        struct ResourceHandle {
             // hashed name - used for user interface ( fe::string_hash("ShadowMap") )
             fe::StringHash hashed_name{};
 
-            // texture's index in GPU resource manager's strage - used, when render passes are already compiled
-            size_t texture_index{};
+            // index in GPU resource manager's strage - used, when render passes are already compiled
+            size_t index{ static_cast<size_t>(~0) };
 
+            ResourceHandle() = default;
+            ResourceHandle(fe::StringHash hashed_name) : hashed_name(hashed_name) {}
+            explicit ResourceHandle(fe::StringHash hashed_name, size_t index) : hashed_name(hashed_name), index(index) {}
+
+            bool operator==(const ResourceHandle& other) const noexcept { return index == other.index; }
+        };
+
+        using ImageHandle    = ResourceHandle<struct ImageTag>;
+        using BufferHandle   = ResourceHandle<struct BufferTag>;
+        using PipelineHandle = ResourceHandle<struct PipelineTag>;
+
+        // creation commands aka resource descs ( this commands must not be in 'FORR_RENDER_COMMANDS_LIST' )
+
+        template <typename T>
+        struct ResourceDesc {
+            T    handle{};
+            bool operator==(const ResourceDesc& other) const noexcept = default;
+        };
+
+        struct FORR_API ImageDesc : public ResourceDesc<ImageHandle> {
             ImageType      type{};
             Format         format{};
             glm::ivec3     extent{};
             uint32_t       mip_levels{};
             ImageUsageBits usage{};
 
-            ImageDesc() = default;
-            ImageDesc(fe::StringHash    hashed_name,
-                      ImageType         type,
-                      Format            format,
-                      const glm::ivec3& extent,
-                      uint32_t          mip_levels,
-                      ImageUsageBits    usage)
-                : hashed_name(hashed_name), type(type), format(format), extent(extent), mip_levels(mip_levels), usage(usage) {}
-
-            bool operator==(const ImageDesc& other) const noexcept {
-                return hashed_name == other.hashed_name &&
-                       type == other.type &&
-                       format == other.format &&
-                       extent == other.extent &&
-                       mip_levels == other.mip_levels &&
-                       usage == other.usage;
-            }
+            bool operator==(const ImageDesc& other) const noexcept = default;
         };
 
-        struct FORR_API PipelineStateDesc {
-            fe::pointer<resource::ShaderFileData> shader_file_data_ptr{};
+        struct FORR_API PipelineDesc : public ResourceDesc<PipelineHandle> {
+            std::filesystem::path shader_full_path{};
 
-            PipelineStateDesc() = default;
+            bool operator==(const PipelineDesc& other) const noexcept = default;
         };
 
-        inline static constexpr void hash_combine(std::size_t& seed, std::size_t value) noexcept {
-            seed ^= value + 0x9e3779b97f4a7c15 + (seed << 6) + (seed >> 2);
-        }
+        using CreationCommands = std::tuple<ImageDesc, PipelineDesc>;
 
-        inline static std::size_t image_desc_hash(const ImageDesc& image_desc) {
-            std::size_t seed{};
+        using CreationCommand     = std::variant<ImageDesc, PipelineDesc>;
+        using CreationCommandList = std::vector<CreationCommand>;
 
-            // don't use 'fe::render_graph::ImageDesc::hashed_name' here
-
-            hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(image_desc.type)));
-            hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(image_desc.format)));
-            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(image_desc.extent.x)));
-            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(image_desc.extent.y)));
-            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(image_desc.extent.z)));
-            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(image_desc.mip_levels)));
-            hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(image_desc.usage)));
-
-            return seed;
-        }
-
-        // render commands
+        // render commands ( this commands must be in 'FORR_RENDER_COMMANDS_LIST' below )
 
         struct FORR_API ImageBarrier {
-            // hashed name - used for user interface ( fe::string_hash("ShadowMap") )
-            fe::StringHash hashed_name{};
-
-            // texture's index in GPU resource manager's strage - used, when render passes are already compiled
-            size_t texture_index{};
-
+            ImageHandle   handle{};
             ResourceState old_state{};
             ResourceState new_state{};
 
@@ -226,13 +219,20 @@ namespace fe {
             ImageBarrier(fe::StringHash hashed_name,
                          ResourceState  old_state,
                          ResourceState  new_state)
-                : hashed_name(hashed_name), old_state(old_state), new_state(new_state) {}
+                : handle(ImageHandle{ hashed_name, static_cast<size_t>(~0) }), old_state(old_state), new_state(new_state) {}
         };
 
-        // TODO : add this later
-        //struct FORR_API BufferBarrier {};
+        struct FORR_API BufferBarrier {
+            BufferHandle  handle{};
+            ResourceState old_state{};
+            ResourceState new_state{};
 
-        // TODO : try unions for this code
+            BufferBarrier() = default;
+            BufferBarrier(fe::StringHash hashed_name,
+                          ResourceState  old_state,
+                          ResourceState  new_state)
+                : handle(BufferHandle{ hashed_name, static_cast<size_t>(~0) }), old_state(old_state), new_state(new_state) {}
+        };
 
         struct FORR_API BeginRenderPass {
             bool is_to_screen{};
@@ -248,12 +248,11 @@ namespace fe {
             // TODO : now I use 'std::array' here to make the structure plain data-oriented object
             //          but I would like to use 'std::vector' here
             std::array<size_t, MAX_COLOR_ATTACHMENTS> color_targets{};
-            size_t                                    color_targets_count{}; // TODO : it this really needed ?
+            size_t                                    color_targets_count{};
 
             size_t depth_target{};
         };
 
-        // TODO : rewrite this
         inline static std::size_t color_depth_targets_hash(const std::array<size_t, MAX_COLOR_ATTACHMENTS>& color_targets,
                                                            size_t                                           color_targets_count,
                                                            size_t                                           depth_target) {
@@ -268,6 +267,7 @@ namespace fe {
         }
 
         struct FORR_API EndRenderPass {
+            // this is empty for now
         };
 
         struct FORR_API DrawIndexed {
@@ -279,12 +279,14 @@ namespace fe {
         };
 
         struct FORR_API BindPipeline {
+            PipelineHandle handle{};
         };
 
         // To add a command write its structure and add it here
 // render commands - theys are used every frame by RenderGraph(fe::RenderGraph::Execute())
 #define FORR_RENDER_COMMANDS_LIST(X)    \
     X(ImageBarrier, ImageBarrier)       \
+    X(BufferBarrier, BufferBarrier)     \
     X(BeginRenderPass, BeginRenderPass) \
     X(EndRenderPass, EndRenderPass)     \
     X(DrawIndexed, DrawIndexed)         \
@@ -319,15 +321,47 @@ namespace fe {
 
             template <typename Command>
                 requires std::is_trivially_copyable_v<Command>
-            Command& enqueue(const Command& command) {
+            void enqueue(const Command& command) {
                 constexpr CommandType type = CommandTraits<Command>::Type;
 
                 m_storage.emplace_back(static_cast<uint8_t>(type));
-                size_t offset = m_storage.size();
+                size_t offset = fe::align_up(alignof(Command), m_storage.size());
                 m_storage.resize(offset + sizeof(Command));
                 new (&m_storage[offset]) Command{ command };
+            }
 
-                return reinterpret_cast<Command&>(m_storage[offset]);
+            template <typename Func>
+            void handle_all(Func&& func) {
+                if (this->empty()) return;
+
+                uint8_t*     buffer     = this->data();
+                const size_t total_size = this->size();
+                size_t       offset     = 0;
+
+                while (offset < total_size) {
+                    offset = fe::align_up(alignof(render_graph::CommandType), offset);
+                    if (offset >= total_size) break;
+
+                    render_graph::CommandType type = static_cast<render_graph::CommandType>(buffer[offset]);
+                    offset += sizeof(render_graph::CommandType);
+
+                    switch (type) {
+#define GENERATE_CASE(EnumName, StructName)                                       \
+    case render_graph::CommandType::EnumName: {                                   \
+        offset    = fe::align_up(alignof(render_graph::StructName), offset);      \
+        auto* cmd = reinterpret_cast<render_graph::StructName*>(&buffer[offset]); \
+        func(*cmd);                                                               \
+        offset += sizeof(render_graph::StructName);                               \
+        break;                                                                    \
+    }
+
+                        FORR_RENDER_COMMANDS_LIST(GENERATE_CASE)
+#undef GENERATE_CASE
+                        default:
+                            fe::logging::error("Failed to handle a command in fe::RendererOpenGL::EndFrame() : unknown command %i", type);
+                            break;
+                    }
+                }
             }
 
             template <typename Func>
@@ -339,12 +373,16 @@ namespace fe {
                 size_t         offset     = 0;
 
                 while (offset < total_size) {
+                    offset = fe::align_up(alignof(render_graph::CommandType), offset);
+                    if (offset >= total_size) break;
+
                     render_graph::CommandType type = static_cast<render_graph::CommandType>(buffer[offset]);
                     offset += sizeof(render_graph::CommandType);
 
                     switch (type) {
 #define GENERATE_CASE(EnumName, StructName)                                                   \
     case render_graph::CommandType::EnumName: {                                               \
+        offset          = fe::align_up(alignof(render_graph::StructName), offset);            \
         const auto* cmd = reinterpret_cast<const render_graph::StructName*>(&buffer[offset]); \
         func(*cmd);                                                                           \
         offset += sizeof(render_graph::StructName);                                           \
@@ -361,6 +399,11 @@ namespace fe {
             }
 
             void append_command_list(const CommandList& command_list) {
+                if (command_list.empty()) return;
+
+                size_t aligned_size = fe::align_up(alignof(std::max_align_t), m_storage.size());
+                m_storage.resize(aligned_size);
+
                 m_storage.append_range(command_list.m_storage);
             }
 
@@ -380,13 +423,17 @@ namespace fe {
                 return m_storage.data();
             }
 
+            FORR_NODISCARD uint8_t* data() noexcept {
+                return m_storage.data();
+            }
+
             FORR_NODISCARD size_t size() const noexcept {
                 return m_storage.size();
             }
 
         private:
             std::vector<uint8_t> m_storage;
-        };
+        }; // namespace render_graph
 
     } // namespace render_graph
 
@@ -523,3 +570,35 @@ namespace fe {
         };
     } // namespace shader
 } // namespace fe
+
+template <>
+struct std::hash<fe::render_graph::ImageDesc> {
+    std::size_t operator()(const fe::render_graph::ImageDesc& desc) const {
+        std::size_t seed{};
+
+        // don't use 'handle' here
+
+        fe::hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(desc.type)));
+        fe::hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(desc.format)));
+        fe::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(desc.extent.x)));
+        fe::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(desc.extent.y)));
+        fe::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(desc.extent.z)));
+        fe::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(desc.mip_levels)));
+        fe::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(desc.usage)));
+
+        return seed;
+    }
+};
+
+template <>
+struct std::hash<fe::render_graph::PipelineDesc> {
+    std::size_t operator()(const fe::render_graph::PipelineDesc& desc) const {
+        size_t seed{};
+
+        // don't use 'handle' here
+
+        fe::hash_combine(seed, std::hash<std::string>{}(desc.shader_full_path.generic_string()));
+
+        return seed;
+    }
+};
