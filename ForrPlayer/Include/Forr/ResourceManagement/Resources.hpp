@@ -145,7 +145,7 @@ namespace fe::resource {
         fe::pointer<ShaderFileData> shader_file_data_ptr{};
 
         MaterialLayout() = default;
-        MaterialLayout(shader::ReflectedMaterialLayout reflected_layout, fe::pointer<ShaderFileData> shader_file_data_ptr) 
+        MaterialLayout(shader::ReflectedMaterialLayout reflected_layout, fe::pointer<ShaderFileData> shader_file_data_ptr)
             : reflected_layout(std::move(reflected_layout)), shader_file_data_ptr(shader_file_data_ptr) {}
         ~MaterialLayout() = default;
 
@@ -176,6 +176,8 @@ namespace fe::resource {
         // this buffer contains all raw data you pass to the shader
         std::span<uint8_t> buffer{};
 
+        PipelineFlags pipeline_flags{};
+
         Material()  = default;
         ~Material() = default;
 
@@ -185,12 +187,12 @@ namespace fe::resource {
     // this is a basic structure, created by 'fe::ShaderImporter', while importing a file
     struct FORR_API ShaderFileData {
     public:
-        using PipelinePtr       = fe::pointer<resource::ShaderProgram>;
+        using ShaderProgramPtr  = fe::pointer<resource::ShaderProgram>;
         using MaterialLayoutPtr = fe::pointer<resource::MaterialLayout>;
 
         using MaterialLayoutsContainer = std::unordered_map<fe::hashed_string, MaterialLayoutPtr>;
 
-        std::optional<PipelinePtr>              pipeline_ptr{};
+        std::optional<ShaderProgramPtr>         shader_program_ptr{};
         std::optional<MaterialLayoutsContainer> material_layout_ptrs{};
 
         // this is needed to not accses disk twice

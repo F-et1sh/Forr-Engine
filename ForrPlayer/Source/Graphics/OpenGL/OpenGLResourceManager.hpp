@@ -85,7 +85,7 @@ namespace fe {
     private:
         ResourceManager& m_ResourceManager;
 
-        std::vector<OpenGLMaterial> m_StorageMaterials{};
+        std::vector<OpenGLPipeline> m_StoragePipelines{};
         std::vector<OpenGLMesh>     m_StorageMeshes{};
         std::vector<OpenGLTexture>  m_StorageTextures{};
 

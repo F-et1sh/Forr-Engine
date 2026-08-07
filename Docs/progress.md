@@ -1,8 +1,35 @@
 ﻿# Forr-Engine Devlog
 
+## 08.08.2026
+### Goal
+    ( everything is dangling now. See end of RendererOpenGL.cpp to remember last idea )
+    fix RenderGraph
+    create pipeline cache for OpenGL
+    separate 'fe::render_graph::ImageDesc'/'fe::render_graph::BufferDesc' and 'fe::render_graph::PipelineDesc'
+    provide PSO creation
+    provide : per-frame, per-pass, per-object and per-draw bindings
+    allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
+        allocate big SSBO ( AZDO ) in renderer for materials;
+        see something on the screen
+    make a video for YouTube, when see something on the screen
+    fix Vukan VMA error
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+    ( provide string_pool and use std::string_view instead of always using std::string - helps to decrease allocations )
+
+    ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 07.08.2026
 ### Goal
     remove fe::OpenGLMaterial and create fe::OpenGLPipeline instead
+    fix RenderGraph
     create pipeline cache for OpenGL
     separate 'fe::render_graph::ImageDesc'/'fe::render_graph::BufferDesc' and 'fe::render_graph::PipelineDesc'
     provide PSO creation
@@ -21,9 +48,10 @@
 
 ### Done
     fe::resource::ShaderProgram's and fe::resource::MaterialLayout's 'shader_file_data_ptr' setting bug fixed
+    fe::OpenGLPipeline added
 
 ### Problem
-    Feelings bad
+    Feeling bad
 
 ## 06.08.2026
 ### Goal
