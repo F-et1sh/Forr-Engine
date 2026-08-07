@@ -110,6 +110,12 @@ namespace fe {
         COPY_DST
     };
 
+    struct FORR_API PipelineFlags {
+        RenderMode render_mode{ RenderMode::TRIANGLES };
+
+        PipelineFlags() = default;
+    };
+
     /* forward declarations */
     namespace resource {
         struct ShaderFileData;
@@ -165,8 +171,7 @@ namespace fe {
         // commands
 
         // this needs for 'RenderGraph ( and user interface ) <-> GPU resource manager' connection
-        template <typename T>
-        struct ResourceHandle {
+        struct FORR_API ResourceHandle {
             // hashed name - used for user interface ( fe::string_hash("ShadowMap") )
             fe::StringHash hashed_name{};
 
@@ -175,19 +180,18 @@ namespace fe {
 
             ResourceHandle() = default;
             ResourceHandle(fe::StringHash hashed_name) : hashed_name(hashed_name) {}
-            explicit ResourceHandle(fe::StringHash hashed_name, size_t index) : hashed_name(hashed_name), index(index) {}
+            explicit ResourceHandle(fe::StringHash hashed_name, size_t storage_index) : hashed_name(hashed_name), storage_index(storage_index) {}
 
-            bool operator==(const ResourceHandle& other) const noexcept { return index == other.index; }
+            bool operator==(const ResourceHandle& other) const noexcept { return storage_index == other.storage_index; }
         };
 
-        using ImageHandle    = ResourceHandle<struct ImageTag>;
-        using BufferHandle   = ResourceHandle<struct BufferTag>;
-        using PipelineHandle = ResourceHandle<struct PipelineTag>;
+        struct FORR_API ResourceDesc {
+            ResourceHandle handle{};
+        };
 
         // creation commands aka resource descs ( this commands must not be in 'FORR_RENDER_COMMANDS_LIST' )
 
-        struct FORR_API ImageDesc {
-            ImageHandle    handle{};
+        struct FORR_API ImageDesc : public ResourceDesc {
             ImageType      type{};
             Format         format{};
             glm::ivec3     extent{};
@@ -197,61 +201,24 @@ namespace fe {
             bool operator==(const ImageDesc& other) const noexcept = default;
         };
 
-        struct FORR_API BufferDesc {
-            BufferHandle handle{};
+        struct FORR_API BufferDesc : public ResourceDesc {
             // ...
 
             bool operator==(const BufferDesc& other) const noexcept = default;
         };
 
-        struct FORR_API PipelineDesc {
-            PipelineHandle handle{};
-            // ...
-
-            bool operator==(const PipelineDesc& other) const noexcept = default;
-        };
-
-        using CreationCommands = std::tuple<ImageDesc,
-                                            BufferDesc,
-                                            PipelineDesc>;
-
-        template <typename T>
-        struct FORR_API CreationCommandsTraits;
-
-        template <typename... Args>
-        struct FORR_API CreationCommandsTraits<Args...> {
-            using CreationCommand     = std::variant<Args...>;
-            using CreationCommandList = std::vector<CreationCommand>;
-            using 
-        };
-
-        using CreationCommand     = typename CreationCommandsTraits<CreationCommands>::CreationCommand;
-        using CreationCommandList = typename CreationCommandsTraits<CreationCommands>::CreationCommandList;
-
         // render commands ( this commands must be in 'FORR_RENDER_COMMANDS_LIST' below )
 
-        struct FORR_API ImageBarrier {
-            ImageHandle   handle{};
-            ResourceState old_state{};
-            ResourceState new_state{};
+        struct FORR_API ResourceBarrier {
+            ResourceHandle handle{};
+            ResourceState  old_state{};
+            ResourceState  new_state{};
 
-            ImageBarrier() = default;
-            ImageBarrier(fe::StringHash hashed_name,
-                         ResourceState  old_state,
-                         ResourceState  new_state)
-                : handle(ImageHandle{ hashed_name, static_cast<size_t>(~0) }), old_state(old_state), new_state(new_state) {}
-        };
-
-        struct FORR_API BufferBarrier {
-            BufferHandle  handle{};
-            ResourceState old_state{};
-            ResourceState new_state{};
-
-            BufferBarrier() = default;
-            BufferBarrier(fe::StringHash hashed_name,
-                          ResourceState  old_state,
-                          ResourceState  new_state)
-                : handle(BufferHandle{ hashed_name, static_cast<size_t>(~0) }), old_state(old_state), new_state(new_state) {}
+            ResourceBarrier() = default;
+            ResourceBarrier(fe::StringHash hashed_name,
+                            ResourceState  old_state,
+                            ResourceState  new_state)
+                : handle(ResourceHandle{ hashed_name, static_cast<size_t>(~0) }), old_state(old_state), new_state(new_state) {}
         };
 
         struct FORR_API BeginRenderPass {
@@ -298,19 +265,18 @@ namespace fe {
             uint32_t first_instance{};
         };
 
-        struct FORR_API BindPipeline {
+        struct FORR_API BindShaderProgram {
             // ...
         };
 
         // To add a command write its structure and add it here
 // render commands - theys are used every frame by RenderGraph(fe::RenderGraph::Execute())
 #define FORR_RENDER_COMMANDS_LIST(X)    \
-    X(ImageBarrier, ImageBarrier)       \
-    X(BufferBarrier, BufferBarrier)     \
+    X(ResourceBarrier, ResourceBarrier) \
     X(BeginRenderPass, BeginRenderPass) \
     X(EndRenderPass, EndRenderPass)     \
     X(DrawIndexed, DrawIndexed)         \
-    X(BindPipeline, BindPipeline)
+    X(BindShaderProgram, BindShaderProgram)
 
         enum class CommandType : uint8_t {
 #define GENERATE_ENUM(EnumName, StructName) EnumName,

@@ -25,7 +25,7 @@ namespace fe {
         fe::gl::Texture texture{};
         GLuint64        resident_id{};
 
-        OpenGLTexture()  = default;
+        OpenGLTexture() = default;
 
         FORR_RESOURCE_BODY(OpenGLTexture)
     };
@@ -44,26 +44,18 @@ namespace fe {
 
         std::vector<Binding> bindings{};
 
-        OpenGLShaderBuffer()  = default;
+        OpenGLShaderBuffer() = default;
 
         FORR_RESOURCE_BODY(OpenGLShaderBuffer)
     };
 
-    struct OpenGLMaterial {
-        // shader 'program' because it is not only vertex, only fragment or only compute shader, but combined
-        fe::gl::ShaderProgram shader_program{};
-        OpenGLShaderBuffer    shader_buffers{};
-        // std::vector<uint8_t> buffer{}; - take this from the CPU material ( fe::resource::Material ) when drawing
-
-        OpenGLMaterial()  = default;
-
-        FORR_RESOURCE_BODY(OpenGLMaterial)
-    };
-
     struct OpenGLPipeline {
+        fe::gl::ShaderProgram shader_program{};
 
+        bool   depth_test_enable{ true };
+        GLenum depth_func{ GL_LESS };
 
-        OpenGLPipeline()  = default;
+        OpenGLPipeline() = default;
 
         FORR_RESOURCE_BODY(OpenGLPipeline)
     };
@@ -74,7 +66,7 @@ namespace fe {
         uint32_t index_offset{};
         uint32_t index_count{};
 
-        OpenGLPrimitive()  = default;
+        OpenGLPrimitive() = default;
 
         FORR_RESOURCE_BODY(OpenGLPrimitive)
     };
@@ -86,10 +78,10 @@ namespace fe {
 
         std::vector<OpenGLPrimitive> primitives{};
 
-        OpenGLMesh()  = default;
+        OpenGLMesh() = default;
 
         FORR_RESOURCE_BODY(OpenGLMesh)
     };
 
-    #undef FORR_RESOURCE_BODY
+#undef FORR_RESOURCE_BODY
 } // namespace fe

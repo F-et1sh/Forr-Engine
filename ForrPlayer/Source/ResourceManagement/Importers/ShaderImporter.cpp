@@ -43,8 +43,8 @@ fe::pointer<fe::resource::ShaderFileData> fe::ShaderImporter::Import(ResourceSto
         shader_program.reflected_layout     = pipeline_layout;
         shader_program.shader_file_data_ptr = ptr;
 
-        auto pipeline_ptr             = storage.CreateResource(std::move(shader_program));
-        shader_file_data.pipeline_ptr = pipeline_ptr;
+        auto pipeline_ptr                   = storage.CreateResource(std::move(shader_program));
+        shader_file_data.shader_program_ptr = pipeline_ptr;
     }
 
     std::unordered_map<fe::hashed_string, shader::ReflectedMaterialLayout> material_layouts{};

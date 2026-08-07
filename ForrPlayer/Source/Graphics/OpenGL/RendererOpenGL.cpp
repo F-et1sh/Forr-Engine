@@ -64,11 +64,13 @@ void fe::RendererOpenGL::SetClearColor(float red, float green, float blue, float
 
 fe::RenderGraphBindings fe::RendererOpenGL::CreateGPUResources(const RenderGraphCompileResult& compile_result) {
     RenderGraphBindings bindings{};
-    bindings.bindings.reserve(compile_result.image_descs.size());
+    bindings.image_bindings.reserve(compile_result.image_descs.size());
 
     for (const render_graph::ImageDesc& image_desc : compile_result.image_descs) {
-        bindings.bindings[image_desc.handle.hashed_name] = m_OpenGLResourceManager.CreateImage(image_desc);
+        bindings.image_bindings[image_desc.handle.hashed_name] = m_OpenGLResourceManager.CreateImage(image_desc);
     }
+
+    // TODO : provide buffers
 
     return bindings;
 }
@@ -258,4 +260,10 @@ void fe::RendererOpenGL::handleCommand(const render_graph::DrawIndexed& draw_ind
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::BindPipeline& bind_pipeline) {
+    m_BoundShaderProgramPtr = bind_pipeline.shader_program_ptr;
+}
+
+void fe::RendererOpenGL::handleCommand(const render_graph::BindMaterial& bind_material) {
+    auto pipeline_ptr = m_OpenGLResourceManager.GetOrCreatePipeline(m_BoundShaderProgramPtr, bind_material.material_ptr);
+    glUseProgram(pipeline_ptr);
 }

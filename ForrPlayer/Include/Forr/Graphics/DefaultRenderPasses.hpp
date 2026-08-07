@@ -15,9 +15,11 @@
 #include "ECS/Components.hpp"
 
 namespace fe {
-    struct ShadowPassData {};
+    struct ShadowPassData {
+        fe::pointer<resource::ShaderProgram> shadow_shader_program_ptr{};
+    };
     struct ShadowPass {
-        static void Setup(RenderGraphBuilder& builder) {
+        static void Setup(RenderGraphBuilder& builder, ShadowPassData& pass_data, ResourceManager& resource_manager) {
             builder.createImage(render_graph::ImageDesc{ fe::string_hash("ShadowMap"),
                                                          render_graph::ImageType::IMAGE_TYPE_2D,
                                                          render_graph::Format::RGBA8_SRGB,
@@ -26,11 +28,23 @@ namespace fe {
                                                          render_graph::ImageUsageBits::RENDER_TARGET });
             builder.writeImage(fe::string_hash("ShadowMap"), ResourceState::RENDER_TARGET);
 
-            builder.createPipeline(render_graph::PipelineDesc{ PATH.getShadersPath() / L"Shadows.slang",
-                                                               .some_pipeline_settings = RenderMode::TRIANGLES });
+            // it should work like this, I guess
+            fe::pointer<resource::ShaderFileData> shader_file_data_ptr = resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Shadow.slang");
+
+            const resource::ShaderFileData& shader_file_data = *resource_manager.GetResource(shader_file_data_ptr);
+            if (!shader_file_data.shader_program_ptr.has_value()) {
+                fe::logging::fatal("No shadow shader");
+                return;
+            }
+
+            pass_data.shadow_shader_program_ptr = shader_file_data.shader_program_ptr.value();
         }
 
         static void Execute(RenderGraphContext& context, ShadowPassData& pass_data) {
+            context.bindShaderProgram(pass_data.shadow_shader_program_ptr);
+            
+            // drawing...
+            context.bindMaterial(material_ptr);
         }
 
         ShadowPass()  = default;
