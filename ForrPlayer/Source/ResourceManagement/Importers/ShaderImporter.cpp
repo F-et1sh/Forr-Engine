@@ -34,13 +34,16 @@ fe::pointer<fe::resource::ShaderFileData> fe::ShaderImporter::Import(ResourceSto
         return {};
     }
 
+    auto ptr = storage.CreateResource(std::move(shader_file_data));
+
     shader::ReflectedPipelineLayout pipeline_layout{};
     if (parser.ReflectPipeline(pipeline_layout)) {
 
         resource::ShaderProgram shader_program{};
-        shader_program.reflected_layout = pipeline_layout;
+        shader_program.reflected_layout     = pipeline_layout;
+        shader_program.shader_file_data_ptr = ptr;
 
-        auto pipeline_ptr                  = storage.CreateResource(std::move(shader_program));
+        auto pipeline_ptr             = storage.CreateResource(std::move(shader_program));
         shader_file_data.pipeline_ptr = pipeline_ptr;
     }
 
@@ -52,11 +55,10 @@ fe::pointer<fe::resource::ShaderFileData> fe::ShaderImporter::Import(ResourceSto
 
         for (auto& [material_name, material_layout] : material_layouts) {
 
-            auto material_layout_ptr = storage.CreateResource(std::move(resource::MaterialLayout{ std::move(material_layout) }));
+            auto material_layout_ptr = storage.CreateResource(std::move(resource::MaterialLayout{ std::move(material_layout), ptr }));
             material_layout_ptrs.emplace(material_name, material_layout_ptr);
         }
     }
 
-    auto ptr = storage.CreateResource(std::move(shader_file_data));
     return ptr;
 }

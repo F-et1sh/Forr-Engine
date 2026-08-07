@@ -89,18 +89,36 @@ namespace fe {
         }
 
         RenderGraphBuilder& readImage(fe::StringHash hash, ResourceState to_state) {
-            assert(to_state != ResourceState::RENDER_TARGET);
-            assert(to_state != ResourceState::DEPTH_WRITE);
-            assert(to_state != ResourceState::UNORDERED_ACCESS);
-            assert(to_state != ResourceState::COPY_DST);
+            switch (to_state) {
+                case ResourceState::RENDER_TARGET:
+                case ResourceState::DEPTH_WRITE:
+                case ResourceState::UNORDERED_ACCESS:
+                case ResourceState::COPY_DST:
+                case ResourceState::VERTEX_BUFFER:
+                case ResourceState::INDEX_BUFFER:
+                case ResourceState::CONSTANT_BUFFER:
+                case ResourceState::INDIRECT_ARGUMENT:
+                    fe::logging::error("RenderGraphBuilder::readImage() : wrong state %i", to_state);
+                    return;
+                    break;
+            }
             image_reads.emplace_back(render_graph::ImageBarrier{ hash, ResourceState::UNDEFINED, to_state });
             return *this;
         }
 
         RenderGraphBuilder& writeImage(fe::StringHash hash, ResourceState to_state) {
-            assert(to_state != ResourceState::DEPTH_READ);
-            assert(to_state != ResourceState::SHADER_READ_ONLY);
-            assert(to_state != ResourceState::COPY_SRC);
+            switch (to_state) {
+                case ResourceState::DEPTH_READ:
+                case ResourceState::SHADER_READ_ONLY:
+                case ResourceState::COPY_SRC:
+                case ResourceState::VERTEX_BUFFER:
+                case ResourceState::INDEX_BUFFER:
+                case ResourceState::CONSTANT_BUFFER:
+                case ResourceState::INDIRECT_ARGUMENT:
+                    fe::logging::error("RenderGraphBuilder::writeImage() : wrong state %i", to_state);
+                    return;
+                    break;
+            }
             image_writes.emplace_back(render_graph::ImageBarrier{ hash, ResourceState::UNDEFINED, to_state });
             return *this;
         }
@@ -115,23 +133,9 @@ namespace fe {
     // this structure is needed for the 'fe::RenderGraph::Compile()'
     //  it is used by the renderer to create all resources
     struct FORR_API RenderGraphCompileResult {
-        template <typename T>
-        struct FORR_API Traits;
-
-        template <typename... Args>
-        struct FORR_API Traits<std::tuple<Args...>> {
-            using type = std::tuple<std::vector<Args>...>;
-        };
-
-        using CreationCommandVectors = typename Traits<render_graph::CreationCommands>::type;
-
-        CreationCommandVectors creation_command_vectors{};
-
-        template <typename T>
-        std::vector<T>& get_desc_vector() { return std::get<std::vector<T>>(creation_command_vectors); }
-
-        template <typename T>
-        const std::vector<T>& get_desc_vector() const { return std::get<std::vector<T>>(creation_command_vectors); }
+        std::vector<render_graph::ImageDesc>    image_descs{};
+        std::vector<render_graph::BufferDesc>   buffer_descs{};
+        std::vector<render_graph::PipelineDesc> pipeline_descs{};
 
         RenderGraphCompileResult()  = default;
         ~RenderGraphCompileResult() = default;
@@ -142,23 +146,8 @@ namespace fe {
 
     // this structure is needed for the 'fe::RenderGraph::SetupResourceBindings()'
     struct FORR_API RenderGraphBindings {
-        template <typename T>
-        struct FORR_API Traits;
-
-        template <typename... Args>
-        struct FORR_API Traits<std::tuple<Args...>> {
-            using type = std::tuple<std::unordered_map<size_t, size_t>...>;
-        };
-
-        using ResourceMaps = typename Traits<render_graph::CreationCommands>::type;
-
-        ResourceMaps bindings{};
-
-        template <typename T>
-        std::unordered_map<size_t, size_t>& get_descs_vector() { return std::get<std::vector<T>>(bindings); }
-
-        template <typename T>
-        const std::unordered_map<size_t, size_t>& get_descs_vector() const { return std::get<std::unordered_map<size_t, size_t>>(bindings); }
+        std::unordered_map<size_t, size_t> image_bindings{};
+        std::unordered_map<size_t, size_t> buffer_bindings{};
 
         RenderGraphBindings()  = default;
         ~RenderGraphBindings() = default;

@@ -92,15 +92,20 @@ namespace fe {
     enum class FORR_API ResourceState : uint8_t {
         UNDEFINED,
 
+        // image only
         RENDER_TARGET,
-
         DEPTH_WRITE,
         DEPTH_READ,
 
+        // buffer only
+        VERTEX_BUFFER,
+        INDEX_BUFFER,
+        CONSTANT_BUFFER,
+        INDIRECT_ARGUMENT,
+
+        // universal
         SHADER_READ_ONLY,
-
         UNORDERED_ACCESS,
-
         COPY_SRC,
         COPY_DST
     };
@@ -166,7 +171,7 @@ namespace fe {
             fe::StringHash hashed_name{};
 
             // index in GPU resource manager's strage - used, when render passes are already compiled
-            size_t index{ static_cast<size_t>(~0) };
+            size_t storage_index{ static_cast<size_t>(~0) };
 
             ResourceHandle() = default;
             ResourceHandle(fe::StringHash hashed_name) : hashed_name(hashed_name) {}
@@ -181,13 +186,8 @@ namespace fe {
 
         // creation commands aka resource descs ( this commands must not be in 'FORR_RENDER_COMMANDS_LIST' )
 
-        template <typename T>
-        struct ResourceDesc {
-            T    handle{};
-            bool operator==(const ResourceDesc& other) const noexcept = default;
-        };
-
-        struct FORR_API ImageDesc : public ResourceDesc<ImageHandle> {
+        struct FORR_API ImageDesc {
+            ImageHandle    handle{};
             ImageType      type{};
             Format         format{};
             glm::ivec3     extent{};
@@ -197,16 +197,36 @@ namespace fe {
             bool operator==(const ImageDesc& other) const noexcept = default;
         };
 
-        struct FORR_API PipelineDesc : public ResourceDesc<PipelineHandle> {
-            std::filesystem::path shader_full_path{};
+        struct FORR_API BufferDesc {
+            BufferHandle handle{};
+            // ...
+
+            bool operator==(const BufferDesc& other) const noexcept = default;
+        };
+
+        struct FORR_API PipelineDesc {
+            PipelineHandle handle{};
+            // ...
 
             bool operator==(const PipelineDesc& other) const noexcept = default;
         };
 
-        using CreationCommands = std::tuple<ImageDesc, PipelineDesc>;
+        using CreationCommands = std::tuple<ImageDesc,
+                                            BufferDesc,
+                                            PipelineDesc>;
 
-        using CreationCommand     = std::variant<ImageDesc, PipelineDesc>;
-        using CreationCommandList = std::vector<CreationCommand>;
+        template <typename T>
+        struct FORR_API CreationCommandsTraits;
+
+        template <typename... Args>
+        struct FORR_API CreationCommandsTraits<Args...> {
+            using CreationCommand     = std::variant<Args...>;
+            using CreationCommandList = std::vector<CreationCommand>;
+            using 
+        };
+
+        using CreationCommand     = typename CreationCommandsTraits<CreationCommands>::CreationCommand;
+        using CreationCommandList = typename CreationCommandsTraits<CreationCommands>::CreationCommandList;
 
         // render commands ( this commands must be in 'FORR_RENDER_COMMANDS_LIST' below )
 
@@ -279,7 +299,7 @@ namespace fe {
         };
 
         struct FORR_API BindPipeline {
-            PipelineHandle handle{};
+            // ...
         };
 
         // To add a command write its structure and add it here
@@ -585,19 +605,6 @@ struct std::hash<fe::render_graph::ImageDesc> {
         fe::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(desc.extent.z)));
         fe::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(desc.mip_levels)));
         fe::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(desc.usage)));
-
-        return seed;
-    }
-};
-
-template <>
-struct std::hash<fe::render_graph::PipelineDesc> {
-    std::size_t operator()(const fe::render_graph::PipelineDesc& desc) const {
-        size_t seed{};
-
-        // don't use 'handle' here
-
-        fe::hash_combine(seed, std::hash<std::string>{}(desc.shader_full_path.generic_string()));
 
         return seed;
     }
