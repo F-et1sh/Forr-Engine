@@ -46,49 +46,50 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
     // setup resource lifetimes
     this->calculateResourceLifetimes(resource_lifetimes);
 
-    struct PoolImageInfo {
+    struct ResourceInfo {
         bool   is_busy{};
-        size_t image_storage_index{}; // this is a virtual storage index
+        size_t storage_index{}; // this is a virtual storage index
     };
-    // image desc --> { is busy,  }
-    std::unordered_map<render_graph::ImageDesc, std::vector<PoolImageInfo>> image_pool{};
+    // resource desc --> { is busy, storage index }
+    std::unordered_map<render_graph::CreationCommand, std::vector<ResourceInfo>> resource_pool{};
 
     // this value is used to generate virtual storage indices
     size_t virtual_storage_index_number{};
 
-    // returns image virtual storage index
-    auto acquire_image_labmda = [&image_pool, &virtual_storage_index_number](const render_graph::ImageDesc& image_desc) -> size_t {
-        auto& pool_vector = image_pool[image_desc];
+    // returns resource virtual storage index
+    auto acquire_resource_labmda = [&resource_pool, &virtual_storage_index_number](const render_graph::CreationCommand& desc) -> size_t {
+        auto& pool_vector = resource_pool[desc];
 
-        for (auto& pool_image_info : pool_vector) {
-            if (!pool_image_info.is_busy) {
+        for (auto& resource_info : pool_vector) {
+            if (!resource_info.is_busy) {
 
-                pool_image_info.is_busy = true;
-                return pool_image_info.image_storage_index;
+                resource_info.is_busy = true;
+                return resource_info.storage_index;
             }
         }
 
-        PoolImageInfo& pool_image_info      = pool_vector.emplace_back();
-        pool_image_info.is_busy             = true;
-        pool_image_info.image_storage_index = virtual_storage_index_number++;
+        ResourceInfo& resource_info = pool_vector.emplace_back();
+        resource_info.is_busy       = true;
+        resource_info.storage_index = virtual_storage_index_number++;
 
-        return pool_image_info.image_storage_index;
+        return resource_info.storage_index;
     };
 
-    auto release_image_lambda = [&image_pool](const render_graph::ImageDesc& image_desc, size_t image_storage_index) {
-        auto& pool_vector = image_pool[image_desc];
-        for (auto& pool_image_info : pool_vector) {
-            if (pool_image_info.image_storage_index == image_storage_index)
-                pool_image_info.is_busy = false;
+    auto release_resource_lambda = [&resource_pool](const render_graph::CreationCommand& desc, size_t storage_index) {
+        auto& pool_vector = resource_pool[desc];
+        for (auto& resource_info : pool_vector) {
+            if (resource_info.storage_index == storage_index)
+                resource_info.is_busy = false;
         }
     };
 
-    // hashed name --> image desc
-    std::unordered_map<fe::StringHash, render_graph::ImageDesc> hashed_to_desc_map{};
+    // hashed name --> resource desc
+    std::unordered_map<fe::StringHash, render_graph::CreationCommand> hashed_to_desc_map{};
     hashed_to_desc_map.reserve(render_passes.size() * 5);
     for (const auto& render_pass : render_passes) {
         for (const auto& create_request : render_pass.create_requests) {
-            hashed_to_desc_map[create_request.hashed_name] = create_request;
+            fe::StringHash hashed_name      = std::visit([](auto& desc) -> fe::StringHash { return desc.handle.hashed_name; }, create_request);
+            hashed_to_desc_map[hashed_name] = create_request;
         }
     }
 
@@ -96,20 +97,28 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
     std::unordered_map<fe::StringHash, size_t> hashed_to_virtual_map{};
 
     // setup virtual indices
-    this->setupVirtualIndices(acquire_image_labmda,
-                              release_image_lambda,
+    this->setupVirtualIndices(acquire_resource_labmda,
+                              release_resource_lambda,
                               resource_lifetimes,
                               hashed_to_desc_map,
                               hashed_to_virtual_map);
 
     RenderGraphCompileResult result{};
-    result.image_descs.reserve(render_passes.size() * 5);
+    result.get_desc_vector<render_graph::ImageDesc>().reserve(render_passes.size() * 5);
+
+    auto set_virtual_index = [&](auto& desc) {
+        desc.handle.index = hashed_to_virtual_map[desc.handle.hashed_name];
+    };
 
     for (CompiledRenderPass& render_pass : render_passes) {
-        for (render_graph::ImageDesc& image_desc : render_pass.create_requests) {
+        for (auto& create_request : render_pass.create_requests) {
 
-            image_desc.texture_index = hashed_to_virtual_map[image_desc.hashed_name];
-            result.image_descs.emplace_back(image_desc);
+            std::visit([&](auto& desc) {
+                using DescType = std::decay_t<decltype(desc)>;
+                set_virtual_index(desc);
+                result.get_desc_vector<DescType>().emplace_back(desc);
+            },
+                       create_request);
         }
     }
 
@@ -124,10 +133,10 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
         begin_command.clear_color_value = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
         begin_command.clear_depth_value = 1.0f;
 
-        if (!compiled_render_pass.writes.empty()) {
-            auto it = hashed_to_desc_map.find(compiled_render_pass.writes[0].handle.hashed_name); // taking the first one
+        if (!compiled_render_pass.image_writes.empty()) {
+            auto it = hashed_to_desc_map.find(compiled_render_pass.image_writes[0].handle.hashed_name); // taking the first one
             if (it != hashed_to_desc_map.end()) {
-                begin_command.viewport.extent = it->second.extent;
+                begin_command.viewport.extent = std::get<render_graph::ImageDesc>(it->second).extent;
             }
         }
         else {
@@ -135,12 +144,12 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
             begin_command.viewport.extent = glm::ivec3(1920, 1080, 1); // TODO : use window's size
         }
 
-        for (size_t j = 0; j < compiled_render_pass.writes.size(); j++) {
+        for (size_t j = 0; j < compiled_render_pass.image_writes.size(); j++) {
             if (j >= MAX_COLOR_ATTACHMENTS + 1) {              // plus one is depth stencil
                 fe::logging::fatal("Too much render targets"); // TODO : rewrite this
             }
 
-            CompiledRenderPass::ImageBarrier& image_barrier = compiled_render_pass.writes[j];
+            CompiledRenderPass::ImageBarrier& image_barrier = compiled_render_pass.image_writes[j];
 
             if (image_barrier.new_state == ResourceState::DEPTH_WRITE ||
                 image_barrier.new_state == ResourceState::DEPTH_READ) {
@@ -171,26 +180,26 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
 
 void fe::RenderGraph::SetupResourceBindings(const RenderGraphBindings& bindings) {
     for (RenderPass& render_pass : m_RenderPasses) {
-        for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_barriers) {
-            auto it = bindings.bindings.find(image_barrier.hashed_name); // here it's a hashed name
+        for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_image_barriers) {
+            auto it = bindings.bindings.find(image_barrier.handle.hashed_name);
 
             if (it != bindings.bindings.end()) {
-                image_barrier.texture_index = it->second; // here it's already an actual GPU index
+                image_barrier.handle.index = it->second;
             }
             else {
                 fe::logging::error("Failed to set image barrier's texture index in fe::RenderGraph::SetupResourceBindings. Binding is missing for hash : %llu",
-                                   image_barrier.hashed_name);
+                                   image_barrier.handle.hashed_name);
             }
         }
 
         render_graph::BeginRenderPass& begin_command = render_pass.compiled_begin_command;
 
         for (size_t i = 0; i < begin_command.color_targets_count; i++) {
-            size_t& color_target = begin_command.color_targets[i]; // here it's a hashed name
+            size_t& color_target = begin_command.color_targets[i];
 
             auto it = bindings.bindings.find(color_target);
             if (it != bindings.bindings.end()) {
-                color_target = it->second; // here it's already an actual GPU index
+                color_target = it->second;
             }
             else {
                 fe::logging::error("Failed to set color target's texture index in fe::RenderGraph::SetupResourceBindings. Missing binding for color target hash : %llu",
@@ -199,9 +208,9 @@ void fe::RenderGraph::SetupResourceBindings(const RenderGraphBindings& bindings)
         }
 
         if (begin_command.has_depth_target) {
-            auto it = bindings.bindings.find(begin_command.depth_target); // here it's a hashed name
+            auto it = bindings.bindings.find(begin_command.depth_target);
             if (it != bindings.bindings.end()) {
-                begin_command.depth_target = it->second; // here it's already an actual GPU index
+                begin_command.depth_target = it->second;
             }
             else {
                 fe::logging::error("Failed to set depth target's texture index in fe::RenderGraph::SetupResourceBindings. Missing binding for depth target hash : %llu",
@@ -213,13 +222,16 @@ void fe::RenderGraph::SetupResourceBindings(const RenderGraphBindings& bindings)
 
 fe::render_graph::CommandList fe::RenderGraph::Execute(const entt::registry& render_data) {
     render_graph::CommandList render_command_list{};
-    render_command_list.reserve(m_RenderPasses.size() * 1024);
+    render_command_list.reserve(m_RenderPasses.size() * 1024); // size in bytes
 
     for (const RenderPass& render_pass : m_RenderPasses) {
         RenderGraphContext context{ render_data };
         render_pass.execute_function(context, render_pass.mapped_data);
 
-        for (const auto& barrier : render_pass.compiled_barriers)
+        for (const auto& barrier : render_pass.compiled_image_barriers)
+            render_command_list.enqueue(barrier);
+
+        for (const auto& barrier : render_pass.compiled_buffer_barriers)
             render_command_list.enqueue(barrier);
 
         render_command_list.enqueue(render_pass.compiled_begin_command);
@@ -248,22 +260,22 @@ void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&      
 
         auto& this_render_pass = render_passes_dst.emplace_back();
 
-        this_render_pass.reads.reserve(builder.reads.size());
-        this_render_pass.writes.reserve(builder.writes.size());
+        this_render_pass.image_reads.reserve(builder.image_reads.size());
+        this_render_pass.image_writes.reserve(builder.image_writes.size());
 
-        for (const auto& read_barrier : builder.reads) {
-            this_render_pass.reads.emplace_back(CompiledRenderPass::ImageBarrier{ ResourceHandle{ read_barrier.hashed_name, resources_map[read_barrier.hashed_name].version },
-                                                                                  resources_map[read_barrier.hashed_name].old_state, // 'read_barrier.old_state' won't work here because it set by default
-                                                                                  read_barrier.new_state });
-            resources_map[read_barrier.hashed_name].old_state = read_barrier.new_state;
+        for (const auto& read_barrier : builder.image_reads) {
+            this_render_pass.image_reads.emplace_back(CompiledRenderPass::ResourceBarrier{ ResourceHandle{ read_barrier.handle.hashed_name, resources_map[read_barrier.handle.hashed_name].version },
+                                                                                           resources_map[read_barrier.handle.hashed_name].old_state, // 'read_barrier.old_state' won't work here because it set by default
+                                                                                           read_barrier.new_state });
+            resources_map[read_barrier.handle.hashed_name].old_state = read_barrier.new_state;
         }
 
-        for (const auto& write_barrier : builder.writes) {
-            resources_map[write_barrier.hashed_name].version++; // increasing version because while writing the resource is changes
-            this_render_pass.writes.emplace_back(CompiledRenderPass::ImageBarrier{ ResourceHandle{ write_barrier.hashed_name, resources_map[write_barrier.hashed_name].version },
-                                                                                   resources_map[write_barrier.hashed_name].old_state, // 'read_barrier.old_state' won't work here because it set by default
-                                                                                   write_barrier.new_state });
-            resources_map[write_barrier.hashed_name].old_state = write_barrier.new_state;
+        for (const auto& write_barrier : builder.image_writes) {
+            resources_map[write_barrier.handle.hashed_name].version++; // increasing version because while writing the resource is changes
+            this_render_pass.image_writes.emplace_back(CompiledRenderPass::ImageBarrier{ ResourceHandle{ write_barrier.handle.hashed_name, resources_map[write_barrier.handle.hashed_name].version },
+                                                                                         resources_map[write_barrier.handle.hashed_name].old_state, // 'read_barrier.old_state' won't work here because it set by default
+                                                                                         write_barrier.new_state });
+            resources_map[write_barrier.handle.hashed_name].old_state = write_barrier.new_state;
         }
 
         this_render_pass.create_requests = std::move(builder.create_requests);
@@ -290,7 +302,9 @@ void fe::RenderGraph::sortRenderPasses(std::vector<CompiledRenderPass>& render_p
     for (size_t i = 0; i < render_passes_dst.size(); i++) {
         const auto& this_render_pass = render_passes_dst[i];
 
-        for (const auto& read_barrier : this_render_pass.reads) {
+        // images
+
+        for (const auto& read_barrier : this_render_pass.image_reads) {
             auto it = last_writer.find(read_barrier.handle);
             if (it != last_writer.end()) {
                 add_dependency_lambda(it->second, i);
@@ -298,7 +312,37 @@ void fe::RenderGraph::sortRenderPasses(std::vector<CompiledRenderPass>& render_p
             current_readers[read_barrier.handle].emplace_back(i);
         }
 
-        for (const auto& write_barrier : this_render_pass.writes) {
+        for (const auto& write_barrier : this_render_pass.image_writes) {
+            auto readers_it = current_readers.find(write_barrier.handle);
+
+            if (readers_it != current_readers.end()) {
+                for (uint32_t reader_pass : readers_it->second) {
+                    if (reader_pass != i) {
+                        add_dependency_lambda(reader_pass, i);
+                    }
+                }
+                readers_it->second.clear();
+            }
+
+            auto writer_it = last_writer.find(write_barrier.handle);
+            if (writer_it != last_writer.end()) {
+                add_dependency_lambda(writer_it->second, i);
+            }
+
+            last_writer[write_barrier.handle] = i;
+        }
+
+        // buffers
+
+        for (const auto& read_barrier : this_render_pass.buffer_reads) {
+            auto it = last_writer.find(read_barrier.handle);
+            if (it != last_writer.end()) {
+                add_dependency_lambda(it->second, i);
+            }
+            current_readers[read_barrier.handle].emplace_back(i);
+        }
+
+        for (const auto& write_barrier : this_render_pass.buffer_writes) {
             auto readers_it = current_readers.find(write_barrier.handle);
 
             if (readers_it != current_readers.end()) {
@@ -377,15 +421,15 @@ void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>& 
     used_resources.insert(ResourceHandle{ final_resource_hash, final_version });
 
     auto add_used_resource_lambda = [&used_resources, &used_render_passes](CompiledRenderPass& render_pass) {
-        used_resources.reserve(used_resources.size() + render_pass.reads.size());
-        for (const auto& read_barrier : render_pass.reads) {
+        used_resources.reserve(used_resources.size() + render_pass.image_reads.size());
+        for (const auto& read_barrier : render_pass.image_reads) {
             used_resources.insert(read_barrier.handle);
         }
         used_render_passes.emplace_back(std::move(render_pass));
     };
 
     for (auto& render_pass : std::views::reverse(render_passes_dst)) {
-        bool is_needed = std::ranges::any_of(render_pass.writes, [&used_resources](const CompiledRenderPass::ImageBarrier& write_barrier) {
+        bool is_needed = std::ranges::any_of(render_pass.image_writes, [&used_resources](const CompiledRenderPass::ImageBarrier& write_barrier) {
             return used_resources.contains(write_barrier.handle);
         });
 
@@ -402,7 +446,6 @@ void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>& 
 void fe::RenderGraph::translateRenderPasses(std::vector<CompiledRenderPass>&              render_passes,
                                             std::unordered_map<fe::StringHash, Resource>& resources_map_dst,
                                             std::vector<RenderPass>&                      used_render_passes_dst) {
-
     for (const CompiledRenderPass& render_pass : render_passes) {
         // find this render pass in 'fe::RenderGraph::m_RenderPasses'
         auto it = std::ranges::find_if(m_RenderPasses, [&render_pass](const RenderPass& this_render_pass) -> bool {
@@ -410,26 +453,26 @@ void fe::RenderGraph::translateRenderPasses(std::vector<CompiledRenderPass>&    
         });
 
         if (it != m_RenderPasses.end()) {
-            it->compiled_barriers.reserve(render_pass.reads.size() + render_pass.writes.size());
+            it->compiled_image_barriers.reserve(render_pass.image_reads.size() + render_pass.image_writes.size());
 
-            for (const CompiledRenderPass::ImageBarrier& read_barrier : render_pass.reads) {
-                auto& this_barrier = it->compiled_barriers.emplace_back();
+            for (const CompiledRenderPass::ImageBarrier& read_barrier : render_pass.image_reads) {
+                auto& this_barrier = it->compiled_image_barriers.emplace_back();
 
-                this_barrier.hashed_name = read_barrier.handle.hashed_name;
-                this_barrier.old_state   = resources_map_dst[this_barrier.hashed_name].old_state;
-                this_barrier.new_state   = read_barrier.new_state;
+                this_barrier.handle.hashed_name = read_barrier.handle.hashed_name;
+                this_barrier.old_state          = resources_map_dst[this_barrier.handle.hashed_name].old_state;
+                this_barrier.new_state          = read_barrier.new_state;
 
-                resources_map_dst[this_barrier.hashed_name].old_state = read_barrier.new_state;
+                resources_map_dst[this_barrier.handle.hashed_name].old_state = read_barrier.new_state;
             }
 
-            for (const CompiledRenderPass::ImageBarrier& write_barrier : render_pass.writes) {
-                auto& this_barrier = it->compiled_barriers.emplace_back();
+            for (const CompiledRenderPass::ImageBarrier& write_barrier : render_pass.image_writes) {
+                auto& this_barrier = it->compiled_image_barriers.emplace_back();
 
-                this_barrier.hashed_name = write_barrier.handle.hashed_name;
-                this_barrier.old_state   = resources_map_dst[this_barrier.hashed_name].old_state;
-                this_barrier.new_state   = write_barrier.new_state;
+                this_barrier.handle.hashed_name = write_barrier.handle.hashed_name;
+                this_barrier.old_state          = resources_map_dst[this_barrier.handle.hashed_name].old_state;
+                this_barrier.new_state          = write_barrier.new_state;
 
-                resources_map_dst[this_barrier.hashed_name].old_state = write_barrier.new_state;
+                resources_map_dst[this_barrier.handle.hashed_name].old_state = write_barrier.new_state;
             }
 
             used_render_passes_dst.emplace_back(std::move(*it));
@@ -442,8 +485,18 @@ void fe::RenderGraph::calculateResourceLifetimes(std::unordered_map<fe::StringHa
     for (size_t i = 0; i < m_RenderPasses.size(); i++) {
         const RenderPass& render_pass = m_RenderPasses[i];
 
-        for (const render_graph::ImageBarrier& image_barrier : render_pass.compiled_barriers) {
-            auto& lifetime = resource_lifetimes[image_barrier.hashed_name];
+        for (const render_graph::ImageBarrier& image_barrier : render_pass.compiled_image_barriers) {
+            auto& lifetime = resource_lifetimes[image_barrier.handle.hashed_name];
+
+            if (lifetime.first_pass_index == std::numeric_limits<uint32_t>::max()) {
+                lifetime.first_pass_index = i;
+            }
+
+            lifetime.last_pass_index = i;
+        }
+
+        for (const render_graph::BufferBarrier& buffer_barrier : render_pass.compiled_buffer_barriers) {
+            auto& lifetime = resource_lifetimes[buffer_barrier.handle.hashed_name];
 
             if (lifetime.first_pass_index == std::numeric_limits<uint32_t>::max()) {
                 lifetime.first_pass_index = i;

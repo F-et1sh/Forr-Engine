@@ -31,6 +31,15 @@ namespace fe {
         return hash;
     }
 
+    FORR_NODISCARD constexpr StringHash wstring_hash(std::wstring_view str) noexcept {
+        std::uint64_t hash = 14695981039346656037ULL;
+        for (const wchar_t c : str) {
+            hash ^= static_cast<std::uint64_t>(static_cast<std::make_unsigned_t<wchar_t>>(c));
+            hash *= 1099511628211ULL;
+        }
+        return hash;
+    }
+
     // this is like std::string but it uses hash to compare.
     // used mostly for GUI
     class hashed_string {
