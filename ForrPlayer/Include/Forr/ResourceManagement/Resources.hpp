@@ -145,7 +145,8 @@ namespace fe::resource {
         fe::pointer<ShaderFileData> shader_file_data_ptr{};
 
         MaterialLayout() = default;
-        MaterialLayout(shader::ReflectedMaterialLayout reflected_layout) : reflected_layout(std::move(reflected_layout)) {}
+        MaterialLayout(shader::ReflectedMaterialLayout reflected_layout, fe::pointer<ShaderFileData> shader_file_data_ptr) 
+            : reflected_layout(std::move(reflected_layout)), shader_file_data_ptr(shader_file_data_ptr) {}
         ~MaterialLayout() = default;
 
         FORR_RESOURCE_BODY(MaterialLayout)

@@ -18,10 +18,10 @@
     ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
 
 ### Done
-    -
+    fe::resource::ShaderProgram's and fe::resource::MaterialLayout's 'shader_file_data_ptr' setting bug fixed
 
 ### Problem
-    -
+    Feelings bad
 
 ## 06.08.2026
 ### Goal

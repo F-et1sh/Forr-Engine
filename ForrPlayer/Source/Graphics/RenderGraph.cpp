@@ -35,7 +35,7 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
     std::vector<RenderPass> used_render_passes{};
     used_render_passes.reserve(render_passes.size());
 
-    // translate 'fe::RenderGraph::CompiledRenderPass' to 'fe::RenderPass' and setup 'fe::RenderPass::compiled_barriers'
+    // translate 'fe::RenderGraph::CompiledRenderPass' to 'fe::RenderPass' and setup 'fe::RenderPass::compiled_image_barriers' and 'fe::RenderPass::compiled_buffer_barriers'
     this->translateRenderPasses(render_passes, resources_map, used_render_passes);
 
     m_RenderPasses.clear();
@@ -179,45 +179,62 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
 }
 
 void fe::RenderGraph::SetupResourceBindings(const RenderGraphBindings& bindings) {
-    for (RenderPass& render_pass : m_RenderPasses) {
-        for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_image_barriers) {
-            auto it = bindings.bindings.find(image_barrier.handle.hashed_name);
+    //for (RenderPass& render_pass : m_RenderPasses) {
 
-            if (it != bindings.bindings.end()) {
-                image_barrier.handle.index = it->second;
-            }
-            else {
-                fe::logging::error("Failed to set image barrier's texture index in fe::RenderGraph::SetupResourceBindings. Binding is missing for hash : %llu",
-                                   image_barrier.handle.hashed_name);
-            }
-        }
+    //    // images
 
-        render_graph::BeginRenderPass& begin_command = render_pass.compiled_begin_command;
+    //    for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_image_barriers) {
+    //        auto it = bindings.bindings.find(image_barrier.handle.hashed_name);
 
-        for (size_t i = 0; i < begin_command.color_targets_count; i++) {
-            size_t& color_target = begin_command.color_targets[i];
+    //        if (it != bindings.bindings.end()) {
+    //            image_barrier.handle.index = it->second;
+    //        }
+    //        else {
+    //            fe::logging::error("Failed to set image barrier's index in fe::RenderGraph::SetupResourceBindings. Binding is missing for hash : %llu",
+    //                               image_barrier.handle.hashed_name);
+    //        }
+    //    }
 
-            auto it = bindings.bindings.find(color_target);
-            if (it != bindings.bindings.end()) {
-                color_target = it->second;
-            }
-            else {
-                fe::logging::error("Failed to set color target's texture index in fe::RenderGraph::SetupResourceBindings. Missing binding for color target hash : %llu",
-                                   color_target);
-            }
-        }
+    //    // buffers
 
-        if (begin_command.has_depth_target) {
-            auto it = bindings.bindings.find(begin_command.depth_target);
-            if (it != bindings.bindings.end()) {
-                begin_command.depth_target = it->second;
-            }
-            else {
-                fe::logging::error("Failed to set depth target's texture index in fe::RenderGraph::SetupResourceBindings. Missing binding for depth target hash : %llu",
-                                   begin_command.depth_target);
-            }
-        }
-    }
+    //    for (render_graph::BufferBarrier& buffer_barrier : render_pass.compiled_buffer_barriers) {
+    //        auto it = bindings.bindings.find(buffer_barrier.handle.hashed_name);
+
+    //        if (it != bindings.bindings.end()) {
+    //            buffer_barrier.handle.index = it->second;
+    //        }
+    //        else {
+    //            fe::logging::error("Failed to set buffer barrier's index in fe::RenderGraph::SetupResourceBindings. Binding is missing for hash : %llu",
+    //                               buffer_barrier.handle.hashed_name);
+    //        }
+    //    }
+
+    //    render_graph::BeginRenderPass& begin_command = render_pass.compiled_begin_command;
+
+    //    for (size_t i = 0; i < begin_command.color_targets_count; i++) {
+    //        size_t& color_target = begin_command.color_targets[i];
+
+    //        auto it = bindings.bindings.find(color_target);
+    //        if (it != bindings.bindings.end()) {
+    //            color_target = it->second;
+    //        }
+    //        else {
+    //            fe::logging::error("Failed to set color target's texture index in fe::RenderGraph::SetupResourceBindings. Missing binding for color target hash : %llu",
+    //                               color_target);
+    //        }
+    //    }
+
+    //    if (begin_command.has_depth_target) {
+    //        auto it = bindings.bindings.find(begin_command.depth_target);
+    //        if (it != bindings.bindings.end()) {
+    //            begin_command.depth_target = it->second;
+    //        }
+    //        else {
+    //            fe::logging::error("Failed to set depth target's texture index in fe::RenderGraph::SetupResourceBindings. Missing binding for depth target hash : %llu",
+    //                               begin_command.depth_target);
+    //        }
+    //    }
+    //}
 }
 
 fe::render_graph::CommandList fe::RenderGraph::Execute(const entt::registry& render_data) {
@@ -263,10 +280,12 @@ void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&      
         this_render_pass.image_reads.reserve(builder.image_reads.size());
         this_render_pass.image_writes.reserve(builder.image_writes.size());
 
+        // images
+
         for (const auto& read_barrier : builder.image_reads) {
-            this_render_pass.image_reads.emplace_back(CompiledRenderPass::ResourceBarrier{ ResourceHandle{ read_barrier.handle.hashed_name, resources_map[read_barrier.handle.hashed_name].version },
-                                                                                           resources_map[read_barrier.handle.hashed_name].old_state, // 'read_barrier.old_state' won't work here because it set by default
-                                                                                           read_barrier.new_state });
+            this_render_pass.image_reads.emplace_back(CompiledRenderPass::ImageBarrier{ ResourceHandle{ read_barrier.handle.hashed_name, resources_map[read_barrier.handle.hashed_name].version },
+                                                                                        resources_map[read_barrier.handle.hashed_name].old_state, // 'read_barrier.old_state' won't work here because it set by default
+                                                                                        read_barrier.new_state });
             resources_map[read_barrier.handle.hashed_name].old_state = read_barrier.new_state;
         }
 
@@ -275,6 +294,23 @@ void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&      
             this_render_pass.image_writes.emplace_back(CompiledRenderPass::ImageBarrier{ ResourceHandle{ write_barrier.handle.hashed_name, resources_map[write_barrier.handle.hashed_name].version },
                                                                                          resources_map[write_barrier.handle.hashed_name].old_state, // 'read_barrier.old_state' won't work here because it set by default
                                                                                          write_barrier.new_state });
+            resources_map[write_barrier.handle.hashed_name].old_state = write_barrier.new_state;
+        }
+
+        // buffers
+
+        for (const auto& read_barrier : builder.buffer_reads) {
+            this_render_pass.buffer_reads.emplace_back(CompiledRenderPass::BufferBarrier{ ResourceHandle{ read_barrier.handle.hashed_name, resources_map[read_barrier.handle.hashed_name].version },
+                                                                                          resources_map[read_barrier.handle.hashed_name].old_state, // 'read_barrier.old_state' won't work here because it set by default
+                                                                                          read_barrier.new_state });
+            resources_map[read_barrier.handle.hashed_name].old_state = read_barrier.new_state;
+        }
+
+        for (const auto& write_barrier : builder.buffer_reads) {
+            resources_map[write_barrier.handle.hashed_name].version++; // increasing version because while writing the resource is changes
+            this_render_pass.buffer_reads.emplace_back(CompiledRenderPass::BufferBarrier{ ResourceHandle{ write_barrier.handle.hashed_name, resources_map[write_barrier.handle.hashed_name].version },
+                                                                                          resources_map[write_barrier.handle.hashed_name].old_state, // 'read_barrier.old_state' won't work here because it set by default
+                                                                                          write_barrier.new_state });
             resources_map[write_barrier.handle.hashed_name].old_state = write_barrier.new_state;
         }
 
@@ -455,6 +491,8 @@ void fe::RenderGraph::translateRenderPasses(std::vector<CompiledRenderPass>&    
         if (it != m_RenderPasses.end()) {
             it->compiled_image_barriers.reserve(render_pass.image_reads.size() + render_pass.image_writes.size());
 
+            // images
+
             for (const CompiledRenderPass::ImageBarrier& read_barrier : render_pass.image_reads) {
                 auto& this_barrier = it->compiled_image_barriers.emplace_back();
 
@@ -475,6 +513,28 @@ void fe::RenderGraph::translateRenderPasses(std::vector<CompiledRenderPass>&    
                 resources_map_dst[this_barrier.handle.hashed_name].old_state = write_barrier.new_state;
             }
 
+            // buffers
+
+            for (const CompiledRenderPass::BufferBarrier& read_barrier : render_pass.buffer_reads) {
+                auto& this_barrier = it->compiled_buffer_barriers.emplace_back();
+
+                this_barrier.handle.hashed_name = read_barrier.handle.hashed_name;
+                this_barrier.old_state          = resources_map_dst[this_barrier.handle.hashed_name].old_state;
+                this_barrier.new_state          = read_barrier.new_state;
+
+                resources_map_dst[this_barrier.handle.hashed_name].old_state = read_barrier.new_state;
+            }
+
+            for (const CompiledRenderPass::BufferBarrier& write_barrier : render_pass.buffer_reads) {
+                auto& this_barrier = it->compiled_buffer_barriers.emplace_back();
+
+                this_barrier.handle.hashed_name = write_barrier.handle.hashed_name;
+                this_barrier.old_state          = resources_map_dst[this_barrier.handle.hashed_name].old_state;
+                this_barrier.new_state          = write_barrier.new_state;
+
+                resources_map_dst[this_barrier.handle.hashed_name].old_state = write_barrier.new_state;
+            }
+
             used_render_passes_dst.emplace_back(std::move(*it));
         }
     }
@@ -485,6 +545,8 @@ void fe::RenderGraph::calculateResourceLifetimes(std::unordered_map<fe::StringHa
     for (size_t i = 0; i < m_RenderPasses.size(); i++) {
         const RenderPass& render_pass = m_RenderPasses[i];
 
+        // images
+
         for (const render_graph::ImageBarrier& image_barrier : render_pass.compiled_image_barriers) {
             auto& lifetime = resource_lifetimes[image_barrier.handle.hashed_name];
 
@@ -494,6 +556,8 @@ void fe::RenderGraph::calculateResourceLifetimes(std::unordered_map<fe::StringHa
 
             lifetime.last_pass_index = i;
         }
+
+        // buffers
 
         for (const render_graph::BufferBarrier& buffer_barrier : render_pass.compiled_buffer_barriers) {
             auto& lifetime = resource_lifetimes[buffer_barrier.handle.hashed_name];

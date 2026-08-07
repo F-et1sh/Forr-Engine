@@ -25,6 +25,9 @@ namespace fe {
                                                          1,
                                                          render_graph::ImageUsageBits::RENDER_TARGET });
             builder.writeImage(fe::string_hash("ShadowMap"), ResourceState::RENDER_TARGET);
+
+            builder.createPipeline(render_graph::PipelineDesc{ PATH.getShadersPath() / L"Shadows.slang",
+                                                               .some_pipeline_settings = RenderMode::TRIANGLES });
         }
 
         static void Execute(RenderGraphContext& context, ShadowPassData& pass_data) {
