@@ -173,10 +173,6 @@ void fe::RendererVulkan::InitializeGPUResources() {
         fe::logging::info("VULKAN. Loaded texture's size : %i %i", texture.width, texture.height);
     });
 
-    m_ResourceManager.RunForEach<resource::Material>([&](resource::Material& material) {
-        m_VulkanResourceManager.CreateResource(material);
-    });
-
     m_ResourceManager.RunForEach<resource::Model>([&](resource::Model& model) {
         m_VulkanResourceManager.CreateResource(model);
 
@@ -217,80 +213,80 @@ void fe::RendererVulkan::resizeWindow() {
 }
 
 void fe::RendererVulkan::handleRenderQueue(const RenderPacket& render_packet) {
-    { // temp
-        auto glfw_window = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
+    //{ // temp
+    //    auto glfw_window = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
 
-        float speed = 0.025f;
+    //    float speed = 0.025f;
 
-        if (glfwGetKey(glfw_window, GLFW_KEY_A))
-            m_Camera.translate(glm::vec3(speed, 0.0f, 0.0f));
-        else if (glfwGetKey(glfw_window, GLFW_KEY_D))
-            m_Camera.translate(glm::vec3(-speed, 0.0f, 0.0f));
+    //    if (glfwGetKey(glfw_window, GLFW_KEY_A))
+    //        m_Camera.translate(glm::vec3(speed, 0.0f, 0.0f));
+    //    else if (glfwGetKey(glfw_window, GLFW_KEY_D))
+    //        m_Camera.translate(glm::vec3(-speed, 0.0f, 0.0f));
 
-        if (glfwGetKey(glfw_window, GLFW_KEY_W))
-            m_Camera.translate(glm::vec3(0.0f, 0.0f, speed));
-        else if (glfwGetKey(glfw_window, GLFW_KEY_S))
-            m_Camera.translate(glm::vec3(0.0f, 0.0f, -speed));
+    //    if (glfwGetKey(glfw_window, GLFW_KEY_W))
+    //        m_Camera.translate(glm::vec3(0.0f, 0.0f, speed));
+    //    else if (glfwGetKey(glfw_window, GLFW_KEY_S))
+    //        m_Camera.translate(glm::vec3(0.0f, 0.0f, -speed));
 
-        auto* object_ptr = static_cast<uint8_t*>(m_FrameData[m_CurrentFrame].storage_buffer.bindings[0].mapped);
+    //    auto* object_ptr = static_cast<uint8_t*>(m_FrameData[m_CurrentFrame].storage_buffer.bindings[0].mapped);
 
-        struct GPUCamera {
-            glm::mat4 p;
-            glm::mat4 v;
-        } cam{ m_Camera.getPerspectiveMatrix(), m_Camera.getViewMatrix() };
-        memcpy(object_ptr, &cam, sizeof(cam));
-        object_ptr += sizeof(cam);
+    //    struct GPUCamera {
+    //        glm::mat4 p;
+    //        glm::mat4 v;
+    //    } cam{ m_Camera.getPerspectiveMatrix(), m_Camera.getViewMatrix() };
+    //    memcpy(object_ptr, &cam, sizeof(cam));
+    //    object_ptr += sizeof(cam);
 
-        if (!render_packet.object_transforms.empty()) {
-            size_t bytes_to_copy = render_packet.object_transforms.size() * sizeof(glm::mat4);
-            memcpy(object_ptr, render_packet.object_transforms.data(), bytes_to_copy);
-        }
+    //    if (!render_packet.object_transforms.empty()) {
+    //        size_t bytes_to_copy = render_packet.object_transforms.size() * sizeof(glm::mat4);
+    //        memcpy(object_ptr, render_packet.object_transforms.data(), bytes_to_copy);
+    //    }
 
-        auto*    lights_ptr   = static_cast<uint8_t*>(m_FrameData[m_CurrentFrame].storage_buffer.bindings[1].mapped);
-        uint32_t lights_count = render_packet.lights.size();
-        memcpy(lights_ptr, &lights_count, sizeof(lights_count));
-        lights_ptr += 16;
-        if (!render_packet.lights.empty()) {
-            size_t bytes_to_copy = render_packet.lights.size() * sizeof(GPULight);
-            memcpy(lights_ptr, render_packet.lights.data(), bytes_to_copy);
-        }
-    }
+    //    auto*    lights_ptr   = static_cast<uint8_t*>(m_FrameData[m_CurrentFrame].storage_buffer.bindings[1].mapped);
+    //    uint32_t lights_count = render_packet.lights.size();
+    //    memcpy(lights_ptr, &lights_count, sizeof(lights_count));
+    //    lights_ptr += 16;
+    //    if (!render_packet.lights.empty()) {
+    //        size_t bytes_to_copy = render_packet.lights.size() * sizeof(GPULight);
+    //        memcpy(lights_ptr, render_packet.lights.data(), bytes_to_copy);
+    //    }
+    //}
 
-    const VkCommandBuffer command_buffer = m_FrameData[m_CurrentFrame].command_buffer;
+    //const VkCommandBuffer command_buffer = m_FrameData[m_CurrentFrame].command_buffer;
 
-    // draw
-    for (const auto& draw_command : render_packet.draw_commands) {
-        const auto& material        = m_ResourceManager.GetResource(draw_command.material_ptr);
-        const auto& vulkan_material = m_VulkanResourceManager.GetResource(material->gpu_handle);
+    //// draw
+    //for (const auto& draw_command : render_packet.draw_commands) {
+    //    const auto& material        = m_ResourceManager.GetResource(draw_command.material_ptr);
+    //    const auto& vulkan_material = m_VulkanResourceManager.GetResource(material->gpu_handle);
 
-        // bind pipeline ( material )
-        if (material->gpu_handle != m_CurrentMaterial) {
-            m_CurrentMaterial = material->gpu_handle;
+    //    // bind pipeline ( material )
+    //    if (material->gpu_handle != m_CurrentMaterial) {
+    //        m_CurrentMaterial = material->gpu_handle;
 
-            vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline);
-            vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline_layout, 0, 1, &m_FrameData[m_CurrentFrame].storage_buffer.descriptor_set, 0, nullptr);
-        }
+    //        vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline);
+    //        vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan_material.pipeline_layout, 0, 1, &m_FrameData[m_CurrentFrame].storage_buffer.descriptor_set, 0, nullptr);
+    //    }
 
-        // bind vertex and index buffers
-        if (draw_command.mesh_handle != m_CurrentMesh) {
-            m_CurrentMesh = draw_command.mesh_handle;
+    //    // bind vertex and index buffers
+    //    if (draw_command.mesh_handle != m_CurrentMesh) {
+    //        m_CurrentMesh = draw_command.mesh_handle;
 
-            const auto& vulkan_mesh = m_VulkanResourceManager.GetResource(m_CurrentMesh);
+    //        const auto& vulkan_mesh = m_VulkanResourceManager.GetResource(m_CurrentMesh);
 
-            VkDeviceSize offsets[1]{ 0 };
+    //        VkDeviceSize offsets[1]{ 0 };
 
-            VkBuffer vertex_buffer_raw = vulkan_mesh.vertex_buffer.get<VkBuffer>();
-            vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
+    //        VkBuffer vertex_buffer_raw = vulkan_mesh.vertex_buffer.get<VkBuffer>();
+    //        vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer_raw, offsets);
 
-            VkBuffer index_buffer_raw = vulkan_mesh.index_buffer.get<VkBuffer>();
-            vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
-        }
+    //        VkBuffer index_buffer_raw = vulkan_mesh.index_buffer.get<VkBuffer>();
+    //        vkCmdBindIndexBuffer(command_buffer, index_buffer_raw, 0, VK_INDEX_TYPE_UINT32);
+    //    }
 
-        uint32_t constants = draw_command.instance_index;
-        vkCmdPushConstants(command_buffer, vulkan_material.pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(constants), &constants);
+    //    uint32_t constants = draw_command.instance_index;
+    //    vkCmdPushConstants(command_buffer, vulkan_material.pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(constants), &constants);
 
-        vkCmdDrawIndexed(command_buffer, draw_command.index_count, 1, draw_command.index_offset, 0, 0);
-    }
+    //    vkCmdDrawIndexed(command_buffer, draw_command.index_count, 1, draw_command.index_offset, 0, 0);
+    //}
 }
 
 void fe::RendererVulkan::InitializeBase() {

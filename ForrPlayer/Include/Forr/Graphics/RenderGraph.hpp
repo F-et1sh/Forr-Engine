@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "ResourceManagement/ResourceManager.hpp"
 #include "GPUTypes.hpp"
 
 #include "entt/entt.hpp"
@@ -56,6 +57,26 @@ namespace fe {
         render_graph::CommandList command_list{};
         const entt::registry&     render_registry{};
 
+        RenderGraphContext& BindShaderProgram(const render_graph::BindShaderProgram& bind_shader_program) {
+            command_list.enqueue(bind_shader_program);
+            return *this;
+        }
+
+        RenderGraphContext& BindShaderProgram(const fe::pointer<resource::ShaderProgram> shader_program_ptr) {
+            command_list.enqueue(render_graph::BindShaderProgram{ shader_program_ptr });
+            return *this;
+        }
+
+        RenderGraphContext& BindMaterial(const render_graph::BindMaterial& bind_material) {
+            command_list.enqueue(bind_material);
+            return *this;
+        }
+
+        RenderGraphContext& BindMaterial(const fe::pointer<resource::Material> material_ptr) {
+            command_list.enqueue(render_graph::BindMaterial{ material_ptr });
+            return *this;
+        }
+
         RenderGraphContext& DrawIndexed(const render_graph::DrawIndexed& draw_indexed) {
             command_list.enqueue(draw_indexed);
             return *this;
@@ -70,21 +91,46 @@ namespace fe {
 
     // a proxy to gather setup commands from render pass
     struct FORR_API RenderGraphBuilder {
+        ResourceManager& resource_manager;
+
         std::vector<render_graph::ImageBarrier> image_reads{};
         std::vector<render_graph::ImageBarrier> image_writes{};
 
         std::vector<render_graph::BufferBarrier> buffer_reads{};
         std::vector<render_graph::BufferBarrier> buffer_writes{};
 
-        render_graph::CreationCommandList create_requests{};
+        std::vector<render_graph::ImageDesc>  image_create_requests{};
+        std::vector<render_graph::BufferDesc> buffer_create_requests{};
 
-        RenderGraphBuilder& createPipeline(const render_graph::PipelineDesc& desc) {
-            create_requests.emplace_back(desc);
+        std::vector<std::string> warnings{};
+        std::vector<std::string> errors{};
+        std::vector<std::string> fatals{};
+
+        // this render pass will still be in render graph without changes
+        RenderGraphBuilder& assertWarning(const std::string& message) {
+            warnings.emplace_back(message);
+            return *this;
+        }
+
+        // this render pass will still be in render graph without changes
+        RenderGraphBuilder& assertError(const std::string& message) {
+            errors.emplace_back(message);
+            return *this;
+        }
+
+        // this render pass will be removed from render graph after compiling
+        RenderGraphBuilder& assertFatal(const std::string& message) {
+            fatals.emplace_back(message);
             return *this;
         }
 
         RenderGraphBuilder& createImage(const render_graph::ImageDesc& desc) {
-            create_requests.emplace_back(desc);
+            image_create_requests.emplace_back(desc);
+            return *this;
+        }
+
+        RenderGraphBuilder& createBuffer(const render_graph::BufferDesc& desc) {
+            buffer_create_requests.emplace_back(desc);
             return *this;
         }
 
@@ -99,7 +145,7 @@ namespace fe {
                 case ResourceState::CONSTANT_BUFFER:
                 case ResourceState::INDIRECT_ARGUMENT:
                     fe::logging::error("RenderGraphBuilder::readImage() : wrong state %i", to_state);
-                    return;
+                    return *this;
                     break;
             }
             image_reads.emplace_back(render_graph::ImageBarrier{ hash, ResourceState::UNDEFINED, to_state });
@@ -116,14 +162,14 @@ namespace fe {
                 case ResourceState::CONSTANT_BUFFER:
                 case ResourceState::INDIRECT_ARGUMENT:
                     fe::logging::error("RenderGraphBuilder::writeImage() : wrong state %i", to_state);
-                    return;
+                    return *this;
                     break;
             }
             image_writes.emplace_back(render_graph::ImageBarrier{ hash, ResourceState::UNDEFINED, to_state });
             return *this;
         }
 
-        RenderGraphBuilder()  = default;
+        RenderGraphBuilder(ResourceManager& resource_manager) : resource_manager(resource_manager) {}
         ~RenderGraphBuilder() = default;
 
         FORR_CLASS_MOVABLE(RenderGraphBuilder)
@@ -133,9 +179,8 @@ namespace fe {
     // this structure is needed for the 'fe::RenderGraph::Compile()'
     //  it is used by the renderer to create all resources
     struct FORR_API RenderGraphCompileResult {
-        std::vector<render_graph::ImageDesc>    image_descs{};
-        std::vector<render_graph::BufferDesc>   buffer_descs{};
-        std::vector<render_graph::PipelineDesc> pipeline_descs{};
+        std::vector<render_graph::ImageDesc>  image_descs{};
+        std::vector<render_graph::BufferDesc> buffer_descs{};
 
         RenderGraphCompileResult()  = default;
         ~RenderGraphCompileResult() = default;
@@ -157,13 +202,15 @@ namespace fe {
     };
 
     template <typename T, typename DataT>
-    concept RenderPassTraits = requires(RenderGraphBuilder& builder, RenderGraphContext& context, DataT& render_pass_data) {
-        { T::Setup(builder) } -> std::same_as<void>;
+    concept RenderPassTraits = requires(RenderGraphBuilder& builder,
+                                        RenderGraphContext& context,
+                                        DataT&              render_pass_data) {
+        { T::Setup(builder, render_pass_data) } -> std::same_as<void>;
         { T::Execute(context, render_pass_data) } -> std::same_as<void>;
     };
 
     struct RenderPass {
-        using SetupFunction   = void (*)(RenderGraphBuilder& builder);
+        using SetupFunction   = void (*)(RenderGraphBuilder& builder, void*);
         using ExecuteFunction = void (*)(RenderGraphContext& context, void*);
         using DestroyFunction = void (*)(void*);
 
@@ -249,46 +296,49 @@ namespace fe {
                     : handle(handle), old_state(old_state), new_state(new_state) {}
             };
 
-            using ImageBarrier  = ResourceBarrier;
-            using BufferBarrier = ResourceBarrier;
+            using ResourceBarrier = ResourceBarrier;
+            using ResourceBarrier = ResourceBarrier;
 
             fe::fixed_string<32> name{};
 
-            std::vector<ImageBarrier> image_reads{};
-            std::vector<ImageBarrier> image_writes{};
+            std::vector<ResourceBarrier> image_reads{};
+            std::vector<ResourceBarrier> image_writes{};
 
-            std::vector<BufferBarrier> buffer_reads{};
-            std::vector<BufferBarrier> buffer_writes{};
+            std::vector<ResourceBarrier> buffer_reads{};
+            std::vector<ResourceBarrier> buffer_writes{};
 
-            render_graph::CreationCommandList create_requests{};
+            std::vector<render_graph::ImageDesc>  image_create_requests{};
+            std::vector<render_graph::BufferDesc> buffer_create_requests{};
 
             CompiledRenderPass() = default;
-            CompiledRenderPass(std::string_view                  name,
-                               std::vector<ImageBarrier>         image_reads,
-                               std::vector<ImageBarrier>         image_writes,
-                               std::vector<BufferBarrier>        buffer_reads,
-                               std::vector<BufferBarrier>        buffer_writes,
-                               render_graph::CreationCommandList create_requests)
+            CompiledRenderPass(std::string_view                      name,
+                               std::vector<ResourceBarrier>          image_reads,
+                               std::vector<ResourceBarrier>          image_writes,
+                               std::vector<ResourceBarrier>          buffer_reads,
+                               std::vector<ResourceBarrier>          buffer_writes,
+                               std::vector<render_graph::ImageDesc>  image_create_requests,
+                               std::vector<render_graph::BufferDesc> buffer_create_requests)
                 : name(name),
                   image_reads(std::move(image_reads)),
                   image_writes(std::move(image_writes)),
                   buffer_reads(std::move(buffer_reads)),
                   buffer_writes(std::move(buffer_writes)),
-                  create_requests(std::move(create_requests)) {}
+                  image_create_requests(std::move(image_create_requests)),
+                  buffer_create_requests(std::move(buffer_create_requests)) {}
 
             FORR_CLASS_MOVABLE(CompiledRenderPass)
             FORR_CLASS_NONCOPYABLE(CompiledRenderPass)
         };
 
     public:
-        RenderGraph() = default;
+        RenderGraph(ResourceManager& resource_manager) : m_ResourceManager(resource_manager) {}
         ~RenderGraph() { this->Clear(); }
 
         FORR_CLASS_MOVABLE(RenderGraph)
         FORR_CLASS_NONCOPYABLE(RenderGraph)
 
         template <typename RenderPassData, RenderPassTraits<RenderPassData> RenderPass>
-        FORR_NODISCARD RenderPassHandle<RenderPassData> AddPass(std::string_view name) {
+        FORR_NODISCARD RenderPassHandle<RenderPassData> AddPass(const fe::fixed_string<32>& name) {
             auto& render_pass = m_RenderPasses.emplace_back();
 
             std::byte*      mapped_data_raw = m_RenderPassesData.allocate(sizeof(std::decay_t<RenderPassData>), alignof(RenderPassData));
@@ -296,9 +346,9 @@ namespace fe {
 
             render_pass.name             = name;
             render_pass.mapped_data      = mapped_data;
-            render_pass.setup_function   = &RenderPass::Setup;
-            render_pass.execute_function = [](RenderGraphContext& context, void* ptr) { RenderPass::Execute(context, *reinterpret_cast<RenderPassData*>(ptr)); };
-            render_pass.destroy_function = [](void* ptr) { std::destroy_at(reinterpret_cast<RenderPassData*>(ptr)); };
+            render_pass.setup_function   = [](RenderGraphBuilder& builder, void* render_pass_data) { RenderPass::Setup(builder, *reinterpret_cast<RenderPassData*>(render_pass_data)); };
+            render_pass.execute_function = [](RenderGraphContext& context, void* render_pass_data) { RenderPass::Execute(context, *reinterpret_cast<RenderPassData*>(render_pass_data)); };
+            render_pass.destroy_function = [](void* render_pass_data) { std::destroy_at(reinterpret_cast<RenderPassData*>(render_pass_data)); };
 
             RenderPassHandle<RenderPassData> render_pass_handle{};
             render_pass_handle.mapped_data       = mapped_data;
@@ -355,11 +405,11 @@ namespace fe {
                 }
 
                 for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_image_barriers) {
-                    image_barrier.handle.index = hashed_to_virtual_map_dst[image_barrier.handle.hashed_name];
+                    image_barrier.handle.storage_index = hashed_to_virtual_map_dst[image_barrier.handle.hashed_name];
                 }
 
                 for (render_graph::BufferBarrier& buffer_barrier : render_pass.compiled_buffer_barriers) {
-                    buffer_barrier.handle.index = hashed_to_virtual_map_dst[buffer_barrier.handle.hashed_name];
+                    buffer_barrier.handle.storage_index = hashed_to_virtual_map_dst[buffer_barrier.handle.hashed_name];
                 }
 
                 for (const auto& [hashed_name, lifetime] : resource_lifetimes) {
@@ -373,6 +423,8 @@ namespace fe {
         }
 
     private:
+        ResourceManager& m_ResourceManager;
+
         std::vector<RenderPass> m_RenderPasses{};
         fe::Arena               m_RenderPassesData{ 16 * 1024 };
     };

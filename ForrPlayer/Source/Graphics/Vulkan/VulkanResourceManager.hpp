@@ -30,13 +30,11 @@ namespace fe {
         // instead, it has 'std::vector<Mesh>', which has 'GPUHandle<Mesh> gpu_handle' in it
         ///@{
         void CreateResource(resource::Model& model);
-        void CreateResource(resource::Material& material);
         void CreateResource(resource::Texture& texture);
         ///@} <-- This does not work. What is wrong with MS Visual Studio 2022 ?
         // NOTE : this doesn't work in MS Visual Studio 2026 too~
 
         const VulkanMesh&     GetResource(GPUHandle<resource::Model::Mesh> handle) const;
-        const VulkanMaterial& GetResource(GPUHandle<resource::Material> handle) const;
         const VulkanTexture&  GetResource(GPUHandle<resource::Texture> handle) const;
 
     private:
@@ -62,7 +60,6 @@ namespace fe {
         VulkanContext&   m_Context;
         ResourceManager& m_ResourceManager;
 
-        std::vector<VulkanMaterial> m_StorageMaterials{};
         std::vector<VulkanMesh>     m_StorageMeshes{};
         std::vector<VulkanTexture>  m_StorageTextures{};
     };

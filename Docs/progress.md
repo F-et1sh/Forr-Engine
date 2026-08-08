@@ -1,5 +1,27 @@
 ﻿# Forr-Engine Devlog
 
+## 09.08.2026
+### Goal
+    provide function to finally load shader source codes ( secondary loading )
+    provide : per-frame, per-pass, per-object and per-draw bindings
+    allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
+        allocate big SSBO ( AZDO ) in renderer for materials;
+        see something on the screen
+    make a video for YouTube, when see something on the screen
+    fix Vukan VMA error
+    provide debug tools with Dear ImGui
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+    ( provide string_pool and use std::string_view instead of always using std::string - helps to decrease allocations )
+
+    ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 08.08.2026
 ### Goal
     ( everything is dangling now. See end of RendererOpenGL.cpp to remember last idea )
@@ -23,6 +45,7 @@
 ### Done
     fe::render_graph::BindMaterial added
     fe::OpenGLResourceManager::GetOrCreatePipeline() done
+    RenderGraph fixed. Errors logging in render passes provided
 
 ### Problem
     -

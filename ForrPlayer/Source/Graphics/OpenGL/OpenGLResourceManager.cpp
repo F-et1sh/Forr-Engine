@@ -218,8 +218,9 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetOrCreatePipeline(fe::poi
 
     OpenGLPipeline& opengl_pipeline = m_Pipelines[seed];
 
-    const resource::ShaderProgram& shader_program     = *m_ResourceManager.GetResource(shader_program_ptr);
-    GLuint                         shader_program_raw = this->createShaderProgramRaw(shader_program);
+    const resource::ShaderProgram& shader_program = *m_ResourceManager.GetResource(shader_program_ptr);
+    //shader_program.source_codes
+    GLuint shader_program_raw = this->createShaderProgramRaw(shader_program);
     opengl_pipeline.shader_program.attach(shader_program_raw);
 
     const resource::Material& material = *m_ResourceManager.GetResource(material_ptr);
@@ -251,7 +252,6 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetOrCreatePipeline(fe::poi
     return opengl_pipeline;
 }
 
-// TODO : this about this again | 29.07.2026 what did I mean ?
 GLuint fe::OpenGLResourceManager::GetShaderBuffer(shader::ReflectedDescriptor& parameter) {
     auto it = m_ShaderBuffers.find(parameter);
     if (it != m_ShaderBuffers.end()) return it->second.get();
@@ -378,6 +378,8 @@ GLuint fe::OpenGLResourceManager::createShaderProgramRaw(const resource::ShaderP
         switch (shader_type) {
             case shader::StageBits::VERTEX  : opengl_type = GL_VERTEX_SHADER  ; break;
             case shader::StageBits::FRAGMENT: opengl_type = GL_FRAGMENT_SHADER; break;
+            case shader::StageBits::GEOMETRY: opengl_type = GL_GEOMETRY_SHADER; break;
+            case shader::StageBits::COMPUTE : opengl_type = GL_COMPUTE_SHADER ; break;
         }
         // clang-format on
 

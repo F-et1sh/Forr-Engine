@@ -17,26 +17,6 @@
 
 using namespace fe::resource;
 
-void fe::VulkanResourceManager::CreateResource(Material& material) {
-    VulkanMaterial vulkan_material{};
-
-    VkDescriptorSetLayout descriptor_set_layout_raw{};
-    descriptor_set_layout_raw = this->createDescriptorSetLayout(material);
-    vulkan_material.descriptor_set_layout.attach(m_Context.device, descriptor_set_layout_raw);
-
-    VkPipelineLayout pipeline_layout_raw{};
-    pipeline_layout_raw = this->createPipelineLayout({ m_Context.global_descriptor_set_layout });
-    vulkan_material.pipeline_layout.attach(m_Context.device, pipeline_layout_raw);
-
-    VkPipeline pipeline_raw{};
-    pipeline_raw = this->createPipeline(pipeline_layout_raw, material);
-    vulkan_material.pipeline.attach(m_Context.device, pipeline_raw);
-
-    // TODO : material.buffer
-
-    this->storeResource(material.gpu_handle, vulkan_material, m_StorageMaterials);
-}
-
 void fe::VulkanResourceManager::CreateResource(Model& model) {
     for (auto& mesh : model.meshes) {
         this->createMesh(mesh);
@@ -226,7 +206,6 @@ void fe::VulkanResourceManager::CreateResource(Texture& texture) {
         return STORAGE[handle.index];                                                          \
     }
 
-GET_RESOURCE_INSTANCE(fe::VulkanMaterial, fe::resource::Material, m_StorageMaterials)
 GET_RESOURCE_INSTANCE(fe::VulkanMesh, fe::resource::Model::Mesh, m_StorageMeshes)
 GET_RESOURCE_INSTANCE(fe::VulkanTexture, fe::resource::Texture, m_StorageTextures)
 
