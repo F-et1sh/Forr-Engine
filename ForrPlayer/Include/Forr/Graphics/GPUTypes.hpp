@@ -73,16 +73,6 @@ namespace fe {
 
     inline static constexpr size_t MAX_COLOR_ATTACHMENTS = 16;
 
-    enum class FORR_API RenderMode : uint8_t {
-        POINTS,
-        LINES,
-        LINE_LOOP,
-        LINE_STRIP,
-        TRIANGLES,
-        TRIANGLE_STRIP,
-        TRIANGLE_FAN,
-    };
-
     enum class FORR_API RenderIndexType : uint8_t {
         UNSIGNED_BYTE,
         UNSIGNED_SHORT,
@@ -110,8 +100,42 @@ namespace fe {
         COPY_DST
     };
 
+    enum class FORR_API RenderMode : uint8_t {
+        POINTS,
+        LINES,
+        LINE_LOOP,
+        LINE_STRIP,
+        TRIANGLES,
+        TRIANGLE_STRIP,
+        TRIANGLE_FAN,
+    };
+
+    enum class FORR_API DepthMode : uint8_t {
+        NEVER,
+        LESS,
+        EQUAL,
+        LEQUAL,
+        GREATER,
+        NOTEQUAL,
+        GEQUAL,
+        ALWAYS
+    };
+
+    enum class FORR_API CullMode : uint8_t {
+        NONE,
+        FRONT,
+        BACK,
+        FRONT_AND_BACK
+    };
+
     struct FORR_API PipelineFlags {
         RenderMode render_mode{ RenderMode::TRIANGLES };
+
+        bool      depth_test_enable{ true };
+        DepthMode depth_mode{ DepthMode::LESS };
+
+        bool     cull_enable{ true };
+        CullMode cull_mode{ CullMode::FRONT_AND_BACK };
 
         PipelineFlags() = default;
     };
@@ -266,17 +290,22 @@ namespace fe {
         };
 
         struct FORR_API BindShaderProgram {
-            // ...
+            fe::pointer<resource::ShaderProgram> shader_program_ptr{};
+        };
+
+        struct FORR_API BindMaterial {
+            fe::pointer<resource::Material> material_ptr{};
         };
 
         // To add a command write its structure and add it here
 // render commands - theys are used every frame by RenderGraph(fe::RenderGraph::Execute())
-#define FORR_RENDER_COMMANDS_LIST(X)    \
-    X(ResourceBarrier, ResourceBarrier) \
-    X(BeginRenderPass, BeginRenderPass) \
-    X(EndRenderPass, EndRenderPass)     \
-    X(DrawIndexed, DrawIndexed)         \
-    X(BindShaderProgram, BindShaderProgram)
+#define FORR_RENDER_COMMANDS_LIST(X)        \
+    X(ResourceBarrier, ResourceBarrier)     \
+    X(BeginRenderPass, BeginRenderPass)     \
+    X(EndRenderPass, EndRenderPass)         \
+    X(DrawIndexed, DrawIndexed)             \
+    X(BindShaderProgram, BindShaderProgram) \
+    X(BindMaterial, BindMaterial)
 
         enum class CommandType : uint8_t {
 #define GENERATE_ENUM(EnumName, StructName) EnumName,

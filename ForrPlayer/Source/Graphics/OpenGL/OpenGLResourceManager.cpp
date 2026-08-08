@@ -15,43 +15,10 @@
 
 using namespace fe::resource;
 
-void fe::OpenGLResourceManager::CreateResource(Material& material) {
-    OpenGLMaterial opengl_material{};
-
-    //ShaderProgram* shader_program = m_ResourceManager.GetResource(material.shader_program_ptr);
-    //if (!shader_program) {
-    //    fe::logging::error("Unified -> OpenGL. Failed to create material. material.shader_program.ptr was invalid");
-    //    return;
-    //}
-
-    //OpenGLShaderProgram opengl_shader_program{};
-    //GLuint              opengl_shader_program_raw = this->createShaderProgramRaw(*shader_program);
-    //opengl_shader_program.shader_program.attach(opengl_shader_program_raw);
-
-    //opengl_shader_program.shader_buffers.
-
-    //for (const auto& sampler : material.samplers) {
-    //    auto& texture = *m_ResourceManager.GetResource(sampler.texture_ptr);
-    //    if (!texture.gpu_handle) {
-    //        this->CreateResource(texture);
-    //    }
-
-    //    const auto& opengl_texture = this->GetResource(texture.gpu_handle);
-
-    //    if (!material.buffer.empty())
-    //        std::memcpy(&material.buffer[sampler.offset], &opengl_texture.resident_id, sizeof(uint64_t));
-    //}
-
-    this->storeResource(material.gpu_handle, opengl_material, m_StorageMaterials);
-}
-
 void fe::OpenGLResourceManager::CreateResource(Model& model) {
     for (auto& mesh : model.meshes) {
         this->createMesh(mesh);
     }
-
-    //m_StorageMaterials
-    //std::
 }
 
 void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
@@ -240,6 +207,50 @@ const fe::OpenGLTexture& fe::OpenGLResourceManager::GetImage(size_t texture_stor
     return m_StorageTextures[texture_storage_index];
 }
 
+const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetOrCreatePipeline(fe::pointer<resource::ShaderProgram> shader_program_ptr,
+                                                                         fe::pointer<resource::Material>      material_ptr) {
+    size_t seed{};
+    fe::hash_combine(seed, shader_program_ptr.packed());
+    fe::hash_combine(seed, material_ptr.packed());
+
+    auto it = m_Pipelines.find(seed);
+    if (it != m_Pipelines.end()) return it->second;
+
+    OpenGLPipeline& opengl_pipeline = m_Pipelines[seed];
+
+    const resource::ShaderProgram& shader_program     = *m_ResourceManager.GetResource(shader_program_ptr);
+    GLuint                         shader_program_raw = this->createShaderProgramRaw(shader_program);
+    opengl_pipeline.shader_program.attach(shader_program_raw);
+
+    const resource::Material& material = *m_ResourceManager.GetResource(material_ptr);
+
+    opengl_pipeline.depth_test_enable = material.pipeline_flags.depth_test_enable;
+    // clang-format off
+    switch (material.pipeline_flags.depth_mode) {
+        case DepthMode::NEVER   : opengl_pipeline.depth_mode = GL_NEVER   ; break;
+        case DepthMode::LESS    : opengl_pipeline.depth_mode = GL_LESS    ; break;
+        case DepthMode::EQUAL   : opengl_pipeline.depth_mode = GL_EQUAL   ; break;
+        case DepthMode::LEQUAL  : opengl_pipeline.depth_mode = GL_LEQUAL  ; break;
+        case DepthMode::GREATER : opengl_pipeline.depth_mode = GL_GREATER ; break;
+        case DepthMode::NOTEQUAL: opengl_pipeline.depth_mode = GL_NOTEQUAL; break;
+        case DepthMode::GEQUAL  : opengl_pipeline.depth_mode = GL_GEQUAL  ; break;
+        case DepthMode::ALWAYS  : opengl_pipeline.depth_mode = GL_ALWAYS  ; break;
+    }
+    // clang-format on
+
+    opengl_pipeline.cull_enable = material.pipeline_flags.cull_enable;
+    // clang-format off
+    switch (material.pipeline_flags.cull_mode) {
+        case CullMode::NONE          : opengl_pipeline.cull_mode = GL_NONE          ; break;
+        case CullMode::FRONT         : opengl_pipeline.cull_mode = GL_FRONT         ; break;
+        case CullMode::BACK          : opengl_pipeline.cull_mode = GL_BACK          ; break;
+        case CullMode::FRONT_AND_BACK: opengl_pipeline.cull_mode = GL_FRONT_AND_BACK; break;
+    }
+    // clang-format on
+
+    return opengl_pipeline;
+}
+
 // TODO : this about this again | 29.07.2026 what did I mean ?
 GLuint fe::OpenGLResourceManager::GetShaderBuffer(shader::ReflectedDescriptor& parameter) {
     auto it = m_ShaderBuffers.find(parameter);
@@ -285,7 +296,6 @@ GLuint fe::OpenGLResourceManager::GetShaderBuffer(shader::ReflectedDescriptor& p
         return STORAGE[handle.index];                                                          \
     }
 
-GET_RESOURCE_INSTANCE(fe::OpenGLMaterial, fe::resource::Material, m_StorageMaterials)
 GET_RESOURCE_INSTANCE(fe::OpenGLMesh, fe::resource::Model::Mesh, m_StorageMeshes)
 GET_RESOURCE_INSTANCE(fe::OpenGLTexture, fe::resource::Texture, m_StorageTextures)
 
@@ -356,8 +366,9 @@ fe::GPUHandle<fe::resource::Model::Mesh> fe::OpenGLResourceManager::createMesh(r
     return GPUHandle<Model::Mesh>(this->storeResource(mesh.gpu_handle, opengl_mesh, m_StorageMeshes));
 }
 
-GLuint fe::OpenGLResourceManager::createShaderProgramRaw(resource::ShaderProgram& shader_program) {
+GLuint fe::OpenGLResourceManager::createShaderProgramRaw(const resource::ShaderProgram& shader_program) {
     GLuint opengl_shader_program_raw = glCreateProgram();
+    bool   compilation_failed{};
 
     for (const auto& [shader_type, source_code] : shader_program.source_codes) {
         unsigned int opengl_type{};
@@ -375,6 +386,8 @@ GLuint fe::OpenGLResourceManager::createShaderProgramRaw(resource::ShaderProgram
         glShaderBinary(1, &opengl_shader, GL_SHADER_BINARY_FORMAT_SPIR_V, source_code.data(), source_code.size());
         glSpecializeShader(opengl_shader, "main", 0, nullptr, nullptr);
 
+        // code for GLSL importing
+
         //const char* glsl_text_ptr = reinterpret_cast<const char*>(source_code.data());
         //GLint       length        = static_cast<GLint>(source_code.size());
         //glShaderSource(opengl_shader, 1, &glsl_text_ptr, &length);
@@ -390,6 +403,7 @@ GLuint fe::OpenGLResourceManager::createShaderProgramRaw(resource::ShaderProgram
             glGetShaderInfoLog(opengl_shader, length, &length, message);
 
             fe::logging::error("Unified -> OpenGL. Failed to compile a shader\nMessage : %s", message);
+            compilation_failed = true;
         }
         else {
             glAttachShader(opengl_shader_program_raw, opengl_shader);
@@ -398,8 +412,14 @@ GLuint fe::OpenGLResourceManager::createShaderProgramRaw(resource::ShaderProgram
         glDeleteShader(opengl_shader);
     };
 
-    glLinkProgram(opengl_shader_program_raw);
-    glValidateProgram(opengl_shader_program_raw);
+    if (compilation_failed) {
+        glDeleteProgram(opengl_shader_program_raw);
+        return 0;
+    }
+    else {
+        glLinkProgram(opengl_shader_program_raw);
+        glValidateProgram(opengl_shader_program_raw);
 
-    return opengl_shader_program_raw;
+        return opengl_shader_program_raw;
+    }
 }

@@ -43,12 +43,16 @@ namespace fe {
         void InitializeGPUResources() override;
 
     private:
+        static void bindPipeline(const OpenGLPipeline& pipeline);
+
+    private:
         void handleCommand(const render_graph::ImageBarrier& image_barrier);
         void handleCommand(const render_graph::BufferBarrier& buffer_barrier);
         void handleCommand(const render_graph::BeginRenderPass& begin_render_pass);
         void handleCommand(const render_graph::EndRenderPass& end_render_pass);
         void handleCommand(const render_graph::DrawIndexed& draw_indices);
-        void handleCommand(const render_graph::BindPipeline& bind_pipeline);
+        void handleCommand(const render_graph::BindShaderProgram& bind_shader_program);
+        void handleCommand(const render_graph::BindMaterial& bind_material);
 
     private:
         struct FrameData {
@@ -71,8 +75,11 @@ namespace fe {
 
         Camera m_Camera{}; // temp
 
+        // TODO : remove this
         GPUHandle<resource::Material>    m_CurrentMaterial{};
         GPUHandle<resource::Model::Mesh> m_CurrentMesh{};
+
+        fe::pointer<resource::ShaderProgram> m_BoundShaderProgramPtr{};
 
         std::array<FrameData, MAX_CONCURRENT_FRAMES> m_FrameData{};
 
