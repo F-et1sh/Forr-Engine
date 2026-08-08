@@ -114,8 +114,8 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
     m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, *m_ResourceManager);
     m_Renderer->SetClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
-    m_RenderGraph                 = std::make_unique<RenderGraph>();
-    auto shadow_pass_data_mapped  = m_RenderGraph->AddPass<ShadowPassData, ShadowPass>("Shadow Pass");    // TODO : make a storage for this mapped data
+    m_RenderGraph                 = std::make_unique<RenderGraph>(*m_ResourceManager);
+    //auto shadow_pass_data_mapped  = m_RenderGraph->AddPass<ShadowPassData, ShadowPass>("Shadow Pass");    // TODO : make a storage for this mapped data
     auto forward_pass_data_mapped = m_RenderGraph->AddPass<ForwardPassData, ForwardPass>("Forward Pass"); // TODO : make a storage for this mapped data
 
     auto create_command_list = std::move(m_RenderGraph->Compile());

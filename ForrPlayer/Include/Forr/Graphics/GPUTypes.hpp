@@ -11,6 +11,7 @@
 ===============================================*/
 
 #pragma once
+#include "Core/custom_allocators.hpp"
 #include "Core/pointer.hpp"
 #include "Core/string.hpp"
 #include "Core/logging.hpp"
@@ -144,6 +145,7 @@ namespace fe {
     namespace resource {
         struct ShaderFileData;
         struct ShaderProgram;
+        struct Material;
     } // namespace resource
 
     namespace render_graph {
@@ -209,13 +211,11 @@ namespace fe {
             bool operator==(const ResourceHandle& other) const noexcept { return storage_index == other.storage_index; }
         };
 
-        struct FORR_API ResourceDesc {
-            ResourceHandle handle{};
-        };
-
         // creation commands aka resource descs ( this commands must not be in 'FORR_RENDER_COMMANDS_LIST' )
 
-        struct FORR_API ImageDesc : public ResourceDesc {
+        struct FORR_API ImageDesc {
+            ResourceHandle handle{};
+
             ImageType      type{};
             Format         format{};
             glm::ivec3     extent{};
@@ -225,14 +225,20 @@ namespace fe {
             bool operator==(const ImageDesc& other) const noexcept = default;
         };
 
-        struct FORR_API BufferDesc : public ResourceDesc {
+        struct FORR_API BufferDesc {
+            ResourceHandle handle{};
+
             // ...
 
             bool operator==(const BufferDesc& other) const noexcept = default;
         };
 
+        using CreationCommand     = std::variant<ImageDesc, BufferDesc>;
+        using CreationCommandList = std::vector<CreationCommand>;
+
         // render commands ( this commands must be in 'FORR_RENDER_COMMANDS_LIST' below )
 
+        template <typename Tag>
         struct FORR_API ResourceBarrier {
             ResourceHandle handle{};
             ResourceState  old_state{};
@@ -244,6 +250,9 @@ namespace fe {
                             ResourceState  new_state)
                 : handle(ResourceHandle{ hashed_name, static_cast<size_t>(~0) }), old_state(old_state), new_state(new_state) {}
         };
+
+        using ImageBarrier  = ResourceBarrier<struct ImageTag>;
+        using BufferBarrier = ResourceBarrier<struct BufferTag>;
 
         struct FORR_API BeginRenderPass {
             bool is_to_screen{};
@@ -300,7 +309,8 @@ namespace fe {
         // To add a command write its structure and add it here
 // render commands - theys are used every frame by RenderGraph(fe::RenderGraph::Execute())
 #define FORR_RENDER_COMMANDS_LIST(X)        \
-    X(ResourceBarrier, ResourceBarrier)     \
+    X(ImageBarrier, ImageBarrier)           \
+    X(BufferBarrier, BufferBarrier)         \
     X(BeginRenderPass, BeginRenderPass)     \
     X(EndRenderPass, EndRenderPass)         \
     X(DrawIndexed, DrawIndexed)             \
@@ -600,6 +610,23 @@ struct std::hash<fe::render_graph::ImageDesc> {
         fe::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(desc.extent.z)));
         fe::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(desc.mip_levels)));
         fe::hash_combine(seed, std::hash<uint32_t>{}(static_cast<uint32_t>(desc.usage)));
+
+        return seed;
+    }
+};
+
+template <>
+struct std::hash<fe::render_graph::BufferDesc> {
+    std::size_t operator()(const fe::render_graph::BufferDesc& desc) const {
+        std::size_t seed{};
+
+        // TODO : fill buffer desc's fields
+
+        // don't use 'handle' here
+
+        //fe::hash_combine(seed, std::hash<uint8_t>{}(static_cast<uint8_t>(desc.type)));
+
+        seed = 493436543653245435;
 
         return seed;
     }

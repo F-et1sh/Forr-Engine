@@ -104,14 +104,6 @@ void fe::RendererOpenGL::InitializeGPUResources() {
         fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
     });
 
-    m_ResourceManager.RunForEach<resource::Material>([&](resource::Material& material) {
-        m_OpenGLResourceManager.CreateResource(material);
-    });
-
-    //m_ResourceManager.RunForEach<resource::ShaderProgram>([&](resource::ShaderProgram& shader_program) {
-    //m_OpenGLResourceManager.CreateResource(shader_program);
-    //});
-
     m_ResourceManager.RunForEach<resource::Model>([&](resource::Model& model) {
         m_OpenGLResourceManager.CreateResource(model);
 
@@ -140,7 +132,7 @@ void fe::RendererOpenGL::bindPipeline(const OpenGLPipeline& pipeline) {
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& image_barrier) {
-    const auto& opengl_texture = m_OpenGLResourceManager.GetImage(image_barrier.handle.index);
+    const auto& opengl_texture = m_OpenGLResourceManager.GetImage(image_barrier.handle.storage_index);
     uint64_t    resident_id    = opengl_texture.resident_id;
 
     if (image_barrier.new_state == ResourceState::SHADER_READ_ONLY) {

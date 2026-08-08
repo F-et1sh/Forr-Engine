@@ -19,7 +19,7 @@ namespace fe {
         fe::pointer<resource::ShaderProgram> shadow_shader_program_ptr{};
     };
     struct ShadowPass {
-        static void Setup(RenderGraphBuilder& builder, ShadowPassData& pass_data, ResourceManager& resource_manager) {
+        static void Setup(RenderGraphBuilder& builder, ShadowPassData& pass_data) {
             builder.createImage(render_graph::ImageDesc{ fe::string_hash("ShadowMap"),
                                                          render_graph::ImageType::IMAGE_TYPE_2D,
                                                          render_graph::Format::RGBA8_SRGB,
@@ -29,11 +29,11 @@ namespace fe {
             builder.writeImage(fe::string_hash("ShadowMap"), ResourceState::RENDER_TARGET);
 
             // it should work like this, I guess
-            fe::pointer<resource::ShaderFileData> shader_file_data_ptr = resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Shadow.slang");
+            fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Shadow.slang");
 
-            const resource::ShaderFileData& shader_file_data = *resource_manager.GetResource(shader_file_data_ptr);
+            const resource::ShaderFileData& shader_file_data = *builder.resource_manager.GetResource(shader_file_data_ptr);
             if (!shader_file_data.shader_program_ptr.has_value()) {
-                fe::logging::fatal("No shadow shader");
+                builder.assertFatal("No shadow shader");
                 return;
             }
 
@@ -41,32 +41,46 @@ namespace fe {
         }
 
         static void Execute(RenderGraphContext& context, ShadowPassData& pass_data) {
-            context.bindShaderProgram(pass_data.shadow_shader_program_ptr);
-            
-            // drawing...
-            context.bindMaterial(material_ptr);
+            auto view = context.render_registry.view<TransformComponent>();
+
+            //context.bindShaderProgram(pass_data.shadow_shader_program_ptr);
+            //
+            //// drawing...
+            //context.bindMaterial(material_ptr);
         }
 
         ShadowPass()  = default;
         ~ShadowPass() = default;
     };
 
-    struct ForwardPassData {};
+    struct ForwardPassData {
+        fe::pointer<resource::ShaderProgram> default_shader_program_ptr{};
+        fe::pointer<resource::Material>      default_material_ptr{};
+    };
     struct ForwardPass {
-        static void Setup(RenderGraphBuilder& builder) {
+        static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) {
             builder.createImage(render_graph::ImageDesc{ fe::string_hash("ColorBuffer"),
                                                          render_graph::ImageType::IMAGE_TYPE_2D,
                                                          render_graph::Format::RGBA8_SRGB,
                                                          glm::ivec3{ 1920, 1080, 1 },
                                                          1,
                                                          render_graph::ImageUsageBits::RENDER_TARGET });
-            builder.readImage(fe::string_hash("ShadowMap"), ResourceState::SHADER_READ_ONLY);
             builder.writeImage(fe::string_hash("ColorBuffer"), ResourceState::RENDER_TARGET);
+
+            fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "shader.slang");
+            const resource::ShaderFileData&       shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
+            if (!shader_file_data.shader_program_ptr.has_value()) {
+                builder.assertFatal("No shader");
+                return;
+            }
+            pass_data.default_shader_program_ptr = shader_file_data.shader_program_ptr.value();
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
             auto view = context.render_registry.view<MeshComponent>();
-            // view...
+            context.BindShaderProgram(pass_data.default_shader_program_ptr);
+            context.BindMaterial(pass_data.default_material_ptr);
+            context.DrawIndexed(render_graph::DrawIndexed{});
         }
 
         ForwardPass()  = default;

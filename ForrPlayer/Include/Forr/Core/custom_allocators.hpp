@@ -19,15 +19,15 @@
 #include "attributes.hpp"
 
 namespace fe {
-    constexpr size_t align_up(size_t alignment, size_t offset) noexcept {
+    static inline constexpr size_t align_up(size_t alignment, size_t offset) noexcept {
         return (offset + alignment - 1) & ~(alignment - 1);
     }
 
-    struct ArenaMarker {
+    struct FORR_API ArenaMarker {
         size_t offset{};
     };
 
-    class Arena { // mostly per-frame container
+    class FORR_API Arena { // mostly per-frame container
     public:
         explicit Arena(size_t capacity) : m_capacity(capacity) {
             m_buffer = static_cast<std::byte*>(::operator new(capacity, std::align_val_t{ alignof(std::max_align_t) }));
@@ -117,7 +117,7 @@ namespace fe {
     };
 
     template <typename _Ty>
-    class Pool {
+    class FORR_API Pool {
         struct FreeNode {
             FreeNode* next = nullptr;
         };
