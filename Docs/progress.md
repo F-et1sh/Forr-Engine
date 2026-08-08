@@ -2,6 +2,7 @@
 
 ## 09.08.2026
 ### Goal
+    ( think about providing std::expected<> in fe::ResourceManager ) 
     provide function to finally load shader source codes ( secondary loading )
     provide : per-frame, per-pass, per-object and per-draw bindings
     allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
