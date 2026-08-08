@@ -119,6 +119,26 @@ void fe::RendererOpenGL::InitializeGPUResources() {
     });
 }
 
+void fe::RendererOpenGL::bindPipeline(const OpenGLPipeline& pipeline) {
+    glUseProgram(pipeline.shader_program.get());
+
+    if (pipeline.depth_test_enable) {
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(pipeline.depth_mode);
+    }
+    else {
+        glDisable(GL_DEPTH_TEST);
+    }
+
+    if (pipeline.cull_enable) {
+        glEnable(GL_CULL_FACE);
+        glCullFace(pipeline.cull_mode);
+    }
+    else {
+        glDisable(GL_CULL_FACE);
+    }
+}
+
 void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& image_barrier) {
     const auto& opengl_texture = m_OpenGLResourceManager.GetImage(image_barrier.handle.index);
     uint64_t    resident_id    = opengl_texture.resident_id;
@@ -259,11 +279,11 @@ void fe::RendererOpenGL::handleCommand(const render_graph::DrawIndexed& draw_ind
                                                   draw_indices.first_instance);
 }
 
-void fe::RendererOpenGL::handleCommand(const render_graph::BindPipeline& bind_pipeline) {
-    m_BoundShaderProgramPtr = bind_pipeline.shader_program_ptr;
+void fe::RendererOpenGL::handleCommand(const render_graph::BindShaderProgram& bind_shader_program) {
+    m_BoundShaderProgramPtr = bind_shader_program.shader_program_ptr;
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::BindMaterial& bind_material) {
-    auto pipeline_ptr = m_OpenGLResourceManager.GetOrCreatePipeline(m_BoundShaderProgramPtr, bind_material.material_ptr);
-    glUseProgram(pipeline_ptr);
+    const OpenGLPipeline& pipeline = m_OpenGLResourceManager.GetOrCreatePipeline(m_BoundShaderProgramPtr, bind_material.material_ptr);
+    bindPipeline(pipeline);
 }

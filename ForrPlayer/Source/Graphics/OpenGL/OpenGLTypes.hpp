@@ -53,7 +53,10 @@ namespace fe {
         fe::gl::ShaderProgram shader_program{};
 
         bool   depth_test_enable{ true };
-        GLenum depth_func{ GL_LESS };
+        GLenum depth_mode{ GL_LESS };
+
+        bool   cull_enable{ true };
+        GLenum cull_mode{ GL_FRONT_AND_BACK };
 
         OpenGLPipeline() = default;
 

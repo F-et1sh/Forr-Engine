@@ -50,17 +50,18 @@ namespace fe {
         // instead, it has 'std::vector<Mesh>', which has 'GPUHandle<Mesh> gpu_handle' in it
         ///@{
         void CreateResource(resource::Model& model);
-        void CreateResource(resource::Material& material);
         void CreateResource(resource::Texture& texture);
         ///@}
 
         // this is for render graph
-        size_t CreateImage(const render_graph::ImageDesc& image_desc);
+        size_t               CreateImage(const render_graph::ImageDesc& image_desc);
         const OpenGLTexture& GetImage(size_t texture_storage_index);
 
-        const OpenGLMesh&     GetResource(GPUHandle<resource::Model::Mesh> handle) const;
-        const OpenGLMaterial& GetResource(GPUHandle<resource::Material> handle) const;
-        const OpenGLTexture&  GetResource(GPUHandle<resource::Texture> handle) const;
+        const OpenGLPipeline& GetOrCreatePipeline(fe::pointer<resource::ShaderProgram> shader_program_ptr,
+                                                  fe::pointer<resource::Material>      material_ptr);
+
+        const OpenGLMesh&    GetResource(GPUHandle<resource::Model::Mesh> handle) const;
+        const OpenGLTexture& GetResource(GPUHandle<resource::Texture> handle) const;
 
         GLuint GetShaderBuffer(shader::ReflectedDescriptor& parameter);
 
@@ -70,7 +71,7 @@ namespace fe {
         fe::GPUHandle<fe::resource::Model::Mesh> createMesh(resource::Model::Mesh& mesh);
 
     private: // helpers
-        GLuint createShaderProgramRaw(resource::ShaderProgram& shader_program);
+        GLuint createShaderProgramRaw(const resource::ShaderProgram& shader_program);
 
     private:
         // this function returns the index of the resource ( GPUHandle<>::index )
@@ -85,11 +86,14 @@ namespace fe {
     private:
         ResourceManager& m_ResourceManager;
 
-        std::vector<OpenGLPipeline> m_StoragePipelines{};
-        std::vector<OpenGLMesh>     m_StorageMeshes{};
-        std::vector<OpenGLTexture>  m_StorageTextures{};
+        // GPU analogue of CPU resources
+        std::vector<OpenGLMesh>    m_StorageMeshes{};
+        std::vector<OpenGLTexture> m_StorageTextures{};
 
         // shader buffers : SSBOs and UBOs
         std::unordered_map<shader::ReflectedDescriptor, gl::Buffer> m_ShaderBuffers{};
+
+        // combined 'fe::pointer<resource::ShaderProgram>' and 'fe::pointer<resource::Material>' --> OpenGLPipeline
+        std::unordered_map<size_t, OpenGLPipeline> m_Pipelines{};
     };
 } // namespace fe

@@ -21,7 +21,8 @@
     ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
 
 ### Done
-    -
+    fe::render_graph::BindMaterial added
+    fe::OpenGLResourceManager::GetOrCreatePipeline() done
 
 ### Problem
     -
