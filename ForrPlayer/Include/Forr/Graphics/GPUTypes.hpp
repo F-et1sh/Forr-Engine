@@ -593,6 +593,9 @@ namespace fe {
 
             bool operator==(const ReflectedMaterialLayout&) const noexcept = default;
         };
+
+        using SourceCode        = std::vector<uint8_t>;
+        using SourceCodeStorage = std::unordered_map<shader::StageBits, SourceCode>;
     } // namespace shader
 } // namespace fe
 

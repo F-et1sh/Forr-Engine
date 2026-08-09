@@ -61,6 +61,8 @@ namespace fe {
         // returns 'true', if actually found anything and 'false', if the argument is not changed
         bool ReflectMaterials(std::unordered_map<fe::hashed_string, shader::ReflectedMaterialLayout>& material_layouts);
 
+        shader::SourceCodeStorage CombineAndCompileShader(resource::ShaderProgram& shader_program, resource::Material& material);
+
     private:
         std::vector<EntryPoint> findEntryPoints(std::vector<slang::IComponentType*>& component_types);
 
