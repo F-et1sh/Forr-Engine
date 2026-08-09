@@ -123,15 +123,8 @@ namespace fe::resource {
 
     struct FORR_API ShaderProgram {
     public:
-        GPUHandle<ShaderProgram>        gpu_handle{};
+        fe::pointer<ShaderFileData>     shader_file_data_ptr{};
         shader::ReflectedPipelineLayout reflected_layout{};
-
-        fe::pointer<ShaderFileData> shader_file_data_ptr{};
-
-        using SourceCode        = std::vector<uint8_t>;
-        using SourceCodeStorage = std::unordered_map<shader::StageBits, SourceCode>;
-
-        SourceCodeStorage source_codes{};
 
         ShaderProgram()  = default;
         ~ShaderProgram() = default;
@@ -154,8 +147,6 @@ namespace fe::resource {
 
     struct FORR_API Material {
     public:
-        GPUHandle<Material> gpu_handle{};
-
         fe::pointer<fe::resource::MaterialLayout> layout_ptr{};
 
         struct Sampler {

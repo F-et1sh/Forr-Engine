@@ -219,8 +219,12 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetOrCreatePipeline(fe::poi
     OpenGLPipeline& opengl_pipeline = m_Pipelines[seed];
 
     const resource::ShaderProgram& shader_program = *m_ResourceManager.GetResource(shader_program_ptr);
-    //shader_program.source_codes
-    GLuint shader_program_raw = this->createShaderProgramRaw(shader_program);
+    
+    shader::SourceCodeStorage source_codes{};
+
+
+
+    GLuint shader_program_raw = this->createShaderProgramRaw(source_codes);
     opengl_pipeline.shader_program.attach(shader_program_raw);
 
     const resource::Material& material = *m_ResourceManager.GetResource(material_ptr);
@@ -366,11 +370,11 @@ fe::GPUHandle<fe::resource::Model::Mesh> fe::OpenGLResourceManager::createMesh(r
     return GPUHandle<Model::Mesh>(this->storeResource(mesh.gpu_handle, opengl_mesh, m_StorageMeshes));
 }
 
-GLuint fe::OpenGLResourceManager::createShaderProgramRaw(const resource::ShaderProgram& shader_program) {
+GLuint fe::OpenGLResourceManager::createShaderProgramRaw(const fe::shader::SourceCodeStorage& source_codes) {
     GLuint opengl_shader_program_raw = glCreateProgram();
     bool   compilation_failed{};
 
-    for (const auto& [shader_type, source_code] : shader_program.source_codes) {
+    for (const auto& [shader_type, source_code] : source_codes) {
         unsigned int opengl_type{};
         unsigned int opengl_shader{};
 

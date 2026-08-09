@@ -62,7 +62,8 @@ bool fe::SlangParser::LoadFromFile(const std::filesystem::path& resource_full_pa
     Slang::ComPtr<slang::IBlob> load_diagnostics{};
     m_Module = m_Session->loadModule(resource_full_path.generic_string().c_str(), load_diagnostics.writeRef());
     if (!m_Module) {
-        fe::logging::error("Slang -> Unified. Failed to load a slang module\n%s", (const char*) load_diagnostics->getBufferPointer());
+        fe::logging::error("Slang -> Unified. Failed to load a slang module\n%s",
+                           (const char*) load_diagnostics->getBufferPointer());
         return false;
     }
 
@@ -209,6 +210,13 @@ bool fe::SlangParser::ReflectMaterials(std::unordered_map<fe::hashed_string, sha
     return result;
 }
 
+fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(resource::ShaderProgram& shader_program,
+                                                                       resource::Material&      material) {
+    shader::SourceCodeStorage source_codes{};
+
+    return source_codes;
+}
+
 void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* variable_layout,
                                            shader::ReflectedDescriptor&     dst_descriptor) {
     assert(variable_layout);
@@ -233,7 +241,7 @@ void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* vari
     dst_descriptor.stage_flags |= static_cast<uint32_t>(shader_type::GEOMETRY);
 
     slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
-    slang_kind                  kind        = type_layout->getKind();
+    slang_kind                   kind        = type_layout->getKind();
 
     // 24.06.2026 Slang has got a bug, so, now this will work like this
     //
@@ -275,7 +283,7 @@ void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* vari
             dst_descriptor.array_size = type_layout->getElementCount();
 
             slang::TypeLayoutReflection* array_element_type_layout = type_layout->getElementTypeLayout();
-            slang_kind                  element_kind              = array_element_type_layout->getKind();
+            slang_kind                   element_kind              = array_element_type_layout->getKind();
 
             if (element_kind == slang_kind::Resource) {
                 SlangResourceShape shape      = array_element_type_layout->getResourceShape();
@@ -372,7 +380,7 @@ void fe::SlangParser::parsePushConstant(slang::VariableLayoutReflection* variabl
     dst_push_constants.stage_flags |= static_cast<uint32_t>(shader_type::GEOMETRY);
 
     slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
-    slang_kind                  kind        = type_layout->getKind();
+    slang_kind                   kind        = type_layout->getKind();
 
     switch (kind) {
         case slang_kind::ConstantBuffer:
@@ -500,7 +508,9 @@ void fe::SlangParser::parseMemberRecursive(slang::TypeLayoutReflection* type_lay
             break;
 
         default:
-            fe::logging::warning("Slang -> Unified. Unhandled member kind %i for '%s'. Setting as UNKNOWN", kind, dst_reflected_data_node->name.c_str());
+            fe::logging::warning("Slang -> Unified. Unhandled member kind %i for '%s'. Setting as UNKNOWN",
+                                 kind,
+                                 dst_reflected_data_node->name.c_str());
             dst_reflected_data_node->type = shader_value::UNKNOWN;
             break;
     }
@@ -524,7 +534,7 @@ void fe::SlangParser::mapVector(slang::TypeLayoutReflection* type_layout, shader
     assert(type_layout);
 
     slang_scalar scalar          = type_layout->getScalarType();
-    uint32_t      component_count = type_layout->getElementCount();
+    uint32_t     component_count = type_layout->getElementCount();
 
     switch (scalar) {
         case slang_scalar::Float32:
