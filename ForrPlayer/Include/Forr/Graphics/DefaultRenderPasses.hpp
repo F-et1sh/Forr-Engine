@@ -74,6 +74,7 @@ namespace fe {
                 return;
             }
             pass_data.default_shader_program_ptr = shader_file_data.shader_program_ptr.value();
+            pass_data.default_material_ptr = builder.resource_manager.GetContext().default_gltf_material_ptr;
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {

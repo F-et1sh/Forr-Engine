@@ -77,6 +77,9 @@ bool fe::SlangParser::ExtractSerializedData(std::vector<uint8_t>& dst_vector) {
         return false;
     }
 
+    fe::logging::info(m_Module->getName());
+    fe::logging::info(m_Module->getFilePath());
+
     const uint8_t* buffer_data = (const uint8_t*) serialized_blob->getBufferPointer();
     size_t         buffer_size = serialized_blob->getBufferSize();
 
@@ -223,13 +226,24 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
 
     const auto& shader_program_file_data = *resource_manager.GetResource(shader_program.shader_file_data_ptr);
 
-    Slang::ComPtr<slang::IBlob> shader_blob_source{};
-    slang::IBlob*               shader_blob_source_raw = slang_createBlob(shader_program_file_data.slang_serialized_data.data(),
-                                                                          shader_program_file_data.slang_serialized_data.size());
-    shader_blob_source.attach(shader_blob_source_raw);
+    if (shader_program_file_data.slang_serialized_data.empty() ||
+        shader_program_file_data.slang_serialized_data.data() == nullptr) {
+        fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to load shader's slang module. Shader program's serialized data was empty");
+        return {};
+    }
+
+    ISlangBlob* shader_program_blob_raw = slang_createBlob(shader_program_file_data.slang_serialized_data.data(),
+                                                           shader_program_file_data.slang_serialized_data.size());
 
     Slang::ComPtr<slang::IBlob> shader_program_load_diagnostics{};
-    slang::IModule*             shader_module = m_Session->loadModuleFromIRBlob("module", "path", shader_blob_source, shader_program_load_diagnostics.writeRef());
+    slang::IModule*             shader_module = m_Session->loadModuleFromIRBlob("F:/Windows/Desktop/Forr-Engine/Files/Engine/Resources/Shaders/Default/PBRMaterial/shader.slang",
+                                                                                "F:/Windows/Desktop/Forr-Engine/Files/Engine/Resources/Shaders/Default/PBRMaterial/shader.slang",
+                                                                                shader_program_blob_raw,
+                                                                                shader_program_load_diagnostics.writeRef());
+    if (shader_program_blob_raw) {
+        shader_program_blob_raw->release();
+    }
+
     if (!shader_module) {
         fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to load shader's slang module\n%s",
                            (const char*) shader_program_load_diagnostics->getBufferPointer());
@@ -264,22 +278,19 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
     const auto& material_layout    = *resource_manager.GetResource(material.layout_ptr);
     const auto& material_file_data = *resource_manager.GetResource(material_layout.shader_file_data_ptr);
 
-    Slang::ComPtr<slang::IBlob> material_blob_source{};
-    slang::IBlob*               material_blob_source_raw = slang_createBlob(material_file_data.slang_serialized_data.data(),
-                                                                            material_file_data.slang_serialized_data.size());
-    material_blob_source.attach(material_blob_source_raw);
-
-    Slang::ComPtr<slang::IBlob> material_load_diagnostics{};
-    slang::IModule*             material_module = m_Session->loadModuleFromIRBlob("module", "path", material_blob_source, material_load_diagnostics.writeRef());
-    if (!material_module) {
-        fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to load material's slang module\n%s",
-                           (const char*) material_load_diagnostics->getBufferPointer());
-        return {};
-    }
-    component_types.emplace_back(material_module);
-
-    slang::ProgramLayout*  layout        = material_module->getLayout();
+    slang::ProgramLayout*  layout        = shader_module->getLayout();
     slang::TypeReflection* material_type = layout->findTypeByName(material_layout.reflected_layout.name.c_str());
+
+    if (!material_type) {
+        slang::IModule* imported_material_module = m_Session->loadModuleFromIRBlob("F:/Windows/Desktop/Forr-Engine/Files/Engine/Resources/Shaders/Default/PBRMaterial/shader2.slang",
+                                                                                   "F:/Windows/Desktop/Forr-Engine/Files/Engine/Resources/Shaders/Default/PBRMaterial/shader2.slang",
+                                                                                   nullptr,
+                                                                                   nullptr);
+
+        if (imported_material_module) {
+            material_type = imported_material_module->getLayout()->findTypeByName(material_layout.reflected_layout.name.c_str());
+        }
+    }
 
     if (!material_type) {
         fe::logging::error("Serialized Slang ( Unified ) -> Slang. Type is not found for material %s",
@@ -300,14 +311,27 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
         auto&                  entry_point = entry_points[i];
         slang::IComponentType* component_type{};
 
-        entry_point.entry_point->specialize(specialization_args.data(), specialization_args.size(), &component_type, specialization_diagnostics.writeRef());
+        SlangResult result = entry_point.entry_point->specialize(specialization_args.data(),
+                                                                 specialization_args.size(),
+                                                                 &component_type,
+                                                                 specialization_diagnostics.writeRef());
+        if (SLANG_FAILED(result)) {
+            fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to specialize an entry point\n%s",
+                               (const char*) specialization_diagnostics->getBufferPointer());
+            return {};
+        }
 
         component_types.emplace_back(component_type);
     }
 
-    SlangResult result = m_Session->createCompositeComponentType(component_types.data(), component_types.size(), m_ComposedProgram.writeRef());
+    Slang::ComPtr<slang::IBlob> composition_diagnostics{};
+    SlangResult                 result = m_Session->createCompositeComponentType(component_types.data(),
+                                                                                 component_types.size(),
+                                                                                 m_ComposedProgram.writeRef(),
+                                                                                 composition_diagnostics.writeRef());
     if (SLANG_FAILED(result)) {
-        fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to create a composed program");
+        fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to create a composed program\n%s",
+                           (const char*) composition_diagnostics->getBufferPointer());
         return {};
     }
 
@@ -315,10 +339,13 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
         const auto&                 entry_point = entry_points[i];
         Slang::ComPtr<slang::IBlob> spirv_code{};
 
-        SlangResult result = m_ComposedProgram->getEntryPointCode(i + 2 /*two modules*/, 0, spirv_code.writeRef());
+        Slang::ComPtr<slang::IBlob> entry_point_code_diagnostics{};
+        SlangResult                 result = m_ComposedProgram->getEntryPointCode(i, 0, spirv_code.writeRef(), entry_point_code_diagnostics.writeRef());
         if (SLANG_FAILED(result)) {
-            fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to get an entry point code\nEntry point index : %i", i);
-            return {};
+            fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to get an entry point code. Continuing compilation\nEntry point index : %i\n%s",
+                               i,
+                               (const char*) entry_point_code_diagnostics->getBufferPointer());
+            continue;
         }
 
         const size_t   byte_size = spirv_code->getBufferSize();

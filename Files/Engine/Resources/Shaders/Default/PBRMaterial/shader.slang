@@ -1,4 +1,26 @@
-﻿import "shader2.slang";
+﻿public struct SomeStruct {
+    public float3 albedo;
+}
+
+public struct StandardSurfaceData {
+    SomeStruct some_struct;
+	public float  roughness;
+}
+
+public interface IMaterial {
+    StandardSurfaceData GetStandardData(float2 uv);
+}
+
+public struct PBRMaterial : IMaterial {
+    public uint2 base_color_texture_handle;
+
+    public StandardSurfaceData GetStandardData(float2 uv) {
+        StandardSurfaceData data;
+        data.some_struct.albedo = float3(1.0, 0.0, 1.0);
+        data.roughness = 0.5;
+        return data;
+    }
+};
 
 struct GPULight {
     float4 position;
@@ -34,7 +56,7 @@ struct VertexStageOutput {
 };
 
 [shader("vertex")]
-VertexStageOutput vertexMain(VertexInput input) {
+VertexStageOutput vertexMain<T>(VertexInput input) where T : IMaterial {
     VertexStageOutput output;
 
     float4 world_position = mul(float4(input.position, 1.0f), model_matrices[instance_index]);
@@ -50,7 +72,7 @@ VertexStageOutput vertexMain(VertexInput input) {
 }
 
 [shader("fragment")]
-float4 fragmentMain(VertexStageOutput input) : SV_Target {
+float4 fragmentMain<T>(VertexStageOutput input) where T : IMaterial {
     uint2 handle = materials[instance_index].base_color_texture_handle;
     
     Sampler2D texture = reinterpret<Sampler2D>(handle);
