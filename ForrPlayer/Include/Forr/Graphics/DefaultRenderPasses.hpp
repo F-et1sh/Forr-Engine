@@ -67,7 +67,7 @@ namespace fe {
                                                          render_graph::ImageUsageBits::RENDER_TARGET });
             builder.writeImage(fe::string_hash("ColorBuffer"), ResourceState::RENDER_TARGET);
 
-            fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "shader.slang");
+            fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default" / "PBRMaterial" / "shader.slang");
             const resource::ShaderFileData&       shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
             if (!shader_file_data.shader_program_ptr.has_value()) {
                 builder.assertFatal("No shader");

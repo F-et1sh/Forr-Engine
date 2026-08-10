@@ -54,7 +54,6 @@ namespace fe {
             requires std::default_initializable<T>
         {
             return m_Storage.CreateResource();
-
         }
 
         template <resource::resource_t T>
@@ -62,6 +61,8 @@ namespace fe {
 
         template <resource::resource_t T, typename Func>
         void RunForEach(Func&& func) { m_Storage.RunForEach<T>(func); }
+
+        FORR_NODISCARD const ResourceManagementContext& GetContext() const noexcept { return m_Context; }
 
     private:
         ResourceManagementContext m_Context{};
