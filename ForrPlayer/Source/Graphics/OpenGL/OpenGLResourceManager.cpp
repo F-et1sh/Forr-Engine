@@ -13,6 +13,8 @@
 #include "pch.hpp"
 #include "OpenGLResourceManager.hpp"
 
+#include "Graphics/Slang/SlangParser.hpp"
+
 using namespace fe::resource;
 
 void fe::OpenGLResourceManager::CreateResource(Model& model) {
@@ -219,15 +221,19 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetOrCreatePipeline(fe::poi
     OpenGLPipeline& opengl_pipeline = m_Pipelines[seed];
 
     const resource::ShaderProgram& shader_program = *m_ResourceManager.GetResource(shader_program_ptr);
-    
-    shader::SourceCodeStorage source_codes{};
+    const resource::Material&      material       = *m_ResourceManager.GetResource(material_ptr);
 
+    SlangParser               parser{ m_ResourceManager.GetContext().graphics_backend };
+    shader::SourceCodeStorage source_codes = parser.CombineAndCompileShader(shader_program, material, m_ResourceManager);
 
+    if (source_codes.empty()) {
+        if (!m_Pipelines.empty())
+            return m_Pipelines[0]; // TODO : provide fallbacks
+        fe::logging::fatal("Out of range");
+    }
 
     GLuint shader_program_raw = this->createShaderProgramRaw(source_codes);
     opengl_pipeline.shader_program.attach(shader_program_raw);
-
-    const resource::Material& material = *m_ResourceManager.GetResource(material_ptr);
 
     opengl_pipeline.depth_test_enable = material.pipeline_flags.depth_test_enable;
     // clang-format off

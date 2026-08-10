@@ -19,7 +19,7 @@
 #include "slang-com-ptr.h"
 #include "slang-com-helper.h"
 
-#include "ResourceManagement/Resources.hpp"
+#include "ResourceManagement/ResourceManager.hpp"
 
 namespace fe {
     struct EntryPoint {
@@ -61,7 +61,9 @@ namespace fe {
         // returns 'true', if actually found anything and 'false', if the argument is not changed
         bool ReflectMaterials(std::unordered_map<fe::hashed_string, shader::ReflectedMaterialLayout>& material_layouts);
 
-        shader::SourceCodeStorage CombineAndCompileShader(resource::ShaderProgram& shader_program, resource::Material& material);
+        shader::SourceCodeStorage CombineAndCompileShader(const resource::ShaderProgram& shader_program,
+                                                          const resource::Material&      material,
+                                                          ResourceManager&               resource_manager);
 
     private:
         std::vector<EntryPoint> findEntryPoints(std::vector<slang::IComponentType*>& component_types);
@@ -80,6 +82,6 @@ namespace fe {
         GraphicsBackend                      m_GraphicsBackend{};
         Slang::ComPtr<slang::ISession>       m_Session{};
         slang::IModule*                      m_Module{};
-        Slang::ComPtr<slang::IComponentType> m_CompusedProgram{};
+        Slang::ComPtr<slang::IComponentType> m_ComposedProgram{};
     };
 } // namespace fe
