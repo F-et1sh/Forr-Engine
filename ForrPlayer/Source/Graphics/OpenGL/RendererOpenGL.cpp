@@ -13,6 +13,8 @@
 #include "pch.hpp"
 #include "RendererOpenGL.hpp"
 
+static GLuint TEST_VAO;
+
 fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
                                    IPlatformSystem&    platform_system,
                                    size_t              primary_window_index,
@@ -35,9 +37,6 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
         return;
     }
 
-    glViewport(0, 0, m_PrimaryWindow.getWidth(), m_PrimaryWindow.getHeight());
-    glEnable(GL_DEPTH_TEST);
-
     { // temp
         m_Camera.setType(Camera::Type::LOOKAT);
         m_Camera.setPosition(glm::vec3(0.0f, 0.0f, -4.5f));
@@ -52,6 +51,13 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
         m_Camera.setPerspective(fov, aspect, znear, zfar);
         m_Camera.setMovementSpeed(speed);
     }
+
+    GLuint vbo{};
+    GLuint ebo{};
+
+    glGenVertexArrays(1, &TEST_VAO);
+    glBindVertexArray(TEST_VAO);
+    glBindVertexArray(0);
 }
 
 fe::RendererOpenGL::~RendererOpenGL() {
@@ -122,13 +128,13 @@ void fe::RendererOpenGL::bindPipeline(const OpenGLPipeline& pipeline) {
         glDisable(GL_DEPTH_TEST);
     }
 
-    if (pipeline.cull_enable) {
-        glEnable(GL_CULL_FACE);
-        glCullFace(pipeline.cull_mode);
-    }
-    else {
-        glDisable(GL_CULL_FACE);
-    }
+    //if (pipeline.cull_enable) {
+    //    glEnable(GL_CULL_FACE);
+    //    glCullFace(pipeline.cull_mode);
+    //}
+    //else {
+    //    glDisable(GL_CULL_FACE);
+    //}
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& image_barrier) {
@@ -159,6 +165,7 @@ void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& image_b
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::BufferBarrier& buffer_barrier) {
+    // TODO : provide this
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& begin_render_pass) {
@@ -278,4 +285,16 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BindShaderProgram& bi
 void fe::RendererOpenGL::handleCommand(const render_graph::BindMaterial& bind_material) {
     const OpenGLPipeline& pipeline = m_OpenGLResourceManager.GetOrCreatePipeline(m_BoundShaderProgramPtr, bind_material.material_ptr);
     bindPipeline(pipeline);
+
+    glBindVertexArray(TEST_VAO);
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+void fe::RendererOpenGL::handleCommand(const render_graph::BindModel& bind_model) {
+    const resource::Model& model = *m_ResourceManager.GetResource(bind_model.model_ptr);
+    for (const auto& mesh : model.meshes) {
+        const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(mesh.gpu_handle);
+        glBindVertexArray(opengl_mesh.vao);
+    }
 }

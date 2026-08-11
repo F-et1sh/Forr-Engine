@@ -151,7 +151,7 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
                 begin_command.viewport.extent = std::get<render_graph::ImageDesc>(it->second).extent;
             }
         }
-        else {
+        else if (compiled_render_pass.is_writes_to_screen) {
             begin_command.is_to_screen    = true;
             begin_command.viewport.extent = glm::ivec3(1920, 1080, 1); // TODO : use window's size
         }
@@ -289,13 +289,21 @@ void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&      
         RenderGraphBuilder builder{ m_ResourceManager };
         render_pass.setup_function(builder, render_pass.mapped_data);
 
+        if (builder.image_writes.empty() && 
+            builder.buffer_writes.empty() && 
+            !builder.is_writes_to_screen) {
+            
+            builder.assertFatal("Render pass doesn't write to any image, buffer or to the screen");
+        }
+
+        // provide logging and remove render pass if there is a fatal error
         if (!builder.warnings.empty() ||
             !builder.errors.empty() ||
             !builder.fatals.empty()) {
 
-            std::string all_warnings{};
-            std::string all_errors{};
-            std::string all_fatals{};
+            std::string all_warnings{ builder.warnings.empty() ? "no" : "" };
+            std::string all_errors{ builder.errors.empty() ? "no" : "" };
+            std::string all_fatals{ builder.fatals.empty() ? "no" : "" };
 
             // collect everything
             all_warnings.reserve(builder.warnings.size() * 50);
@@ -317,19 +325,20 @@ void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&      
             }
 
             if (!all_fatals.empty()) {
-                fe::logging::error("RenderGraph : Failed to setup render pass %s. Render pass removed.\nWarnings : \n%s\nErrors : \n%s\nFatals : \n%s\n",
+                fe::logging::error("RenderGraph : Failed to setup render pass %s. Render pass removed.\nWarnings : \n%s\n\nErrors : \n%s\n\nFatals : \n%s\n",
                                    render_pass.name.c_str(),
                                    all_warnings.c_str(),
+                                   all_errors.c_str(),
                                    all_fatals.c_str());
                 continue;
             }
             else {
                 if (!all_warnings.empty())
-                    fe::logging::warning("RenderGraph : Got a warning(s) while setting up render pass %s.\nWarnings : \n%s",
+                    fe::logging::warning("RenderGraph : Got a warnings while setting up render pass %s.\nWarnings : \n%s",
                                          render_pass.name.c_str(),
                                          all_warnings);
                 if (!all_errors.empty())
-                    fe::logging::error("RenderGraph : Got an error(s) while setting up render pass %s.\nErrors : \n%s",
+                    fe::logging::error("RenderGraph : Got an errors while setting up render pass %s.\nErrors : \n%s",
                                        render_pass.name.c_str(),
                                        all_errors);
             }
@@ -377,6 +386,7 @@ void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&      
         this_render_pass.image_create_requests  = std::move(builder.image_create_requests);
         this_render_pass.buffer_create_requests = std::move(builder.buffer_create_requests);
         this_render_pass.name                   = render_pass.name;
+        this_render_pass.is_writes_to_screen    = builder.is_writes_to_screen;
     }
 }
 
@@ -529,8 +539,8 @@ void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>& 
         bool is_needed = std::ranges::any_of(render_pass.image_writes, [&used_resources](const CompiledRenderPass::ResourceBarrier& write_barrier) {
             return used_resources.contains(write_barrier.handle);
         });
-
-        if (is_needed) {
+        
+        if (is_needed || render_pass.is_writes_to_screen) {
             add_used_resource_lambda(render_pass);
         }
     }

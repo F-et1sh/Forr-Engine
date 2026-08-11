@@ -77,9 +77,6 @@ bool fe::SlangParser::ExtractSerializedData(std::vector<uint8_t>& dst_vector) {
         return false;
     }
 
-    fe::logging::info(m_Module->getName());
-    fe::logging::info(m_Module->getFilePath());
-
     const uint8_t* buffer_data = (const uint8_t*) serialized_blob->getBufferPointer();
     size_t         buffer_size = serialized_blob->getBufferSize();
 
@@ -135,6 +132,15 @@ std::vector<fe::EntryPoint> fe::SlangParser::findEntryPoints(std::vector<slang::
 
 bool fe::SlangParser::ReflectPipeline(shader::ReflectedPipelineLayout& pipeline_layout) {
     bool result = false;
+
+    std::vector<slang::IComponentType*> component_types{};
+    auto                                entry_points = findEntryPoints(component_types);
+
+    // a shader can have zero descriptors, but if there is at least one entry point - it is a pipeline
+    if (entry_points.empty())
+        return result;
+    else
+        result = true;
 
     slang::ProgramLayout* layout          = m_ComposedProgram->getLayout();
     unsigned int          parameter_count = layout->getParameterCount();

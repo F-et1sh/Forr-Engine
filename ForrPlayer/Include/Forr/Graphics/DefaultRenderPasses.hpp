@@ -59,29 +59,40 @@ namespace fe {
     };
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) {
-            builder.createImage(render_graph::ImageDesc{ fe::string_hash("ColorBuffer"),
-                                                         render_graph::ImageType::IMAGE_TYPE_2D,
-                                                         render_graph::Format::RGBA8_SRGB,
-                                                         glm::ivec3{ 1920, 1080, 1 },
-                                                         1,
-                                                         render_graph::ImageUsageBits::RENDER_TARGET });
-            builder.writeImage(fe::string_hash("ColorBuffer"), ResourceState::RENDER_TARGET);
+            //builder.createImage(render_graph::ImageDesc{ fe::string_hash("ColorBuffer"),
+            //                                             render_graph::ImageType::IMAGE_TYPE_2D,
+            //                                             render_graph::Format::RGBA8_SRGB,
+            //                                             glm::ivec3{ 1920, 1080, 1 },
+            //                                             1,
+            //                                             render_graph::ImageUsageBits::RENDER_TARGET });
+            //builder.writeImage(fe::string_hash("ColorBuffer"), ResourceState::RENDER_TARGET);
 
-            fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default" / "PBRMaterial" / "shader.slang");
+            builder.writeToScreen(true);
+
+            fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\shader.slang");
             const resource::ShaderFileData&       shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
             if (!shader_file_data.shader_program_ptr.has_value()) {
                 builder.assertFatal("No shader");
                 return;
             }
             pass_data.default_shader_program_ptr = shader_file_data.shader_program_ptr.value();
-            pass_data.default_material_ptr = builder.resource_manager.GetContext().default_gltf_material_ptr;
+            pass_data.default_material_ptr       = builder.resource_manager.GetContext().default_gltf_material_ptr;
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
-            auto view = context.render_registry.view<MeshComponent>();
+            auto view = context.render_registry.view<TransformComponent, MeshComponent>();
+
             context.BindShaderProgram(pass_data.default_shader_program_ptr);
             context.BindMaterial(pass_data.default_material_ptr);
-            context.DrawIndexed(render_graph::DrawIndexed{});
+
+            //for (const auto& [entity, transform_component, mesh_component] : view.each()) {
+            //    context.BindShaderProgram(pass_data.default_shader_program_ptr);
+            //    context.BindMaterial(pass_data.default_material_ptr);
+            //
+            //    //context.BindModel(mesh_component.model_ptr); // TODO : rewrite this
+
+            //    //context.DrawIndexed(render_graph::DrawIndexed{ 3, 1, 0, 0, 0 });
+            //}
         }
 
         ForwardPass()  = default;

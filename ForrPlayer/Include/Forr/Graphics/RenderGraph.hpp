@@ -77,6 +77,11 @@ namespace fe {
             return *this;
         }
 
+        RenderGraphContext& BindModel(const fe::pointer<resource::Model> model_ptr) {
+            command_list.enqueue(render_graph::BindModel{ model_ptr });
+            return *this;
+        }
+
         RenderGraphContext& DrawIndexed(const render_graph::DrawIndexed& draw_indexed) {
             command_list.enqueue(draw_indexed);
             return *this;
@@ -105,6 +110,13 @@ namespace fe {
         std::vector<std::string> warnings{};
         std::vector<std::string> errors{};
         std::vector<std::string> fatals{};
+
+        bool is_writes_to_screen{};
+
+        RenderGraphBuilder& writeToScreen(bool is_writes_to_screen) noexcept {
+            this->is_writes_to_screen = is_writes_to_screen;
+            return *this;
+        }
 
         // this render pass will still be in render graph without changes
         RenderGraphBuilder& assertWarning(const std::string& message) {
@@ -310,6 +322,8 @@ namespace fe {
             std::vector<render_graph::ImageDesc>  image_create_requests{};
             std::vector<render_graph::BufferDesc> buffer_create_requests{};
 
+            bool is_writes_to_screen{};
+
             CompiledRenderPass() = default;
             CompiledRenderPass(std::string_view                      name,
                                std::vector<ResourceBarrier>          image_reads,
@@ -317,14 +331,16 @@ namespace fe {
                                std::vector<ResourceBarrier>          buffer_reads,
                                std::vector<ResourceBarrier>          buffer_writes,
                                std::vector<render_graph::ImageDesc>  image_create_requests,
-                               std::vector<render_graph::BufferDesc> buffer_create_requests)
+                               std::vector<render_graph::BufferDesc> buffer_create_requests,
+                               bool                                  is_writes_to_screen)
                 : name(name),
                   image_reads(std::move(image_reads)),
                   image_writes(std::move(image_writes)),
                   buffer_reads(std::move(buffer_reads)),
                   buffer_writes(std::move(buffer_writes)),
                   image_create_requests(std::move(image_create_requests)),
-                  buffer_create_requests(std::move(buffer_create_requests)) {}
+                  buffer_create_requests(std::move(buffer_create_requests)),
+                  is_writes_to_screen(is_writes_to_screen) {}
 
             FORR_CLASS_MOVABLE(CompiledRenderPass)
             FORR_CLASS_NONCOPYABLE(CompiledRenderPass)

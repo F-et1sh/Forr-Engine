@@ -146,6 +146,7 @@ namespace fe {
         struct ShaderFileData;
         struct ShaderProgram;
         struct Material;
+        struct Model;
     } // namespace resource
 
     namespace render_graph {
@@ -306,6 +307,10 @@ namespace fe {
             fe::pointer<resource::Material> material_ptr{};
         };
 
+        struct FORR_API BindModel {
+            fe::pointer<resource::Model> model_ptr{};
+        };
+
         // To add a command write its structure and add it here
 // render commands - theys are used every frame by RenderGraph(fe::RenderGraph::Execute())
 #define FORR_RENDER_COMMANDS_LIST(X)        \
@@ -315,7 +320,8 @@ namespace fe {
     X(EndRenderPass, EndRenderPass)         \
     X(DrawIndexed, DrawIndexed)             \
     X(BindShaderProgram, BindShaderProgram) \
-    X(BindMaterial, BindMaterial)
+    X(BindMaterial, BindMaterial)           \
+    X(BindModel, BindModel)
 
         enum class CommandType : uint8_t {
 #define GENERATE_ENUM(EnumName, StructName) EnumName,
