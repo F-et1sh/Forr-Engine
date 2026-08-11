@@ -16,9 +16,10 @@
     ( provide std::expected<> in fe::ResourceManager and use it in all new modules )
 
     ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
+    ( try to apply all specializations once )
 
 ### Done
-    -
+    'fe::resource::ShaderFileData::full_path' for unique index provided
 
 ### Problem
     -

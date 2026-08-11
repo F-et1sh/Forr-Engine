@@ -24,6 +24,8 @@ fe::pointer<fe::resource::ShaderFileData> fe::ShaderImporter::Import(ResourceSto
         return {};
     }
 
+    shader_file_data.full_path = resource_full_path.generic_string().c_str();
+
     if (!parser.ExtractSerializedData(shader_file_data.slang_serialized_data)) {
         fe::logging::error("Slang -> Unified. Failed to extract serialized data\nPath : %s", resource_full_path.generic_string().c_str());
         return {};

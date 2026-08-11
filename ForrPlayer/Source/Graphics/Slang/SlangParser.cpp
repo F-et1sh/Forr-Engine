@@ -236,8 +236,8 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
                                                            shader_program_file_data.slang_serialized_data.size());
 
     Slang::ComPtr<slang::IBlob> shader_program_load_diagnostics{};
-    slang::IModule*             shader_module = m_Session->loadModuleFromIRBlob("F:/Windows/Desktop/Forr-Engine/Files/Engine/Resources/Shaders/Default/PBRMaterial/shader.slang",
-                                                                                "F:/Windows/Desktop/Forr-Engine/Files/Engine/Resources/Shaders/Default/PBRMaterial/shader.slang",
+    slang::IModule*             shader_module = m_Session->loadModuleFromIRBlob(shader_program_file_data.full_path.c_str(),
+                                                                                shader_program_file_data.full_path.c_str(),
                                                                                 shader_program_blob_raw,
                                                                                 shader_program_load_diagnostics.writeRef());
     if (shader_program_blob_raw) {
@@ -282,8 +282,8 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
     slang::TypeReflection* material_type = layout->findTypeByName(material_layout.reflected_layout.name.c_str());
 
     if (!material_type) {
-        slang::IModule* imported_material_module = m_Session->loadModuleFromIRBlob("F:/Windows/Desktop/Forr-Engine/Files/Engine/Resources/Shaders/Default/PBRMaterial/shader2.slang",
-                                                                                   "F:/Windows/Desktop/Forr-Engine/Files/Engine/Resources/Shaders/Default/PBRMaterial/shader2.slang",
+        slang::IModule* imported_material_module = m_Session->loadModuleFromIRBlob(material_layout.reflected_layout.name.c_str(),
+                                                                                   shader_program_file_data.full_path.c_str(),
                                                                                    nullptr,
                                                                                    nullptr);
 
