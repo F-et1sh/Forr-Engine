@@ -53,6 +53,7 @@ namespace fe {
         void handleCommand(const render_graph::DrawIndexed& draw_indices);
         void handleCommand(const render_graph::BindShaderProgram& bind_shader_program);
         void handleCommand(const render_graph::BindMaterial& bind_material);
+        void handleCommand(const render_graph::BindModel& bind_model);
 
     private:
         struct FrameData {
