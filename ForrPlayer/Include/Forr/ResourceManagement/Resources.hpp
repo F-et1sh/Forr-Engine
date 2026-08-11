@@ -188,6 +188,8 @@ namespace fe::resource {
 
         // this is needed to not accses disk twice
         std::vector<uint8_t> slang_serialized_data{};
+        // this is used as an unique index in 'slang::ISession::loadModuleFromIRBlob()'
+        std::string full_path{};
 
         ShaderFileData()  = default;
         ~ShaderFileData() = default;
