@@ -286,9 +286,9 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BindMaterial& bind_ma
     const OpenGLPipeline& pipeline = m_OpenGLResourceManager.GetOrCreatePipeline(m_BoundShaderProgramPtr, bind_material.material_ptr);
     bindPipeline(pipeline);
 
-    glBindVertexArray(TEST_VAO);
+    //glBindVertexArray(TEST_VAO);
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    //glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::BindModel& bind_model) {
