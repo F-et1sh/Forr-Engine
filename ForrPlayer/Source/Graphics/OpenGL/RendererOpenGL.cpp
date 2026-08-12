@@ -13,8 +13,6 @@
 #include "pch.hpp"
 #include "RendererOpenGL.hpp"
 
-static GLuint TEST_VAO;
-
 fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
                                    IPlatformSystem&    platform_system,
                                    size_t              primary_window_index,
@@ -54,10 +52,6 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
 
     GLuint vbo{};
     GLuint ebo{};
-
-    glGenVertexArrays(1, &TEST_VAO);
-    glBindVertexArray(TEST_VAO);
-    glBindVertexArray(0);
 }
 
 fe::RendererOpenGL::~RendererOpenGL() {
@@ -285,10 +279,6 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BindShaderProgram& bi
 void fe::RendererOpenGL::handleCommand(const render_graph::BindMaterial& bind_material) {
     const OpenGLPipeline& pipeline = m_OpenGLResourceManager.GetOrCreatePipeline(m_BoundShaderProgramPtr, bind_material.material_ptr);
     bindPipeline(pipeline);
-
-    //glBindVertexArray(TEST_VAO);
-
-    //glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::BindModel& bind_model) {
@@ -296,5 +286,9 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BindModel& bind_model
     for (const auto& mesh : model.meshes) {
         const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(mesh.gpu_handle);
         glBindVertexArray(opengl_mesh.vao);
+
+        for (const auto& primitive : opengl_mesh.primitives) {
+            glDrawElements(primitive.render_mode, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
+        }
     }
 }

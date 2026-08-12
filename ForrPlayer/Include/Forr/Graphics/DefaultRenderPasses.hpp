@@ -56,6 +56,7 @@ namespace fe {
     struct ForwardPassData {
         fe::pointer<resource::ShaderProgram> default_shader_program_ptr{};
         fe::pointer<resource::Material>      default_material_ptr{};
+        fe::pointer<resource::Model>         test_model_ptr{};
     };
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) {
@@ -77,6 +78,7 @@ namespace fe {
             }
             pass_data.default_shader_program_ptr = shader_file_data.shader_program_ptr.value();
             pass_data.default_material_ptr       = builder.resource_manager.GetContext().default_gltf_material_ptr;
+            pass_data.test_model_ptr             = builder.resource_manager.ImportResource<resource::Model>(PATH.getModelsPath() / "TatarSuzanne\\TatarSuzanne.gltf");
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
@@ -84,6 +86,8 @@ namespace fe {
 
             context.BindShaderProgram(pass_data.default_shader_program_ptr);
             context.BindMaterial(pass_data.default_material_ptr);
+
+            context.BindModel(pass_data.test_model_ptr);
 
             //for (const auto& [entity, transform_component, mesh_component] : view.each()) {
             //    context.BindShaderProgram(pass_data.default_shader_program_ptr);
