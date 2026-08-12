@@ -228,6 +228,47 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
 
     std::vector<slang::IComponentType*> component_types{};
 
+    // handle material
+
+    const auto& material_layout    = *resource_manager.GetResource(material.layout_ptr);
+    const auto& material_file_data = *resource_manager.GetResource(material_layout.shader_file_data_ptr);
+
+    if (material_file_data.slang_serialized_data.empty() ||
+        material_file_data.slang_serialized_data.data() == nullptr) {
+        fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to load material's slang module. Material's serialized data was empty");
+        return {};
+    }
+
+    ISlangBlob* material_blob_raw = slang_createBlob(material_file_data.slang_serialized_data.data(),
+                                                     material_file_data.slang_serialized_data.size());
+
+    Slang::ComPtr<slang::IBlob> material_load_diagnostics{};
+    slang::IModule*             material_module = m_Session->loadModuleFromIRBlob(material_file_data.full_path.c_str(),
+                                                                                  material_file_data.full_path.c_str(),
+                                                                                  material_blob_raw,
+                                                                                  material_load_diagnostics.writeRef());
+
+    if (material_blob_raw) {
+        material_blob_raw->release();
+    }
+
+    if (!material_module) {
+        fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to load Material's slang module\n%s",
+                           (const char*) material_load_diagnostics->getBufferPointer());
+        return {};
+    }
+
+    slang::ProgramLayout*  layout        = material_module->getLayout();
+    slang::TypeReflection* material_type = layout->findTypeByName(material_layout.reflected_layout.name.c_str());
+
+    component_types.emplace_back(material_module);
+
+    if (!material_type) {
+        fe::logging::error("Serialized Slang ( Unified ) -> Slang. Type is not found for material %s",
+                           material_layout.reflected_layout.name.c_str());
+        return {};
+    }
+
     // handle shader
 
     const auto& shader_program_file_data = *resource_manager.GetResource(shader_program.shader_file_data_ptr);
@@ -277,50 +318,6 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
 
             entry_points.emplace_back(entry_point, shader_type);
         }
-    }
-
-    // handle material
-
-    const auto& material_layout    = *resource_manager.GetResource(material.layout_ptr);
-    const auto& material_file_data = *resource_manager.GetResource(material_layout.shader_file_data_ptr);
-
-    slang::ProgramLayout*  layout        = shader_module->getLayout();
-    slang::TypeReflection* material_type = layout->findTypeByName(material_layout.reflected_layout.name.c_str());
-
-    if (!material_type) {
-        if (material_file_data.slang_serialized_data.empty() ||
-            material_file_data.slang_serialized_data.data() == nullptr) {
-            fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to load material's slang module. Material's serialized data was empty");
-            return {};
-        }
-
-        ISlangBlob* material_blob_raw = slang_createBlob(material_file_data.slang_serialized_data.data(),
-                                                         material_file_data.slang_serialized_data.size());
-
-        Slang::ComPtr<slang::IBlob> material_load_diagnostics{};
-        slang::IModule*             material_module = m_Session->loadModuleFromIRBlob(material_file_data.full_path.c_str(),
-                                                                                      material_file_data.full_path.c_str(),
-                                                                                      material_blob_raw,
-                                                                                      material_load_diagnostics.writeRef());
-
-        if (material_blob_raw) {
-            material_blob_raw->release();
-        }
-
-        if (!material_module) {
-            fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to load Material's slang module\n%s",
-                               (const char*) material_load_diagnostics->getBufferPointer());
-            return {};
-        }
-
-        layout        = material_module->getLayout(); // reusing 'layout'
-        material_type = layout->findTypeByName(material_layout.reflected_layout.name.c_str());
-    }
-
-    if (!material_type) {
-        fe::logging::error("Serialized Slang ( Unified ) -> Slang. Type is not found for material %s",
-                           material_layout.reflected_layout.name.c_str());
-        return {};
     }
 
     std::array<slang::SpecializationArg, 1> specialization_args{};

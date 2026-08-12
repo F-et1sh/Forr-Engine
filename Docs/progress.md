@@ -22,6 +22,7 @@
 ### Done
     specializations fixed
     seen something on the screen | RenderDoc can't open the program - needs to provide SSBO and UBO passing
+    Slang import fixed
 
 ### Problem
     -
