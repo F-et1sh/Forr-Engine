@@ -20,7 +20,7 @@
     ( try to apply all specializations once )
 
 ### Done
-    -
+    specializations fixed
 
 ### Problem
     -
