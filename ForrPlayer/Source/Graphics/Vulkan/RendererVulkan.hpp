@@ -42,6 +42,8 @@ namespace fe {
 
         RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) override;
 
+        void SetPerFrameLayout(fe::pointer<resource::ShaderFileData> shader_file_data_ptr)override;
+
         void BeginFrame() override;
         void EndFrame(const render_graph::CommandList& render_command_list) override;
 

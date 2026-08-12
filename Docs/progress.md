@@ -29,9 +29,12 @@
     ReflectedMaterialLayout --> ReflectedStructureLayout
     ReflectedPipelineLayout --> ReflectedDescriptorsLayout
     fe::OpenGLResourceManager::GetShaderBuffer() --> fe::OpenGLResourceManager::GetOrCreateShaderBuffer()
+    fe::IRenderer::SetPerFrameLayout() added | fe::IRenderer::ImportGlobalContext() --> fe::IRenderer::SetPerFrameLayout()
 
 ### Problem
-    -
+    'fe::shader::ReflectedDescriptorsLayout' is used in pipeline logic ( fe::resource::ShaderProgram ) and only there.
+    It's not like a big problem, but why shader program is a bunch of descriptors, when it should be a few entry points instead ?
+    Maybe I have to add new resource 'fe::resource::Descriptors' to separate all of this logic
 
 ## 11.08.2026
 ### Goal

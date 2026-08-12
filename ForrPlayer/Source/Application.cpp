@@ -1,4 +1,16 @@
-﻿#include "pch.hpp"
+﻿/*===============================================
+
+    Forr Engine
+
+    File : Application.cpp
+    Role : main class / almost everything in this class should be in 'main.cpp' of the actual game/user
+
+    Copyright (C) 2026 Farrakh
+    All Rights Reserved.
+
+===============================================*/
+
+#include "pch.hpp"
 #include "Application.hpp"
 
 // TODO : remove this. This should be in 'main.cpp' of the user
@@ -11,6 +23,8 @@ namespace fe {
     static entt::registry                m_Registry{};     // temp
 
     static RenderPacket m_RenderPacket{}; // temp
+
+    static fe::pointer<resource::ShaderFileData> m_PerFrameLayoutPtr; // temp
 
 } // namespace fe
 
@@ -64,6 +78,8 @@ void fe::Application::Run() {
         m_RenderPacket.object_transforms.clear();
         m_RenderPacket.lights.clear();
 
+        m_Renderer->SetPerFrameLayout(m_PerFrameLayoutPtr);
+
         m_Renderer->BeginFrame();
 
         RenderGraphCollector<TransformComponent, MeshComponent, LightComponent> collector{ m_Registry };
@@ -112,14 +128,14 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
     renderer_desc.validation_enabled  = desc.validation_enabled;
 
     m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, *m_ResourceManager);
-    m_Renderer->ImportGlobalContext(PATH.getShadersPath() / "Context" / "GlobalContext.slang");
 
-    m_RenderGraph                 = std::make_unique<RenderGraph>(*m_ResourceManager);
+    m_PerFrameLayoutPtr = m_ResourceManager->ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Context" / "GlobalContext.slang"); // temp
+
+    m_RenderGraph = std::make_unique<RenderGraph>(*m_ResourceManager);
     //auto shadow_pass_data_mapped  = m_RenderGraph->AddPass<ShadowPassData, ShadowPass>("Shadow Pass");    // TODO : make a storage for this mapped data
     auto forward_pass_data_mapped = m_RenderGraph->AddPass<ForwardPassData, ForwardPass>("Forward Pass"); // TODO : make a storage for this mapped data
 
     auto create_command_list = std::move(m_RenderGraph->Compile());
     auto mapping_result      = std::move(m_Renderer->CreateGPUResources(create_command_list));
     m_RenderGraph->SetupResourceBindings(mapping_result);
-
 }

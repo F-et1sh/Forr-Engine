@@ -73,7 +73,7 @@ namespace fe {
             }
             pass_data.default_material_ptr = builder.resource_manager.GetContext().default_gltf_material_ptr;
             if (!pass_data.test_model_ptr) {
-                pass_data.test_model_ptr = builder.resource_manager.ImportResource<resource::Model>(PATH.getModelsPath() / "TatarSuzanne\\TatarSuzanne.gltf");
+                //pass_data.test_model_ptr = builder.resource_manager.ImportResource<resource::Model>(PATH.getModelsPath() / "TatarSuzanne\\TatarSuzanne.gltf");
             }
         }
 
@@ -87,7 +87,7 @@ namespace fe {
             context.BindMaterial(pass_data.default_material_ptr);
 
             // temp
-            context.BindModel(pass_data.test_model_ptr);
+            //context.BindModel(pass_data.test_model_ptr);
 
             //for (const auto& [entity, transform_component, mesh_component] : view.each()) {
             //    context.BindShaderProgram(pass_data.default_shader_program_ptr);

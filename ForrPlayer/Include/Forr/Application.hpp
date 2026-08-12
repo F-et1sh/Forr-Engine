@@ -3,7 +3,7 @@
     Forr Engine
 
     File : Application.hpp
-    Role : main class
+    Role : main class / almost everything in this class should be in 'main.cpp' of the actual game/user
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
