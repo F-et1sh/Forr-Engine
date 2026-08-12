@@ -16,7 +16,7 @@
 #include "ResourceManagement/Resources.hpp"
 
 namespace fe {
-    struct TransformComponent {
+    struct FORR_API TransformComponent {
         glm::mat4 transform{}; // temp
 
         TransformComponent(const glm::mat4& transform)
@@ -26,7 +26,8 @@ namespace fe {
         ~TransformComponent() = default;
     };
 
-    struct MeshComponent {
+    // TODO : remove
+    struct FORR_API MeshComponent {
         fe::pointer<resource::Model>    model_ptr{};
         fe::pointer<resource::Material> material_override_ptr{ static_cast<uint64_t>(~0) };
 
@@ -39,7 +40,13 @@ namespace fe {
         ~MeshComponent() = default;
     };
 
-    struct LightComponent {
+    // TODO : remove 'fe::MeshComponent' and remove '2' from name of this
+    struct FORR_API MeshComponent2 {
+        fe::pointer<resource::Model>     model_ptr{};
+        std::span<resource::Model::Mesh> models_to_draw{};
+    };
+
+    struct FORR_API LightComponent {
         bool      is_static{};
         float     intensity = 1.0f;
         glm::vec3 color{ 1.0f, 1.0f, 1.0f };
