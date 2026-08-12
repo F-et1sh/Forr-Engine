@@ -78,9 +78,9 @@ void fe::Application::Run() {
         m_RenderPacket.object_transforms.clear();
         m_RenderPacket.lights.clear();
 
-        m_Renderer->SetPerFrameLayout(m_PerFrameLayoutPtr);
-
         m_Renderer->BeginFrame();
+
+        m_Renderer->SetPerFrameLayout(m_PerFrameLayoutPtr);
 
         RenderGraphCollector<TransformComponent, MeshComponent, LightComponent> collector{ m_Registry };
 

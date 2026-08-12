@@ -24,8 +24,6 @@
 
 namespace fe {
     class RendererOpenGL : public IRenderer {
-        constexpr inline static size_t MAX_CONCURRENT_FRAMES = 2;
-
     public:
         RendererOpenGL(const RendererDesc& desc,
                        IPlatformSystem&    platform_system,
@@ -35,9 +33,8 @@ namespace fe {
 
         RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) override;
 
-        void SetPerFrameLayout(fe::pointer<resource::ShaderFileData> shader_file_data_ptr) override;
-
         void BeginFrame() override;
+        void SetPerFrameLayout(fe::pointer<resource::ShaderFileData> shader_file_data_ptr) override;
         void EndFrame(const render_graph::CommandList& render_command_list) override;
 
         void InitializeGPUResources() override;
@@ -58,8 +55,8 @@ namespace fe {
     private:
         struct FrameData {
             // Vulkan fence's analogue in OpenGL
-            fe::gl::Sync       sync{};
-            OpenGLShaderBuffer storage_buffer{};
+            fe::gl::Sync           sync{};
+            OpenGLShaderDescriptor storage_buffer{};
 
             FrameData()  = default;
             ~FrameData() = default;

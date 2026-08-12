@@ -12,6 +12,7 @@
 
 #pragma once
 #include "ResourceManagement/ResourceManager.hpp"
+#include "Graphics/IRenderer.hpp"
 #include "Graphics/OpenGL/OpenGLTypes.hpp"
 
 inline constexpr void hash_combine(std::size_t& seed, std::size_t value) noexcept {
@@ -63,7 +64,8 @@ namespace fe {
         const OpenGLMesh&    GetResource(GPUHandle<resource::Model::Mesh> handle) const;
         const OpenGLTexture& GetResource(GPUHandle<resource::Texture> handle) const;
 
-        GLuint GetOrCreateShaderBuffer(const shader::ReflectedDescriptor& parameter);
+        // TODO : this is a good place to start providing std::expected<>
+        const OpenGLShaderDescriptorRing& GetOrCreateShaderBuffer(const shader::ReflectedDescriptor& parameter);
 
     private: // here functions, which used like helpers to create some resources that don't have thier own CPU realization.
              // The functions return 'GPUHandle<>' but you DON'T have to set 'GPUHandle<> gpu_handle' in the resources, the functions does it by themselves
@@ -90,7 +92,7 @@ namespace fe {
         std::vector<OpenGLTexture> m_StorageTextures{};
 
         // shader buffers : SSBOs and UBOs
-        std::unordered_map<shader::ReflectedDescriptor, gl::Buffer> m_ShaderBuffers{};
+        std::unordered_map<shader::ReflectedDescriptor, OpenGLShaderDescriptorRing> m_ShaderBuffers{};
 
         // combined 'fe::pointer<resource::ShaderProgram>' and 'fe::pointer<resource::Material>' --> OpenGLPipeline
         std::unordered_map<size_t, OpenGLPipeline> m_Pipelines{};

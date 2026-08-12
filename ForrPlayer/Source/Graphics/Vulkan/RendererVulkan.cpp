@@ -158,7 +158,7 @@ void fe::RendererVulkan::EndFrame(const render_graph::CommandList& render_comman
         return;
     }
 
-    m_CurrentFrame = (m_CurrentFrame + 1) % VulkanContext::max_concurrent_frames;
+    m_CurrentFrame = (m_CurrentFrame + 1) % MAX_CONCURRENT_FRAMES;
 
     // reset
     m_CurrentMaterial = {};
@@ -367,8 +367,8 @@ void fe::RendererVulkan::InitializeCommandBuffers() {
 }
 
 void fe::RendererVulkan::InitializeSynchronizationPrimitives() {
-    std::array<VkFence, VulkanContext::max_concurrent_frames>     wait_fences_raw{};
-    std::array<VkSemaphore, VulkanContext::max_concurrent_frames> present_complete_semaphores_raw{};
+    std::array<VkFence, MAX_CONCURRENT_FRAMES>     wait_fences_raw{};
+    std::array<VkSemaphore, MAX_CONCURRENT_FRAMES> present_complete_semaphores_raw{};
     std::vector<VkSemaphore>                                      render_complete_semaphores_raw{};
 
     ///
@@ -601,7 +601,7 @@ void fe::RendererVulkan::InitializeStorageBuffers() {
         VK_CHECK_RESULT(vkMapMemory(m_Device, memory_raw, offset, VK_WHOLE_SIZE, flags, (void**) &m_FrameData[frame_data_i].storage_buffer.bindings[binding_i].mapped));
     };
 
-    for (size_t i = 0; i < VulkanContext::max_concurrent_frames; i++) {
+    for (size_t i = 0; i < MAX_CONCURRENT_FRAMES; i++) {
         m_FrameData[i].storage_buffer.bindings.resize(2);
 
         initialize_binding(i, 0, binding0_size);
@@ -1002,11 +1002,11 @@ void fe::RendererVulkan::VKSetupDescriptorSetLayout() {
 void fe::RendererVulkan::VKSetupDescriptorPool() {
     VkDescriptorPoolSize pool_size{};
     pool_size.type            = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    pool_size.descriptorCount = m_Context.max_concurrent_frames;
+    pool_size.descriptorCount = m_Context.MAX_CONCURRENT_FRAMES;
 
     VkDescriptorPoolCreateInfo descriptor_pool_create_info{};
     descriptor_pool_create_info.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    descriptor_pool_create_info.maxSets       = m_Context.max_concurrent_frames;
+    descriptor_pool_create_info.maxSets       = m_Context.MAX_CONCURRENT_FRAMES;
     descriptor_pool_create_info.poolSizeCount = 1;
     descriptor_pool_create_info.pPoolSizes    = &pool_size;
     descriptor_pool_create_info.flags         = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
@@ -1017,7 +1017,7 @@ void fe::RendererVulkan::VKSetupDescriptorPool() {
 }
 
 void fe::RendererVulkan::VKSetupDescriptorSets() {
-    for (size_t i = 0; i < VulkanContext::max_concurrent_frames; i++) {
+    for (size_t i = 0; i < MAX_CONCURRENT_FRAMES; i++) {
         VkDescriptorSetLayout descriptor_set_layout_raw = m_Context.global_descriptor_set_layout;
 
         //uint32_t                                           max_binding_count = 100'000;

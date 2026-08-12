@@ -80,13 +80,13 @@ void fe::RendererOpenGL::SetPerFrameLayout(fe::pointer<resource::ShaderFileData>
     const resource::ShaderProgram& shader_program = *m_ResourceManager.GetResource(shader_file_data.shader_program_ptr.value());
 
     for (const auto& descriptor : shader_program.reflected_layout.descriptors) {
-        GLuint buffer_index_raw = m_OpenGLResourceManager.GetOrCreateShaderBuffer(descriptor);
-
+        const OpenGLShaderDescriptorRing& descriptor_ring = m_OpenGLResourceManager.GetOrCreateShaderBuffer(descriptor);
+        
         if (descriptor.descriptor_type == shader::DescriptorType::UNIFORM_BUFFER) {
-            glBindBufferBase(GL_UNIFORM_BUFFER, descriptor.binding, buffer_index_raw);
+            glBindBufferBase(GL_UNIFORM_BUFFER, descriptor.binding, descriptor_ring[m_CurrentFrame].buffer.get());
         }
         else if (descriptor.descriptor_type == shader::DescriptorType::STORAGE_BUFFER) {
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, descriptor.binding, buffer_index_raw);
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, descriptor.binding, descriptor_ring[m_CurrentFrame].buffer.get());
         }
     }
 }
