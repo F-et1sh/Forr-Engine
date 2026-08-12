@@ -133,14 +133,17 @@ std::vector<fe::EntryPoint> fe::SlangParser::findEntryPoints(std::vector<slang::
 bool fe::SlangParser::ReflectPipeline(shader::ReflectedDescriptorsLayout& pipeline_layout) {
     bool result = false;
 
-    std::vector<slang::IComponentType*> component_types{};
-    auto                                entry_points = findEntryPoints(component_types);
+    // look at 'Problem' in 'progress.md' at 12.08.2026
+    // I don't know what to do with this, so let it be like this for now
 
-    // a shader can have zero descriptors, but if there is at least one entry point - it is a pipeline
-    if (entry_points.empty())
-        return result; // false
-    else
-        result = true;
+    //std::vector<slang::IComponentType*> component_types{};
+    //auto                                entry_points = findEntryPoints(component_types);
+
+    //// a shader can have zero descriptors, but if there is at least one entry point - it is a pipeline
+    //if (entry_points.empty())
+    //    return result; // false
+    //else
+    //    result = true;
 
     slang::ProgramLayout* layout          = m_ComposedProgram->getLayout();
     unsigned int          parameter_count = layout->getParameterCount();

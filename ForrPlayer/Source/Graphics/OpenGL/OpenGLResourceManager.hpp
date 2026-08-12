@@ -63,7 +63,7 @@ namespace fe {
         const OpenGLMesh&    GetResource(GPUHandle<resource::Model::Mesh> handle) const;
         const OpenGLTexture& GetResource(GPUHandle<resource::Texture> handle) const;
 
-        GLuint GetShaderBuffer(shader::ReflectedDescriptor& parameter);
+        GLuint GetOrCreateShaderBuffer(const shader::ReflectedDescriptor& parameter);
 
     private: // here functions, which used like helpers to create some resources that don't have thier own CPU realization.
              // The functions return 'GPUHandle<>' but you DON'T have to set 'GPUHandle<> gpu_handle' in the resources, the functions does it by themselves
