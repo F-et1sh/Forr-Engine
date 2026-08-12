@@ -49,9 +49,6 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
         m_Camera.setPerspective(fov, aspect, znear, zfar);
         m_Camera.setMovementSpeed(speed);
     }
-
-    GLuint vbo{};
-    GLuint ebo{};
 }
 
 fe::RendererOpenGL::~RendererOpenGL() {

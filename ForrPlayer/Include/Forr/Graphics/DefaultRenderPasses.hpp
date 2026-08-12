@@ -42,11 +42,7 @@ namespace fe {
 
         static void Execute(RenderGraphContext& context, ShadowPassData& pass_data) {
             auto view = context.render_registry.view<TransformComponent>();
-
-            //context.bindShaderProgram(pass_data.shadow_shader_program_ptr);
-            //
-            //// drawing...
-            //context.bindMaterial(material_ptr);
+            // ...
         }
 
         ShadowPass()  = default;
@@ -60,18 +56,10 @@ namespace fe {
     };
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) {
-            //builder.createImage(render_graph::ImageDesc{ fe::string_hash("ColorBuffer"),
-            //                                             render_graph::ImageType::IMAGE_TYPE_2D,
-            //                                             render_graph::Format::RGBA8_SRGB,
-            //                                             glm::ivec3{ 1920, 1080, 1 },
-            //                                             1,
-            //                                             render_graph::ImageUsageBits::RENDER_TARGET });
-            //builder.writeImage(fe::string_hash("ColorBuffer"), ResourceState::RENDER_TARGET);
-
             builder.writeToScreen(true);
 
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\shader.slang");
-            const resource::ShaderFileData&       shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
+            const resource::ShaderFileData& shader_file_data = *builder.resource_manager.GetResource(shader_file_data_ptr);
             if (!shader_file_data.shader_program_ptr.has_value()) {
                 builder.assertFatal("No shader");
                 return;
@@ -85,8 +73,10 @@ namespace fe {
             auto view = context.render_registry.view<TransformComponent, MeshComponent>();
 
             context.BindShaderProgram(pass_data.default_shader_program_ptr);
+
             context.BindMaterial(pass_data.default_material_ptr);
 
+            // temp
             context.BindModel(pass_data.test_model_ptr);
 
             //for (const auto& [entity, transform_component, mesh_component] : view.each()) {

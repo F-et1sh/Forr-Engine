@@ -307,6 +307,7 @@ namespace fe {
             fe::pointer<resource::Material> material_ptr{};
         };
 
+        // temp
         struct FORR_API BindModel {
             fe::pointer<resource::Model> model_ptr{};
         };

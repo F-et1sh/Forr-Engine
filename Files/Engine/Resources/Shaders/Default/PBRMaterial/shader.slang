@@ -1,4 +1,4 @@
-﻿#include "shader2.slang"
+﻿import "shader2.slang";
 
 struct GPULight {
     float4 position;
@@ -12,12 +12,12 @@ struct SceneData {
     uint lights_count;
 };
 
-//[[vk::binding(0, 0)]] ConstantBuffer<SceneData>     global_data;
-//[[vk::binding(1, 0)]] StructuredBuffer<float4x4>    model_matrices;
-//[[vk::binding(2, 0)]] StructuredBuffer<GPULight>    lights;
-//[[vk::binding(0, 1)]] StructuredBuffer<PBRMaterial> materials;
-//
-//[[vk::push_constant]] int instance_index;
+//[[vk::binding(0, 0)]] ConstantBuffer<SceneData>     global_data;  // per-frame
+[[vk::binding(1, 0)]] StructuredBuffer<float4x4>    model_matrices; // per-frame
+//[[vk::binding(2, 0)]] StructuredBuffer<GPULight>    lights;       // per-pass ( maybe )
+//[[vk::binding(0, 1)]] StructuredBuffer<PBRMaterial> materials;    // per-frame
+
+[[vk::push_constant]] int instance_index;   // per-model
 
 struct VertexInput {
     [[vk::location(0)]] float3 position      : POSITION;
@@ -38,17 +38,15 @@ VertexStageOutput vertexMain<T>(VertexInput input) where T : IMaterial {
     VertexStageOutput output;
 
     //float4 world_position = mul(float4(input.position, 1.0f), model_matrices[instance_index]);
-    //
+    
     //output.sv_position = mul(world_position, global_data.view_matrix);
     //output.sv_position = mul(output.sv_position, global_data.projection_matrix);
-    //
-    //output.position = world_position.xyz;
-    //output.normal = input.normal;
-    //output.texture_coord = input.texture_coord;
-
+    
     output.position = input.position;
     output.sv_position = float4(input.position, 1.0f);
-
+    output.normal = input.normal;
+    output.texture_coord = input.texture_coord;
+    
     return output;
 }
 

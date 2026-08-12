@@ -1,4 +1,6 @@
-﻿public struct SomeStruct {
+﻿module M_Material;
+
+public struct SomeStruct {
     public float3 albedo;
 }
 
