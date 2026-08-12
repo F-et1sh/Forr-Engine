@@ -4,6 +4,7 @@
 ### Goal
     see something on the screen
     fix specializations
+    provide 'fe::IRenderer::ImportGlobalContext()'
     provide : per-frame, per-pass, per-object and per-draw bindings
     allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
         allocate big SSBO ( AZDO ) in renderer for materials;
@@ -23,6 +24,7 @@
     specializations fixed
     seen something on the screen | RenderDoc can't open the program - needs to provide SSBO and UBO passing
     Slang import fixed
+    an idea is written down
 
 ### Problem
     -
