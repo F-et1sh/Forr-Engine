@@ -40,7 +40,7 @@ namespace fe {
         ~ApplicationDesc() = default;
     };
 
-    class FORR_API Application {
+    class FORR_API Application { // TODO : move all logic of 'fe::Application' to 'main.cpp' of the game
     public:
         Application(const ApplicationDesc& desc);
         ~Application() = default;

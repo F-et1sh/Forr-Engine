@@ -56,10 +56,10 @@ namespace fe {
         bool ComposeProgram();
 
         // returns 'true', if actually found anything and 'false', if the argument is not changed
-        bool ReflectPipeline(shader::ReflectedPipelineLayout& pipeline_layout);
+        bool ReflectPipeline(shader::ReflectedDescriptorsLayout& pipeline_layout);
 
         // returns 'true', if actually found anything and 'false', if the argument is not changed
-        bool ReflectMaterials(std::unordered_map<fe::hashed_string, shader::ReflectedMaterialLayout>& material_layouts);
+        bool ReflectMaterials(std::unordered_map<fe::hashed_string, shader::ReflectedStructureLayout>& material_layouts);
 
         shader::SourceCodeStorage CombineAndCompileShader(const resource::ShaderProgram& shader_program,
                                                           const resource::Material&      material,

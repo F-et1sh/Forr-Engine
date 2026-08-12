@@ -55,8 +55,19 @@ fe::RendererOpenGL::~RendererOpenGL() {
     glFinish();
 }
 
-void fe::RendererOpenGL::SetClearColor(float red, float green, float blue, float alpha) {
-    glClearColor(red, green, blue, alpha);
+void fe::RendererOpenGL::SetupPerFrameLayout(fe::pointer<resource::ShaderFileData> shader_file_data_ptr) {
+    // TODO : check that resource is valid
+    const auto& shader_file_data = *m_ResourceManager.GetResource(shader_file_data_ptr);
+    
+    if (!shader_file_data.shader_program_ptr.has_value()) {
+        fe::logging::error("fe::RendererOpenGL::SetupPerFrameLayout : Failed to setup per frame layout - no shader program found");
+        return;
+    }
+
+    const resource::ShaderProgram& shader_program = *m_ResourceManager.GetResource(shader_file_data.shader_program_ptr);
+    //shader_program.reflected_layout.descriptors
+
+    m_OpenGLResourceManager.
 }
 
 fe::RenderGraphBindings fe::RendererOpenGL::CreateGPUResources(const RenderGraphCompileResult& compile_result) {

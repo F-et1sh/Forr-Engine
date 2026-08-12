@@ -71,11 +71,9 @@ namespace fe {
                                                  IPlatformSystem&    platform_system,
                                                  size_t              primary_window_index,
                                                  ResourceManager&    resource_manager);
-
-        virtual void SetClearColor(float red   = 1.0f,
-                                   float green = 1.0f,
-                                   float blue  = 1.0f,
-                                   float alpha = 1.0f) = 0;
+        
+        // you have to pass a shader file, that describes what parameters are used for per-frame
+        virtual void SetupPerFrameLayout(fe::pointer<resource::ShaderFileData> shader_file_data_ptr) = 0;
 
         virtual RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) = 0;
 

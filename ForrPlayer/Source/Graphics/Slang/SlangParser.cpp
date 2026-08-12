@@ -130,7 +130,7 @@ std::vector<fe::EntryPoint> fe::SlangParser::findEntryPoints(std::vector<slang::
     return entry_points;
 }
 
-bool fe::SlangParser::ReflectPipeline(shader::ReflectedPipelineLayout& pipeline_layout) {
+bool fe::SlangParser::ReflectPipeline(shader::ReflectedDescriptorsLayout& pipeline_layout) {
     bool result = false;
 
     std::vector<slang::IComponentType*> component_types{};
@@ -138,7 +138,7 @@ bool fe::SlangParser::ReflectPipeline(shader::ReflectedPipelineLayout& pipeline_
 
     // a shader can have zero descriptors, but if there is at least one entry point - it is a pipeline
     if (entry_points.empty())
-        return result;
+        return result; // false
     else
         result = true;
 
@@ -176,7 +176,7 @@ bool fe::SlangParser::ReflectPipeline(shader::ReflectedPipelineLayout& pipeline_
     return result;
 }
 
-bool fe::SlangParser::ReflectMaterials(std::unordered_map<fe::hashed_string, shader::ReflectedMaterialLayout>& material_layouts) {
+bool fe::SlangParser::ReflectMaterials(std::unordered_map<fe::hashed_string, shader::ReflectedStructureLayout>& material_layouts) {
     bool result = false;
 
     slang::DeclReflection* module_reflection = m_Module->getModuleReflection();
@@ -193,7 +193,7 @@ bool fe::SlangParser::ReflectMaterials(std::unordered_map<fe::hashed_string, sha
 
         // TODO : parse material *only* if it inherits IMaterial - I forgot to take it into account
 
-        shader::ReflectedMaterialLayout material_layout{};
+        shader::ReflectedStructureLayout material_layout{};
 
         slang::TypeReflection*       type        = child->getType();
         slang::TypeLayoutReflection* type_layout = layout->getTypeLayout(type);
