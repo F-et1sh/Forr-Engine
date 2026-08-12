@@ -61,6 +61,9 @@ namespace fe {
         ~RenderPacket() = default;
     };
 
+    // TODO : make it changeable dynamically and remove this
+    constexpr inline static size_t MAX_CONCURRENT_FRAMES = 2;
+
     // if you want to add some variable here, use static method IRenderer::Create()
     // the member should be appended to the devired class, not here
     class FORR_API IRenderer {
@@ -71,15 +74,15 @@ namespace fe {
                                                  IPlatformSystem&    platform_system,
                                                  size_t              primary_window_index,
                                                  ResourceManager&    resource_manager);
-        
 
         virtual RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) = 0;
 
+        virtual void BeginFrame() = 0;
+        
         // you have to pass a shader file, that describes what parameters are used for per-frame
         virtual void SetPerFrameLayout(fe::pointer<resource::ShaderFileData> shader_file_data_ptr) = 0;
 
-        virtual void BeginFrame()                                                   = 0;
-        virtual void EndFrame(const render_graph::CommandList& render_command_list) = 0;
+        virtual void EndFrame(const render_graph::CommandList& render_command_list)                = 0;
 
         // TODO : remove this. It should work other way
         virtual void InitializeGPUResources() = 0;

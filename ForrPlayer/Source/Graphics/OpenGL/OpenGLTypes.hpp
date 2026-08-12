@@ -30,24 +30,19 @@ namespace fe {
         FORR_RESOURCE_BODY(OpenGLTexture)
     };
 
-    struct OpenGLShaderBuffer {
-        struct Binding {
-            uint8_t*       mapped{};
-            fe::gl::Buffer buffer{};
-            size_t         size{};
+    struct OpenGLShaderDescriptor {
+        uint8_t*       mapped{};
+        fe::gl::Buffer buffer{};
+        size_t         size{};
 
-            Binding()  = default;
-            ~Binding() = default;
+        OpenGLShaderDescriptor() = default;
 
-            FORR_RESOURCE_BODY(Binding)
-        };
-
-        std::vector<Binding> bindings{};
-
-        OpenGLShaderBuffer() = default;
-
-        FORR_RESOURCE_BODY(OpenGLShaderBuffer)
+        FORR_RESOURCE_BODY(OpenGLShaderDescriptor)
     };
+
+    // due frame sync there must be 2 or 3 descriptors intead of one
+    // this is like a default 'fe::OpenGLShaderDescriptor' but for per-frame using without artifacts
+    using OpenGLShaderDescriptorRing = std::array<OpenGLShaderDescriptor, MAX_CONCURRENT_FRAMES>;
 
     struct OpenGLPipeline {
         fe::gl::ShaderProgram shader_program{};

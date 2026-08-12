@@ -30,6 +30,7 @@
     ReflectedPipelineLayout --> ReflectedDescriptorsLayout
     fe::OpenGLResourceManager::GetShaderBuffer() --> fe::OpenGLResourceManager::GetOrCreateShaderBuffer()
     fe::IRenderer::SetPerFrameLayout() added | fe::IRenderer::ImportGlobalContext() --> fe::IRenderer::SetPerFrameLayout()
+    fe::OpenGLShaderDescriptor/fe::OpenGLShaderDescriptorRing added, OpenGLShaderBuffer removed
 
 ### Problem
     'fe::shader::ReflectedDescriptorsLayout' is used in pipeline logic ( fe::resource::ShaderProgram ) and only there.

@@ -42,9 +42,10 @@ namespace fe {
 
         RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) override;
 
-        void SetPerFrameLayout(fe::pointer<resource::ShaderFileData> shader_file_data_ptr)override;
-
         void BeginFrame() override;
+        
+        void SetPerFrameLayout(fe::pointer<resource::ShaderFileData> shader_file_data_ptr) override;
+
         void EndFrame(const render_graph::CommandList& render_command_list) override;
 
         void InitializeGPUResources() override;
@@ -180,7 +181,7 @@ namespace fe {
         fe::vk::CommandPool    m_CommandPool{};
         fe::vk::DescriptorPool m_DescriptorPool{};
 
-        std::array<FrameData, VulkanContext::max_concurrent_frames> m_FrameData{};
+        std::array<FrameData, MAX_CONCURRENT_FRAMES> m_FrameData{};
         std::vector<fe::vk::Semaphore>                              m_RenderCompleteSemaphores{};
 
         Camera                           m_Camera{};
