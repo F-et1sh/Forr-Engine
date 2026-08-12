@@ -123,8 +123,8 @@ namespace fe::resource {
 
     struct FORR_API ShaderProgram {
     public:
-        fe::pointer<ShaderFileData>     shader_file_data_ptr{};
-        shader::ReflectedPipelineLayout reflected_layout{};
+        fe::pointer<ShaderFileData>        shader_file_data_ptr{};
+        shader::ReflectedDescriptorsLayout reflected_layout{};
 
         ShaderProgram()  = default;
         ~ShaderProgram() = default;
@@ -133,12 +133,11 @@ namespace fe::resource {
     };
 
     struct FORR_API MaterialLayout {
-        shader::ReflectedMaterialLayout reflected_layout{};
-
-        fe::pointer<ShaderFileData> shader_file_data_ptr{};
+        fe::pointer<ShaderFileData>      shader_file_data_ptr{};
+        shader::ReflectedStructureLayout reflected_layout{};
 
         MaterialLayout() = default;
-        MaterialLayout(shader::ReflectedMaterialLayout reflected_layout, fe::pointer<ShaderFileData> shader_file_data_ptr)
+        MaterialLayout(shader::ReflectedStructureLayout reflected_layout, fe::pointer<ShaderFileData> shader_file_data_ptr)
             : reflected_layout(std::move(reflected_layout)), shader_file_data_ptr(shader_file_data_ptr) {}
         ~MaterialLayout() = default;
 

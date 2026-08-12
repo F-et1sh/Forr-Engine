@@ -578,27 +578,27 @@ namespace fe {
             COMPUTE  = 1 << 3,
         };
 
-        struct FORR_API ReflectedPipelineLayout {
+        struct FORR_API ReflectedDescriptorsLayout {
             std::vector<shader::ReflectedDescriptor> descriptors{};
             shader::ReflectedPushConstants           push_constants{};
 
-            ReflectedPipelineLayout() = default;
-            ReflectedPipelineLayout(std::vector<shader::ReflectedDescriptor> descriptors, shader::ReflectedPushConstants push_constants)
+            ReflectedDescriptorsLayout() = default;
+            ReflectedDescriptorsLayout(std::vector<shader::ReflectedDescriptor> descriptors, shader::ReflectedPushConstants push_constants)
                 : descriptors(std::move(descriptors)), push_constants(std::move(push_constants)) {}
 
-            bool operator==(const ReflectedPipelineLayout&) const noexcept = default;
+            bool operator==(const ReflectedDescriptorsLayout&) const noexcept = default;
         };
 
-        struct FORR_API ReflectedMaterialLayout {
+        struct FORR_API ReflectedStructureLayout {
             uint32_t                             size{};
             std::vector<shader::ReflectedMember> members{};
             fe::hashed_string                    name{};
 
-            ReflectedMaterialLayout() = default;
-            ReflectedMaterialLayout(uint32_t size, std::vector<ReflectedMember> members, fe::hashed_string name)
+            ReflectedStructureLayout() = default;
+            ReflectedStructureLayout(uint32_t size, std::vector<ReflectedMember> members, fe::hashed_string name)
                 : size(size), members(std::move(members)), name(std::move(name)) {}
 
-            bool operator==(const ReflectedMaterialLayout&) const noexcept = default;
+            bool operator==(const ReflectedStructureLayout&) const noexcept = default;
         };
 
         using SourceCode        = std::vector<uint8_t>;

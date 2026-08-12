@@ -59,6 +59,8 @@ namespace fe {
         template <resource::resource_t T>
         FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) { return m_Storage.GetResource(ptr); }
 
+        // TODO : add 'FindResource()'
+
         template <resource::resource_t T, typename Func>
         void RunForEach(Func&& func) { m_Storage.RunForEach<T>(func); }
 

@@ -19,12 +19,16 @@
     ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
     ( provide std::expected<> in fe::ResourceManager and use it in all new modules )
     ( try to apply all specializations once )
+    ( provide logging macro to log current function automatically )
 
 ### Done
     specializations fixed
     seen something on the screen | RenderDoc can't open the program - needs to provide SSBO and UBO passing
     Slang import fixed
     an idea is written down
+    ReflectedMaterialLayout --> ReflectedStructureLayout
+    ReflectedPipelineLayout --> ReflectedDescriptorsLayout
+    fe::OpenGLResourceManager::GetShaderBuffer() --> fe::OpenGLResourceManager::GetOrCreateShaderBuffer()
 
 ### Problem
     -

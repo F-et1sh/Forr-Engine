@@ -40,7 +40,7 @@ fe::pointer<fe::resource::ShaderFileData> fe::ShaderImporter::Import(ResourceSto
     // after moving 'shader_file_data' into the storage, we can't use that value again
     auto& this_shader_file_data = *storage.GetResource(ptr);
 
-    shader::ReflectedPipelineLayout pipeline_layout{};
+    shader::ReflectedDescriptorsLayout pipeline_layout{};
     if (parser.ReflectPipeline(pipeline_layout)) {
 
         resource::ShaderProgram shader_program{};
@@ -51,7 +51,7 @@ fe::pointer<fe::resource::ShaderFileData> fe::ShaderImporter::Import(ResourceSto
         this_shader_file_data.shader_program_ptr = pipeline_ptr;
     }
 
-    std::unordered_map<fe::hashed_string, shader::ReflectedMaterialLayout> material_layouts{};
+    std::unordered_map<fe::hashed_string, shader::ReflectedStructureLayout> material_layouts{};
     if (parser.ReflectMaterials(material_layouts)) {
 
         auto& material_layout_ptrs = this_shader_file_data.material_layout_ptrs.emplace();

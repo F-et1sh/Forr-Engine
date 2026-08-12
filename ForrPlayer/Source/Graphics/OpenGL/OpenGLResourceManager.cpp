@@ -262,7 +262,7 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetOrCreatePipeline(fe::poi
     return opengl_pipeline;
 }
 
-GLuint fe::OpenGLResourceManager::GetShaderBuffer(shader::ReflectedDescriptor& parameter) {
+GLuint fe::OpenGLResourceManager::GetOrCreateShaderBuffer(shader::ReflectedDescriptor& parameter) {
     auto it = m_ShaderBuffers.find(parameter);
     if (it != m_ShaderBuffers.end()) return it->second.get();
 
@@ -289,11 +289,13 @@ GLuint fe::OpenGLResourceManager::GetShaderBuffer(shader::ReflectedDescriptor& p
     }
     else {
         glDeleteBuffers(1, &buffer_raw);
-        fe::logging::warning("Unified -> OpenGL. Failed to create a buffer ( SSBO or UBO ) : unsupported descriptor type %i", parameter.descriptor_type);
+        fe::logging::warning("Unified -> OpenGL. Failed to create a buffer ( SSBO or UBO ) : unsupported descriptor type %i",
+                             parameter.descriptor_type);
         return ~0;
     }
 
     m_ShaderBuffers[parameter].attach(buffer_raw);
+
     return buffer_raw;
 }
 

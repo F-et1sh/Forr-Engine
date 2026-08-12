@@ -33,7 +33,7 @@ namespace fe {
                        ResourceManager&    resource_manager);
         ~RendererOpenGL();
 
-        void SetClearColor(float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f) override;
+        void SetupPerFrameLayout(fe::pointer<resource::ShaderFileData> shader_file_data_ptr) override;
 
         RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) override;
 

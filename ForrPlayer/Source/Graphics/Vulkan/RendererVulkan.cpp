@@ -46,11 +46,6 @@ fe::RendererVulkan::~RendererVulkan() {
     vkDeviceWaitIdle(m_Device);
 }
 
-void fe::RendererVulkan::SetClearColor(float red, float green, float blue, float alpha) {
-    // === SETUP CONTEXT ===
-    m_Context.clear_color = { red, green, blue, alpha }; // clear_color
-}
-
 fe::RenderGraphBindings fe::RendererVulkan::CreateGPUResources(const RenderGraphCompileResult& compile_result) {
     return {};
 }
