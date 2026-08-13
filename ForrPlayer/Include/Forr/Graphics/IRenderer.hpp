@@ -77,6 +77,14 @@ namespace fe {
 
         virtual RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) = 0;
 
+        // create a buffer ( SSBO/UBO ) via its reflected data
+        // @returns fe::ParameterID is a variable that can be used in fe::IRenderer::WriteBuffer() to
+        //  bind and pass data to the buffer created in this function
+        virtual ParameterID CreateParameter(const shader::ReflectedDescriptor& descriptor) = 0;
+
+        // write to SSBO or UBO
+        virtual void WriteBuffer(ParameterID parameter_id) = 0;
+
         virtual void BeginFrame()                                                   = 0;
         virtual void EndFrame(const render_graph::CommandList& render_command_list) = 0;
 
