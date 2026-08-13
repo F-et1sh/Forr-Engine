@@ -40,8 +40,7 @@ namespace fe {
         return hash;
     }
 
-    // this is like std::string but it uses hash to compare.
-    // used mostly for GUI
+    // this is like std::string but it uses hash to compare
     class hashed_string {
     public:
         hashed_string()  = default;

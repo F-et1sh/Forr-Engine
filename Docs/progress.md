@@ -3,6 +3,7 @@
 ## 13.08.2026
 ### Goal
     separate pipeline and descriptors
+    provide fe::ParameterID
     provide : per-frame, per-pass, per-object and per-draw bindings
     allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
         allocate big SSBO ( AZDO ) in renderer for materials;
