@@ -50,10 +50,6 @@ fe::RenderGraphBindings fe::RendererVulkan::CreateGPUResources(const RenderGraph
     return {};
 }
 
-void fe::RendererVulkan::SetPerFrameLayout(fe::pointer<resource::ShaderFileData> shader_file_data_ptr) {
-
-}
-
 void fe::RendererVulkan::BeginFrame() {
     std::array<VkFence, 1> fences{ m_FrameData[m_CurrentFrame].wait_fence };
 

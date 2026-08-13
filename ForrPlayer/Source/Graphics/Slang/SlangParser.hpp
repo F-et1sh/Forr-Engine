@@ -56,7 +56,10 @@ namespace fe {
         bool ComposeProgram();
 
         // returns 'true', if actually found anything and 'false', if the argument is not changed
-        bool ReflectPipeline(shader::ReflectedDescriptorsLayout& pipeline_layout);
+        bool ReflectDescriptors(shader::ReflectedDescriptorsLayout& descriptors_layout);
+
+        // returns 'true', if the shader file contains vertexMain(), fragmentMain() or computeMain() and otherwise - 'false'
+        bool IsPipeline();
 
         // returns 'true', if actually found anything and 'false', if the argument is not changed
         bool ReflectMaterials(std::unordered_map<fe::hashed_string, shader::ReflectedStructureLayout>& material_layouts);

@@ -119,12 +119,16 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Texture)
     };
 
-    struct ShaderFileData; // forward declaration
+    /* forward declarations */
+    struct ShaderFileData;
+    struct DescriptorsLayout;
 
     struct FORR_API ShaderProgram {
     public:
-        fe::pointer<ShaderFileData>        shader_file_data_ptr{};
-        shader::ReflectedDescriptorsLayout reflected_layout{};
+        using DescriptorsLayoutPtr = fe::pointer<resource::DescriptorsLayout>;
+
+        fe::pointer<ShaderFileData>         shader_file_data_ptr{};
+        std::optional<DescriptorsLayoutPtr> descriptors_layout_ptr{};
 
         ShaderProgram()  = default;
         ~ShaderProgram() = default;
@@ -132,6 +136,23 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(ShaderProgram)
     };
 
+    struct FORR_API DescriptorsLayout {
+    public:
+        fe::pointer<ShaderFileData>        shader_file_data_ptr{};
+        shader::ReflectedDescriptorsLayout reflected_layout{};
+
+        DescriptorsLayout()  = default;
+        ~DescriptorsLayout() = default;
+
+        DescriptorsLayout() = default;
+        DescriptorsLayout(shader::ReflectedDescriptorsLayout reflected_layout, fe::pointer<ShaderFileData> shader_file_data_ptr)
+            : reflected_layout(std::move(reflected_layout)), shader_file_data_ptr(shader_file_data_ptr) {}
+        ~DescriptorsLayout() = default;
+
+        FORR_RESOURCE_BODY(DescriptorsLayout)
+    };
+
+    // TODO : maybe rename this to 'StructureLayout'
     struct FORR_API MaterialLayout {
         fe::pointer<ShaderFileData>      shader_file_data_ptr{};
         shader::ReflectedStructureLayout reflected_layout{};
@@ -177,12 +198,14 @@ namespace fe::resource {
     // this is a basic structure, created by 'fe::ShaderImporter', while importing a file
     struct FORR_API ShaderFileData {
     public:
-        using ShaderProgramPtr  = fe::pointer<resource::ShaderProgram>;
-        using MaterialLayoutPtr = fe::pointer<resource::MaterialLayout>;
+        using ShaderProgramPtr     = fe::pointer<resource::ShaderProgram>;
+        using DescriptorsLayoutPtr = fe::pointer<resource::DescriptorsLayout>;
+        using MaterialLayoutPtr    = fe::pointer<resource::MaterialLayout>;
 
         using MaterialLayoutsContainer = std::unordered_map<fe::hashed_string, MaterialLayoutPtr>;
 
         std::optional<ShaderProgramPtr>         shader_program_ptr{};
+        std::optional<DescriptorsLayoutPtr>     descriptors_layout_ptr{};
         std::optional<MaterialLayoutsContainer> material_layout_ptrs{};
 
         // this is needed to not accses disk twice
@@ -296,6 +319,7 @@ namespace fe::resource {
     concept resource_t =
         (std::is_same_v<T, Texture>) ||
         (std::is_same_v<T, ShaderProgram>) ||
+        (std::is_same_v<T, DescriptorsLayout>) ||
         (std::is_same_v<T, MaterialLayout>) ||
         (std::is_same_v<T, Material>) ||
         (std::is_same_v<T, ShaderFileData>) ||
