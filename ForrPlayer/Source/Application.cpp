@@ -80,8 +80,6 @@ void fe::Application::Run() {
 
         m_Renderer->BeginFrame();
 
-        m_Renderer->SetPerFrameLayout(m_PerFrameLayoutPtr);
-
         RenderGraphCollector<TransformComponent, MeshComponent, LightComponent> collector{ m_Registry };
 
         auto render_command_list = m_RenderGraph->Execute(collector.getRegistry());

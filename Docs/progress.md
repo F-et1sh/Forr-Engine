@@ -20,10 +20,10 @@
     ( provide logging macro to log current function automatically )
 
 ### Done
-    -
+    DescriptorsLayout added, fe::IRenderer::SetPerFrameLayout() removed
 
 ### Problem
-    -
+    Bad Slang Reflection API - there is no interfaces tracking or I can't find it anywhere in its docs or with AI
 
 ## 12.08.2026
 ### Goal

@@ -40,11 +40,23 @@ fe::pointer<fe::resource::ShaderFileData> fe::ShaderImporter::Import(ResourceSto
     // after moving 'shader_file_data' into the storage, we can't use that value again
     auto& this_shader_file_data = *storage.GetResource(ptr);
 
-    shader::ReflectedDescriptorsLayout pipeline_layout{};
-    if (parser.ReflectPipeline(pipeline_layout)) {
+    shader::ReflectedDescriptorsLayout       descriptors_layout{};
+    fe::pointer<resource::DescriptorsLayout> descriptors_layout_ptr{};
 
+    if (parser.ReflectDescriptors(descriptors_layout)) {
+        descriptors_layout_ptr = storage.CreateResource(resource::DescriptorsLayout{ std::move(descriptors_layout), ptr });
+    }
+
+    if (parser.IsPipeline()) {
         resource::ShaderProgram shader_program{};
-        shader_program.reflected_layout     = pipeline_layout;
+
+        if (descriptors_layout_ptr.is_valid()) {
+            shader_program.descriptors_layout_ptr = descriptors_layout_ptr;
+        }
+        else {
+            shader_program.descriptors_layout_ptr = std::nullopt;
+        }
+
         shader_program.shader_file_data_ptr = ptr;
 
         auto pipeline_ptr                        = storage.CreateResource(std::move(shader_program));

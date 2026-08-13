@@ -63,12 +63,16 @@ namespace fe {
             return *this;
         }
 
+        constexpr bool is_valid() const noexcept {
+            return m_index != std::numeric_limits<handle_t>::max() &&
+                   m_generation != std::numeric_limits<handle_t>::max();
+        }
+
         constexpr bool operator==(const pointer&) const noexcept = default;
         constexpr bool operator!=(const pointer&) const noexcept = default;
 
         constexpr operator bool() const noexcept {
-            return m_index != std::numeric_limits<handle_t>::max() &&
-                   m_generation != std::numeric_limits<handle_t>::max();
+            return this->is_valid();
         }
 
     private:

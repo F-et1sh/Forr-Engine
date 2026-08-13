@@ -68,29 +68,6 @@ fe::RenderGraphBindings fe::RendererOpenGL::CreateGPUResources(const RenderGraph
     return bindings;
 }
 
-void fe::RendererOpenGL::SetPerFrameLayout(fe::pointer<resource::ShaderFileData> shader_file_data_ptr) {
-    // TODO : check that resource is valid
-    const auto& shader_file_data = *m_ResourceManager.GetResource(shader_file_data_ptr);
-
-    if (!shader_file_data.shader_program_ptr.has_value()) {
-        fe::logging::error("fe::RendererOpenGL::SetupPerFrameLayout : Failed to setup per frame layout - no shader program found");
-        return;
-    }
-
-    const resource::ShaderProgram& shader_program = *m_ResourceManager.GetResource(shader_file_data.shader_program_ptr.value());
-
-    for (const auto& descriptor : shader_program.reflected_layout.descriptors) {
-        const OpenGLShaderDescriptorRing& descriptor_ring = m_OpenGLResourceManager.GetOrCreateShaderBuffer(descriptor);
-        
-        if (descriptor.descriptor_type == shader::DescriptorType::UNIFORM_BUFFER) {
-            glBindBufferBase(GL_UNIFORM_BUFFER, descriptor.binding, descriptor_ring[m_CurrentFrame].buffer.get());
-        }
-        else if (descriptor.descriptor_type == shader::DescriptorType::STORAGE_BUFFER) {
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, descriptor.binding, descriptor_ring[m_CurrentFrame].buffer.get());
-        }
-    }
-}
-
 void fe::RendererOpenGL::BeginFrame() {
     if (m_FrameData[m_CurrentFrame].sync) {
         glClientWaitSync(m_FrameData[m_CurrentFrame].sync, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);

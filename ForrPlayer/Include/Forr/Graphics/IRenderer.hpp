@@ -77,12 +77,8 @@ namespace fe {
 
         virtual RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) = 0;
 
-        virtual void BeginFrame() = 0;
-        
-        // you have to pass a shader file, that describes what parameters are used for per-frame
-        virtual void SetPerFrameLayout(fe::pointer<resource::ShaderFileData> shader_file_data_ptr) = 0;
-
-        virtual void EndFrame(const render_graph::CommandList& render_command_list)                = 0;
+        virtual void BeginFrame()                                                   = 0;
+        virtual void EndFrame(const render_graph::CommandList& render_command_list) = 0;
 
         // TODO : remove this. It should work other way
         virtual void InitializeGPUResources() = 0;

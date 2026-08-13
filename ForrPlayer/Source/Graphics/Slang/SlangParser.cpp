@@ -130,26 +130,14 @@ std::vector<fe::EntryPoint> fe::SlangParser::findEntryPoints(std::vector<slang::
     return entry_points;
 }
 
-bool fe::SlangParser::ReflectPipeline(shader::ReflectedDescriptorsLayout& pipeline_layout) {
+bool fe::SlangParser::ReflectDescriptors(shader::ReflectedDescriptorsLayout& descriptors_layout) {
     bool result = false;
-
-    // look at 'Problem' in 'progress.md' at 12.08.2026
-    // I don't know what to do with this, so let it be like this for now
-
-    //std::vector<slang::IComponentType*> component_types{};
-    //auto                                entry_points = findEntryPoints(component_types);
-
-    //// a shader can have zero descriptors, but if there is at least one entry point - it is a pipeline
-    //if (entry_points.empty())
-    //    return result; // false
-    //else
-    //    result = true;
 
     slang::ProgramLayout* layout          = m_ComposedProgram->getLayout();
     unsigned int          parameter_count = layout->getParameterCount();
 
     if (parameter_count != 0) {
-        pipeline_layout.descriptors.reserve(parameter_count);
+        descriptors_layout.descriptors.reserve(parameter_count);
 
         for (unsigned int i = 0; i < parameter_count; i++) {
             slang::VariableLayoutReflection* variable_layout = layout->getParameterByIndex(i);
@@ -161,12 +149,12 @@ bool fe::SlangParser::ReflectPipeline(shader::ReflectedDescriptorsLayout& pipeli
             SlangCategory category = variable_layout->getCategory();
 
             if (category == SlangCategory::DescriptorTableSlot) {
-                auto& parameter = pipeline_layout.descriptors.emplace_back();
+                auto& parameter = descriptors_layout.descriptors.emplace_back();
                 SlangParser::parseDescriptorTable(variable_layout, parameter);
                 result = true;
             }
             else if (category == SlangCategory::PushConstantBuffer) {
-                SlangParser::parsePushConstant(variable_layout, pipeline_layout.push_constants);
+                SlangParser::parsePushConstant(variable_layout, descriptors_layout.push_constants);
                 result = true;
             }
             else {
@@ -177,6 +165,13 @@ bool fe::SlangParser::ReflectPipeline(shader::ReflectedDescriptorsLayout& pipeli
     }
 
     return result;
+}
+
+bool fe::SlangParser::IsPipeline() {
+    std::vector<slang::IComponentType*> component_types{};
+    auto                                entry_points = findEntryPoints(component_types);
+    // a shader can have zero descriptors, but if there is at least one entry point - it is a pipeline
+    return !entry_points.empty();
 }
 
 bool fe::SlangParser::ReflectMaterials(std::unordered_map<fe::hashed_string, shader::ReflectedStructureLayout>& material_layouts) {
@@ -193,8 +188,6 @@ bool fe::SlangParser::ReflectMaterials(std::unordered_map<fe::hashed_string, sha
 
         // there can be only 'Struct'
         if (kind != SlangDeclKind::Struct) continue;
-
-        // TODO : parse material *only* if it inherits IMaterial - I forgot to take it into account
 
         shader::ReflectedStructureLayout material_layout{};
 
