@@ -604,6 +604,16 @@ namespace fe {
         using SourceCode        = std::vector<uint8_t>;
         using SourceCodeStorage = std::unordered_map<shader::StageBits, SourceCode>;
     } // namespace shader
+
+    struct FORR_API ParameterID {
+        uint8_t set{};
+        uint8_t binding{};
+
+        fe::pointer<shader::ReflectedDescriptor> storage_ptr{};
+
+        ParameterID()  = default;
+        ~ParameterID() = default;
+    };
 } // namespace fe
 
 template <>

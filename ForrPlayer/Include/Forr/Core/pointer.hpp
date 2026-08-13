@@ -25,7 +25,11 @@
 #include "attributes.hpp"
 
 namespace fe {
-    using handle_t = uint32_t; // this type can't be replaced by uint64_t
+    // it will be better, if this two variables together take up 8 or less bytes of memory
+    using handle_t     = uint32_t;
+    using generation_t = uint16_t;
+
+    inline constexpr static uint64_t PACKING_SHIFT = sizeof(generation_t) * 8;
 
     template <typename _Ty>
     concept storable_t =
@@ -38,7 +42,7 @@ namespace fe {
     template <typename _Ty>
     class FORR_NODISCARD pointer {
     public:
-        constexpr pointer(handle_t index, handle_t generation) noexcept
+        constexpr pointer(handle_t index, generation_t generation) noexcept
             : m_index(index), m_generation(generation) {}
         ~pointer() = default;
 
@@ -48,36 +52,34 @@ namespace fe {
         pointer(const pointer&) noexcept            = default;
         pointer& operator=(const pointer&) noexcept = default;
 
-        constexpr handle_t index() const noexcept { return m_index; }
-        constexpr handle_t generation() const noexcept { return m_generation; }
+        constexpr handle_t     index() const noexcept { return m_index; }
+        constexpr generation_t generation() const noexcept { return m_generation; }
 
         constexpr uint64_t packed() const noexcept {
-            return (static_cast<uint64_t>(m_index) << 32) | static_cast<uint64_t>(m_generation);
+            return (static_cast<uint64_t>(m_index) << PACKING_SHIFT) | static_cast<uint64_t>(m_generation);
         }
 
         // the pointer is going to be changed after unpacking
         // it is not just letting you get an unpacked pointer<_Ty>
         constexpr pointer<_Ty> unpack(uint64_t packed) noexcept {
-            m_index      = static_cast<uint32_t>(packed >> 32);
-            m_generation = static_cast<uint32_t>(packed & 0xFFFFFFFF);
+            m_index      = static_cast<handle_t>(packed >> PACKING_SHIFT);
+            m_generation = static_cast<generation_t>(packed & std::numeric_limits<generation_t>::max());
             return *this;
         }
 
         constexpr bool is_valid() const noexcept {
             return m_index != std::numeric_limits<handle_t>::max() &&
-                   m_generation != std::numeric_limits<handle_t>::max();
+                   m_generation != std::numeric_limits<generation_t>::max();
         }
 
         constexpr bool operator==(const pointer&) const noexcept = default;
         constexpr bool operator!=(const pointer&) const noexcept = default;
 
-        constexpr operator bool() const noexcept {
-            return this->is_valid();
-        }
+        constexpr operator bool() const noexcept { return this->is_valid(); }
 
     private:
-        handle_t m_index{ std::numeric_limits<handle_t>::max() };
-        handle_t m_generation{ std::numeric_limits<handle_t>::max() };
+        handle_t     m_index{ std::numeric_limits<handle_t>::max() };
+        generation_t m_generation{ std::numeric_limits<generation_t>::max() };
 
         template <storable_t>
         friend class typed_pointer_storage;
