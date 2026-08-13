@@ -14,6 +14,7 @@
 
 #include <cstddef>
 #include "Core/attributes.hpp"
+#include "Core/pointer.hpp"
 
 namespace fe {
     enum class FORR_API GraphicsBackend {

@@ -22,6 +22,7 @@
 
 ### Done
     DescriptorsLayout added, fe::IRenderer::SetPerFrameLayout() removed
+    ParameterID added
 
 ### Problem
     Bad Slang Reflection API - there is no interfaces tracking or I can't find it anywhere in its docs or with AI

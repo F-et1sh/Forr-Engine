@@ -24,8 +24,6 @@ namespace fe {
 
     static RenderPacket m_RenderPacket{}; // temp
 
-    static fe::pointer<resource::ShaderFileData> m_PerFrameLayoutPtr; // temp
-
 } // namespace fe
 
 fe::Application::Application(const ApplicationDesc& desc) {
@@ -83,7 +81,7 @@ void fe::Application::Run() {
         //m_Renderer->WriteBuffer();
 
         RenderGraphCollector<TransformComponent, MeshComponent, LightComponent> collector{ m_Registry };
-        auto render_command_list = m_RenderGraph->Execute(collector.getRegistry());
+        auto                                                                    render_command_list = m_RenderGraph->Execute(collector.getRegistry());
 
         m_Renderer->EndFrame(render_command_list);
 
@@ -128,7 +126,16 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
 
     m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, *m_ResourceManager);
 
-    m_PerFrameLayoutPtr = m_ResourceManager->ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Context" / "GlobalContext.slang"); // temp
+    //auto        ptr                = m_ResourceManager->ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Context" / "GlobalContext.slang");
+    //const auto& shader_file_data   = *m_ResourceManager->GetResource<resource::ShaderFileData>(ptr);
+    //const auto& descriptors_layout = *m_ResourceManager->GetResource(shader_file_data.descriptors_layout_ptr.value());
+
+    //const auto& descriptor = descriptors_layout.reflected_layout.descriptors[0];
+
+    //ParameterID parameter_id = m_Renderer->CreateParameter(descriptor);
+
+    //// hot path
+    //m_Renderer->WriteBuffer(parameter_id, data);
 
     m_RenderGraph = std::make_unique<RenderGraph>(*m_ResourceManager);
     //auto shadow_pass_data_mapped  = m_RenderGraph->AddPass<ShadowPassData, ShadowPass>("Shadow Pass");    // TODO : make a storage for this mapped data
