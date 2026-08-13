@@ -1,5 +1,30 @@
 ﻿# Forr-Engine Devlog
 
+## 13.08.2026
+### Goal
+    separate pipeline and descriptors
+    provide : per-frame, per-pass, per-object and per-draw bindings
+    allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
+        allocate big SSBO ( AZDO ) in renderer for materials;
+    make a video for YouTube, when see something on the screen
+    fix Vukan VMA error
+    provide debug tools with Dear ImGui
+
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+    ( provide string_pool and use std::string_view instead of always using std::string - helps to decrease allocations )
+
+    ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
+    ( provide std::expected<> in fe::ResourceManager and use it in all new modules )
+    ( try to apply all specializations once )
+    ( provide logging macro to log current function automatically )
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 12.08.2026
 ### Goal
     see something on the screen
