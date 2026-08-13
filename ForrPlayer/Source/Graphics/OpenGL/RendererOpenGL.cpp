@@ -68,6 +68,14 @@ fe::RenderGraphBindings fe::RendererOpenGL::CreateGPUResources(const RenderGraph
     return bindings;
 }
 
+fe::ParameterID fe::RendererOpenGL::CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) {
+    ParameterID parameter_id{};
+
+    
+
+    return parameter_id;
+}
+
 void fe::RendererOpenGL::BeginFrame() {
     if (m_FrameData[m_CurrentFrame].sync) {
         glClientWaitSync(m_FrameData[m_CurrentFrame].sync, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);

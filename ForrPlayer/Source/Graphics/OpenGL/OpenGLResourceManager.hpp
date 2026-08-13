@@ -55,30 +55,32 @@ namespace fe {
         ///@}
 
         // this is for render graph
-        size_t               CreateImage(const render_graph::ImageDesc& image_desc);
-        const OpenGLTexture& GetImage(size_t texture_storage_index);
+        FORR_NODISCARD size_t               CreateImage(const render_graph::ImageDesc& image_desc);
+        FORR_NODISCARD const OpenGLTexture& GetImage(size_t texture_storage_index);
 
-        const OpenGLPipeline& GetOrCreatePipeline(fe::pointer<resource::ShaderProgram> shader_program_ptr,
+        FORR_NODISCARD const OpenGLPipeline& GetOrCreatePipeline(fe::pointer<resource::ShaderProgram> shader_program_ptr,
                                                   fe::pointer<resource::Material>      material_ptr);
 
-        const OpenGLMesh&    GetResource(GPUHandle<resource::Model::Mesh> handle) const;
-        const OpenGLTexture& GetResource(GPUHandle<resource::Texture> handle) const;
+        FORR_NODISCARD const OpenGLMesh&    GetResource(GPUHandle<resource::Model::Mesh> handle) const;
+        FORR_NODISCARD const OpenGLTexture& GetResource(GPUHandle<resource::Texture> handle) const;
 
         // TODO : this is a good place to start providing std::expected<>
-        const OpenGLShaderDescriptorRing& GetOrCreateShaderBuffer(const shader::ReflectedDescriptor& parameter);
+        FORR_NODISCARD const OpenGLShaderDescriptorRing& GetOrCreateShaderBuffer(const shader::ReflectedDescriptor& parameter);
+
+        FORR_NODISCARD ParameterID CreateParameter(const shader::ReflectedDescriptor& descriptor_layout);
 
     private: // here functions, which used like helpers to create some resources that don't have thier own CPU realization.
              // The functions return 'GPUHandle<>' but you DON'T have to set 'GPUHandle<> gpu_handle' in the resources, the functions does it by themselves
 
-        fe::GPUHandle<fe::resource::Model::Mesh> createMesh(resource::Model::Mesh& mesh);
+        FORR_NODISCARD fe::GPUHandle<fe::resource::Model::Mesh> createMesh(resource::Model::Mesh& mesh);
 
     private: // helpers
-        GLuint createShaderProgramRaw(const fe::shader::SourceCodeStorage& source_codes);
+        FORR_NODISCARD GLuint createShaderProgramRaw(const fe::shader::SourceCodeStorage& source_codes);
 
         // this function returns the index of the resource ( GPUHandle<>::index )
         // you DON'T have to set 'GPUHandle<> gpu_handle' in the resource manually, the function does it by itself
         template <typename CPU_T, typename GPU_T>
-        size_t storeResource(GPUHandle<CPU_T>& gpu_handle_dst, GPU_T& gpu_resource, std::vector<GPU_T>& storage) {
+        FORR_NODISCARD size_t storeResource(GPUHandle<CPU_T>& gpu_handle_dst, GPU_T& gpu_resource, std::vector<GPU_T>& storage) {
             storage.emplace_back(std::move(gpu_resource));
             gpu_handle_dst.index = storage.size() - 1;
             return gpu_handle_dst.index;
@@ -92,7 +94,7 @@ namespace fe {
         std::vector<OpenGLTexture> m_StorageTextures{};
 
         // shader buffers : SSBOs and UBOs
-        std::unordered_map<shader::ReflectedDescriptor, OpenGLShaderDescriptorRing> m_ShaderBuffers{};
+        fe::typed_pointer_storage<OpenGLShaderDescriptorRing> m_ShaderBuffers{};
 
         // combined 'fe::pointer<resource::ShaderProgram>' and 'fe::pointer<resource::Material>' --> OpenGLPipeline
         std::unordered_map<size_t, OpenGLPipeline> m_Pipelines{};

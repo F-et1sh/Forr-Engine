@@ -33,6 +33,8 @@ namespace fe {
 
         RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) override;
 
+        ParameterID CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) override;
+
         void BeginFrame() override;
         void EndFrame(const render_graph::CommandList& render_command_list) override;
 
