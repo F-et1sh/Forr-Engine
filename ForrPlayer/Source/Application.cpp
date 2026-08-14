@@ -126,13 +126,13 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
 
     m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, *m_ResourceManager);
 
-    //auto        ptr                = m_ResourceManager->ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Context" / "GlobalContext.slang");
-    //const auto& shader_file_data   = *m_ResourceManager->GetResource<resource::ShaderFileData>(ptr);
-    //const auto& descriptors_layout = *m_ResourceManager->GetResource(shader_file_data.descriptors_layout_ptr.value());
+    auto        ptr                = m_ResourceManager->ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Context" / "GlobalContext.slang");
+    const auto& shader_file_data   = *m_ResourceManager->GetResource<resource::ShaderFileData>(ptr);
+    const auto& descriptors_layout = *m_ResourceManager->GetResource(shader_file_data.descriptors_layout_ptr.value());
 
-    //const auto& descriptor = descriptors_layout.reflected_layout.descriptors[0];
+    const auto& descriptor = descriptors_layout.reflected_layout.descriptors[0];
 
-    //ParameterID parameter_id = m_Renderer->CreateParameter(descriptor);
+    ParameterID parameter_id = m_Renderer->CreateParameter(descriptor);
 
     //// hot path
     //m_Renderer->WriteBuffer(parameter_id, data);

@@ -306,8 +306,9 @@ const fe::OpenGLShaderDescriptorRing& fe::OpenGLResourceManager::GetOrCreateShad
 
 fe::ParameterID fe::OpenGLResourceManager::CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) {
     ParameterID parameter_id{};
-    parameter_id.set = descriptor_layout.set;
-    parameter_id.binding = descriptor_layout.binding;
+    parameter_id.set           = descriptor_layout.set;
+    parameter_id.binding       = descriptor_layout.binding;
+    parameter_id.storage_index = m_ShaderBuffers.size();
 
     size_t buffer_size = 16 * 1024; // 16KB
 
@@ -344,7 +345,7 @@ fe::ParameterID fe::OpenGLResourceManager::CreateParameter(const shader::Reflect
         descriptor.size = buffer_size;
     }
 
-    //parameter_id.storage_ptr = m_ShaderBuffers.create(descriptor_ring); problem
+    m_ShaderBuffers.emplace_back(std::move(descriptor_ring));
 
     return parameter_id;
 }

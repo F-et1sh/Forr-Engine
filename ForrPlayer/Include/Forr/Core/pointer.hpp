@@ -27,7 +27,7 @@
 namespace fe {
     // it will be better, if this two variables together take up 8 or less bytes of memory
     using handle_t     = uint32_t;
-    using generation_t = uint16_t;
+    using generation_t = uint32_t;
 
     inline constexpr static uint64_t PACKING_SHIFT = sizeof(generation_t) * 8;
 

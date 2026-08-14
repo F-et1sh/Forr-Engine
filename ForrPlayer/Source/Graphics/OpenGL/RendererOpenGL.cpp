@@ -69,11 +69,7 @@ fe::RenderGraphBindings fe::RendererOpenGL::CreateGPUResources(const RenderGraph
 }
 
 fe::ParameterID fe::RendererOpenGL::CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) {
-    ParameterID parameter_id{};
-
-    
-
-    return parameter_id;
+    return m_OpenGLResourceManager.CreateParameter(descriptor_layout);
 }
 
 void fe::RendererOpenGL::BeginFrame() {

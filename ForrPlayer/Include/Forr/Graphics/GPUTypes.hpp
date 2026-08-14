@@ -609,7 +609,7 @@ namespace fe {
         uint8_t set{};
         uint8_t binding{};
 
-        fe::pointer<shader::ReflectedDescriptor> storage_ptr{};
+        uint32_t storage_index{};
 
         ParameterID()  = default;
         ~ParameterID() = default;
