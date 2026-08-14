@@ -609,6 +609,7 @@ namespace fe {
         uint8_t set{};
         uint8_t binding{};
 
+        // index in the list of shader buffers in GPU resource manager
         uint32_t storage_index{};
 
         ParameterID()  = default;
