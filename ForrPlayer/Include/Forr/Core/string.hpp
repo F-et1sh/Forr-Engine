@@ -46,9 +46,9 @@ namespace fe {
         hashed_string()  = default;
         ~hashed_string() = default;
 
-        hashed_string(const char* str) : string(str), hash(fe::string_hash(str)) {}
-        explicit hashed_string(std::string string) : string(std::move(string)), hash(fe::string_hash(string)) {}
-        explicit hashed_string(std::string_view string_view) : string(string_view), hash(fe::string_hash(string_view)) {}
+        constexpr hashed_string(const char* str) : string(str), hash(fe::string_hash(str)) {}
+        constexpr explicit hashed_string(std::string string) : string(std::move(string)), hash(fe::string_hash(string)) {}
+        constexpr explicit hashed_string(std::string_view string_view) : string(string_view), hash(fe::string_hash(string_view)) {}
 
         FORR_NODISCARD operator std::string_view() const noexcept { return { string.data(), size() }; }
         FORR_NODISCARD operator std::string() const noexcept { return string; }

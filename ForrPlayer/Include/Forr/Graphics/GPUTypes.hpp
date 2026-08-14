@@ -335,7 +335,7 @@ namespace fe {
 
 #define GENERATE_TRAITS(EnumName, StructName)                           \
     template <>                                                         \
-    struct CommandTraits<StructName> {                                  \
+    struct FORR_API CommandTraits<StructName> {                         \
         static constexpr CommandType      Type = CommandType::EnumName; \
         static constexpr std::string_view Name = #EnumName;             \
     };
@@ -343,7 +343,7 @@ namespace fe {
         FORR_RENDER_COMMANDS_LIST(GENERATE_TRAITS)
 #undef GENERATE_TRAITS
 
-        class CommandList {
+        class FORR_API CommandList {
         public:
             CommandList()  = default;
             ~CommandList() = default;

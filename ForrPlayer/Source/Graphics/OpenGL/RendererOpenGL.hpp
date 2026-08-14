@@ -35,6 +35,8 @@ namespace fe {
 
         ParameterID CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) override;
 
+        void WriteBuffer(ParameterID parameter_id, const std::vector<uint8_t>& data) override;
+
         void BeginFrame() override;
         void EndFrame(const render_graph::CommandList& render_command_list) override;
 

@@ -50,6 +50,9 @@ fe::RenderGraphBindings fe::RendererVulkan::CreateGPUResources(const RenderGraph
     return {};
 }
 
+void fe::RendererVulkan::WriteBuffer(ParameterID parameter_id, const std::vector<uint8_t>& data) {
+}
+
 void fe::RendererVulkan::BeginFrame() {
     std::array<VkFence, 1> fences{ m_FrameData[m_CurrentFrame].wait_fence };
 
