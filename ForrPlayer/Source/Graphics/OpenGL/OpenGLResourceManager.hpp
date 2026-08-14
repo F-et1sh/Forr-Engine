@@ -65,8 +65,6 @@ namespace fe {
         FORR_NODISCARD const OpenGLTexture& GetResource(GPUHandle<resource::Texture> handle) const;
 
         // TODO : this is a good place to start providing std::expected<>
-        FORR_NODISCARD const OpenGLShaderDescriptorRing& GetOrCreateShaderBuffer(const shader::ReflectedDescriptor& parameter);
-
         FORR_NODISCARD ParameterID CreateDescriptorRing(const shader::ReflectedDescriptor& descriptor_layout);
         FORR_NODISCARD OpenGLShaderDescriptorRing& GetDescriptorRing(uint32_t index);
 

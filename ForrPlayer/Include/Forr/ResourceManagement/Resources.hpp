@@ -141,9 +141,6 @@ namespace fe::resource {
         fe::pointer<ShaderFileData>        shader_file_data_ptr{};
         shader::ReflectedDescriptorsLayout reflected_layout{};
 
-        DescriptorsLayout()  = default;
-        ~DescriptorsLayout() = default;
-
         DescriptorsLayout() = default;
         DescriptorsLayout(shader::ReflectedDescriptorsLayout reflected_layout, fe::pointer<ShaderFileData> shader_file_data_ptr)
             : reflected_layout(std::move(reflected_layout)), shader_file_data_ptr(shader_file_data_ptr) {}
@@ -315,15 +312,19 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Model)
     };
 
+#define FORR_RESOURCES_LIST(X) \
+    X(Texture)                 \
+    X(ShaderProgram)           \
+    X(DescriptorsLayout)       \
+    X(MaterialLayout)          \
+    X(Material)                \
+    X(ShaderFileData)          \
+    X(Model)
+
+#define GENERATE_CONCEPT(RESOURCE_NAME) (std::is_same_v<T, RESOURCE_NAME>) ||
     template <typename T>
-    concept resource_t =
-        (std::is_same_v<T, Texture>) ||
-        (std::is_same_v<T, ShaderProgram>) ||
-        (std::is_same_v<T, DescriptorsLayout>) ||
-        (std::is_same_v<T, MaterialLayout>) ||
-        (std::is_same_v<T, Material>) ||
-        (std::is_same_v<T, ShaderFileData>) ||
-        (std::is_same_v<T, Model>);
+    concept resource_t = FORR_RESOURCES_LIST(GENERATE_CONCEPT) false;
+#undef GENERATE_CONCEPT
 
 #undef FORR_RESOURCE_BODY
 
