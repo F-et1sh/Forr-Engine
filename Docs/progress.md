@@ -3,6 +3,8 @@
 ## 14.08.2026
 ### Goal
     provide implementations for 'fe::IRenderer::CreateParameter()' and 'fe::IRenderer::WriteBuffer()'
+    rewrite fe::MeshComponent
+    pass object matrices to the GPU
     
     allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
         allocate big SSBO ( AZDO ) in renderer for materials;
