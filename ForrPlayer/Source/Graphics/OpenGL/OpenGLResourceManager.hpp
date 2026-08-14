@@ -94,7 +94,7 @@ namespace fe {
         std::vector<OpenGLTexture> m_StorageTextures{};
 
         // shader buffers : SSBOs and UBOs
-        fe::typed_pointer_storage<OpenGLShaderDescriptorRing> m_ShaderBuffers{};
+        std::vector<OpenGLShaderDescriptorRing> m_ShaderBuffers{};
 
         // combined 'fe::pointer<resource::ShaderProgram>' and 'fe::pointer<resource::Material>' --> OpenGLPipeline
         std::unordered_map<size_t, OpenGLPipeline> m_Pipelines{};
