@@ -314,18 +314,18 @@ namespace fe {
 
         // To add a command write its structure and add it here
 // render commands - theys are used every frame by RenderGraph(fe::RenderGraph::Execute())
-#define FORR_RENDER_COMMANDS_LIST(X)        \
-    X(ImageBarrier, ImageBarrier)           \
-    X(BufferBarrier, BufferBarrier)         \
-    X(BeginRenderPass, BeginRenderPass)     \
-    X(EndRenderPass, EndRenderPass)         \
-    X(DrawIndexed, DrawIndexed)             \
-    X(BindShaderProgram, BindShaderProgram) \
-    X(BindMaterial, BindMaterial)           \
-    X(BindModel, BindModel)
+#define FORR_RENDER_COMMANDS_LIST(X) \
+    X(ImageBarrier)                  \
+    X(BufferBarrier)                 \
+    X(BeginRenderPass)               \
+    X(EndRenderPass)                 \
+    X(DrawIndexed)                   \
+    X(BindShaderProgram)             \
+    X(BindMaterial)                  \
+    X(BindModel)
 
         enum class CommandType : uint8_t {
-#define GENERATE_ENUM(EnumName, StructName) EnumName,
+#define GENERATE_ENUM(COMMAND_NAME) COMMAND_NAME,
             FORR_RENDER_COMMANDS_LIST(GENERATE_ENUM)
 #undef GENERATE_ENUM
         };
@@ -333,11 +333,11 @@ namespace fe {
         template <typename T>
         struct CommandTraits;
 
-#define GENERATE_TRAITS(EnumName, StructName)                           \
-    template <>                                                         \
-    struct FORR_API CommandTraits<StructName> {                         \
-        static constexpr CommandType      Type = CommandType::EnumName; \
-        static constexpr std::string_view Name = #EnumName;             \
+#define GENERATE_TRAITS(COMMAND_NAME)                                       \
+    template <>                                                             \
+    struct FORR_API CommandTraits<COMMAND_NAME> {                           \
+        static constexpr CommandType      Type = CommandType::COMMAND_NAME; \
+        static constexpr std::string_view Name = #COMMAND_NAME;             \
     };
 
         FORR_RENDER_COMMANDS_LIST(GENERATE_TRAITS)
@@ -378,13 +378,13 @@ namespace fe {
                     offset += sizeof(render_graph::CommandType);
 
                     switch (type) {
-#define GENERATE_CASE(EnumName, StructName)                                       \
-    case render_graph::CommandType::EnumName: {                                   \
-        offset    = fe::align_up(alignof(render_graph::StructName), offset);      \
-        auto* cmd = reinterpret_cast<render_graph::StructName*>(&buffer[offset]); \
-        func(*cmd);                                                               \
-        offset += sizeof(render_graph::StructName);                               \
-        break;                                                                    \
+#define GENERATE_CASE(COMMAND_NAME)                                                 \
+    case render_graph::CommandType::COMMAND_NAME: {                                 \
+        offset    = fe::align_up(alignof(render_graph::COMMAND_NAME), offset);      \
+        auto* cmd = reinterpret_cast<render_graph::COMMAND_NAME*>(&buffer[offset]); \
+        func(*cmd);                                                                 \
+        offset += sizeof(render_graph::COMMAND_NAME);                               \
+        break;                                                                      \
     }
 
                         FORR_RENDER_COMMANDS_LIST(GENERATE_CASE)
@@ -412,13 +412,13 @@ namespace fe {
                     offset += sizeof(render_graph::CommandType);
 
                     switch (type) {
-#define GENERATE_CASE(EnumName, StructName)                                                   \
-    case render_graph::CommandType::EnumName: {                                               \
-        offset          = fe::align_up(alignof(render_graph::StructName), offset);            \
-        const auto* cmd = reinterpret_cast<const render_graph::StructName*>(&buffer[offset]); \
-        func(*cmd);                                                                           \
-        offset += sizeof(render_graph::StructName);                                           \
-        break;                                                                                \
+#define GENERATE_CASE(COMMAND_NAME)                                                             \
+    case render_graph::CommandType::COMMAND_NAME: {                                             \
+        offset          = fe::align_up(alignof(render_graph::COMMAND_NAME), offset);            \
+        const auto* cmd = reinterpret_cast<const render_graph::COMMAND_NAME*>(&buffer[offset]); \
+        func(*cmd);                                                                             \
+        offset += sizeof(render_graph::COMMAND_NAME);                                           \
+        break;                                                                                  \
     }
 
                         FORR_RENDER_COMMANDS_LIST(GENERATE_CASE)

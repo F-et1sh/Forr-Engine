@@ -29,7 +29,6 @@
 #define FORR_UNLIKELY
 #endif
 
-
 #ifdef _WIN32
 #ifdef FORRENGINE_EXPORTS
 #define FORR_API __declspec(dllexport)

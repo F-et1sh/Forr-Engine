@@ -22,6 +22,7 @@
 ### Done
     fe::ParameterID provided | problem : if a buffer should be removed - I don't know how to do it
     fe::RendererOpenGL::WriteBuffer() provided
+    code generation for resource management provided | compiling bugs fixed
 
 ### Problem
     -

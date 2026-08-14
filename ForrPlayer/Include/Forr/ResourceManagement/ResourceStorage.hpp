@@ -57,35 +57,29 @@ namespace fe {
         // unsafe helper function
         template <resource::resource_t T>
         fe::typed_pointer_storage<T>& GetStorage() {
-            if constexpr (std::is_same_v<T, fe::resource::Texture>)
-                return m_Textures;
-            else if constexpr (std::is_same_v<T, fe::resource::ShaderProgram>)
-                return m_ShaderPrograms;
-            else if constexpr (std::is_same_v<T, fe::resource::MaterialLayout>)
-                return m_MaterialLayouts;
-            else if constexpr (std::is_same_v<T, fe::resource::Material>)
-                return m_Materials;
-            else if constexpr (std::is_same_v<T, fe::resource::ShaderFileData>)
-                return m_ShaderFileData;
-            else if constexpr (std::is_same_v<T, fe::resource::Model>)
-                return m_Models;
+            if constexpr (false) {
+            }
+#define GENERATE_STORAGES(RESOURCE_NAME)                                 \
+    else if constexpr (std::is_same_v<T, fe::resource::RESOURCE_NAME>) { \
+        return m_Storage##RESOURCE_NAME;                                 \
+    }
+            FORR_RESOURCES_LIST(GENERATE_STORAGES)
+#undef GENERATE_STORAGES
             else {
-                // TODO : provide code generation
-                static_assert(std::false_type::value && "Forgot to add some new resource");
+                static_assert(std::false_type::value && "Forgot to add new resource to FORR_RESOURCES_LIST");
             }
         }
 
-        const ResourceManagementContext& GetContext() const noexcept { return m_Context; }
+        const ResourceManagementContext& GetContext() const noexcept {
+            return m_Context;
+        }
 
     private:
         ResourceManagementContext& m_Context;
 
-        fe::typed_pointer_storage<fe::resource::Texture>        m_Textures{};
-        fe::typed_pointer_storage<fe::resource::ShaderProgram>  m_ShaderPrograms{};
-        fe::typed_pointer_storage<fe::resource::MaterialLayout> m_MaterialLayouts{};
-        fe::typed_pointer_storage<fe::resource::Material>       m_Materials{};
-        fe::typed_pointer_storage<fe::resource::ShaderFileData> m_ShaderFileData{};
-        fe::typed_pointer_storage<fe::resource::Model>          m_Models{};
+#define GENERATE_STORAGES(RESOURCE_NAME) fe::typed_pointer_storage<fe::resource::RESOURCE_NAME> m_Storage##RESOURCE_NAME{};
+        FORR_RESOURCES_LIST(GENERATE_STORAGES)
+#undef GENERATE_STORAGES
 
         // you can call 'fe::Arena::reinitialize()' if you want increase or decrease arena size
         fe::Arena m_MaterialsBuffer{ 16 * 1024 };

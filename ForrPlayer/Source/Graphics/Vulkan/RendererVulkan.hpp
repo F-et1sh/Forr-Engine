@@ -42,6 +42,8 @@ namespace fe {
 
         RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) override;
 
+        ParameterID CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) override;
+
         void WriteBuffer(ParameterID parameter_id, const std::vector<uint8_t>& data) override;
 
         void BeginFrame() override;

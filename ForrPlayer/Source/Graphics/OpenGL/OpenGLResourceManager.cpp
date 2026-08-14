@@ -262,48 +262,6 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetOrCreatePipeline(fe::poi
     return opengl_pipeline;
 }
 
-const fe::OpenGLShaderDescriptorRing& fe::OpenGLResourceManager::GetOrCreateShaderBuffer(const shader::ReflectedDescriptor& parameter) {
-    auto it = m_ShaderBuffers.find(parameter);
-    if (it != m_ShaderBuffers.end()) return it->second;
-
-    size_t buffer_size = 16 * 1024; // 16KB
-
-    if (parameter.array_size != 0) {
-        buffer_size = parameter.array_size * parameter.size;
-    }
-
-    auto& descriptor_ring = m_ShaderBuffers[parameter];
-
-    for (auto& descriptor : descriptor_ring) {
-        GLuint buffer_raw{};
-        glCreateBuffers(1, &buffer_raw);
-
-        GLbitfield flags = GL_MAP_WRITE_BIT |
-                           GL_MAP_PERSISTENT_BIT |
-                           GL_MAP_COHERENT_BIT;
-
-        if (parameter.descriptor_type == shader::DescriptorType::UNIFORM_BUFFER) {
-            glNamedBufferData(buffer_raw, buffer_size, nullptr, GL_DYNAMIC_DRAW);
-            descriptor.mapped = static_cast<uint8_t*>(glMapNamedBufferRange(buffer_raw, 0, buffer_size, flags));
-        }
-        else if (parameter.descriptor_type == shader::DescriptorType::STORAGE_BUFFER) {
-            glNamedBufferStorage(buffer_raw, buffer_size, nullptr, flags);
-            descriptor.mapped = static_cast<uint8_t*>(glMapNamedBufferRange(buffer_raw, 0, buffer_size, flags));
-        }
-        else {
-            glDeleteBuffers(1, &buffer_raw);
-            fe::logging::error("Unified -> OpenGL. Failed to create a buffer ( SSBO or UBO ) : unsupported descriptor type %i",
-                               parameter.descriptor_type);
-            return {};
-        }
-
-        descriptor.buffer.attach(buffer_raw);
-        descriptor.size = buffer_size;
-    }
-
-    return descriptor_ring;
-}
-
 fe::ParameterID fe::OpenGLResourceManager::CreateDescriptorRing(const shader::ReflectedDescriptor& descriptor_layout) {
     ParameterID parameter_id{};
     parameter_id.set           = descriptor_layout.set;
