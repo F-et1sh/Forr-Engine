@@ -28,7 +28,7 @@
     user-friendly interface for fe::IRenderer::WriteBuffer() provided
 
 ### Problem
-    -
+    RenderDoc doesn't support OpenGL bindless textures
 
 ## 13.08.2026
 ### Goal

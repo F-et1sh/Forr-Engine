@@ -17,6 +17,30 @@
 
 #include "Tools.hpp"
 
+fe::PlatformSystemGLFW::PlatformSystemGLFW(const PlatformSystemDesc& desc) {
+    GLFW_CHECK_RESULT(glfwInit())
+
+    switch (desc.graphics_backend) {
+        case GraphicsBackend::OpenGL: {
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+            // TODO : move all of this chekings to other layer
+            int is_bindless_supported = glfwExtensionSupported("GL_ARB_bindless_texture");
+            if (!is_bindless_supported) {
+                fe::logging::fatal("Your version of OpenGL does not support bindless rendering. Please, use Vulkan as the graphics backend");
+                return;
+            }
+        } break;
+        case GraphicsBackend::Vulkan: {
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        } break;
+        default:
+            break;
+    }
+}
+
 fe::PlatformSystemGLFW::~PlatformSystemGLFW() {
     glfwTerminate();
 }
@@ -34,21 +58,4 @@ FORR_NODISCARD std::vector<const char*> fe::PlatformSystemGLFW::getSurfaceRequir
     uint32_t     extensions_count = 0;
     const char** extensions       = glfwGetRequiredInstanceExtensions(&extensions_count);
     return { extensions, extensions + extensions_count };
-}
-
-fe::PlatformSystemGLFW::PlatformSystemGLFW(const PlatformSystemDesc& desc) {
-    GLFW_CHECK_RESULT(glfwInit())
-
-    switch (desc.graphics_backend) {
-        case GraphicsBackend::OpenGL:
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-            break;
-        case GraphicsBackend::Vulkan:
-            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-            break;
-        default:
-            break;
-    }
 }
