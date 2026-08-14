@@ -72,7 +72,7 @@ fe::ParameterID fe::RendererOpenGL::CreateParameter(const shader::ReflectedDescr
     return m_OpenGLResourceManager.CreateDescriptorRing(descriptor_layout);
 }
 
-void fe::RendererOpenGL::WriteBuffer(ParameterID parameter_id, const std::vector<uint8_t>& data) {
+void fe::RendererOpenGL::WriteBuffer(ParameterID parameter_id, std::span<const std::byte> data) {
     OpenGLShaderDescriptorRing& descriptor_ring = m_OpenGLResourceManager.GetDescriptorRing(parameter_id.storage_index);
     OpenGLShaderDescriptor&     descriptor      = descriptor_ring[m_CurrentFrame];
     std::memcpy(descriptor.mapped, data.data(), data.size());
