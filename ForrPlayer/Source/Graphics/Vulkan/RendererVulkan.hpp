@@ -44,6 +44,7 @@ namespace fe {
 
         ParameterID CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) override;
 
+        void BindBuffer(ParameterID parameter_id) override;
         void WriteBuffer(ParameterID parameter_id, std::span<const std::byte> data) override;
 
         void BeginFrame() override;

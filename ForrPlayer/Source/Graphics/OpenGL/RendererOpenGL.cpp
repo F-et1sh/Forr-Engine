@@ -72,10 +72,9 @@ fe::ParameterID fe::RendererOpenGL::CreateParameter(const shader::ReflectedDescr
     return m_OpenGLResourceManager.CreateDescriptorRing(descriptor_layout);
 }
 
-void fe::RendererOpenGL::WriteBuffer(ParameterID parameter_id, std::span<const std::byte> data) {
+void fe::RendererOpenGL::BindBuffer(ParameterID parameter_id) {
     OpenGLShaderDescriptorRing& descriptor_ring = m_OpenGLResourceManager.GetDescriptorRing(parameter_id.storage_index);
     OpenGLShaderDescriptor&     descriptor      = descriptor_ring[m_CurrentFrame];
-    std::memcpy(descriptor.mapped, data.data(), data.size());
 
     if (descriptor.type == shader::DescriptorType::STORAGE_BUFFER) {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, static_cast<GLuint>(parameter_id.binding), descriptor.buffer.get());
@@ -84,8 +83,14 @@ void fe::RendererOpenGL::WriteBuffer(ParameterID parameter_id, std::span<const s
         glBindBufferBase(GL_UNIFORM_BUFFER, static_cast<GLuint>(parameter_id.binding), descriptor.buffer.get());
     }
     else {
-        fe::logging::error("OpenGL::WriteBuffer() : Failed to write buffer. Unsupported descriptor type %i", descriptor.type);
+        fe::logging::error("OpenGL::BindBuffer() : Failed to bind buffer. Unsupported descriptor type %i", descriptor.type);
     }
+}
+
+void fe::RendererOpenGL::WriteBuffer(ParameterID parameter_id, std::span<const std::byte> data) {
+    OpenGLShaderDescriptorRing& descriptor_ring = m_OpenGLResourceManager.GetDescriptorRing(parameter_id.storage_index);
+    OpenGLShaderDescriptor&     descriptor      = descriptor_ring[m_CurrentFrame];
+    std::memcpy(descriptor.mapped, data.data(), data.size());
 }
 
 void fe::RendererOpenGL::BeginFrame() {
