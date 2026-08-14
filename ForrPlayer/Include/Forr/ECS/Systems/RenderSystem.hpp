@@ -39,11 +39,11 @@ namespace fe {
         void Update();
 
     private:
-        void handleMeshComponents();
-        void handleLightComponents();
+        //void handleMeshComponents();
+        //void handleLightComponents();
         
-        void addEntry(const MeshComponent& mesh_component);
-        void addToDrawList(fe::pointer<resource::Model> model_ptr, const glm::mat4& transform);
+        //void addEntry(const MeshComponent& mesh_component);
+        //void addToDrawList(fe::pointer<resource::Model> model_ptr, const glm::mat4& transform);
 
     private:
         struct Impl;

@@ -35,28 +35,6 @@ fe::Application::Application(const ApplicationDesc& desc) {
     this->InitializePrimaryWindow(desc);
     this->InitializeRenderer(desc);
 
-    /*auto interesting_shader_vertex_ptr   = m_ResourceManager->ImportResource<resource::Shader>(PATH.getShadersPath() / L"Interesting" / L"shader.vert");
-    auto interesting_shader_fragment_ptr = m_ResourceManager->ImportResource<resource::Shader>(PATH.getShadersPath() / L"Interesting" / L"shader.frag");
-
-    resource::Material interesting_material{};
-    interesting_material.vertex_shader_ptr   = interesting_shader_vertex_ptr;
-    interesting_material.fragment_shader_ptr = interesting_shader_fragment_ptr;
-    auto interesting_material_ptr            = m_ResourceManager->CreateResource<resource::Material>(std::move(interesting_material));*/
-
-    m_ResourceManager->RunForEach<resource::Model>([&](fe::pointer<resource::Model> model_ptr, const resource::Model& model) { // temp
-        m_Object1 = m_Registry.create();
-        m_Registry.emplace<TransformComponent>(m_Object1, glm::translate(glm::mat4(1.0f), glm::vec3(50, 0, 0)));
-        m_Registry.emplace<MeshComponent>(m_Object1, model_ptr /*, interesting_material_ptr*/);
-
-        m_Object2 = m_Registry.create();
-        m_Registry.emplace<TransformComponent>(m_Object2, glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)));
-        m_Registry.emplace<MeshComponent>(m_Object2, model_ptr);
-    });
-
-    m_Light = m_Registry.create();
-    m_Registry.emplace<TransformComponent>(m_Light);
-    m_Registry.emplace<LightComponent>(m_Light);
-
     m_Renderer->InitializeGPUResources();
 
     m_RenderSystem = std::make_unique<RenderSystem>(*m_ResourceManager, m_Registry, *m_Renderer, m_RenderPacket);
@@ -79,11 +57,8 @@ void fe::Application::Run() {
 
         m_Renderer->BeginFrame();
 
-        std::vector<uint8_t> data{};
-        m_Renderer->WriteBuffer(m_ParameterID, data);
-
-        RenderGraphCollector<TransformComponent, MeshComponent, LightComponent> collector{ m_Registry };
-        auto                                                                    render_command_list = m_RenderGraph->Execute(collector.getRegistry());
+        RenderGraphCollector<TransformComponent, LightComponent> collector{ m_Registry };
+        auto                                                     render_command_list = m_RenderGraph->Execute(collector.getRegistry());
 
         m_Renderer->EndFrame(render_command_list);
 

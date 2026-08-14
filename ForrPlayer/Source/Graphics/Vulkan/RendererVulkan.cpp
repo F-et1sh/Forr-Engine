@@ -54,6 +54,9 @@ fe::ParameterID fe::RendererVulkan::CreateParameter(const shader::ReflectedDescr
     return ParameterID();
 }
 
+void fe::RendererVulkan::BindBuffer(ParameterID parameter_id) {
+}
+
 void fe::RendererVulkan::WriteBuffer(ParameterID parameter_id, std::span<const std::byte> data) {
 }
 

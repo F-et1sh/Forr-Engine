@@ -80,7 +80,7 @@ namespace fe {
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
             //context.BindDescriptors(PATH.getShadersPath() / "Default\\PBRMaterial\\shader.slang"); // TODO : provide this and handle conflicts
 
-            auto view = context.render_registry.view<TransformComponent, MeshComponent>();
+            //auto view = context.render_registry.view<TransformComponent, MeshComponent>();
 
             context.BindShaderProgram(pass_data.default_shader_program_ptr);
 
