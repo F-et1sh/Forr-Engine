@@ -79,7 +79,7 @@ namespace fe {
         // this function returns the index of the resource ( GPUHandle<>::index )
         // you DON'T have to set 'GPUHandle<> gpu_handle' in the resource manually, the function does it by itself
         template <typename CPU_T, typename GPU_T>
-        FORR_NODISCARD size_t storeResource(GPUHandle<CPU_T>& gpu_handle_dst, GPU_T& gpu_resource, std::vector<GPU_T>& storage) {
+        FORR_NODISCARD size_t storeResource(GPUHandle<CPU_T>& gpu_handle_dst, GPU_T gpu_resource, std::vector<GPU_T>& storage) {
             storage.emplace_back(std::move(gpu_resource));
             gpu_handle_dst.index = storage.size() - 1;
             return gpu_handle_dst.index;

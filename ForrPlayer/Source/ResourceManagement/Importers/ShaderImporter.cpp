@@ -44,7 +44,8 @@ fe::pointer<fe::resource::ShaderFileData> fe::ShaderImporter::Import(ResourceSto
     fe::pointer<resource::DescriptorsLayout> descriptors_layout_ptr{};
 
     if (parser.ReflectDescriptors(descriptors_layout)) {
-        descriptors_layout_ptr = storage.CreateResource(resource::DescriptorsLayout{ std::move(descriptors_layout), ptr });
+        descriptors_layout_ptr                       = storage.CreateResource(resource::DescriptorsLayout{ std::move(descriptors_layout), ptr });
+        this_shader_file_data.descriptors_layout_ptr = descriptors_layout_ptr;
     }
 
     if (parser.IsPipeline()) {

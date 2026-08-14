@@ -50,6 +50,7 @@ void fe::WindowGLFW::Initialize(const WindowDesc& desc) {
     glfwSwapInterval(m_Description.vsync); // set vsync
     glfwSetWindowUserPointer(m_GLFWwindow, this);
     glfwSetWindowSizeCallback(m_GLFWwindow, windowSizeCallback);
+
     this->centralizeWindow();
 }
 

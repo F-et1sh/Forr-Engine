@@ -122,14 +122,14 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
     // TODO : get mipmaps from 'texture.mip_levels'
     glGenerateMipmap(GL_TEXTURE_2D);
 
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     opengl_texture.resident_id = glGetTextureHandleARB(texture_id_raw);
     glMakeTextureHandleResidentARB(opengl_texture.resident_id); // make resident
 
-    glBindTexture(GL_TEXTURE_2D, 0);
-
     opengl_texture.texture.attach(texture_id_raw);
 
-    this->storeResource(texture.gpu_handle, opengl_texture, m_StorageTextures);
+    this->storeResource(texture.gpu_handle, std::move(opengl_texture), m_StorageTextures);
 }
 
 size_t fe::OpenGLResourceManager::CreateImage(const render_graph::ImageDesc& image_desc) {
@@ -392,7 +392,7 @@ fe::GPUHandle<fe::resource::Model::Mesh> fe::OpenGLResourceManager::createMesh(r
     opengl_mesh.vbo.attach(vbo);
     opengl_mesh.ebo.attach(ebo);
 
-    return GPUHandle<Model::Mesh>(this->storeResource(mesh.gpu_handle, opengl_mesh, m_StorageMeshes));
+    return GPUHandle<Model::Mesh>(this->storeResource(mesh.gpu_handle, std::move(opengl_mesh), m_StorageMeshes));
 }
 
 GLuint fe::OpenGLResourceManager::createShaderProgramRaw(const fe::shader::SourceCodeStorage& source_codes) {
