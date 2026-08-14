@@ -304,7 +304,7 @@ const fe::OpenGLShaderDescriptorRing& fe::OpenGLResourceManager::GetOrCreateShad
     return descriptor_ring;
 }
 
-fe::ParameterID fe::OpenGLResourceManager::CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) {
+fe::ParameterID fe::OpenGLResourceManager::CreateDescriptorRing(const shader::ReflectedDescriptor& descriptor_layout) {
     ParameterID parameter_id{};
     parameter_id.set           = descriptor_layout.set;
     parameter_id.binding       = descriptor_layout.binding;
@@ -343,11 +343,19 @@ fe::ParameterID fe::OpenGLResourceManager::CreateParameter(const shader::Reflect
 
         descriptor.buffer.attach(buffer_raw);
         descriptor.size = buffer_size;
+        descriptor.type = descriptor_layout.descriptor_type;
     }
 
     m_ShaderBuffers.emplace_back(std::move(descriptor_ring));
 
     return parameter_id;
+}
+
+fe::OpenGLShaderDescriptorRing& fe::OpenGLResourceManager::GetDescriptorRing(uint32_t index) {
+    if (m_ShaderBuffers.size() <= index) {
+        fe::logging::fatal("Out of range"); // TODO : provide fallbacks
+    }
+    return m_ShaderBuffers[index];
 }
 
 // TODO : provide fallbacks

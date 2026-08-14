@@ -83,7 +83,7 @@ namespace fe {
         virtual FORR_NODISCARD ParameterID CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) = 0;
 
         // write to SSBO or UBO
-        virtual void WriteBuffer(ParameterID parameter_id) = 0;
+        virtual void WriteBuffer(ParameterID parameter_id, const std::vector<uint8_t>& data) = 0;
 
         virtual void BeginFrame()                                                   = 0;
         virtual void EndFrame(const render_graph::CommandList& render_command_list) = 0;

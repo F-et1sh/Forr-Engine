@@ -24,6 +24,7 @@ namespace fe {
 
     static RenderPacket m_RenderPacket{}; // temp
 
+    static ParameterID m_ParameterID{}; // temp
 } // namespace fe
 
 fe::Application::Application(const ApplicationDesc& desc) {
@@ -78,7 +79,8 @@ void fe::Application::Run() {
 
         m_Renderer->BeginFrame();
 
-        //m_Renderer->WriteBuffer();
+        std::vector<uint8_t> data{};
+        m_Renderer->WriteBuffer(m_ParameterID, data);
 
         RenderGraphCollector<TransformComponent, MeshComponent, LightComponent> collector{ m_Registry };
         auto                                                                    render_command_list = m_RenderGraph->Execute(collector.getRegistry());
@@ -126,19 +128,26 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
 
     m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, *m_ResourceManager);
 
-    auto        ptr                = m_ResourceManager->ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Context" / "GlobalContext.slang");
-    const auto& shader_file_data   = *m_ResourceManager->GetResource<resource::ShaderFileData>(ptr);
-    const auto& descriptors_layout = *m_ResourceManager->GetResource(shader_file_data.descriptors_layout_ptr.value());
+    { // temp
+        auto        ptr                = m_ResourceManager->ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Context" / "GlobalContext.slang");
+        const auto& shader_file_data   = *m_ResourceManager->GetResource<resource::ShaderFileData>(ptr);
+        const auto& descriptors_layout = *m_ResourceManager->GetResource(shader_file_data.descriptors_layout_ptr.value());
 
-    const auto& descriptor = descriptors_layout.reflected_layout.descriptors[0];
+        auto it = std::ranges::find_if(descriptors_layout.reflected_layout.descriptors, [](const shader::ReflectedDescriptor& descriptor) -> bool {
+            return descriptor.name == fe::hashed_string{ "model_matrices" };
+        });
 
-    ParameterID parameter_id = m_Renderer->CreateParameter(descriptor);
-
-    //// hot path
-    //m_Renderer->WriteBuffer(parameter_id, data);
+        if (it == descriptors_layout.reflected_layout.descriptors.end()) {
+            fe::logging::error("Failed to find model_matrices");
+        }
+        else {
+            const auto& descriptor = *it;
+            m_ParameterID = m_Renderer->CreateParameter(descriptor);
+        }
+    }
 
     m_RenderGraph = std::make_unique<RenderGraph>(*m_ResourceManager);
-    //auto shadow_pass_data_mapped  = m_RenderGraph->AddPass<ShadowPassData, ShadowPass>("Shadow Pass");    // TODO : make a storage for this mapped data
+    //auto shadow_pass_data_mapped  = m_RenderGraph->AddPass<ShadowPassData, ShadowPass>("Shadow Pass");  // TODO : make a storage for this mapped data
     auto forward_pass_data_mapped = m_RenderGraph->AddPass<ForwardPassData, ForwardPass>("Forward Pass"); // TODO : make a storage for this mapped data
 
     auto create_command_list = std::move(m_RenderGraph->Compile());

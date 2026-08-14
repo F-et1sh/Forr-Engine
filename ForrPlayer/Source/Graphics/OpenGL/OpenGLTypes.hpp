@@ -31,9 +31,10 @@ namespace fe {
     };
 
     struct OpenGLShaderDescriptor {
-        uint8_t*       mapped{};
-        fe::gl::Buffer buffer{};
-        size_t         size{};
+        size_t                 size{};
+        uint8_t*               mapped{};
+        shader::DescriptorType type{}; // UBO or SSBO
+        fe::gl::Buffer         buffer{};
 
         OpenGLShaderDescriptor() = default;
 

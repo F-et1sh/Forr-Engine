@@ -67,7 +67,8 @@ namespace fe {
         // TODO : this is a good place to start providing std::expected<>
         FORR_NODISCARD const OpenGLShaderDescriptorRing& GetOrCreateShaderBuffer(const shader::ReflectedDescriptor& parameter);
 
-        FORR_NODISCARD ParameterID CreateParameter(const shader::ReflectedDescriptor& descriptor_layout);
+        FORR_NODISCARD ParameterID CreateDescriptorRing(const shader::ReflectedDescriptor& descriptor_layout);
+        FORR_NODISCARD OpenGLShaderDescriptorRing& GetDescriptorRing(uint32_t index);
 
     private: // here functions, which used like helpers to create some resources that don't have thier own CPU realization.
              // The functions return 'GPUHandle<>' but you DON'T have to set 'GPUHandle<> gpu_handle' in the resources, the functions does it by themselves
