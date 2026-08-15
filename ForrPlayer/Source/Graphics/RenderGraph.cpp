@@ -289,10 +289,10 @@ void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&      
         RenderGraphBuilder builder{ m_ResourceManager };
         render_pass.setup_function(builder, render_pass.mapped_data);
 
-        if (builder.image_writes.empty() && 
-            builder.buffer_writes.empty() && 
+        if (builder.image_writes.empty() &&
+            builder.buffer_writes.empty() &&
             !builder.is_writes_to_screen) {
-            
+
             builder.assertFatal("Render pass doesn't write to any image, buffer or to the screen");
         }
 
@@ -518,34 +518,50 @@ void fe::RenderGraph::sortRenderPasses(std::vector<CompiledRenderPass>& render_p
 
 void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>&              render_passes_dst,
                                                std::unordered_map<fe::StringHash, Resource>& resources_map) {
-    std::vector<CompiledRenderPass> used_render_passes{};
-    used_render_passes.reserve(render_passes_dst.size());
+    if (render_passes_dst.empty()) return;
 
+    std::vector<bool>                  is_pass_used(render_passes_dst.size(), false);
     std::unordered_set<ResourceHandle> used_resources{};
 
-    constexpr static fe::StringHash final_resource_hash = fe::string_hash("ColorBuffer"); // TODO : rewrite this - use main color image logic instead
-    uint32_t                        final_version       = resources_map[final_resource_hash].version;
-    used_resources.insert(ResourceHandle{ final_resource_hash, final_version });
+    for (size_t i = render_passes_dst.size() - 1; i >= 0; i--) {
+        auto&  render_pass = render_passes_dst[i];
 
-    auto add_used_resource_lambda = [&used_resources, &used_render_passes](CompiledRenderPass& render_pass) {
-        used_resources.reserve(used_resources.size() + render_pass.image_reads.size());
-        for (const auto& read_barrier : render_pass.image_reads) {
-            used_resources.insert(read_barrier.handle);
+        bool is_needed = render_pass.is_writes_to_screen;
+
+        if (!is_needed) {
+            is_needed = std::ranges::any_of(render_pass.image_writes, [&used_resources](const auto& barrier) { // images
+                            return used_resources.contains(barrier.handle);
+                        }) ||
+                        std::ranges::any_of(render_pass.buffer_writes, [&used_resources](const auto& barrier) { // buffers
+                            return used_resources.contains(barrier.handle);
+                        });
         }
-        used_render_passes.emplace_back(std::move(render_pass));
-    };
 
-    for (auto& render_pass : std::views::reverse(render_passes_dst)) {
-        bool is_needed = std::ranges::any_of(render_pass.image_writes, [&used_resources](const CompiledRenderPass::ResourceBarrier& write_barrier) {
-            return used_resources.contains(write_barrier.handle);
-        });
-        
-        if (is_needed || render_pass.is_writes_to_screen) {
-            add_used_resource_lambda(render_pass);
+        if (is_needed) {
+            is_pass_used[i] = true;
+
+            // images
+
+            for (const auto& read_barrier : render_pass.image_reads) {
+                used_resources.insert(read_barrier.handle);
+            }
+
+            // buffers
+
+            for (const auto& read_barrier : render_pass.buffer_reads) {
+                used_resources.insert(read_barrier.handle);
+            }
         }
     }
 
-    std::ranges::reverse(used_render_passes);
+    std::vector<CompiledRenderPass> used_render_passes{};
+    used_render_passes.reserve(render_passes_dst.size());
+
+    for (size_t i = 0; i < render_passes_dst.size(); i++) {
+        if (is_pass_used[i]) {
+            used_render_passes.emplace_back(std::move(render_passes_dst[i]));
+        }
+    }
 
     render_passes_dst = std::move(used_render_passes);
 }
