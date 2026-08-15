@@ -59,7 +59,7 @@ void fe::Application::InitializePlatformSystem(const ApplicationDesc& desc) {
 
 void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
     std::vector<std::filesystem::path> paths{}; // temp
-    paths.emplace_back(PATH.getModelsPath() / "TatarSuzanne/TatarSuzanne.gltf");
+    //paths.emplace_back(PATH.getModelsPath() / "TatarSuzanne/TatarSuzanne.gltf");
     //paths.emplace_back(PATH.getModelsPath() / "PirateRoom/PirateRoom.gltf");
 
     ResourceManagerDesc resource_manager_desc{};
@@ -85,25 +85,7 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
 
     m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, *m_ResourceManager);
 
-    { // temp
-        auto        ptr                = m_ResourceManager->ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Context" / "GlobalContext.slang");
-        const auto& shader_file_data   = *m_ResourceManager->GetResource<resource::ShaderFileData>(ptr);
-        const auto& descriptors_layout = *m_ResourceManager->GetResource(shader_file_data.descriptors_layout_ptr.value());
-
-        auto it = std::ranges::find_if(descriptors_layout.reflected_layout.descriptors, [](const shader::ReflectedDescriptor& descriptor) -> bool {
-            return descriptor.name == fe::hashed_string{ "model_matrices" };
-        });
-
-        if (it == descriptors_layout.reflected_layout.descriptors.end()) {
-            fe::logging::error("Failed to find model_matrices");
-        }
-        else {
-            const auto& descriptor = *it;
-            m_ParameterID          = m_Renderer->CreateParameter(descriptor);
-        }
-    }
-
-    m_RenderGraph = std::make_unique<RenderGraph>(*m_ResourceManager);
+    m_RenderGraph = std::make_unique<RenderGraph>(*m_ResourceManager, *m_Renderer);
     //auto shadow_pass_data_mapped  = m_RenderGraph->AddPass<ShadowPassData, ShadowPass>("Shadow Pass");  // TODO : make a storage for this mapped data
     auto forward_pass_data_mapped = m_RenderGraph->AddPass<ForwardPassData, ForwardPass>("Forward Pass"); // TODO : make a storage for this mapped data
 

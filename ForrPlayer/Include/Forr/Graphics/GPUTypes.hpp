@@ -141,7 +141,21 @@ namespace fe {
         PipelineFlags() = default;
     };
 
+    struct FORR_API ParameterID {
+        uint8_t set{ std::numeric_limits<uint8_t>::max() };
+        uint8_t binding{ std::numeric_limits<uint8_t>::max() };
+
+        // index in the list of shader buffers in GPU resource manager
+        uint32_t storage_index{ std::numeric_limits<uint32_t>::max() };
+
+        ParameterID()  = default;
+        ~ParameterID() = default;
+    };
+
     /* forward declarations */
+    namespace shader {
+        struct ReflectedDescriptor;
+    } // namespace shader
     namespace resource {
         struct ShaderFileData;
         struct ShaderProgram;
@@ -312,6 +326,15 @@ namespace fe {
             fe::pointer<resource::Model> model_ptr{};
         };
 
+        struct FORR_API BindBuffer {
+            ParameterID parameter_id{};
+        };
+
+        struct FORR_API WriteBuffer {
+            ParameterID                parameter_id{};
+            std::span<const std::byte> data{};
+        };
+
         // To add a command write its structure and add it here
 // render commands - theys are used every frame by RenderGraph(fe::RenderGraph::Execute())
 #define FORR_RENDER_COMMANDS_LIST(X) \
@@ -322,7 +345,9 @@ namespace fe {
     X(DrawIndexed)                   \
     X(BindShaderProgram)             \
     X(BindMaterial)                  \
-    X(BindModel)
+    X(BindModel)                     \
+    X(BindBuffer)                    \
+    X(WriteBuffer)
 
         enum class CommandType : uint8_t {
 #define GENERATE_ENUM(COMMAND_NAME) COMMAND_NAME,
@@ -604,17 +629,6 @@ namespace fe {
         using SourceCode        = std::vector<uint8_t>;
         using SourceCodeStorage = std::unordered_map<shader::StageBits, SourceCode>;
     } // namespace shader
-
-    struct FORR_API ParameterID {
-        uint8_t set{};
-        uint8_t binding{};
-
-        // index in the list of shader buffers in GPU resource manager
-        uint32_t storage_index{};
-
-        ParameterID()  = default;
-        ~ParameterID() = default;
-    };
 } // namespace fe
 
 template <>

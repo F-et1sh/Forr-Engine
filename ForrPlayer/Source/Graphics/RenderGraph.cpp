@@ -286,7 +286,7 @@ void fe::RenderGraph::Clear() {
 void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&              render_passes_dst,
                                           std::unordered_map<fe::StringHash, Resource>& resources_map) {
     for (auto& render_pass : m_RenderPasses) {
-        RenderGraphBuilder builder{ m_ResourceManager };
+        RenderGraphBuilder builder{ m_ResourceManager, m_Renderer };
         render_pass.setup_function(builder, render_pass.mapped_data);
 
         if (builder.image_writes.empty() &&
@@ -523,8 +523,10 @@ void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>& 
     std::vector<bool>                  is_pass_used(render_passes_dst.size(), false);
     std::unordered_set<ResourceHandle> used_resources{};
 
-    for (size_t i = render_passes_dst.size() - 1; i >= 0; i--) {
-        auto& render_pass = render_passes_dst[i];
+    for (size_t i = render_passes_dst.size(); i > 0; i--) {
+        size_t index = i - 1; // this is needed because of how 'for' loops works in C++
+
+        auto& render_pass = render_passes_dst[index];
 
         bool is_needed = render_pass.is_writes_to_screen;
 
@@ -538,7 +540,7 @@ void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>& 
         }
 
         if (is_needed) {
-            is_pass_used[i] = true;
+            is_pass_used[index] = true;
 
             // images
 

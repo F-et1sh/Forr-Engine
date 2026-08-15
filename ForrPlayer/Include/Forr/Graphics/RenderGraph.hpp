@@ -18,6 +18,8 @@
 #include "entt/entt.hpp"
 
 namespace fe {
+    class IRenderer; // forward declaration
+
     // this structure is needed to collect only necessary components ( for example, MeshComponent ),
     //  ignoring others. And after collecting them, continue ECS calculation for frame N+1, while renderer
     //  is working on frame N
@@ -97,6 +99,7 @@ namespace fe {
     // a proxy to gather setup commands from render pass
     struct FORR_API RenderGraphBuilder {
         ResourceManager& resource_manager;
+        IRenderer&       renderer;
 
         std::vector<render_graph::ImageBarrier> image_reads{};
         std::vector<render_graph::ImageBarrier> image_writes{};
@@ -181,7 +184,8 @@ namespace fe {
             return *this;
         }
 
-        RenderGraphBuilder(ResourceManager& resource_manager) : resource_manager(resource_manager) {}
+        RenderGraphBuilder(ResourceManager& resource_manager, IRenderer& renderer)
+            : resource_manager(resource_manager), renderer(renderer) {}
         ~RenderGraphBuilder() = default;
 
         FORR_CLASS_MOVABLE(RenderGraphBuilder)
@@ -347,7 +351,7 @@ namespace fe {
         };
 
     public:
-        RenderGraph(ResourceManager& resource_manager) : m_ResourceManager(resource_manager) {}
+        RenderGraph(ResourceManager& resource_manager, IRenderer& renderer) : m_ResourceManager(resource_manager), m_Renderer(renderer) {}
         ~RenderGraph() { this->Clear(); }
 
         FORR_CLASS_MOVABLE(RenderGraph)
@@ -440,6 +444,7 @@ namespace fe {
 
     private:
         ResourceManager& m_ResourceManager;
+        IRenderer&       m_Renderer;
 
         std::vector<RenderPass> m_RenderPasses{};
         fe::Arena               m_RenderPassesData{ 16 * 1024 };

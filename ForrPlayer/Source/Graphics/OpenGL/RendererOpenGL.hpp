@@ -47,14 +47,16 @@ namespace fe {
         static void bindPipeline(const OpenGLPipeline& pipeline);
 
     private:
-        void handleCommand(const render_graph::ImageBarrier& image_barrier);
-        void handleCommand(const render_graph::BufferBarrier& buffer_barrier);
-        void handleCommand(const render_graph::BeginRenderPass& begin_render_pass);
-        void handleCommand(const render_graph::EndRenderPass& end_render_pass);
-        void handleCommand(const render_graph::DrawIndexed& draw_indices);
-        void handleCommand(const render_graph::BindShaderProgram& bind_shader_program);
-        void handleCommand(const render_graph::BindMaterial& bind_material);
-        void handleCommand(const render_graph::BindModel& bind_model);
+        void handleCommand(const render_graph::ImageBarrier& command);
+        void handleCommand(const render_graph::BufferBarrier& command);
+        void handleCommand(const render_graph::BeginRenderPass& command);
+        void handleCommand(const render_graph::EndRenderPass& command);
+        void handleCommand(const render_graph::DrawIndexed& command);
+        void handleCommand(const render_graph::BindShaderProgram& command);
+        void handleCommand(const render_graph::BindMaterial& command);
+        void handleCommand(const render_graph::BindModel& command);
+        void handleCommand(const render_graph::BindBuffer& command);
+        void handleCommand(const render_graph::WriteBuffer& command);
 
     private:
         struct FrameData {

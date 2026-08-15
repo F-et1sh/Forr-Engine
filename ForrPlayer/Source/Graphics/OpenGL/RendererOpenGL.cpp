@@ -26,12 +26,14 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
 
     glfwMakeContextCurrent(m_GLFWwindow);
 
+    // turned off for RenderDoc debug
+    // 
     // TODO : move all of this chekings to other layer
-    int is_bindless_supported = glfwExtensionSupported("GL_ARB_bindless_texture");
-    if (!is_bindless_supported) {
-        fe::logging::fatal("Your version of OpenGL does not support bindless rendering. Please, use Vulkan as the graphics backend");
-        return;
-    }
+    //int is_bindless_supported = glfwExtensionSupported("GL_ARB_bindless_texture");
+    //if (!is_bindless_supported) {
+        //fe::logging::fatal("Your version of OpenGL does not support bindless rendering. Please, use Vulkan as the graphics backend");
+        //return;
+    //}
 
     glfwSwapInterval(desc.primary_window_desc.vsync); // set vsync ( only after calling glfwMakeContextCurrent )
 
@@ -156,57 +158,57 @@ void fe::RendererOpenGL::bindPipeline(const OpenGLPipeline& pipeline) {
     //}
 }
 
-void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& image_barrier) {
-    const auto& opengl_texture = m_OpenGLResourceManager.GetImage(image_barrier.handle.storage_index);
+void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& command) {
+    const auto& opengl_texture = m_OpenGLResourceManager.GetImage(command.handle.storage_index);
     uint64_t    resident_id    = opengl_texture.resident_id;
 
-    if (image_barrier.new_state == ResourceState::SHADER_READ_ONLY) {
+    if (command.new_state == ResourceState::SHADER_READ_ONLY) {
         if (!glIsTextureHandleResidentARB(resident_id)) {
             glMakeTextureHandleResidentARB(resident_id);
         }
 
-        if (image_barrier.old_state == ResourceState::UNORDERED_ACCESS) {
+        if (command.old_state == ResourceState::UNORDERED_ACCESS) {
             glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
         }
     }
-    else if (image_barrier.new_state == ResourceState::RENDER_TARGET ||
-             image_barrier.new_state == ResourceState::DEPTH_READ) {
+    else if (command.new_state == ResourceState::RENDER_TARGET ||
+             command.new_state == ResourceState::DEPTH_READ) {
 
         if (glIsTextureHandleResidentARB(resident_id)) {
             glMakeTextureHandleNonResidentARB(resident_id);
         }
     }
-    else if (image_barrier.old_state == ResourceState::RENDER_TARGET &&
-             image_barrier.new_state == ResourceState::UNORDERED_ACCESS) {
+    else if (command.old_state == ResourceState::RENDER_TARGET &&
+             command.new_state == ResourceState::UNORDERED_ACCESS) {
 
         glMemoryBarrier(GL_FRAMEBUFFER_BARRIER_BIT);
     }
 }
 
-void fe::RendererOpenGL::handleCommand(const render_graph::BufferBarrier& buffer_barrier) {
+void fe::RendererOpenGL::handleCommand(const render_graph::BufferBarrier& command) {
     // TODO : provide this
 }
 
-void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& begin_render_pass) {
-    if (begin_render_pass.is_to_screen) {
+void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& command) {
+    if (command.is_to_screen) {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        glViewport(begin_render_pass.viewport.offset.x,
-                   begin_render_pass.viewport.offset.y,
-                   begin_render_pass.viewport.extent.x,
-                   begin_render_pass.viewport.extent.y);
+        glViewport(command.viewport.offset.x,
+                   command.viewport.offset.y,
+                   command.viewport.extent.x,
+                   command.viewport.extent.y);
 
         GLbitfield clear_mask{};
-        if (begin_render_pass.is_clears_color) {
-            glClearColor(begin_render_pass.clear_color_value.r,
-                         begin_render_pass.clear_color_value.g,
-                         begin_render_pass.clear_color_value.b,
-                         begin_render_pass.clear_color_value.a);
+        if (command.is_clears_color) {
+            glClearColor(command.clear_color_value.r,
+                         command.clear_color_value.g,
+                         command.clear_color_value.b,
+                         command.clear_color_value.a);
             clear_mask |= GL_COLOR_BUFFER_BIT;
         }
 
-        if (begin_render_pass.is_clears_depth) {
-            glClearDepth(begin_render_pass.clear_depth_value);
+        if (command.is_clears_depth) {
+            glClearDepth(command.clear_depth_value);
             clear_mask |= GL_DEPTH_BUFFER_BIT;
         }
 
@@ -217,9 +219,9 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& begi
 
     GLuint framebuffer_raw{};
 
-    uint64_t framebuffer_hash = render_graph::color_depth_targets_hash(begin_render_pass.color_targets,
-                                                                       begin_render_pass.color_targets_count,
-                                                                       begin_render_pass.depth_target);
+    uint64_t framebuffer_hash = render_graph::color_depth_targets_hash(command.color_targets,
+                                                                       command.color_targets_count,
+                                                                       command.depth_target);
 
     auto it = m_FramebuffersCache.find(framebuffer_hash);
     if (it != m_FramebuffersCache.end()) {
@@ -229,21 +231,21 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& begi
         glCreateFramebuffers(1, &framebuffer_raw);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_raw);
 
-        for (size_t i = 0; i < begin_render_pass.color_targets_count; i++) {
-            size_t               texture_index  = begin_render_pass.color_targets[i];
+        for (size_t i = 0; i < command.color_targets_count; i++) {
+            size_t               texture_index  = command.color_targets[i];
             const OpenGLTexture& opengl_texture = m_OpenGLResourceManager.GetImage(texture_index);
 
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, opengl_texture.texture, 0);
         }
 
-        if (begin_render_pass.has_depth_target) {
-            const OpenGLTexture& opengl_texture = m_OpenGLResourceManager.GetImage(begin_render_pass.depth_target);
+        if (command.has_depth_target) {
+            const OpenGLTexture& opengl_texture = m_OpenGLResourceManager.GetImage(command.depth_target);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, opengl_texture.texture, 0);
         }
 
         std::vector<GLenum> attachments{};
 
-        for (size_t i = 0; i < begin_render_pass.color_targets_count; i++) {
+        for (size_t i = 0; i < command.color_targets_count; i++) {
             attachments.push_back(GL_COLOR_ATTACHMENT0 + i);
         }
 
@@ -263,19 +265,19 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& begi
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_raw);
-    glViewport(0, 0, begin_render_pass.viewport.extent.x, begin_render_pass.viewport.extent.y);
+    glViewport(0, 0, command.viewport.extent.x, command.viewport.extent.y);
 
     GLbitfield clear_mask{};
-    if (begin_render_pass.is_clears_color) {
-        glClearColor(begin_render_pass.clear_color_value.r,
-                     begin_render_pass.clear_color_value.g,
-                     begin_render_pass.clear_color_value.b,
-                     begin_render_pass.clear_color_value.a);
+    if (command.is_clears_color) {
+        glClearColor(command.clear_color_value.r,
+                     command.clear_color_value.g,
+                     command.clear_color_value.b,
+                     command.clear_color_value.a);
         clear_mask |= GL_COLOR_BUFFER_BIT;
     }
 
-    if (begin_render_pass.is_clears_depth) {
-        glClearDepth(begin_render_pass.clear_depth_value);
+    if (command.is_clears_depth) {
+        glClearDepth(command.clear_depth_value);
         clear_mask |= GL_DEPTH_BUFFER_BIT;
     }
 
@@ -287,27 +289,27 @@ void fe::RendererOpenGL::handleCommand(const render_graph::EndRenderPass& end_re
     glUseProgram(0);
 }
 
-void fe::RendererOpenGL::handleCommand(const render_graph::DrawIndexed& draw_indices) {
+void fe::RendererOpenGL::handleCommand(const render_graph::DrawIndexed& command) {
     glDrawElementsInstancedBaseVertexBaseInstance(GL_TRIANGLES,
-                                                  draw_indices.index_count,
+                                                  command.index_count,
                                                   GL_UNSIGNED_INT,
-                                                  reinterpret_cast<void*>(static_cast<uintptr_t>(draw_indices.first_index * sizeof(uint32_t))),
-                                                  draw_indices.instance_count,
-                                                  draw_indices.vertex_offset,
-                                                  draw_indices.first_instance);
+                                                  reinterpret_cast<void*>(static_cast<uintptr_t>(command.first_index * sizeof(uint32_t))),
+                                                  command.instance_count,
+                                                  command.vertex_offset,
+                                                  command.first_instance);
 }
 
-void fe::RendererOpenGL::handleCommand(const render_graph::BindShaderProgram& bind_shader_program) {
-    m_BoundShaderProgramPtr = bind_shader_program.shader_program_ptr;
+void fe::RendererOpenGL::handleCommand(const render_graph::BindShaderProgram& command) {
+    m_BoundShaderProgramPtr = command.shader_program_ptr;
 }
 
-void fe::RendererOpenGL::handleCommand(const render_graph::BindMaterial& bind_material) {
-    const OpenGLPipeline& pipeline = m_OpenGLResourceManager.GetOrCreatePipeline(m_BoundShaderProgramPtr, bind_material.material_ptr);
+void fe::RendererOpenGL::handleCommand(const render_graph::BindMaterial& command) {
+    const OpenGLPipeline& pipeline = m_OpenGLResourceManager.GetOrCreatePipeline(m_BoundShaderProgramPtr, command.material_ptr);
     bindPipeline(pipeline);
 }
 
-void fe::RendererOpenGL::handleCommand(const render_graph::BindModel& bind_model) {
-    const resource::Model& model = *m_ResourceManager.GetResource(bind_model.model_ptr);
+void fe::RendererOpenGL::handleCommand(const render_graph::BindModel& command) {
+    const resource::Model& model = *m_ResourceManager.GetResource(command.model_ptr);
     for (const auto& mesh : model.meshes) {
         const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(mesh.gpu_handle);
         glBindVertexArray(opengl_mesh.vao);
@@ -316,4 +318,12 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BindModel& bind_model
             glDrawElements(primitive.render_mode, primitive.index_count, GL_UNSIGNED_INT, (void*) primitive.index_offset);
         }
     }
+}
+
+void fe::RendererOpenGL::handleCommand(const render_graph::BindBuffer& command) {
+    this->BindBuffer(command.parameter_id);
+}
+
+void fe::RendererOpenGL::handleCommand(const render_graph::WriteBuffer& command) {
+    this->WriteBuffer(command.parameter_id, command.data);
 }
