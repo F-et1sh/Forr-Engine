@@ -21,21 +21,14 @@ fe::PlatformSystemGLFW::PlatformSystemGLFW(const PlatformSystemDesc& desc) {
     GLFW_CHECK_RESULT(glfwInit())
 
     switch (desc.graphics_backend) {
-        case GraphicsBackend::OpenGL: {
+        case GraphicsBackend::OpenGL:
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-            // TODO : move all of this chekings to other layer
-            int is_bindless_supported = glfwExtensionSupported("GL_ARB_bindless_texture");
-            if (!is_bindless_supported) {
-                fe::logging::fatal("Your version of OpenGL does not support bindless rendering. Please, use Vulkan as the graphics backend");
-                return;
-            }
-        } break;
-        case GraphicsBackend::Vulkan: {
+            break;
+        case GraphicsBackend::Vulkan:
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        } break;
+            break;
         default:
             break;
     }

@@ -39,11 +39,10 @@ void fe::Application::Run() {
 
         m_Renderer->BeginFrame();
 
-        //RenderGraphCollector<TransformComponent, LightComponent> collector{ m_Registry };
-        //auto                                                     render_command_list = m_RenderGraph->Execute(collector.getRegistry());
+        RenderGraphCollector<TransformComponent, LightComponent> collector{ m_Registry };
+        auto                                                     render_command_list = m_RenderGraph->Execute(collector.getRegistry());
 
-        m_Renderer->EndFrame({});
-        //m_Renderer->EndFrame(render_command_list);
+        m_Renderer->EndFrame(render_command_list);
 
         m_PrimaryWindow->PollEvents();
         t++;
@@ -104,11 +103,11 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
         }
     }
 
-    //m_RenderGraph = std::make_unique<RenderGraph>(*m_ResourceManager);
+    m_RenderGraph = std::make_unique<RenderGraph>(*m_ResourceManager);
     //auto shadow_pass_data_mapped  = m_RenderGraph->AddPass<ShadowPassData, ShadowPass>("Shadow Pass");  // TODO : make a storage for this mapped data
-    //auto forward_pass_data_mapped = m_RenderGraph->AddPass<ForwardPassData, ForwardPass>("Forward Pass"); // TODO : make a storage for this mapped data
+    auto forward_pass_data_mapped = m_RenderGraph->AddPass<ForwardPassData, ForwardPass>("Forward Pass"); // TODO : make a storage for this mapped data
 
-    //auto create_command_list = std::move(m_RenderGraph->Compile());
-    //auto mapping_result      = std::move(m_Renderer->CreateGPUResources(create_command_list));
-    //m_RenderGraph->SetupResourceBindings(mapping_result);
+    auto create_command_list = std::move(m_RenderGraph->Compile());
+    auto mapping_result      = std::move(m_Renderer->CreateGPUResources(create_command_list));
+    m_RenderGraph->SetupResourceBindings(mapping_result);
 }
