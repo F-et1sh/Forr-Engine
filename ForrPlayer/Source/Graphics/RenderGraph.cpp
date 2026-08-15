@@ -524,7 +524,7 @@ void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>& 
     std::unordered_set<ResourceHandle> used_resources{};
 
     for (size_t i = render_passes_dst.size() - 1; i >= 0; i--) {
-        auto&  render_pass = render_passes_dst[i];
+        auto& render_pass = render_passes_dst[i];
 
         bool is_needed = render_pass.is_writes_to_screen;
 
