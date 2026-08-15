@@ -21,7 +21,8 @@
     ( provide logging macro to log current function automatically )
 
 ### Done
-    -
+    false positive assertion fixed
+    fe::RenderGraph::removeUnusedRenderPasses() bug fixed
 
 ### Problem
     -
