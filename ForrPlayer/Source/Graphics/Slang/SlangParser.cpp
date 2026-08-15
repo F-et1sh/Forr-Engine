@@ -384,8 +384,8 @@ void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* vari
     assert(variable_layout);
     assert(variable_layout->getCategory() == SlangCategory::DescriptorTableSlot);
 
-    dst_descriptor.set         = variable_layout->getBindingSpace();
-    dst_descriptor.binding     = variable_layout->getBindingIndex();
+    dst_descriptor.binding     = variable_layout->getOffset(slang::ParameterCategory::DescriptorTableSlot);
+    dst_descriptor.set         = variable_layout->getBindingSpace(slang::ParameterCategory::DescriptorTableSlot);
     dst_descriptor.array_size  = 1;
     dst_descriptor.stage_flags = static_cast<uint32_t>(ShaderType::NONE);
 
@@ -404,26 +404,6 @@ void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* vari
 
     slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
     SlangKind                    kind        = type_layout->getKind();
-
-    // 24.06.2026 Slang has got a bug, so, now this will work like this
-    //
-    // TODO : update Slang submodule and remove this part
-    //
-    // 02.07.2026 Slang don't want to convert sets into OpenGL bindings, so, I have to hardcode this
-    {
-        //static uint32_t vulkan_set_counter     = 0;
-        static uint32_t opengl_binding_counter = 0;
-
-        if (dst_descriptor.name == "scene_set") {
-            //vulkan_set_counter     = 0;
-            opengl_binding_counter = 0;
-        }
-
-        if (m_GraphicsBackend == GraphicsBackend::OpenGL) {
-            dst_descriptor.set     = 0;
-            dst_descriptor.binding = opengl_binding_counter++;
-        }
-    }
 
     switch (kind) {
         case SlangKind::ConstantBuffer:

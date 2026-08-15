@@ -55,12 +55,12 @@ namespace fe {
         fe::pointer<resource::ShaderProgram> default_shader_program_ptr{};
         fe::pointer<resource::Material>      default_material_ptr{};
         fe::pointer<resource::Model>         test_model_ptr{};
+        ParameterID                          model_matrices_parameter_id{};
+        std::vector<glm::mat4> data{};
     };
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) { // setup can be called twice
             builder.writeToScreen(true);
-
-            //builder.importContext("context.slang"); // TODO : provide this and handle conflicts
 
             if (!pass_data.default_shader_program_ptr) {
                 fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\shader.slang");
@@ -70,33 +70,44 @@ namespace fe {
                     return;
                 }
                 pass_data.default_shader_program_ptr = shader_file_data.shader_program_ptr.value();
+
+                if (pass_data.model_matrices_parameter_id.storage_index == ~0) {
+                    const auto& shader_program = *builder.resource_manager.GetResource(pass_data.default_shader_program_ptr);
+                    const auto& descriptors    = *builder.resource_manager.GetResource(shader_program.descriptors_layout_ptr.value());
+
+                    auto it = std::ranges::find_if(descriptors.reflected_layout.descriptors, [](const shader::ReflectedDescriptor& descriptor) -> bool {
+                        return descriptor.name == fe::hashed_string{ "model_matrices" };
+                    });
+
+                    if (it == descriptors.reflected_layout.descriptors.end()) {
+                        fe::logging::error("Failed to find model_matrices");
+                    }
+                    else {
+                        const auto& descriptor                = *it;
+                        pass_data.model_matrices_parameter_id = builder.renderer.CreateParameter(descriptor);
+                    }
+                }
             }
             pass_data.default_material_ptr = builder.resource_manager.GetContext().default_gltf_material_ptr;
             if (!pass_data.test_model_ptr) {
-                //pass_data.test_model_ptr = builder.resource_manager.ImportResource<resource::Model>(PATH.getModelsPath() / "TatarSuzanne\\TatarSuzanne.gltf");
+                pass_data.test_model_ptr = builder.resource_manager.ImportResource<resource::Model>(PATH.getModelsPath() / "TatarSuzanne\\TatarSuzanne.gltf");
             }
+
+            pass_data.data.resize(256);
+            pass_data.data[0] = glm::mat4{1, 0, 0, 0,
+                                          0, 1, 0, 0,
+                                          0, 0, 1, 0,
+                                          0, 0, 0, 1};
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
-            //context.BindDescriptors(PATH.getShadersPath() / "Default\\PBRMaterial\\shader.slang"); // TODO : provide this and handle conflicts
-
-            //auto view = context.render_registry.view<TransformComponent, MeshComponent>();
+            context.command_list.enqueue(render_graph::BindBuffer{ pass_data.model_matrices_parameter_id });
+            context.command_list.enqueue(render_graph::WriteBuffer{ pass_data.model_matrices_parameter_id, std::as_bytes(std::span<glm::mat4>{ pass_data.data }) });
 
             context.BindShaderProgram(pass_data.default_shader_program_ptr);
-
             context.BindMaterial(pass_data.default_material_ptr);
 
-            // temp
-            //context.BindModel(pass_data.test_model_ptr);
-
-            //for (const auto& [entity, transform_component, mesh_component] : view.each()) {
-            //    context.BindShaderProgram(pass_data.default_shader_program_ptr);
-            //    context.BindMaterial(pass_data.default_material_ptr);
-            //
-            //    //context.BindModel(mesh_component.model_ptr); // TODO : rewrite this
-
-            //    //context.DrawIndexed(render_graph::DrawIndexed{ 3, 1, 0, 0, 0 });
-            //}
+            context.BindModel(pass_data.test_model_ptr);
         }
 
         ForwardPass()  = default;

@@ -13,6 +13,7 @@
 
     ( fix window resizing for GL/VK )
     ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+    ( fix double loading for resource management )
     ( provide string_pool and use std::string_view instead of always using std::string - helps to decrease allocations )
 
     ( BDA for Vulkan | ByteAddressBuffer for OpenGL )
@@ -23,6 +24,7 @@
 ### Done
     false positive assertion fixed
     fe::RenderGraph::removeUnusedRenderPasses() bug fixed
+    rendering works correctly | Slang Reflection API bindings problem fixed
 
 ### Problem
     -

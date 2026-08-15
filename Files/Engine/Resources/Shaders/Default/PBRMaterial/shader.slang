@@ -37,13 +37,13 @@ struct VertexStageOutput {
 VertexStageOutput vertexMain<T>(VertexInput input) where T : IMaterial {
     VertexStageOutput output;
 
-    //float4 world_position = mul(float4(input.position, 1.0f), model_matrices[instance_index]);
+    float4 world_position = mul(float4(input.position, 1.0f), model_matrices[instance_index]);
     
     //output.sv_position = mul(world_position, global_data.view_matrix);
     //output.sv_position = mul(output.sv_position, global_data.projection_matrix);
     
-    output.position = input.position;
-    output.sv_position = float4(input.position, 1.0f);
+    output.position = world_position.xyz;
+    output.sv_position = world_position;
     output.normal = input.normal;
     output.texture_coord = input.texture_coord;
     
