@@ -60,7 +60,6 @@ namespace fe {
     };
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) { // setup can be called twice
-            builder.readImage(fe::string_hash("ShadowMap"), ResourceState::SHADER_READ_ONLY);
             builder.writeToScreen(true);
 
             if (!pass_data.default_shader_program_ptr) {
@@ -89,11 +88,9 @@ namespace fe {
                     }
                 }
             }
-            pass_data.default_material_ptr = builder.resource_manager.GetContext().default_gltf_material_ptr;
+            pass_data.default_material_ptr = builder.resource_manager.GetContext().default_pbr_material_ptr;
             if (!pass_data.test_model_ptr) {
                 pass_data.test_model_ptr = builder.resource_manager.ImportResource<resource::Model>(PATH.getModelsPath() / "TatarSuzanne\\TatarSuzanne.gltf");
-                //const auto& model        = *builder.resource_manager.GetResource(pass_data.test_model_ptr);
-                
             }
 
             pass_data.data.resize(256);

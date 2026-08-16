@@ -26,6 +26,7 @@
 
 ### Done
     some fixes
+    fe::ResourceStorage::AllocateMaterialBufferRaw() provided | new shader logic in progress
 
 ### Problem
     -

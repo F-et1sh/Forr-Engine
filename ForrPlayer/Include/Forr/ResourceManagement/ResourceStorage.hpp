@@ -56,7 +56,7 @@ namespace fe {
 
         // unsafe helper function
         template <resource::resource_t T>
-        fe::typed_pointer_storage<T>& GetStorage() {
+        FORR_NODISCARD fe::typed_pointer_storage<T>& GetStorage() {
             if constexpr (false) {
             }
 #define GENERATE_STORAGES(RESOURCE_NAME)                                 \
@@ -70,8 +70,25 @@ namespace fe {
             }
         }
 
-        const ResourceManagementContext& GetContext() const noexcept {
+        FORR_NODISCARD const ResourceManagementContext& GetContext() const noexcept {
             return m_Context;
+        }
+
+        FORR_NODISCARD std::byte* AllocateMaterialBufferRaw(size_t size, size_t alignment = alignof(std::max_align_t)) {
+            return this->m_MaterialsBuffer.allocate(size, alignment);
+        }
+
+        template <typename T = std::byte>
+        FORR_NODISCARD std::span<T> AllocateMaterialBufferSpan(size_t size, size_t alignment = alignof(std::max_align_t)) {
+            return this->m_MaterialsBuffer.allocate_span(size, alignment);
+        }
+
+        FORR_NODISCARD constexpr std::byte* GetMaterialBufferData() noexcept {
+            return m_MaterialsBuffer.data();
+        }
+
+        FORR_NODISCARD constexpr const std::byte* GetMaterialBufferData() const noexcept {
+            return m_MaterialsBuffer.data();
         }
 
     private:

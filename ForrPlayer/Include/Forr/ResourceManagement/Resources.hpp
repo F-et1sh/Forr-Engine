@@ -182,7 +182,7 @@ namespace fe::resource {
         // it to the 'buffer' of this material, according to 'offset' of the sampler
         std::span<Sampler> samplers{};
         // this buffer contains all raw data you pass to the shader
-        std::span<uint8_t> buffer{};
+        std::span<std::byte> buffer{};
 
         PipelineFlags pipeline_flags{};
 

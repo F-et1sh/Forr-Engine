@@ -47,7 +47,7 @@ fe::SlangParser::SlangParser(GraphicsBackend graphics_backend) : m_GraphicsBacke
     session_desc.compilerOptionEntryCount = 0;
 
     // TODO : provide an interface for this
-    const char* search_paths = { (PATH.getDefaultShadersPath() / "PBRMaterial").generic_string().c_str() };
+    const char* search_paths = { PATH.getShadersPath().generic_string().c_str() };
 
     session_desc.searchPathCount = 1;
     session_desc.searchPaths     = &search_paths;

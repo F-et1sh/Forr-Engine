@@ -18,33 +18,37 @@ void fe::ResourceCreator::CreateDefaultResources() {
 }
 
 void fe::ResourceCreator::createDefaultMaterials() {
-    std::filesystem::path gltf_shader_path        = PATH.getDefaultShadersPath() / L"PBRMaterial" / L"shader2";
-    auto                  default_gltf_shader_ptr = m_Importer.ImportResource<resource::ShaderFileData>(gltf_shader_path.wstring() + PATH.getShaderExtension().wstring());
+    this->createPBRMaterial();
+}
 
-    const auto& default_gltf_shader = *m_Storage.GetResource(default_gltf_shader_ptr);
+void fe::ResourceCreator::createPBRMaterial() {
+    std::filesystem::path shader_full_path = PATH.getDefaultShadersPath() / L"PBRMaterial" / L"PBRMaterial";
+    auto                  shader_ptr       = m_Importer.ImportResource<resource::ShaderFileData>(shader_full_path.wstring() + PATH.getShaderExtension().wstring());
 
-    if (!default_gltf_shader.material_layout_ptrs.has_value()) {
-        fe::logging::fatal("Failed to create default material : PBRMaterial");
+    if (!shader_ptr.is_valid()) {
+        fe::logging::error("Failed to create default material : PBRMaterial.\nFailed to load file.\nPath : %s", shader_full_path.generic_string().c_str());
         return;
     }
 
-    const auto& material_layouts = default_gltf_shader.material_layout_ptrs.value();
-    auto it = material_layouts.find("PBRMaterial");
+    const auto& shader = *m_Storage.GetResource(shader_ptr);
+
+    if (!shader.material_layout_ptrs.has_value()) {
+        fe::logging::error("Failed to create default material : PBRMaterial.\nNo materials found.\nPath : %s", shader_full_path.generic_string().c_str());
+        return;
+    }
+
+    const auto& material_layouts = shader.material_layout_ptrs.value();
+    auto        it               = material_layouts.find("PBRMaterial");
     if (it == material_layouts.end()) {
-        fe::logging::fatal("Failed to create default material : PBRMaterial");
-        return;
+        fe::logging::error("Failed to create default material : PBRMaterial.\nPBRMaterial structure not found.\nPath : %s", shader_full_path.generic_string().c_str());
     }
 
-    resource::Material gltf_material{};
-    gltf_material.layout_ptr = it->second;
+    const auto& material_layout = *m_Storage.GetResource(it->second);
 
-    glm::vec3 color{ 0.76f, 0.67f, 0.52f };
+    resource::Material material{};
+    material.layout_ptr = it->second;
+    material.buffer     = m_Storage.AllocateMaterialBufferSpan(material_layout.reflected_layout.size);
+    //material.samplers = ... TODO : provide fallback textures
 
-    // TODO : m_Storage.AllocateMaterialBuffer();
-    // TODO : m_Storage.AllocateMaterialSamplers();
-
-    //gltf_material.buffer.resize(sizeof(glm::vec3));
-    //memcpy(gltf_material.buffer.data(), &color, sizeof(glm::vec3));
-
-    m_Context.default_gltf_material_ptr = m_Storage.CreateResource(std::move(gltf_material));
+    m_Context.default_pbr_material_ptr = m_Storage.CreateResource(std::move(material));
 }
