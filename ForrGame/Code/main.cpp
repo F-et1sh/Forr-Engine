@@ -31,8 +31,8 @@ int main(int argc, char* argv[]) {
     }
 
     desc.application_name                  = "ForrGame";
-    desc.primary_window_desc.width         = 800;
-    desc.primary_window_desc.height        = 600;
+    desc.primary_window_desc.width         = 1920;
+    desc.primary_window_desc.height        = 1080;
     desc.primary_window_desc.is_fullscreen = false;
     desc.primary_window_desc.name          = "Gmod Realism";
     desc.primary_window_desc.vsync         = true;

@@ -30,22 +30,17 @@ fe::Application::Application(const ApplicationDesc& desc) {
     m_Renderer->InitializeGPUResources();
 }
 
-size_t t{};
-
 void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
-        float angle  = static_cast<float>(t) * 0.02f;
-        float radius = 15.0f;
-
         m_Renderer->BeginFrame();
 
         RenderGraphCollector<TransformComponent, LightComponent> collector{ m_Registry };
-        auto                                                     render_command_list = m_RenderGraph->Execute(collector.getRegistry());
+
+        auto render_command_list = m_RenderGraph->Execute(collector.getRegistry());
 
         m_Renderer->EndFrame(render_command_list);
 
         m_PrimaryWindow->PollEvents();
-        t++;
     }
 }
 

@@ -333,6 +333,10 @@ namespace fe {
         struct FORR_API WriteBuffer {
             ParameterID                parameter_id{};
             std::span<const std::byte> data{};
+
+            WriteBuffer() = default;
+            WriteBuffer(ParameterID parameter_id, std::span<const std::byte> data)
+                : parameter_id(parameter_id), data(data) {}
         };
 
         // To add a command write its structure and add it here

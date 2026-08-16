@@ -26,14 +26,12 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
 
     glfwMakeContextCurrent(m_GLFWwindow);
 
-    // turned off for RenderDoc debug
-    // 
     // TODO : move all of this chekings to other layer
-    //int is_bindless_supported = glfwExtensionSupported("GL_ARB_bindless_texture");
-    //if (!is_bindless_supported) {
-        //fe::logging::fatal("Your version of OpenGL does not support bindless rendering. Please, use Vulkan as the graphics backend");
-        //return;
-    //}
+    int is_bindless_supported = glfwExtensionSupported("GL_ARB_bindless_texture");
+    if (!is_bindless_supported) {
+        fe::logging::fatal("Your version of OpenGL does not support bindless rendering. Please, use Vulkan as the graphics backend");
+        return;
+    }
 
     glfwSwapInterval(desc.primary_window_desc.vsync); // set vsync ( only after calling glfwMakeContextCurrent )
 

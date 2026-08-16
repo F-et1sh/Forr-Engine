@@ -2,6 +2,7 @@
 
 ## 16.08.2026
 ### Goal
+    remove resource manager and renderer from 'fe::render_graph::RenderGraphBuilder'
     setup rendering, stabilize the system
 
     allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
@@ -21,7 +22,7 @@
     ( provide logging macro to log current function automatically )
 
 ### Done
-    -
+    some fixes
 
 ### Problem
     -

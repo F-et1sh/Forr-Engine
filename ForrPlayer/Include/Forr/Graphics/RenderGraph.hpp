@@ -59,33 +59,61 @@ namespace fe {
         render_graph::CommandList command_list{};
         const entt::registry&     render_registry{};
 
-        RenderGraphContext& BindShaderProgram(const render_graph::BindShaderProgram& bind_shader_program) {
-            command_list.enqueue(bind_shader_program);
+        RenderGraphContext& BindBuffer(const render_graph::BindBuffer& command) {
+            command_list.enqueue(command);
+            return *this;
+        }
+
+        RenderGraphContext& BindBuffer(ParameterID parameter_id) {
+            return this->BindBuffer(render_graph::BindBuffer{ parameter_id });
+        }
+
+        RenderGraphContext& WriteBuffer(const render_graph::WriteBuffer& command) {
+            command_list.enqueue(command);
+            return *this;
+        }
+
+        RenderGraphContext& WriteBuffer(ParameterID parameter_id, std::span<const std::byte> data) {
+            return this->WriteBuffer(render_graph::WriteBuffer{ parameter_id, data });
+        }
+
+        template <typename T>
+        RenderGraphContext& WriteBuffer(ParameterID parameter_id, std::span<const T> data) {
+            return this->WriteBuffer(render_graph::WriteBuffer{ parameter_id, std::as_bytes(data) });
+        }
+
+        template <typename R>
+            requires std::ranges::contiguous_range<R>
+        RenderGraphContext& WriteBuffer(ParameterID parameter_id, const R& range) {
+            return this->WriteBuffer(parameter_id, std::span{ range });
+        }
+
+        RenderGraphContext& BindShaderProgram(const render_graph::BindShaderProgram& command) {
+            command_list.enqueue(command);
             return *this;
         }
 
         RenderGraphContext& BindShaderProgram(const fe::pointer<resource::ShaderProgram> shader_program_ptr) {
-            command_list.enqueue(render_graph::BindShaderProgram{ shader_program_ptr });
-            return *this;
+            return this->BindShaderProgram(render_graph::BindShaderProgram{ shader_program_ptr });
         }
 
-        RenderGraphContext& BindMaterial(const render_graph::BindMaterial& bind_material) {
-            command_list.enqueue(bind_material);
+        RenderGraphContext& BindMaterial(const render_graph::BindMaterial& command) {
+            command_list.enqueue(command);
             return *this;
         }
 
         RenderGraphContext& BindMaterial(const fe::pointer<resource::Material> material_ptr) {
-            command_list.enqueue(render_graph::BindMaterial{ material_ptr });
-            return *this;
+            return this->BindMaterial(render_graph::BindMaterial{ material_ptr });
         }
-
+        
+        // temp
         RenderGraphContext& BindModel(const fe::pointer<resource::Model> model_ptr) {
             command_list.enqueue(render_graph::BindModel{ model_ptr });
             return *this;
         }
 
-        RenderGraphContext& DrawIndexed(const render_graph::DrawIndexed& draw_indexed) {
-            command_list.enqueue(draw_indexed);
+        RenderGraphContext& DrawIndexed(const render_graph::DrawIndexed& command) {
+            command_list.enqueue(command);
             return *this;
         }
 
