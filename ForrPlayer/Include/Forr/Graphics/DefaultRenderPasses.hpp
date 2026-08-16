@@ -92,6 +92,8 @@ namespace fe {
             pass_data.default_material_ptr = builder.resource_manager.GetContext().default_gltf_material_ptr;
             if (!pass_data.test_model_ptr) {
                 pass_data.test_model_ptr = builder.resource_manager.ImportResource<resource::Model>(PATH.getModelsPath() / "TatarSuzanne\\TatarSuzanne.gltf");
+                //const auto& model        = *builder.resource_manager.GetResource(pass_data.test_model_ptr);
+                
             }
 
             pass_data.data.resize(256);
