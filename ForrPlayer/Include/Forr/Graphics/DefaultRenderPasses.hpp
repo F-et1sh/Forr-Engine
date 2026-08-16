@@ -56,14 +56,16 @@ namespace fe {
         fe::pointer<resource::Material>      default_material_ptr{};
         fe::pointer<resource::Model>         test_model_ptr{};
         ParameterID                          model_matrices_parameter_id{};
-        std::vector<glm::mat4> data{};
+        std::vector<glm::mat4>               data{};
+        ParameterID                          materials_parameter_id{};
+        std::vector<std::byte>               materials_data{};
     };
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) { // setup can be called twice
             builder.writeToScreen(true);
 
             if (!pass_data.default_shader_program_ptr) {
-                fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\shader.slang");
+                fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
                 const resource::ShaderFileData&       shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
                 if (!shader_file_data.shader_program_ptr.has_value()) {
                     builder.assertFatal("No shader");
@@ -76,15 +78,32 @@ namespace fe {
                     const auto& descriptors    = *builder.resource_manager.GetResource(shader_program.descriptors_layout_ptr.value());
 
                     auto it = std::ranges::find_if(descriptors.reflected_layout.descriptors, [](const shader::ReflectedDescriptor& descriptor) -> bool {
-                        return descriptor.name == fe::hashed_string{ "model_matrices" };
+                        return descriptor.name == fe::hashed_string{ "g_ModelMatrices" };
                     });
 
                     if (it == descriptors.reflected_layout.descriptors.end()) {
-                        fe::logging::error("Failed to find model_matrices");
+                        fe::logging::error("Failed to find g_ModelMatrices");
                     }
                     else {
                         const auto& descriptor                = *it;
                         pass_data.model_matrices_parameter_id = builder.renderer.CreateParameter(descriptor);
+                    }
+                }
+
+                if (pass_data.materials_parameter_id.storage_index == ~0) {
+                    const auto& shader_program = *builder.resource_manager.GetResource(pass_data.default_shader_program_ptr);
+                    const auto& descriptors    = *builder.resource_manager.GetResource(shader_program.descriptors_layout_ptr.value());
+
+                    auto it = std::ranges::find_if(descriptors.reflected_layout.descriptors, [](const shader::ReflectedDescriptor& descriptor) -> bool {
+                        return descriptor.name == fe::hashed_string{ "g_MaterialsRawData" };
+                    });
+
+                    if (it == descriptors.reflected_layout.descriptors.end()) {
+                        fe::logging::error("Failed to find g_MaterialsRawData");
+                    }
+                    else {
+                        const auto& descriptor           = *it;
+                        pass_data.materials_parameter_id = builder.renderer.CreateParameter(descriptor);
                     }
                 }
             }
@@ -94,15 +113,26 @@ namespace fe {
             }
 
             pass_data.data.resize(256);
-            pass_data.data[0] = glm::mat4{1, 0, 0, 0,
-                                          0, 1, 0, 0,
-                                          0, 0, 1, 0,
-                                          0, 0, 0, 1};
+            pass_data.data[0] = glm::mat4{ 1.0f };
+
+            pass_data.materials_data.resize(32);
+
+            uint32_t texture_index = 0;
+            uint32_t sampler_index = 0;
+
+            memcpy(&pass_data.materials_data[0], &texture_index, sizeof(uint32_t));
+            memcpy(&pass_data.materials_data[4], &sampler_index, sizeof(uint32_t));
+
+            glm::vec4 color_factor(1.0f);
+            memcpy(&pass_data.materials_data[16], &color_factor, sizeof(glm::vec4));
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
             context.BindBuffer(pass_data.model_matrices_parameter_id);
             context.WriteBuffer(pass_data.model_matrices_parameter_id, pass_data.data);
+
+            context.BindBuffer(pass_data.materials_parameter_id);
+            context.WriteBuffer(pass_data.materials_parameter_id, pass_data.materials_data);
 
             context.BindShaderProgram(pass_data.default_shader_program_ptr);
             context.BindMaterial(pass_data.default_material_ptr);
