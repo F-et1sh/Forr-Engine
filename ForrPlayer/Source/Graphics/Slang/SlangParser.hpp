@@ -43,7 +43,8 @@ namespace fe {
         };
 
     public:
-        SlangParser(GraphicsBackend graphics_backend);
+        // this will use 'PATH.getShadersPath().generic_string().c_str()' if you leave argument 'search_paths' as null
+        SlangParser(std::span<const char*> search_paths = {});
         ~SlangParser() = default;
 
         FORR_CLASS_MOVABLE(SlangParser)
@@ -82,7 +83,6 @@ namespace fe {
         void mapScalar(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
 
     private:
-        GraphicsBackend                      m_GraphicsBackend{};
         Slang::ComPtr<slang::ISession>       m_Session{};
         slang::IModule*                      m_Module{};
         Slang::ComPtr<slang::IComponentType> m_ComposedProgram{};

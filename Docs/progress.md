@@ -26,7 +26,8 @@
 
 ### Done
     some fixes
-    fe::ResourceStorage::AllocateMaterialBufferRaw() provided | new shader logic in progress
+    'fe::ResourceStorage::AllocateMaterialBufferRaw()' provided | new shader logic in progress
+    search paths setting for 'fe::SlangParser' provided
 
 ### Problem
     -

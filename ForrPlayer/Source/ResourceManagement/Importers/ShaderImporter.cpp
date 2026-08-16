@@ -18,7 +18,7 @@
 fe::pointer<fe::resource::ShaderFileData> fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
     resource::ShaderFileData shader_file_data{};
 
-    SlangParser parser{ storage.GetContext().graphics_backend };
+    SlangParser parser{};
     if (!parser.LoadFromFile(resource_full_path)) {
         fe::logging::error("Slang -> Unified. Failed to load a shader\nPath : %s", resource_full_path.generic_string().c_str());
         return {};

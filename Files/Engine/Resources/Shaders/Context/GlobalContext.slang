@@ -1,5 +1,7 @@
 public interface IMaterial {
-    float4 GetSurfaceData(float2 uv);
+    associatedtype MaterialData;
+
+    float4 GetSurfaceData(float2 uv, MaterialData data);
 }
 
 public [[vk::binding(1, 0)]] StructuredBuffer<float4x4>  g_ModelMatrices;

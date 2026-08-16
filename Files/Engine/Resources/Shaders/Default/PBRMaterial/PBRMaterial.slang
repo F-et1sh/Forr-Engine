@@ -1,12 +1,17 @@
 import "../../Context/GlobalContext";
 
-public struct PBRMaterial : IMaterial {
-    public uint2 base_color_texture_handle;
+public struct PBRMaterialData {
+    public uint2  base_color_texture_handle;
+    public float4 base_color_factor;
+}
 
-    public float4 GetSurfaceData(float2 uv) {
-        Sampler2D texture = reinterpret<Sampler2D>(base_color_texture_handle);
+public struct PBRMaterial : IMaterial {
+    typealias MaterialData = PBRMaterialData;    
+
+    public float4 GetSurfaceData(float2 uv, PBRMaterialData data) {
+        Sampler2D texture = reinterpret<Sampler2D>(data.base_color_texture_handle);
         float4 frag_color = texture.Sample(uv);
-        return frag_color;
+        return frag_color * data.base_color_factor;
     }
 };
 
