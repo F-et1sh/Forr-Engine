@@ -124,9 +124,8 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    // turned off for RenderDoc debug
-    //opengl_texture.resident_id = glGetTextureHandleARB(texture_id_raw);
-    //glMakeTextureHandleResidentARB(opengl_texture.resident_id); // make resident
+    opengl_texture.resident_id = glGetTextureHandleARB(texture_id_raw);
+    glMakeTextureHandleResidentARB(opengl_texture.resident_id); // make resident
 
     opengl_texture.texture.attach(texture_id_raw);
 

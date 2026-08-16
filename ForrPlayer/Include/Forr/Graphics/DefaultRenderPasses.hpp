@@ -60,6 +60,7 @@ namespace fe {
     };
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) { // setup can be called twice
+            builder.readImage(fe::string_hash("ShadowMap"), ResourceState::SHADER_READ_ONLY);
             builder.writeToScreen(true);
 
             if (!pass_data.default_shader_program_ptr) {
@@ -101,13 +102,13 @@ namespace fe {
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
-            context.command_list.enqueue(render_graph::BindBuffer{ pass_data.model_matrices_parameter_id });
-            context.command_list.enqueue(render_graph::WriteBuffer{ pass_data.model_matrices_parameter_id, std::as_bytes(std::span<glm::mat4>{ pass_data.data }) });
+            context.BindBuffer(pass_data.model_matrices_parameter_id);
+            context.WriteBuffer(pass_data.model_matrices_parameter_id, pass_data.data);
 
             context.BindShaderProgram(pass_data.default_shader_program_ptr);
             context.BindMaterial(pass_data.default_material_ptr);
 
-            context.BindModel(pass_data.test_model_ptr);
+            context.BindModel(pass_data.test_model_ptr); // temp
         }
 
         ForwardPass()  = default;
