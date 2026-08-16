@@ -223,7 +223,7 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetOrCreatePipeline(fe::poi
     const resource::ShaderProgram& shader_program = *m_ResourceManager.GetResource(shader_program_ptr);
     const resource::Material&      material       = *m_ResourceManager.GetResource(material_ptr);
 
-    SlangParser               parser{ m_ResourceManager.GetContext().graphics_backend };
+    SlangParser               parser{};
     shader::SourceCodeStorage source_codes = parser.CombineAndCompileShader(shader_program, material, m_ResourceManager);
 
     if (source_codes.empty()) {

@@ -19,7 +19,7 @@
 
 namespace fe {
     struct ResourceManagerDesc {
-        // this needs to compile shaders
+        // TODO : this can be removed
         GraphicsBackend graphics_backend{};
 
         ResourceManagerDesc()  = default;

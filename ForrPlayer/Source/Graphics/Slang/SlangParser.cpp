@@ -24,7 +24,7 @@ namespace fe {
     using SlangCategory = slang::ParameterCategory;
 } // namespace fe
 
-fe::SlangParser::SlangParser(GraphicsBackend graphics_backend) : m_GraphicsBackend(graphics_backend) {
+fe::SlangParser::SlangParser(std::span<const char*> search_paths) {
     static Slang::ComPtr<slang::IGlobalSession> global_session{};
     if (!global_session) {
         if (SLANG_FAILED(slang::createGlobalSession(global_session.writeRef()))) {
@@ -46,11 +46,16 @@ fe::SlangParser::SlangParser(GraphicsBackend graphics_backend) : m_GraphicsBacke
     session_desc.targetCount              = 1;
     session_desc.compilerOptionEntryCount = 0;
 
-    // TODO : provide an interface for this
-    const char* search_paths = { PATH.getShadersPath().generic_string().c_str() };
+    if (search_paths.empty()) {
+        std::array<const char*, 1> paths{ PATH.getShadersPath().generic_string().c_str() };
 
-    session_desc.searchPathCount = 1;
-    session_desc.searchPaths     = &search_paths;
+        session_desc.searchPathCount = paths.size();
+        session_desc.searchPaths     = paths.data();
+    }
+    else {
+        session_desc.searchPathCount = search_paths.size();
+        session_desc.searchPaths     = search_paths.data();
+    }
 
     if (SLANG_FAILED(global_session->createSession(session_desc, m_Session.writeRef()))) {
         fe::logging::error("Slang -> Unified. Failed to create a session");
