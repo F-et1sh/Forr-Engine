@@ -77,11 +77,11 @@ namespace fe {
         }
 
         template <typename T = std::byte>
-        FORR_NODISCARD std::span<T> allocate_span(size_t byte_size, size_t alignment = alignof(std::max_align_t)) {
-            std::byte* raw_ptr = allocate(byte_size, alignment);
+        FORR_NODISCARD std::span<T> allocate_span(size_t size, size_t alignment = alignof(std::max_align_t)) {
+            std::byte* raw_ptr = allocate(size, alignment);
             if (!raw_ptr) return {};
 
-            return std::span<T>(reinterpret_cast<T*>(raw_ptr), byte_size / sizeof(T));
+            return std::span<T>(reinterpret_cast<T*>(raw_ptr), size / sizeof(T));
         }
 
         void reset() { m_offset = 0; }

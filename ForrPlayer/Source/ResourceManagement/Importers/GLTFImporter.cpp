@@ -172,10 +172,7 @@ void fe::GLTFImporter::loadTextures(GLTFImportContext& context) {
 }
 
 void fe::GLTFImporter::loadMaterials(GLTFImportContext& context) {
-    if (context.model.materials.empty()) {
-        context.materials.push_back(context.storage.GetContext().default_gltf_material_ptr); // TODO : provide default fallback material
-        return;
-    }
+    if (context.model.materials.empty()) return;
 
     context.materials.resize(context.model.materials.size());
 
@@ -577,6 +574,8 @@ fe::pointer<Material> fe::GLTFImporter::createMaterial(GLTFImportContext& contex
     const tinygltf::Material& material = context.model.materials[tinygltf_material_index];
     Material                  this_material{};
 
+    //this_material.layout_ptr
+
     //    this_material.name = material.name;
     //
     //    fe::GLTFImporter::readVector(this_material.emissive_factor, material.emissiveFactor);
@@ -621,16 +620,12 @@ fe::pointer<Material> fe::GLTFImporter::createMaterial(GLTFImportContext& contex
 
     // std::size_t offset{};
 
-    // test
     const auto& resource_management_context = context.storage.GetContext();
-    const auto& default_gltf_material       = *context.storage.GetResource(resource_management_context.default_gltf_material_ptr);
+    const auto& default_pbr_material        = *context.storage.GetResource(resource_management_context.default_pbr_material_ptr);
 
-    //this_material.shader_program_ptr = default_gltf_material.shader_program_ptr;
-    //this_material.buffer.resize(sizeof(GPUPBRMaterial));
-
-    //auto& this_base_color_sampler       = this_material.samplers.emplace_back();
-    //this_base_color_sampler.offset      = 0;
-    //this_base_color_sampler.texture_ptr = context.GetTexture(material.pbrMetallicRoughness.baseColorTexture.index);
+    this_material.pipeline_flags = default_pbr_material.pipeline_flags;
+    this_material.layout_ptr     = default_pbr_material.layout_ptr;
+    this_material.buffer         = default_pbr_material.buffer;
 
     auto ptr = context.storage.CreateResource<Material>(std::move(this_material));
     return ptr;

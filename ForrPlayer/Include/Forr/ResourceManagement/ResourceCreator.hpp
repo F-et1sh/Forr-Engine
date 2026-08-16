@@ -59,6 +59,9 @@ namespace fe {
         void createDefaultMaterials();
 
     private:
+        void createPBRMaterial();
+
+    private:
         ResourceManagementContext& m_Context;
         ResourceStorage&           m_Storage;
         ResourceImporter&          m_Importer;

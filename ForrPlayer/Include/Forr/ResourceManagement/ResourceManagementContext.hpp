@@ -19,7 +19,7 @@ namespace fe {
     struct ResourceManagementContext {
         GraphicsBackend graphics_backend{};
 
-        fe::pointer<resource::Material> default_gltf_material_ptr{};
+        fe::pointer<resource::Material> default_pbr_material_ptr{};
 
         ResourceManagementContext()  = default;
         ~ResourceManagementContext() = default;
