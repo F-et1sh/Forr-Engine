@@ -96,13 +96,32 @@ bool fe::SlangParser::ComposeProgram() {
     std::vector<slang::IComponentType*> component_types{};
     component_types.emplace_back(m_Module);
 
+    slang::ShaderReflection* module_reflection = m_Module->getLayout();
+
+    uint32_t dependency_count = m_Module->getDependencyFileCount();
+    component_types.reserve(dependency_count);
+    for (uint32_t i = 1; i < dependency_count; i++) { // start from '1', because 'm_Module' is already added
+        const char* dependency_file = m_Module->getDependencyFilePath(i);
+
+        Slang::ComPtr<slang::IBlob> load_diagnostics{};
+        slang::IModule*             imported_module = m_Session->loadModule(dependency_file, load_diagnostics.writeRef());
+        if (imported_module) {
+            component_types.emplace_back(imported_module);
+        }
+        else {
+            fe::logging::error("Slang -> Unified. Failed to load a slang dependency module. Continuing loading\n%s",
+                               (const char*) load_diagnostics->getBufferPointer());
+        }
+    }
+
     Slang::ComPtr<slang::IBlob> composition_diagnostics{};
     SlangResult                 result = m_Session->createCompositeComponentType(component_types.data(),
                                                                                  component_types.size(),
                                                                                  m_ComposedProgram.writeRef(),
                                                                                  composition_diagnostics.writeRef());
     if (SLANG_FAILED(result)) {
-        fe::logging::error("Slang -> Unified. Failed to create a composed program\n%s", (const char*) composition_diagnostics->getBufferPointer());
+        fe::logging::error("Slang -> Unified. Failed to create a composed program\n%s",
+                           (const char*) composition_diagnostics->getBufferPointer());
         return false;
     }
 
@@ -259,16 +278,7 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
         return {};
     }
 
-    slang::ProgramLayout*  layout        = material_module->getLayout();
-    slang::TypeReflection* material_type = layout->findTypeByName(material_layout.reflected_layout.name.c_str());
-
-    component_types.emplace_back(material_module);
-
-    if (!material_type) {
-        fe::logging::error("Serialized Slang ( Unified ) -> Slang. Type is not found for material %s",
-                           material_layout.reflected_layout.name.c_str());
-        return {};
-    }
+    component_types.emplace_back(material_module); // add a module
 
     // handle shader
 
@@ -298,7 +308,7 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
         return {};
     }
 
-    component_types.emplace_back(shader_module);
+    //component_types.emplace_back(shader_module); // add a module
 
     std::vector<EntryPoint> entry_points{};
 
@@ -319,6 +329,15 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
 
             entry_points.emplace_back(entry_point, shader_type);
         }
+    }
+
+    slang::ProgramLayout*  layout        = material_module->getLayout();
+    slang::TypeReflection* material_type = layout->findTypeByName(material_layout.reflected_layout.name.c_str());
+
+    if (!material_type) {
+        fe::logging::error("Serialized Slang ( Unified ) -> Slang. Type is not found for material %s",
+                           material_layout.reflected_layout.name.c_str());
+        return {};
     }
 
     std::array<slang::SpecializationArg, 1> specialization_args{};
@@ -445,7 +464,10 @@ void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* vari
                 dst_descriptor.descriptor_type = ShaderDescriptor::UNIFORM_BUFFER;
             }
 
-            SlangParser::parseMemberRecursive(array_element_type_layout, static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
+            if (element_kind != SlangKind::Resource &&
+                element_kind != SlangKind::SamplerState) {
+                SlangParser::parseMemberRecursive(array_element_type_layout, static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
+            }
         } break;
 
         case SlangKind::Resource: {
@@ -480,12 +502,15 @@ void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* vari
                 assert(false);
             }
 
-            SlangParser::parseMemberRecursive(type_layout->getElementTypeLayout(), static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
+            slang::TypeLayoutReflection* element_type = type_layout->getElementTypeLayout();
+            if (element_type != nullptr) {
+                SlangParser::parseMemberRecursive(element_type, static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
+            }
         } break;
 
         case SlangKind::SamplerState:
             dst_descriptor.descriptor_type = ShaderDescriptor::SAMPLER;
-            SlangParser::parseMemberRecursive(type_layout->getElementVarLayout(), static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
+            dst_descriptor.size            = 0;
             break;
 
         default:
@@ -502,7 +527,9 @@ void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* vari
     // ```
     // 'fe::SlangParser::parseMemberRecursive()' will give us "SceneData", but I want to see name "global_data",
     //  that's why we set the name here
-    dst_descriptor.name = variable_layout->getName();
+    const char* name = variable_layout->getName();
+    if (name)
+        dst_descriptor.name = name;
 }
 
 void fe::SlangParser::parsePushConstant(slang::VariableLayoutReflection* variable_layout,
@@ -566,7 +593,9 @@ void fe::SlangParser::parsePushConstant(slang::VariableLayoutReflection* variabl
     // ```
     // 'fe::SlangParser::parseMemberRecursive()' will give us "SceneData", but I want to see name "global_data",
     //  that's why we set the name here
-    dst_push_constants.name = variable_layout->getName();
+    const char* name = variable_layout->getName();
+    if (name)
+        dst_push_constants.name = name;
 }
 
 void fe::SlangParser::parseMemberRecursive(slang::VariableLayoutReflection* variable_layout,

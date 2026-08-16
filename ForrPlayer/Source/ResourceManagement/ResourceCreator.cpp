@@ -40,7 +40,7 @@ void fe::ResourceCreator::createPBRMaterial() {
     const auto& material_layouts = shader.material_layout_ptrs.value();
     auto        it               = material_layouts.find("PBRMaterial");
     if (it == material_layouts.end()) {
-        fe::logging::error("Failed to create default material : PBRMaterial.\nPBRMaterial structure not found.\nPath : %s", shader_full_path.generic_string().c_str());
+        fe::logging::error("Failed to create default material : PBRMaterial.\nPBRMaterialData structure not found.\nPath : %s", shader_full_path.generic_string().c_str());
     }
 
     const auto& material_layout = *m_Storage.GetResource(it->second);
