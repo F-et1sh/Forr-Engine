@@ -2,14 +2,17 @@
 
 ## 16.08.2026
 ### Goal
+    allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
+        allocate big SSBO ( AZDO ) in renderer for materials;
+    see a texture
     remove resource manager and renderer from 'fe::render_graph::RenderGraphBuilder'
     setup rendering, stabilize the system
 
-    allocate material buffer in 'fe::ResourceManager', using 'fe::Arena';
-        allocate big SSBO ( AZDO ) in renderer for materials;
-    make a video for YouTube, when see something on the screen
+    provide same rendering for Vulkan
     fix Vukan VMA error
     provide debug tools with Dear ImGui
+    
+    make a video for YouTube
 
     ( fix window resizing for GL/VK )
     ( do not create GPU resources if they're already created --> InitializeGPUResources() )
