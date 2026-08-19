@@ -21,6 +21,7 @@
 #include <vector>
 #include <concepts>
 #include <variant>
+#include <expected>
 
 #include "Core/attributes.hpp"
 #include "Core/custom_allocators.hpp"

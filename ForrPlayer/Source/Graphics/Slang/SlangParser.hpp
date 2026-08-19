@@ -42,6 +42,12 @@ namespace fe {
             "computeMain"
         };
 
+        enum class SpecializationErrors { // first time using 'std::expected'
+            NO_PARAMETERS,
+            UNSUPPORTED_GRAPHICS_BACKEND,
+            SPECIALIZATION_FAILED
+        };
+
     public:
         // this will use 'PATH.getShadersPath().generic_string().c_str()' if you leave argument 'search_paths' as null
         SlangParser(std::span<const char*> search_paths = {});
@@ -54,7 +60,8 @@ namespace fe {
 
         bool ExtractSerializedData(std::vector<uint8_t>& dst_vector);
 
-        bool ComposeProgram();
+        // pass the graphics backend to specialize the shader program
+        bool ComposeProgram(GraphicsBackend graphics_backend);
 
         // returns 'true', if actually found anything and 'false', if the argument is not changed
         bool ReflectDescriptors(shader::ReflectedDescriptorsLayout& descriptors_layout);
@@ -70,7 +77,9 @@ namespace fe {
                                                           ResourceManager&               resource_manager);
 
     private:
-        std::vector<EntryPoint> findEntryPoints(std::vector<slang::IComponentType*>& component_types);
+        std::expected<Slang::ComPtr<slang::IComponentType>, SpecializationErrors> specializeGraphicsBackend(slang::IComponentType* component_type, GraphicsBackend graphics_backend);
+
+        bool parseDescriptorRecursive(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDescriptorsLayout& descriptors_layout);
 
         void parseDescriptorTable(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDescriptor& dst_descriptor);
         void parsePushConstant(slang::VariableLayoutReflection* variable_layout, shader::ReflectedPushConstants& dst_push_constants);
@@ -81,6 +90,8 @@ namespace fe {
         void mapMatrix(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
         void mapVector(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
         void mapScalar(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
+
+        Slang::ComPtr<slang::IModule> deserializeModule(fe::pointer<resource::ShaderFileData> shader_file_data_ptr, ResourceManager& resource_manager);
 
     private:
         Slang::ComPtr<slang::ISession>       m_Session{};
