@@ -5,10 +5,10 @@ public interface IMaterial {
 }
 
 public interface IBuffer {
-    T Load<T>(uint byte_offset);
+    public T Load<T>(uint byte_offset);
 }
 
-public struct OpenGlBuffer : IBuffer {
+public struct OpenGLBuffer : IBuffer {
     ByteAddressBuffer buffer;
     
     public T Load<T>(uint byte_offset) {
@@ -25,6 +25,7 @@ public struct VulkanBuffer : IBuffer {
     }
 }
 
-public [[vk::binding(0, 0)]] ParameterBlock<IBuffer>    g_MaterialData;
+public type_param TBuffer : IBuffer;
+
+public [[vk::binding(0, 0)]] ParameterBlock<TBuffer>    g_MaterialsRawData;
 public [[vk::binding(1, 0)]] StructuredBuffer<float4x4> g_ModelMatrices;
-public [[vk::binding(0, 1)]] ByteAddressBuffer          g_MaterialsRawData;

@@ -31,7 +31,7 @@ fe::pointer<fe::resource::ShaderFileData> fe::ShaderImporter::Import(ResourceSto
         return {};
     }
 
-    if (!parser.ComposeProgram()) {
+    if (!parser.ComposeProgram(storage.GetContext().graphics_backend)) {
         fe::logging::error("Slang -> Unified. Failed to compose the program\nPath : %s", resource_full_path.generic_string().c_str());
         return {};
     }

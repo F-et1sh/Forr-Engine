@@ -115,16 +115,17 @@ namespace fe {
             pass_data.data.resize(256);
             pass_data.data[0] = glm::mat4{ 1.0f };
 
-            pass_data.materials_data.resize(32);
+            struct alignas(16) PBRMaterialData {
+                uint64_t  base_color_texture_handle{};
+                glm::vec4 base_color_factor{};
+            };
 
-            uint32_t texture_index = 0;
-            uint32_t sampler_index = 0;
+            PBRMaterialData data{};
+            data.base_color_texture_handle = 4294969856;
+            data.base_color_factor         = glm::vec4(1.0f);
 
-            memcpy(&pass_data.materials_data[0], &texture_index, sizeof(uint32_t));
-            memcpy(&pass_data.materials_data[4], &sampler_index, sizeof(uint32_t));
-
-            glm::vec4 color_factor(1.0f);
-            memcpy(&pass_data.materials_data[16], &color_factor, sizeof(glm::vec4));
+            pass_data.materials_data.resize(sizeof(PBRMaterialData));
+            memcpy(&pass_data.materials_data[0], &data, sizeof(PBRMaterialData));
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {

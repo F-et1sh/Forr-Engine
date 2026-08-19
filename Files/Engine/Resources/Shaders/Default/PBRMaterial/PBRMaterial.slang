@@ -9,9 +9,9 @@ public struct PBRMaterial : IMaterial {
     typealias MaterialData = PBRMaterialData;    
 
     public float4 GetSurfaceData(float2 uv, PBRMaterialData data) {
-        //Sampler2D texture = reinterpret<Sampler2D>(data.base_color_texture_handle);
-        //float4 frag_color = texture.Sample(uv);
-        return float4(uv, 0.0f, 1.0f);
+        Sampler2D texture = reinterpret<Sampler2D>(data.base_color_texture_handle);
+        float4 frag_color = texture.Sample(uv);
+        return frag_color;
     }
 };
 
@@ -46,8 +46,7 @@ VertexStageOutput vertexMain<M : IMaterial>(VertexInput input) {
 
 [shader("fragment")]
 float4 fragmentMain<M : IMaterial>(VertexStageOutput input) : SV_Target {
-    //M material;
-    //M.MaterialData data = g_MaterialsRawData.Load<M.MaterialData>(push_constants.material_buffer_offset);
-    //return material.GetSurfaceData(input.texture_coord, data);
-    return float4(1.0f, 1.0f, 1.0f, 1.0f);
+    M material;
+    M::MaterialData data = g_MaterialsRawData.Load<M::MaterialData>(push_constants.material_buffer_offset);
+    return material.GetSurfaceData(input.texture_coord, data);
 }

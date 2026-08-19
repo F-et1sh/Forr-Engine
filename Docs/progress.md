@@ -1,7 +1,8 @@
 ﻿# Forr-Engine Devlog
 
-## 18.08.2026
+## 20.08.2026
 ### Goal
+    rework material system, then fix 'fe::SlangParser'
     provide an interface to create BDA for Vulkan and ByteAddressBuffer for OpenGL
     see a texture
     remove resource manager and renderer from 'fe::render_graph::RenderGraphBuilder'
@@ -26,7 +27,37 @@
     -
 
 ### Problem
-    -
+    got ill
+    
+## 19.08.2026
+### Goal
+    provide an interface to create BDA for Vulkan and ByteAddressBuffer for OpenGL
+    see a texture
+    remove resource manager and renderer from 'fe::render_graph::RenderGraphBuilder'
+    setup rendering, stabilize the system
+
+    provide same rendering for Vulkan
+    fix Vukan VMA error
+    provide debug tools with Dear ImGui
+    
+    make a video for YouTube
+
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+    ( fix double loading for resource management )
+    ( provide string_pool and use std::string_view instead of always using std::string - helps to decrease allocations )
+
+    ( provide std::expected<> in fe::ResourceManager and use it in all new modules )
+    ( try to apply all specializations once )
+    ( provide logging macro to log current function automatically )
+
+### Done
+    whole day was trying to cope with Slang
+    started providing 'std::expected'
+
+### Problem
+    got ill
+    Slang Reflection API
 
 ## 17.08.2026
 ### Goal
