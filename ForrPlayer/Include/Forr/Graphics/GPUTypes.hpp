@@ -510,6 +510,8 @@ namespace fe {
 
             ACCELERATION_STRUCTURE,
 
+            GENERIC,
+
             UNKNOWN
         };
 

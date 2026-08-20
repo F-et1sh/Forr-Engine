@@ -294,6 +294,11 @@ fe::ParameterID fe::OpenGLResourceManager::CreateDescriptorRing(const shader::Re
             glNamedBufferStorage(buffer_raw, buffer_size, nullptr, flags);
             descriptor.mapped = static_cast<uint8_t*>(glMapNamedBufferRange(buffer_raw, 0, buffer_size, flags));
         }
+        else if (descriptor_layout.descriptor_type == shader::DescriptorType::GENERIC) {
+            fe::logging::error("Unified -> OpenGL. Forgot to specialize a generic descriptor %s",
+                               descriptor_layout.name.c_str());
+            return {};
+        }
         else {
             glDeleteBuffers(1, &buffer_raw);
             fe::logging::error("Unified -> OpenGL. Failed to create a buffer ( SSBO or UBO ) : unsupported descriptor type %i",

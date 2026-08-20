@@ -30,7 +30,7 @@ namespace fe {
             "computeMain"
         };
 
-        enum class SpecializationErrors { // first time using 'std::expected'
+        enum class SpecializationErrors { // first time of using 'std::expected'
             NO_PARAMETERS,
             UNSUPPORTED_GRAPHICS_BACKEND,
             SPECIALIZATION_FAILED
@@ -38,7 +38,7 @@ namespace fe {
 
     public:
         // this will use 'PATH.getShadersPath().generic_string().c_str()' if you leave argument 'search_paths' as null
-        SlangParser(std::span<const char*> search_paths = {});
+        SlangParser(std::span<const char*> full_search_paths = {});
         ~SlangParser() = default;
 
         FORR_CLASS_MOVABLE(SlangParser)
@@ -85,5 +85,7 @@ namespace fe {
         Slang::ComPtr<slang::ISession>       m_Session{};
         slang::IModule*                      m_Module{};
         Slang::ComPtr<slang::IComponentType> m_ComposedProgram{};
+
+        // static cache
     };
 } // namespace fe

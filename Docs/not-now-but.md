@@ -1,6 +1,9 @@
 # Forr-Engine Not now, but :
 
-# Added 17.07.2026
+# Added 20.08.2026
+- provide user-custom generics specialization for 'fe::SlangParser'
+
+# Added 17.07.2026 - Started at 19.08.2026
 - migrate on std::expected ( SlangParser, ... )
 
 # Added 06.07.2026

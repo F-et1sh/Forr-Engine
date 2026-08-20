@@ -1,5 +1,32 @@
 ﻿# Forr-Engine Devlog
 
+## 21.08.2026
+### Goal
+    rework shader system : provide flexible API for user to manage Slang specialization
+    see a texture
+    remove resource manager and renderer from 'fe::render_graph::RenderGraphBuilder'
+    setup rendering, stabilize the system
+
+    provide same rendering for Vulkan
+    fix Vukan VMA error
+    provide debug tools with Dear ImGui
+    
+    make a video for YouTube
+
+    ( fix window resizing for GL/VK )
+    ( do not create GPU resources if they're already created --> InitializeGPUResources() )
+    ( fix double loading for resource management )
+    ( provide string_pool and use std::string_view instead of always using std::string - helps to decrease allocations )
+
+    ( provide std::expected<> in fe::ResourceManager and use it in all new modules )
+    ( provide logging macro to log current function automatically )
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 20.08.2026
 ### Goal
     rework material system, then fix 'fe::SlangParser'
