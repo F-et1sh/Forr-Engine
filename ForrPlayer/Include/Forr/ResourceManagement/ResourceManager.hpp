@@ -19,7 +19,6 @@
 
 namespace fe {
     struct ResourceManagerDesc {
-        // TODO : this can be removed
         GraphicsBackend graphics_backend{};
 
         ResourceManagerDesc()  = default;

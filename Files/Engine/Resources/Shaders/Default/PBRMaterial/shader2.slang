@@ -1,25 +1,13 @@
-﻿module M_Material;
+﻿public struct VertexInput {
+    public [[vk::location(0)]] float3 position      : POSITION;
+    public [[vk::location(1)]] float3 normal        : NORMAL;
+    public [[vk::location(2)]] float2 texture_coord : TEXCOORD;
+};
 
-public struct SomeStruct {
-    public float3 albedo;
-}
+public struct VertexStageOutput {
+    public float4 sv_position : SV_Position;
 
-public struct StandardSurfaceData {
-    SomeStruct some_struct;
-	public float  roughness;
-}
-
-public interface IMaterial {
-    StandardSurfaceData GetStandardData(float2 uv);
-}
-
-public struct PBRMaterial : IMaterial {
-    public uint2 base_color_texture_handle;
-
-    public StandardSurfaceData GetStandardData(float2 uv) {
-        StandardSurfaceData data;
-        data.some_struct.albedo = float3(1.0, 0.0, 1.0);
-        data.roughness = 0.5;
-        return data;
-    }
+    public [[vk::location(0)]] float3 position      : POSITION;
+    public [[vk::location(1)]] float3 normal        : NORMAL;
+    public [[vk::location(2)]] float2 texture_coord : TEXCOORD;
 };
