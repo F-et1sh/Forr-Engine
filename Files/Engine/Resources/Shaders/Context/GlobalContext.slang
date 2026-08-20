@@ -1,7 +1,5 @@
 public interface IMaterial {
-    associatedtype MaterialData;
-
-    public float4 GetSurfaceData(float2 uv, MaterialData data);
+    public float4 GetSurfaceData(float2 uv);
 }
 
 public interface IBuffer {

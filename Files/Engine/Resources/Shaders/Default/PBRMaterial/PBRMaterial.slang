@@ -1,15 +1,12 @@
 import "../../Context/GlobalContext.slang";
-
-public struct PBRMaterialData {
-    public uint2  base_color_texture_handle;
-    public float4 base_color_factor;
-}
+import "shader2.slang";
 
 public struct PBRMaterial : IMaterial {
-    typealias MaterialData = PBRMaterialData;    
+    public uint2  base_color_texture_handle;
+    public float4 base_color_factor;
 
-    public float4 GetSurfaceData(float2 uv, PBRMaterialData data) {
-        Sampler2D texture = reinterpret<Sampler2D>(data.base_color_texture_handle);
+    public float4 GetSurfaceData(float2 uv) {
+        Sampler2D texture = reinterpret<Sampler2D>(base_color_texture_handle);
         float4 frag_color = texture.Sample(uv);
         return frag_color;
     }
@@ -20,20 +17,6 @@ struct PushConstants {
     int material_buffer_offset;
 };
 [[vk::push_constant]] PushConstants push_constants;
-
-struct VertexInput {
-    [[vk::location(0)]] float3 position      : POSITION;
-    [[vk::location(1)]] float3 normal        : NORMAL;
-    [[vk::location(2)]] float2 texture_coord : TEXCOORD;
-};
-
-struct VertexStageOutput {
-    float4 sv_position : SV_Position;
-
-    [[vk::location(0)]] float3 position      : POSITION;
-    [[vk::location(1)]] float3 normal        : NORMAL;
-    [[vk::location(2)]] float2 texture_coord : TEXCOORD;
-};
 
 [shader("vertex")]
 VertexStageOutput vertexMain<M : IMaterial>(VertexInput input) {
@@ -46,7 +29,6 @@ VertexStageOutput vertexMain<M : IMaterial>(VertexInput input) {
 
 [shader("fragment")]
 float4 fragmentMain<M : IMaterial>(VertexStageOutput input) : SV_Target {
-    M material;
-    M::MaterialData data = g_MaterialsRawData.Load<M::MaterialData>(push_constants.material_buffer_offset);
-    return material.GetSurfaceData(input.texture_coord, data);
+    M material = g_MaterialsRawData.Load<M>(push_constants.material_buffer_offset);
+    return material.GetSurfaceData(input.texture_coord);
 }

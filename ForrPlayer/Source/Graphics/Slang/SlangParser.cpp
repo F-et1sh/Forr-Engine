@@ -140,7 +140,7 @@ fe::SlangParser::specializeGraphicsBackend(slang::IComponentType* component_type
 
     int unspecialized_parameter_count = component_type->getSpecializationParamCount();
     if (unspecialized_parameter_count == 0) {
-        return std::unexpected{SlangParser::SpecializationErrors::NO_PARAMETERS}; // there is nothing to specialize
+        return std::unexpected{ SlangParser::SpecializationErrors::NO_PARAMETERS }; // there is nothing to specialize
     }
 
     slang::ProgramLayout*                 layout = component_type->getLayout();
@@ -209,11 +209,22 @@ bool fe::SlangParser::parseDescriptorRecursive(slang::VariableLayoutReflection* 
             auto                             type_layout             = variable_layout->getTypeLayout();
             slang::VariableLayoutReflection* element_variable_layout = type_layout->getElementVarLayout();
 
+            SlangCategory category = element_variable_layout->getCategory();
+
+            const char*      name_raw = variable_layout->getName();
+            std::string_view name     = name_raw ? name_raw : "No name";
+
+            if (category == SlangCategory::GenericResource) {
+                fe::logging::error("Slang -> Unified. Failed to reflect a descriptor\nForgot to specialize a variable %s", name.data());
+                return result;
+            }
+
             auto& parameter = descriptors_layout.descriptors.emplace_back();
             SlangParser::parseDescriptorTable(element_variable_layout, parameter);
 
-            const char* name = variable_layout->getName();
-            if (name) parameter.name = name;
+            if (!name.empty()) parameter.name = name;
+
+            result = true;
 
         } break;
 
@@ -319,71 +330,112 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
     const auto&                   material_layout_resource = *resource_manager.GetResource(material.layout_ptr);
     Slang::ComPtr<slang::IModule> material_module          = this->deserializeModule(material_layout_resource.shader_file_data_ptr, resource_manager);
 
+    Slang::ComPtr<slang::IComponentType> material_component_type{ material_module };
+
     std::expected<Slang::ComPtr<slang::IComponentType>, fe::SlangParser::SpecializationErrors> expected_result =
         this->specializeGraphicsBackend(material_module.get(), resource_manager.GetContext().graphics_backend);
 
     if (expected_result.has_value()) {
-        Slang::ComPtr<slang::IComponentType> specialized_material_module = std::move(expected_result.value());
-        component_types.emplace_back(specialized_material_module);
+        material_component_type = std::move(expected_result.value());
     }
-    else if (expected_result.error() == SlangParser::SpecializationErrors::NO_PARAMETERS) {
-        component_types.emplace_back(material_module);
-    }
-    else {
+    else if (expected_result.error() != SlangParser::SpecializationErrors::NO_PARAMETERS) {
         return {};
     }
 
-    slang::ProgramLayout*  material_layout = component_types.back()->getLayout();
-    slang::TypeReflection* material_type   = material_layout->findTypeByName(material_layout_resource.reflected_layout.name.c_str());
+    component_types.emplace_back(material_component_type.get());
 
     // handle shader
 
-    Slang::ComPtr<slang::IModule> shader_module = this->deserializeModule(shader_program.shader_file_data_ptr, resource_manager);
-    //component_types.emplace_back(shader_module);
+    Slang::ComPtr<slang::IModule>        shader_module = this->deserializeModule(shader_program.shader_file_data_ptr, resource_manager);
+    Slang::ComPtr<slang::IComponentType> shader_component_type{ shader_module };
+
+    // TODO : it would be better, if you use 'shader_file_data_ptr' here, but double loading counteracting is not provided in 'fe::ResourceManager' yet
+    if (std::string_view(shader_module->getName()) !=
+        std::string_view(material_module->getName())) { // add shader's module if they are loaded from different files
+
+        std::expected<Slang::ComPtr<slang::IComponentType>, fe::SlangParser::SpecializationErrors> expected_result =
+            this->specializeGraphicsBackend(shader_module.get(), resource_manager.GetContext().graphics_backend); // TODO : pass current graphics backend through the arguments
+
+        if (expected_result.has_value()) {
+            shader_component_type = std::move(expected_result.value());
+        }
+        else if (expected_result.error() != SlangParser::SpecializationErrors::NO_PARAMETERS) {
+            return {};
+        }
+
+        component_types.emplace_back(shader_component_type.get());
+    }
+
+    slang::ProgramLayout*  material_layout = material_component_type->getLayout();
+    slang::TypeReflection* material_type   = material_layout->findTypeByName(material_layout_resource.reflected_layout.name.c_str());
 
     // find entry points
+
+    struct EntryPoint {
+        Slang::ComPtr<slang::IComponentType> entry_point{};
+        ShaderType                           shader_type{};
+
+        EntryPoint() = default;
+        EntryPoint(slang::IComponentType* entry_point, ShaderType shader_type)
+            : entry_point(entry_point), shader_type(shader_type) {}
+
+        FORR_CLASS_MOVABLE(EntryPoint)
+        FORR_CLASS_NONCOPYABLE(EntryPoint)
+    };
 
     std::vector<EntryPoint> entry_points{};
 
     for (std::uint32_t i = 0; i < std::size(SlangParser::ENTRY_POINT_NAMES); i++) {
-        auto                entry_point_name = SlangParser::ENTRY_POINT_NAMES[i];
-        slang::IEntryPoint* entry_point{};
-        shader_module->findEntryPointByName(entry_point_name.data(), &entry_point);
+        std::string_view entry_point_name = SlangParser::ENTRY_POINT_NAMES[i];
 
-        if (entry_point) {
-            ShaderType shader_type{};
+        Slang::ComPtr<slang::IEntryPoint> entry_point{};
+        SlangResult                       result = shader_module->findEntryPointByName(entry_point_name.data(), entry_point.writeRef()); // find this entry point in shader's module
 
-            if (entry_point_name == SlangParser::ENTRY_POINT_NAMES[0])
-                shader_type = ShaderType::VERTEX;
-            else if (entry_point_name == SlangParser::ENTRY_POINT_NAMES[1])
-                shader_type = ShaderType::FRAGMENT;
-            else if (entry_point_name == SlangParser::ENTRY_POINT_NAMES[2])
-                shader_type = ShaderType::COMPUTE;
+        if (SLANG_FAILED(result)) continue;
 
-            if (entry_point->getSpecializationParamCount() > 0) {
-                std::array<slang::SpecializationArg, 1> specialization_args{};
-                specialization_args[0].kind = slang::SpecializationArg::Kind::Type;
-                specialization_args[0].type = material_type;
+        ShaderType shader_type{};
 
-                slang::IComponentType*      component_type{};
-                Slang::ComPtr<slang::IBlob> diagnostics{};
+        if (entry_point_name == SlangParser::ENTRY_POINT_NAMES[0]) { // vertex
+            shader_type = ShaderType::VERTEX;
+        }
+        else if (entry_point_name == SlangParser::ENTRY_POINT_NAMES[1]) { // fragment
+            shader_type = ShaderType::FRAGMENT;
+        }
+        else if (entry_point_name == SlangParser::ENTRY_POINT_NAMES[2]) { // compute
+            shader_type = ShaderType::COMPUTE;
+        }
 
-                SlangResult result = entry_point->specialize(specialization_args.data(),
-                                                             specialization_args.size(),
-                                                             &component_type,
-                                                             diagnostics.writeRef());
-                if (SLANG_FAILED(result)) {
-                    fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to specialize an entry point\n%s",
-                                       (const char*) diagnostics->getBufferPointer());
-                    return {};
-                }
+        if (entry_point->getSpecializationParamCount() > 0) { // specialize only if needed
 
-                component_types.emplace_back(component_type);
+            std::array<slang::SpecializationArg, 1> specialization_args{};
+            specialization_args[0].kind = slang::SpecializationArg::Kind::Type;
+            specialization_args[0].type = material_type;
+
+            slang::IComponentType*      component_type_raw{};
+            Slang::ComPtr<slang::IBlob> diagnostics{};
+
+            SlangResult result = entry_point->specialize(specialization_args.data(),
+                                                         specialization_args.size(),
+                                                         &component_type_raw,
+                                                         diagnostics.writeRef());
+            if (SLANG_FAILED(result)) {
+                fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to specialize an entry point. Continuing collecting entry points.\n%s",
+                                   (const char*) diagnostics->getBufferPointer());
+                continue;
             }
 
-            entry_points.emplace_back(entry_point, shader_type);
+            entry_points.emplace_back(EntryPoint{ component_type_raw, shader_type });
+        }
+        else {
+            entry_points.emplace_back(EntryPoint{ entry_point, shader_type });
         }
     }
+
+    for (EntryPoint& entry_point : entry_points) {
+        component_types.emplace_back(entry_point.entry_point);
+    }
+
+    // create composite
 
     Slang::ComPtr<slang::IBlob> composition_diagnostics{};
     SlangResult                 composition_result = m_Session->createCompositeComponentType(component_types.data(),
@@ -396,8 +448,11 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
         return {};
     }
 
-    for (std::size_t i = 0; i < entry_points.size(); i++) {
-        const auto&                 entry_point = entry_points[i];
+    // extract source codes
+
+    for (size_t i = 0; i < entry_points.size(); i++) {
+        const EntryPoint& entry_point = entry_points[i];
+
         Slang::ComPtr<slang::IBlob> spirv_code{};
 
         Slang::ComPtr<slang::IBlob> entry_point_code_diagnostics{};
@@ -412,130 +467,13 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
         const size_t   byte_size = spirv_code->getBufferSize();
         const uint8_t* raw_data  = reinterpret_cast<const uint8_t*>(spirv_code->getBufferPointer());
 
-        ShaderType shader_type     = entry_point.shader_type;
-        auto&      source_code_dst = source_codes[shader_type];
+        auto& source_code_dst = source_codes[entry_point.shader_type];
 
         source_code_dst.resize(byte_size, 0);
         std::memcpy(source_code_dst.data(), raw_data, byte_size);
     }
 
     return source_codes;
-
-    //std::vector<Slang::ComPtr<slang::IModule>> modules{};
-    //std::vector<slang::IComponentType*>        component_types{};
-
-    //// handle material
-
-    //const auto&                   material_layout = *resource_manager.GetResource(material.layout_ptr);
-    //Slang::ComPtr<slang::IModule> material_module = this->deserializeModule(material_layout.shader_file_data_ptr, resource_manager);
-    //component_types.emplace_back(material_module);
-    //
-    //modules.emplace_back(std::move(material_module));
-
-    //// handle shader
-
-    //if (material_layout.shader_file_data_ptr != shader_program.shader_file_data_ptr) {
-    //    Slang::ComPtr<slang::IModule> shader_module = this->deserializeModule(shader_program.shader_file_data_ptr, resource_manager);
-    //    //component_types.emplace_back(shader_module);
-
-    //    modules.emplace_back(std::move(shader_module));
-    //}
-
-    //// composite
-
-    //Slang::ComPtr<slang::IBlob> composition_diagnostics{};
-    //SlangResult                 composition_result = m_Session->createCompositeComponentType(component_types.data(),
-    //                                                                                         component_types.size(),
-    //                                                                                         m_ComposedProgram.writeRef(),
-    //                                                                                         composition_diagnostics.writeRef());
-    //if (SLANG_FAILED(composition_result)) {
-    //    fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to create a composed program\n%s",
-    //                       (const char*) composition_diagnostics->getBufferPointer());
-    //    return {};
-    //}
-
-    //specializeGraphicsBackend(GraphicsBackend::OpenGL);
-
-    //slang::ProgramLayout*  layout        = m_ComposedProgram->getLayout();
-    //slang::TypeReflection* material_type = layout->findTypeByName(material_layout.reflected_layout.name.c_str());
-
-    //if (!material_type) {
-    //    fe::logging::error("Serialized Slang ( Unified ) -> Slang. Type is not found for material %s",
-    //                       material_layout.reflected_layout.name.c_str());
-    //    return {};
-    //}
-
-    //// specialize
-
-    //int count = m_ComposedProgram->getSpecializationParamCount();
-
-    //std::array<slang::SpecializationArg, 1> specialization_args{};
-    //specialization_args[0].kind = slang::SpecializationArg::Kind::Type;
-    //specialization_args[0].type = material_type;
-
-    //Slang::ComPtr<slang::IComponentType> specialized_program{};
-    //Slang::ComPtr<slang::IBlob>          specialization_diagnostics{};
-    //SlangResult                          specialization_result = m_ComposedProgram->specialize(specialization_args.data(),
-    //                                                                                           specialization_args.size(),
-    //                                                                                           specialized_program.writeRef(),
-    //                                                                                           specialization_diagnostics.writeRef());
-    //if (SLANG_FAILED(specialization_result)) {
-    //    fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to specialize an entry point\n%s",
-    //                       (const char*) specialization_diagnostics->getBufferPointer());
-    //    return {};
-    //}
-
-    //m_ComposedProgram.swap(specialized_program);
-    //layout = m_ComposedProgram->getLayout();
-
-    //// find try points
-
-    //std::vector<EntryPoint> entry_points{};
-
-    //for (std::uint32_t i = 0; i < std::size(SlangParser::ENTRY_POINT_NAMES); i++) {
-    //    auto                         entry_point_name = SlangParser::ENTRY_POINT_NAMES[i];
-    //    slang::EntryPointReflection* entry_point      = layout->findEntryPointByName(entry_point_name.data());
-
-    //    if (entry_point) {
-    //        ShaderType shader_type{};
-
-    //        if (entry_point_name == SlangParser::ENTRY_POINT_NAMES[0])
-    //            shader_type = ShaderType::VERTEX;
-    //        else if (entry_point_name == SlangParser::ENTRY_POINT_NAMES[1])
-    //            shader_type = ShaderType::FRAGMENT;
-    //        else if (entry_point_name == SlangParser::ENTRY_POINT_NAMES[2])
-    //            shader_type = ShaderType::COMPUTE;
-
-    //        entry_points.emplace_back(entry_point, shader_type);
-    //    }
-    //}
-
-    //// extract source code
-
-    //for (std::size_t i = 0; i < entry_points.size(); i++) {
-    //    const auto&                 entry_point = entry_points[i];
-    //    Slang::ComPtr<slang::IBlob> spirv_code{};
-
-    //    Slang::ComPtr<slang::IBlob> entry_point_code_diagnostics{};
-    //    SlangResult                 result = m_ComposedProgram->getEntryPointCode(i, 0, spirv_code.writeRef(), entry_point_code_diagnostics.writeRef());
-    //    if (SLANG_FAILED(result)) {
-    //        fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to get an entry point code. Continuing compilation\nEntry point index : %i\n%s",
-    //                           i,
-    //                           (const char*) entry_point_code_diagnostics->getBufferPointer());
-    //        continue;
-    //    }
-
-    //    const size_t   byte_size = spirv_code->getBufferSize();
-    //    const uint8_t* raw_data  = reinterpret_cast<const uint8_t*>(spirv_code->getBufferPointer());
-
-    //    ShaderType shader_type     = entry_point.shader_type;
-    //    auto&      source_code_dst = source_codes[shader_type];
-
-    //    source_code_dst.resize(byte_size, 0);
-    //    std::memcpy(source_code_dst.data(), raw_data, byte_size);
-    //}
-
-    //return source_codes;
 }
 
 void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* variable_layout,
@@ -652,6 +590,7 @@ void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* vari
             dst_descriptor.descriptor_type = ShaderDescriptor::STORAGE_BUFFER;
             dst_descriptor.size            = type_layout->getSize();
             dst_descriptor.array_size      = type_layout->getElementCount();
+            SlangParser::parseMemberRecursive(type_layout, static_cast<shader::ReflectedDataNode*>(&dst_descriptor));
             break;
         }
 

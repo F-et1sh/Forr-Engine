@@ -22,18 +22,6 @@
 #include "ResourceManagement/ResourceManager.hpp"
 
 namespace fe {
-    struct EntryPoint {
-        Slang::ComPtr<slang::IEntryPoint> entry_point{};
-        shader::StageBits                 shader_type{};
-
-        EntryPoint() = default;
-        EntryPoint(slang::IEntryPoint* entry_point, shader::StageBits shader_type)
-            : entry_point(entry_point), shader_type(shader_type) {}
-
-        FORR_CLASS_MOVABLE(EntryPoint)
-        FORR_CLASS_NONCOPYABLE(EntryPoint)
-    };
-
     class SlangParser {
     private:
         static constexpr std::array<std::string_view, 3> ENTRY_POINT_NAMES{
