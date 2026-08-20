@@ -24,7 +24,7 @@ namespace fe {
     using SlangCategory = slang::ParameterCategory;
 } // namespace fe
 
-fe::SlangParser::SlangParser(std::span<const char*> search_paths) {
+fe::SlangParser::SlangParser(std::span<const char*> full_search_paths) {
     static Slang::ComPtr<slang::IGlobalSession> global_session{};
     if (!global_session) {
         if (SLANG_FAILED(slang::createGlobalSession(global_session.writeRef()))) {
@@ -46,15 +46,15 @@ fe::SlangParser::SlangParser(std::span<const char*> search_paths) {
     session_desc.targetCount              = 1;
     session_desc.compilerOptionEntryCount = 0;
 
-    if (search_paths.empty()) {
+    if (full_search_paths.empty()) {
         std::array<const char*, 1> paths{ PATH.getShadersPath().generic_string().c_str() };
 
         session_desc.searchPathCount = paths.size();
         session_desc.searchPaths     = paths.data();
     }
     else {
-        session_desc.searchPathCount = search_paths.size();
-        session_desc.searchPaths     = search_paths.data();
+        session_desc.searchPathCount = full_search_paths.size();
+        session_desc.searchPaths     = full_search_paths.data();
     }
 
     if (SLANG_FAILED(global_session->createSession(session_desc, m_Session.writeRef()))) {
@@ -211,18 +211,20 @@ bool fe::SlangParser::parseDescriptorRecursive(slang::VariableLayoutReflection* 
 
             SlangCategory category = element_variable_layout->getCategory();
 
-            const char*      name_raw = variable_layout->getName();
-            std::string_view name     = name_raw ? name_raw : "No name";
-
             if (category == SlangCategory::GenericResource) {
-                fe::logging::error("Slang -> Unified. Failed to reflect a descriptor\nForgot to specialize a variable %s", name.data());
+                auto& parameter = descriptors_layout.descriptors.emplace_back();
+
+                const char*      name_raw = variable_layout->getName();
+                std::string_view name     = name_raw ? name_raw : "No name";
+
+                parameter.name            = name;
+                parameter.descriptor_type = ShaderDescriptor::GENERIC;
+            }
+            else {
+                fe::logging::error("Slang -> Unified. Unsupported slang::ParameterCategory %i while reflecting a slang::ParameterCategory::SubElementRegisterSpace",
+                                   category);
                 return result;
             }
-
-            auto& parameter = descriptors_layout.descriptors.emplace_back();
-            SlangParser::parseDescriptorTable(element_variable_layout, parameter);
-
-            if (!name.empty()) parameter.name = name;
 
             result = true;
 
@@ -290,6 +292,8 @@ bool fe::SlangParser::ReflectMaterials(std::unordered_map<fe::hashed_string, sha
 
         // there can be only 'Struct'
         if (kind != SlangDeclKind::Struct) continue;
+
+        // TODO : check that material is devired from 'IMaterial'
 
         shader::ReflectedStructureLayout material_layout{};
 
