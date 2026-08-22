@@ -65,7 +65,7 @@
     </Link>
     <PostBuildEvent>
       <Command>call "$(ProjectDir)..\Scripts\collect_licenses.bat" $(TargetDir) "$(ProjectDir)..\"
-call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_debug.bat" $(TargetDir) "$(ProjectDir)..\"</Command>
+call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_debug.bat" $(TargetDir) $(SolutionDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -92,7 +92,7 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_debug.bat" $(Targe
     </Link>
     <PostBuildEvent>
       <Command>call "$(ProjectDir)..\Scripts\collect_licenses.bat" $(TargetDir) "$(ProjectDir)..\"
-call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(TargetDir) "$(ProjectDir)..\"</Command>
+call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(TargetDir) $(SolutionDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
