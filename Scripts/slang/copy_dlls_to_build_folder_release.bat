@@ -14,7 +14,7 @@
 
 set OUTPUT_DIR=%~1
 set SOLUTION_DIR=%~2
-set SLANG_BIN=%SOLUTION_DIR%\\External\\slang\\build\\Release\\bin
+set SLANG_BIN=%~3
 
 copy /y "%SLANG_BIN%\\slang.dll" "%OUTPUT_DIR%" >nul
 copy /y "%SLANG_BIN%\\slang-compiler.dll" "%OUTPUT_DIR%" >nul
