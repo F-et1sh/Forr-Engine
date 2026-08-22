@@ -209,21 +209,34 @@ bool fe::SlangParser::parseDescriptorRecursive(slang::VariableLayoutReflection* 
             auto                             type_layout             = variable_layout->getTypeLayout();
             slang::VariableLayoutReflection* element_variable_layout = type_layout->getElementVarLayout();
 
-            SlangCategory category = element_variable_layout->getCategory();
+            SlangCategory element_variable_category = element_variable_layout->getCategory();
 
-            if (category == SlangCategory::GenericResource) {
-                auto& parameter = descriptors_layout.descriptors.emplace_back();
+            const char*      name_raw = variable_layout->getName();
+            std::string_view name     = name_raw ? name_raw : "No name";
 
-                const char*      name_raw = variable_layout->getName();
-                std::string_view name     = name_raw ? name_raw : "No name";
+            switch (element_variable_category) {
+                case SlangCategory::GenericResource: {
+                    auto& parameter = descriptors_layout.descriptors.emplace_back();
 
-                parameter.name            = name;
-                parameter.descriptor_type = ShaderDescriptor::GENERIC;
-            }
-            else {
-                fe::logging::error("Slang -> Unified. Unsupported slang::ParameterCategory %i while reflecting a slang::ParameterCategory::SubElementRegisterSpace",
-                                   category);
-                return result;
+                    parameter.name            = name;
+                    parameter.descriptor_type = ShaderDescriptor::GENERIC;
+                }
+                case SlangCategory::DescriptorTableSlot: {
+                    auto& parameter = descriptors_layout.descriptors.emplace_back();
+                    SlangParser::parseDescriptorTable(element_variable_layout, parameter);
+                    parameter.name = name;
+                } break;
+
+                case SlangCategory::PushConstantBuffer: {
+                    SlangParser::parsePushConstant(element_variable_layout, descriptors_layout.push_constants);
+                    descriptors_layout.push_constants.name = name;
+                } break;
+
+                default: {
+                    fe::logging::error("Slang -> Unified. Unsupported slang::ParameterCategory %i while reflecting a slang::ParameterCategory::SubElementRegisterSpace",
+                                       category);
+                    return result;
+                }
             }
 
             result = true;
@@ -339,6 +352,8 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
     std::expected<Slang::ComPtr<slang::IComponentType>, fe::SlangParser::SpecializationErrors> expected_result =
         this->specializeGraphicsBackend(material_module.get(), resource_manager.GetContext().graphics_backend);
 
+    auto count = material_module->getSpecializationParamCount();
+
     if (expected_result.has_value()) {
         material_component_type = std::move(expected_result.value());
     }
@@ -352,6 +367,8 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
 
     Slang::ComPtr<slang::IModule>        shader_module = this->deserializeModule(shader_program.shader_file_data_ptr, resource_manager);
     Slang::ComPtr<slang::IComponentType> shader_component_type{ shader_module };
+
+    auto count2 = shader_module->getSpecializationParamCount();
 
     // TODO : it would be better, if you use 'shader_file_data_ptr' here, but double loading counteracting is not provided in 'fe::ResourceManager' yet
     if (std::string_view(shader_module->getName()) !=

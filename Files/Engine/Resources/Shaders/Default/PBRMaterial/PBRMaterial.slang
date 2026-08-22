@@ -23,7 +23,11 @@ VertexStageOutput vertexMain<M : IMaterial>(VertexInput input) {
     VertexStageOutput output;
     float4x4 model_matrix = g_ModelMatrices[push_constants.instance_index];
     output.sv_position    = mul(model_matrix, float4(input.position, 1.0f));
-    output.texture_coord  = input.texture_coord;
+
+    M material = g_MaterialsRawData.Load<M>(0);
+
+    output.texture_coord  = input.texture_coord * material.GetSurfaceData(float2(0, 0)).xy;
+
     return output;
 }
 

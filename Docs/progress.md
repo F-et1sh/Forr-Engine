@@ -1,6 +1,6 @@
 ﻿# Forr-Engine Devlog
 
-## 21.08.2026
+## 22.08.2026
 ### Goal
     rework shader system : provide flexible API for user to manage Slang specialization
     see a texture
@@ -22,7 +22,7 @@
     ( provide logging macro to log current function automatically )
 
 ### Done
-    -
+    $(SolutionDir) --> $(ProjectDir)..\
 
 ### Problem
     -
