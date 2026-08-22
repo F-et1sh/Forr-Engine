@@ -18,7 +18,7 @@ namespace fe {
     public:
         FORR_CLASS_NONCOPYABLE(PathManager)
 
-        void init(const char* argv0, bool is_editor);
+        void init(std::string_view executable_path, bool is_editor);
 
         static PathManager& Instance() {
             static PathManager path_manager;
