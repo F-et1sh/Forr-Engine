@@ -60,7 +60,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(SolutionDir)ThirdParty\glfw\win64_debug;$(SolutionDir)ThirdParty\slang\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(ProjectDir)..\ThirdParty\glfw\win64_debug;$(ProjectDir)..\ThirdParty\slang\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;volk.lib;slang.lib;slang-glsl-module.lib;slang-compiler.lib;slang-glslang.lib;shaderc_combinedd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -87,7 +87,7 @@ call "$(SolutionDir)Scripts\slang\copy_dlls_to_build_folder_debug.bat" $(TargetD
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(SolutionDir)ThirdParty\glfw\win64_release;$(SolutionDir)ThirdParty\slang\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(ProjectDir)..\ThirdParty\glfw\win64_release;$(ProjectDir)..\ThirdParty\slang\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;volk.lib;slang.lib;slang-glsl-module.lib;slang-compiler.lib;slang-glslang.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
