@@ -3,5 +3,5 @@
 @echo off
 
 pushd "%~dp0\..\"
-git submodule update --init --recursive
+git submodule update --init --recursive --remote
 popd

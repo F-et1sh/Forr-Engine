@@ -23,6 +23,7 @@
 
 ### Done
     $(SolutionDir) --> $(ProjectDir)..\
+    update_submodule.bat updated
 
 ### Problem
     -
