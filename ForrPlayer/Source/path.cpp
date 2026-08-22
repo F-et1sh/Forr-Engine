@@ -13,13 +13,13 @@
 #include "pch.hpp"
 #include "Core/path.hpp"
 
-void fe::PathManager::init(const char* argv0, bool is_editor) {
-    if (argv0 == nullptr) {
-        fe::logging::error("Failed to initialize PathManager. argv0 was nullptr");
+void fe::PathManager::init(std::string_view executable_path, bool is_editor) {
+    if (executable_path.empty() || executable_path.data() == nullptr) {
+        fe::logging::error("Failed to initialize PathManager. No arguments");
     }
 
     try {
-        m_ExecutablePath = std::filesystem::canonical(argv0).parent_path();
+        m_ExecutablePath = std::filesystem::canonical(executable_path).parent_path();
 
         std::filesystem::path solution_path =
             m_ExecutablePath.parent_path(). // exit from the platform folder

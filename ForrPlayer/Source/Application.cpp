@@ -20,7 +20,10 @@ namespace fe {
 } // namespace fe
 
 fe::Application::Application(const ApplicationDesc& desc) {
-    PATH.init(desc.args[0], true);
+    if (!desc.args.empty())
+        PATH.init(desc.args[0], true);
+    else
+        PATH.init("", true);
 
     this->InitializePlatformSystem(desc);
     this->InitializeResourceManager(desc);

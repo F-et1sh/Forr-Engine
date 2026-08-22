@@ -21,7 +21,7 @@
 
 #include "Graphics/DefaultRenderPasses.hpp"
 
-#include "ECS/Components.hpp" // temp
+#include "ECS/Components.hpp"           // temp
 #include "ECS/Systems/RenderSystem.hpp" // temp
 
 namespace fe {
@@ -31,7 +31,7 @@ namespace fe {
         GraphicsBackend graphics_backend{};
         PlatformBackend platform_backend{};
 
-        std::vector<const char*> args;
+        std::vector<std::string_view> args{};
 
         std::string application_name{};
         WindowDesc  primary_window_desc{};

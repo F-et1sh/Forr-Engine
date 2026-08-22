@@ -24,7 +24,8 @@
 ### Done
     $(SolutionDir) --> $(ProjectDir)..\
     update_submodule.bat updated
-
+    'fe::PathManager' updated
+    
 ### Problem
     -
 
