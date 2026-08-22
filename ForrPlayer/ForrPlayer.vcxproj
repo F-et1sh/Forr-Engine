@@ -64,8 +64,8 @@
       <AdditionalDependencies>glfw3.lib;volk.lib;slang.lib;slang-glsl-module.lib;slang-compiler.lib;slang-glslang.lib;shaderc_combinedd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>call "$(SolutionDir)Scripts\collect_licenses.bat" $(TargetDir) $(SolutionDir)
-call "$(SolutionDir)Scripts\slang\copy_dlls_to_build_folder_debug.bat" $(TargetDir) $(SolutionDir)</Command>
+      <Command>call "$(ProjectDir)..\Scripts\collect_licenses.bat" $(TargetDir) "$(ProjectDir)..\"
+call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_debug.bat" $(TargetDir) "$(ProjectDir)..\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -91,9 +91,8 @@ call "$(SolutionDir)Scripts\slang\copy_dlls_to_build_folder_debug.bat" $(TargetD
       <AdditionalDependencies>glfw3.lib;volk.lib;slang.lib;slang-glsl-module.lib;slang-compiler.lib;slang-glslang.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>call "$(SolutionDir)Scripts\collect_licenses.bat" $(TargetDir) $(SolutionDir)
-call "$(SolutionDir)Scripts\slang\copy_dlls_to_build_folder_release.bat" $(TargetDir) $(SolutionDir)
-</Command>
+      <Command>call "$(ProjectDir)..\Scripts\collect_licenses.bat" $(TargetDir) "$(ProjectDir)..\"
+call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(TargetDir) "$(ProjectDir)..\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
