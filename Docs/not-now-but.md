@@ -1,32 +1,71 @@
 # Forr-Engine Not now, but :
 
+# Added 23.08.2026
+- rework shader system : provide flexible API for user to manage Slang specialization
+- remove resource manager and renderer from 'fe::render_graph::RenderGraphBuilder'
+- setup rendering, stabilize the system
+- provide same rendering for Vulkan
+- fix Vukan VMA error
+- provide debug tools with Dear ImGui
+- fix window resizing for GL/VK
+- do not create GPU resources if they're already created --> InitializeGPUResources()
+- fix double loading for resource management
+- provide string_pool and use std::string_view instead of always using std::string - helps to decrease allocations
+- provide std::expected<> in fe::ResourceManager and use it in all new modules
+- provide logging macro to log current function automatically
+
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
+
 # Added 20.08.2026
 - provide user-custom generics specialization for 'fe::SlangParser'
 
-# Added 17.07.2026 - Started at 19.08.2026
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
+
+# Added 17.07.2026
+### Started at 19.08.2026
 - migrate on std::expected ( SlangParser, ... )
+
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
 
 # Added 06.07.2026
 - add OpenGL Legacy backend
 
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
+
 # Added 12.05.2026
+### DONE 23.08.2026 ( it was done much earlier, but I'm changing its status only this day )
 - use AoS instead of SoA
 
-# Added 30.04.2026 - DONE 06.07.2026 ( it was done much earlier, but I'm changing its status only this day )
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
+
+# Added 30.04.2026
+### DONE 06.07.2026 ( it was done much earlier, but I'm changing its status only this day )
 - provide sorting and passing meshes aka draw commands, not hierarchy-based system like now.
     "Tea in a cup does NOT belong to that cup - it is a separate object"
+
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
 
 # Added 14.04.2026
 - provide capacity increasing for fe::typed_pointer_storage and use it in the engine
 
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
+
 # Added 09.04.2026
+### DONE 23.08.2026 ( it was done much earlier, but I'm changing its status only this day ) ( I'm not using shaderc anymore )
 - use submodules for shaderc, not from VulkanSDK
+
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
 
 # Added 04.04.2026
 - provide Assimp
 
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
+
 # Added 02.04.2026
+### DONE 23.08.2026 ( it was done much earlier, but I'm changing its status only this day )
 - create material instance
+
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
 
 # Added 23.03.2026
 - provide event system for platform
@@ -39,3 +78,5 @@
 - add textures
 - add Dear ImGui
 - create own extension to cache model parts and unload the model from RAM to disc and load it again when needs
+
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
