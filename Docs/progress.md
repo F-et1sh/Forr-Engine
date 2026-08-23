@@ -1,5 +1,16 @@
 ﻿# Forr-Engine Devlog
 
+## 23.08.2026
+### Goal
+    see a texture
+    make a video for YouTube
+
+### Done
+    Cleared 'progress.md'. 'not-now-but.md' got better
+    
+### Problem
+    -
+
 ## 22.08.2026
 ### Goal
     rework shader system : provide flexible API for user to manage Slang specialization
