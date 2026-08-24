@@ -3,11 +3,13 @@
 ## 24.08.2026
 ### Goal
     see a texture
+    separate material and its specialized version as two different resources in resource manager
     make a video for YouTube
 
 ### Done
     compilation speed up | trying to solve 'fe::ApplicationDesc' problem
     texture done
+    model rendered correctly
     
 ### Problem
     unstable ABI

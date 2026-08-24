@@ -180,8 +180,10 @@ namespace fe::resource {
         // then, in GPU resource manager, while creating analogue of this material,
         // it takes every sampler from 'samplers', creates its GPU analogue and assigns
         // it to the 'buffer' of this material, according to 'offset' of the sampler
+        // both of this 'std::span's are stored in 'fe::ResourceStorage' like the structure they're in
         std::span<Sampler> samplers{};
         // this buffer contains all raw data you pass to the shader
+        // both of this 'std::span's are stored in 'fe::ResourceStorage' like the structure they're in
         std::span<std::byte> buffer{};
 
         PipelineFlags pipeline_flags{};

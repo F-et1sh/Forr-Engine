@@ -21,8 +21,13 @@ struct PushConstants {
 [shader("vertex")]
 VertexStageOutput vertexMain(VertexInput input) {
     VertexStageOutput output;
+
     float4x4 model_matrix = g_ModelMatrices[push_constants.instance_index];
-    output.sv_position    = mul(model_matrix, float4(input.position, 1.0f));
+    
+    float4 world_position = mul(float4(input.position, 1.0f), model_matrix);
+    float4 view_position  = mul(world_position, g_GlobalData.view);
+    output.sv_position    = mul(view_position, g_GlobalData.projection);
+    
     output.texture_coord  = input.texture_coord;
     return output;
 }
