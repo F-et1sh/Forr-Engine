@@ -12,11 +12,11 @@ public struct PBRMaterial : IMaterial {
     }
 };
 
-struct PushConstants {
-    int instance_index;
-    int material_buffer_offset;
+public struct PushConstants {
+    public int instance_index;
+    public int material_buffer_offset;
 };
-[[vk::push_constant]] PushConstants push_constants;
+public [[vk::push_constant]] PushConstants push_constants;
 
 public struct SpotLight {
     public float3 position;
@@ -43,7 +43,7 @@ VertexStageOutput vertexMain(VertexInput input) {
 
 [shader("fragment")]
 float4 fragmentMain<M : IMaterial>(VertexStageOutput input) : SV_Target { // temp lighting
-     M material = g_MaterialsRawData.Load<M>(push_constants.material_buffer_offset);
+    M material = g_MaterialsRawData.Load<M>(push_constants.material_buffer_offset);
     float4 base_color = material.GetSurfaceData(input.texture_coord);
 
     SpotLight lights[2];

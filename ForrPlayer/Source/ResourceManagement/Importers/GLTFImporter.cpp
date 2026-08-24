@@ -512,6 +512,13 @@ fe::pointer<Texture> fe::GLTFImporter::createTexture(const tinygltf::Model& mode
     }
     // clang-format on
 
+    if (image.component == -1 ||
+        image.width == -1 ||
+        image.height == -1) {
+        fe::logging::error("tinygltf -> Unified. Failed to create a texture\nURI : %s", image.uri.c_str());
+        return {}; // TODO : think about fallbacks
+    }
+
     this_texture.components = static_cast<uint8_t>(image.component);
     this_texture.width      = image.width;
     this_texture.height     = image.height;
@@ -524,7 +531,7 @@ fe::pointer<Texture> fe::GLTFImporter::createTexture(const tinygltf::Model& mode
         std::copy(image.image.begin(), image.image.end(), this_texture.bytes.get());
     }
     else {
-        fe::logging::warning("tinygltf -> Unified. Failed to create a texture\nURI : %s", image.uri.c_str());
+        fe::logging::error("tinygltf -> Unified. Failed to create a texture\nURI : %s", image.uri.c_str());
         return {}; // TODO : think about fallbacks
     }
 
