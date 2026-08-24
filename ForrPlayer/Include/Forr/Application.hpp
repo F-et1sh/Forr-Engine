@@ -31,7 +31,7 @@ namespace fe {
         GraphicsBackend graphics_backend{};
         PlatformBackend platform_backend{};
 
-        std::vector<std::string_view> args{};
+        std::vector<const char*> args{};
 
         std::string application_name{};
         WindowDesc  primary_window_desc{};

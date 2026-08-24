@@ -18,9 +18,8 @@ int main(int argc, char* argv[]) {
 
     fe::GraphicsBackend selected_backend = fe::GraphicsBackend::OpenGL;
 
-    for (int i = 0; i < argc; i++) {
-        std::string_view arg = argv[i];
-        desc.args.emplace_back(arg.data());
+    for (const char* arg : std::span(argv, argc)) {
+        desc.args.emplace_back(arg);
 
         if (arg == "-OpenGL" || arg == "-opengl") {
             selected_backend = fe::GraphicsBackend::OpenGL;

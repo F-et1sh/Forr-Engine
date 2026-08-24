@@ -21,7 +21,7 @@ namespace fe {
 
 fe::Application::Application(const ApplicationDesc& desc) {
     if (!desc.args.empty())
-        PATH.init(desc.args[0], true);
+        PATH.init(std::string_view{ desc.args[0] }, true);
     else
         PATH.init("", true);
 
