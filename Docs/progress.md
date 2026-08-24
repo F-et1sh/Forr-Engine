@@ -10,9 +10,10 @@
     compilation speed up | trying to solve 'fe::ApplicationDesc' problem
     texture done
     model rendered correctly
+    model is spinning
     
 ### Problem
-    unstable ABI
+    unstable ABI ( seems just forgot to recompile the project )
 
 ## 23.08.2026
 ### Goal
