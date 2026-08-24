@@ -70,6 +70,8 @@ namespace fe {
             GlobalData() = default;
         };
         std::vector<std::byte> global_data_as_bytes{};
+
+        float time{};
     };
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) { // setup can be called twice
@@ -170,6 +172,13 @@ namespace fe {
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
+            glm::mat4 model = glm::mat4(1.0f);
+            model           = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+            model           = glm::rotate(model, pass_data.time, glm::vec3(0, 1, 0));
+            model           = glm::scale(model, glm::vec3(1.0f));
+
+            pass_data.data[0] = model;
+
             context.BindBuffer(pass_data.model_matrices_parameter_id);
             context.WriteBuffer(pass_data.model_matrices_parameter_id, pass_data.data);
 
@@ -183,6 +192,8 @@ namespace fe {
             context.BindMaterial(pass_data.default_material_ptr);
 
             context.BindModel(pass_data.test_model_ptr); // temp
+
+            pass_data.time += 0.01f;
         }
 
         ForwardPass()  = default;
