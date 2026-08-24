@@ -25,5 +25,11 @@ public struct VulkanBuffer : IBuffer {
 
 public type_param TBuffer : IBuffer;
 
+public struct GlobalData {
+    public float4x4 view;
+    public float4x4 projection;
+}
+
 public [[vk::binding(0, 0)]] ParameterBlock<TBuffer>    g_MaterialsRawData;
 public [[vk::binding(1, 0)]] StructuredBuffer<float4x4> g_ModelMatrices;
+public [[vk::binding(1, 1)]] ConstantBuffer<GlobalData> g_GlobalData;

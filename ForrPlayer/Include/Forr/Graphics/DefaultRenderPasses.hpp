@@ -51,14 +51,25 @@ namespace fe {
         ~ShadowPass() = default;
     };
 
-    struct ForwardPassData {
+    struct ForwardPassData { // everything is temp
         fe::pointer<resource::ShaderProgram> default_shader_program_ptr{};
         fe::pointer<resource::Material>      default_material_ptr{};
         fe::pointer<resource::Model>         test_model_ptr{};
-        ParameterID                          model_matrices_parameter_id{};
-        std::vector<glm::mat4>               data{};
-        ParameterID                          materials_parameter_id{};
-        std::vector<std::byte>               materials_data{};
+
+        ParameterID            model_matrices_parameter_id{};
+        std::vector<glm::mat4> data{};
+
+        ParameterID            materials_parameter_id{};
+        std::vector<std::byte> materials_data{};
+
+        ParameterID global_data_parameter_id{};
+        struct alignas(16) GlobalData {
+            glm::mat4 view{};
+            glm::mat4 projection{};
+
+            GlobalData() = default;
+        };
+        std::vector<std::byte> global_data_as_bytes{};
     };
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) { // setup can be called twice
@@ -106,6 +117,23 @@ namespace fe {
                         pass_data.materials_parameter_id = builder.renderer.CreateParameter(descriptor);
                     }
                 }
+
+                if (pass_data.global_data_parameter_id.storage_index == ~0) {
+                    const auto& shader_program = *builder.resource_manager.GetResource(pass_data.default_shader_program_ptr);
+                    const auto& descriptors    = *builder.resource_manager.GetResource(shader_program.descriptors_layout_ptr.value());
+
+                    auto it = std::ranges::find_if(descriptors.reflected_layout.descriptors, [](const shader::ReflectedDescriptor& descriptor) -> bool {
+                        return descriptor.name == fe::hashed_string{ "g_GlobalData" };
+                    });
+
+                    if (it == descriptors.reflected_layout.descriptors.end()) {
+                        fe::logging::error("Failed to find g_GlobalData");
+                    }
+                    else {
+                        const auto& descriptor             = *it;
+                        pass_data.global_data_parameter_id = builder.renderer.CreateParameter(descriptor);
+                    }
+                }
             }
             pass_data.default_material_ptr = builder.resource_manager.GetContext().default_pbr_material_ptr;
             if (!pass_data.test_model_ptr) {
@@ -126,6 +154,19 @@ namespace fe {
 
             pass_data.materials_data.resize(sizeof(PBRMaterialData));
             memcpy(&pass_data.materials_data[0], &data, sizeof(PBRMaterialData));
+
+            ForwardPassData::GlobalData global_data{};
+            global_data.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 7.0f),
+                                           glm::vec3(0.0f, 0.0f, 0.0f),
+                                           glm::vec3(0.0f, 1.0f, 0.0f));
+
+            global_data.projection = glm::perspective(glm::radians(45.0f),
+                                                      1920.0f / 1080.0f,
+                                                      0.1f,
+                                                      1000.0f);
+
+            pass_data.global_data_as_bytes.resize(sizeof(ForwardPassData::GlobalData));
+            memcpy(&pass_data.global_data_as_bytes[0], &global_data, sizeof(ForwardPassData::GlobalData));
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
@@ -134,6 +175,9 @@ namespace fe {
 
             context.BindBuffer(pass_data.materials_parameter_id);
             context.WriteBuffer(pass_data.materials_parameter_id, pass_data.materials_data);
+
+            context.BindBuffer(pass_data.global_data_parameter_id);
+            context.WriteBuffer(pass_data.global_data_parameter_id, pass_data.global_data_as_bytes);
 
             context.BindShaderProgram(pass_data.default_shader_program_ptr);
             context.BindMaterial(pass_data.default_material_ptr);
