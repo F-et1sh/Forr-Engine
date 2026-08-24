@@ -91,19 +91,20 @@ bool fe::SlangParser::ExtractSerializedData(std::vector<uint8_t>& dst_vector) {
     return true;
 }
 
-bool fe::SlangParser::ComposeProgram(GraphicsBackend graphics_backend) {
+bool fe::SlangParser::ComposeProgram(GraphicsBackend graphics_backend, bool do_all) {
     // there is no need to search for entry points here
     std::vector<slang::IComponentType*> component_types{};
-    component_types.emplace_back(m_Module);
+    if (do_all) component_types.emplace_back(m_Module);
 
     uint32_t dependency_count = m_Module->getDependencyFileCount();
     component_types.reserve(dependency_count);
-    for (uint32_t i = 1; i < dependency_count; i++) { // start from '1', because 'm_Module' is already added
+    for (uint32_t i = static_cast<uint32_t>(!do_all); i < dependency_count; i++) { // start from '1', because 'm_Module' is already added
         const char* dependency_file = m_Module->getDependencyFilePath(i);
 
         Slang::ComPtr<slang::IBlob> load_diagnostics{};
         slang::IModule*             imported_module = m_Session->loadModule(dependency_file, load_diagnostics.writeRef());
         if (imported_module) {
+            int parameters_count = imported_module->getSpecializationParamCount();
             component_types.emplace_back(imported_module);
         }
         else {
@@ -347,50 +348,33 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
     const auto&                   material_layout_resource = *resource_manager.GetResource(material.layout_ptr);
     Slang::ComPtr<slang::IModule> material_module          = this->deserializeModule(material_layout_resource.shader_file_data_ptr, resource_manager);
 
-    Slang::ComPtr<slang::IComponentType> material_component_type{ material_module };
+    m_Module.attach(material_module.detach());
 
-    std::expected<Slang::ComPtr<slang::IComponentType>, fe::SlangParser::SpecializationErrors> expected_result =
-        this->specializeGraphicsBackend(material_module.get(), resource_manager.GetContext().graphics_backend);
+    this->ComposeProgram(resource_manager.GetContext().graphics_backend, true); // TODO : pass current graphics backend through the arguments
 
-    auto count = material_module->getSpecializationParamCount();
-
-    if (expected_result.has_value()) {
-        material_component_type = std::move(expected_result.value());
-    }
-    else if (expected_result.error() != SlangParser::SpecializationErrors::NO_PARAMETERS) {
-        return {};
-    }
+    Slang::ComPtr<slang::IComponentType> material_component_type{};
+    material_component_type.attach(m_ComposedProgram.detach());
 
     component_types.emplace_back(material_component_type.get());
 
     // handle shader
 
-    Slang::ComPtr<slang::IModule>        shader_module = this->deserializeModule(shader_program.shader_file_data_ptr, resource_manager);
-    Slang::ComPtr<slang::IComponentType> shader_component_type{ shader_module };
+    Slang::ComPtr<slang::IModule> shader_module = this->deserializeModule(shader_program.shader_file_data_ptr, resource_manager);
 
-    auto count2 = shader_module->getSpecializationParamCount();
+    m_Module.attach(shader_module.detach());
 
-    // TODO : it would be better, if you use 'shader_file_data_ptr' here, but double loading counteracting is not provided in 'fe::ResourceManager' yet
-    if (std::string_view(shader_module->getName()) !=
-        std::string_view(material_module->getName())) { // add shader's module if they are loaded from different files
+    this->ComposeProgram(resource_manager.GetContext().graphics_backend, true); // TODO : pass current graphics backend through the arguments
 
-        std::expected<Slang::ComPtr<slang::IComponentType>, fe::SlangParser::SpecializationErrors> expected_result =
-            this->specializeGraphicsBackend(shader_module.get(), resource_manager.GetContext().graphics_backend); // TODO : pass current graphics backend through the arguments
+    Slang::ComPtr<slang::IComponentType> shader_component_type{};
+    shader_component_type.attach(m_ComposedProgram.detach());
+    shader_module.attach(m_Module.detach());
 
-        if (expected_result.has_value()) {
-            shader_component_type = std::move(expected_result.value());
-        }
-        else if (expected_result.error() != SlangParser::SpecializationErrors::NO_PARAMETERS) {
-            return {};
-        }
+    //component_types.emplace_back(shader_component_type.get()); // already added by material, because they are the same file
 
-        component_types.emplace_back(shader_component_type.get());
-    }
+    // find entry points
 
     slang::ProgramLayout*  material_layout = material_component_type->getLayout();
     slang::TypeReflection* material_type   = material_layout->findTypeByName(material_layout_resource.reflected_layout.name.c_str());
-
-    // find entry points
 
     struct EntryPoint {
         Slang::ComPtr<slang::IComponentType> entry_point{};
@@ -434,6 +418,8 @@ fe::shader::SourceCodeStorage fe::SlangParser::CombineAndCompileShader(const res
 
             slang::IComponentType*      component_type_raw{};
             Slang::ComPtr<slang::IBlob> diagnostics{};
+
+            int parameters_count = entry_point->getSpecializationParamCount();
 
             SlangResult result = entry_point->specialize(specialization_args.data(),
                                                          specialization_args.size(),

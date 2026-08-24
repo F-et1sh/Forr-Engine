@@ -49,7 +49,7 @@ namespace fe {
         bool ExtractSerializedData(std::vector<uint8_t>& dst_vector);
 
         // pass the graphics backend to specialize the shader program
-        bool ComposeProgram(GraphicsBackend graphics_backend);
+        bool ComposeProgram(GraphicsBackend graphics_backend, bool do_all = false);
 
         // returns 'true', if actually found anything and 'false', if the argument is not changed
         bool ReflectDescriptors(shader::ReflectedDescriptorsLayout& descriptors_layout);
@@ -83,7 +83,7 @@ namespace fe {
 
     private:
         Slang::ComPtr<slang::ISession>       m_Session{};
-        slang::IModule*                      m_Module{};
+        Slang::ComPtr<slang::IModule>        m_Module{};
         Slang::ComPtr<slang::IComponentType> m_ComposedProgram{};
 
         // static cache

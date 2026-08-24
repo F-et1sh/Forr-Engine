@@ -7,6 +7,7 @@
 
 ### Done
     compilation speed up | trying to solve 'fe::ApplicationDesc' problem
+    texture done
     
 ### Problem
     unstable ABI
