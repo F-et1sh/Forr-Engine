@@ -1,5 +1,16 @@
 ﻿# Forr-Engine Devlog
 
+## 24.08.2026
+### Goal
+    see a texture
+    make a video for YouTube
+
+### Done
+    -
+    
+### Problem
+    -
+
 ## 23.08.2026
 ### Goal
     see a texture
