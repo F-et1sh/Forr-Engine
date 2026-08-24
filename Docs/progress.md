@@ -6,10 +6,10 @@
     make a video for YouTube
 
 ### Done
-    -
+    compilation speed up | trying to solve 'fe::ApplicationDesc' problem
     
 ### Problem
-    -
+    unstable ABI
 
 ## 23.08.2026
 ### Goal
