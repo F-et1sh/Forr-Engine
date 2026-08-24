@@ -3,7 +3,7 @@
 ## 24.08.2026
 ### Goal
     see a texture
-
+    provide MDI
     separate material and its specialized version as two different resources in resource manager
     make a video for YouTube
 
