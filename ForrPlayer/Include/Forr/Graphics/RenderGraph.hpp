@@ -112,6 +112,26 @@ namespace fe {
             return *this;
         }
 
+        RenderGraphContext& BindModel(const render_graph::BindModel& command) {
+            command_list.enqueue(command);
+            return *this;
+        }
+
+        RenderGraphContext& BindModel(const fe::pointer<resource::Model> model_ptr, std::span<const std::byte> data) {
+            return this->BindModel(render_graph::BindModel{ model_ptr, data });
+        }
+
+        template <typename T>
+        RenderGraphContext& BindModel(const fe::pointer<resource::Model> model_ptr, std::span<const T> data) {
+            return this->BindModel(render_graph::BindModel{ model_ptr, std::as_bytes(data) });
+        }
+
+        template <typename R>
+            requires std::ranges::contiguous_range<R>
+        RenderGraphContext& BindModel(const fe::pointer<resource::Model> model_ptr, const R& range) {
+            return this->BindModel(model_ptr, std::span{ range });
+        }
+
         RenderGraphContext& DrawIndexed(const render_graph::DrawIndexed& command) {
             command_list.enqueue(command);
             return *this;

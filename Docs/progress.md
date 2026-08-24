@@ -3,6 +3,7 @@
 ## 24.08.2026
 ### Goal
     see a texture
+
     separate material and its specialized version as two different resources in resource manager
     make a video for YouTube
 
@@ -11,9 +12,11 @@
     texture done
     model rendered correctly
     model is spinning
-    
+    two different spinning models almost done
+
 ### Problem
     unstable ABI ( seems just forgot to recompile the project )
+    push constants doesn't work properly in OpenGL
 
 ## 23.08.2026
 ### Goal

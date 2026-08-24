@@ -55,6 +55,29 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
         float zfar   = 1000.0f;
         m_Camera.setPerspective(fov, aspect, znear, zfar);
         m_Camera.setMovementSpeed(speed);
+
+        constexpr size_t     buffer_size = 16;
+        constexpr GLbitfield flags       = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+
+        for (auto& push_constant : m_FramePushConstants) {
+            auto& descriptor = push_constant.descriptor;
+
+            GLuint buffer_raw{};
+            glCreateBuffers(1, &buffer_raw);
+
+            glNamedBufferStorage(buffer_raw, buffer_size, nullptr, flags);
+            descriptor.mapped = static_cast<std::byte*>(glMapNamedBufferRange(buffer_raw, 0, buffer_size, flags));
+
+            if (!descriptor.mapped) {
+                glDeleteBuffers(1, &buffer_raw);
+                fe::logging::error("OpenGL. Failed a uniform buffer for push constants. Mapped memory is nullptr");
+                return;
+            }
+
+            descriptor.buffer.attach(buffer_raw);
+            descriptor.size = buffer_size;
+            descriptor.type = shader::DescriptorType::UNIFORM_BUFFER;
+        }
     }
 }
 
@@ -104,6 +127,8 @@ void fe::RendererOpenGL::BeginFrame() {
     if (m_FrameData[m_CurrentFrame].sync) {
         glClientWaitSync(m_FrameData[m_CurrentFrame].sync, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
     }
+    
+    m_FramePushConstants[m_CurrentFrame].current_offset = 0;
 }
 
 void fe::RendererOpenGL::EndFrame(const render_graph::CommandList& render_command_list) {
@@ -147,13 +172,14 @@ void fe::RendererOpenGL::bindPipeline(const OpenGLPipeline& pipeline) {
         glDisable(GL_DEPTH_TEST);
     }
 
-    //if (pipeline.cull_enable) {
-    //    glEnable(GL_CULL_FACE);
-    //    glCullFace(pipeline.cull_mode);
-    //}
-    //else {
-    //    glDisable(GL_CULL_FACE);
-    //}
+    if (pipeline.cull_enable) { // TODO : enable this
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CW);
+    }
+    else {
+        glDisable(GL_CULL_FACE);
+    }
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& command) {
@@ -307,7 +333,21 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BindMaterial& command
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::BindModel& command) {
+    auto&    push_constants = m_FramePushConstants[m_CurrentFrame];
+    uint32_t current_offset = push_constants.current_offset;
+
+    std::memcpy(push_constants.descriptor.mapped + current_offset, command.push_constants_data.data(), command.push_constants_data.size());
+
+    glBindBufferRange(GL_UNIFORM_BUFFER, 0, push_constants.descriptor.buffer.get(), current_offset, command.push_constants_data.size());
+
+    static GLint alignment{};
+    if (alignment == 0)
+        glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &alignment);
+
+    push_constants.current_offset = (current_offset + command.push_constants_data.size() + alignment - 1) & ~(alignment - 1);
+
     const resource::Model& model = *m_ResourceManager.GetResource(command.model_ptr);
+
     for (const auto& mesh : model.meshes) {
         const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(mesh.gpu_handle);
         glBindVertexArray(opengl_mesh.vao);

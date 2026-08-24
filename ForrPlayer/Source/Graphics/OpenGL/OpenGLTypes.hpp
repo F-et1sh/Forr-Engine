@@ -32,7 +32,7 @@ namespace fe {
 
     struct OpenGLShaderDescriptor {
         size_t                 size{};
-        uint8_t*               mapped{};
+        std::byte*             mapped{};
         shader::DescriptorType type{}; // UBO or SSBO
         fe::gl::Buffer         buffer{};
 
@@ -52,7 +52,7 @@ namespace fe {
         GLenum depth_mode{ GL_LESS };
 
         bool   cull_enable{ true };
-        GLenum cull_mode{ GL_FRONT };
+        GLenum cull_mode{ GL_ALWAYS }; // doesn't work right now
 
         OpenGLPipeline() = default;
 

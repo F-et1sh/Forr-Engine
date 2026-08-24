@@ -288,11 +288,11 @@ fe::ParameterID fe::OpenGLResourceManager::CreateDescriptorRing(const shader::Re
 
         if (descriptor_layout.descriptor_type == shader::DescriptorType::UNIFORM_BUFFER) {
             glNamedBufferStorage(buffer_raw, buffer_size, nullptr, flags);
-            descriptor.mapped = static_cast<uint8_t*>(glMapNamedBufferRange(buffer_raw, 0, buffer_size, flags));
+            descriptor.mapped = static_cast<std::byte*>(glMapNamedBufferRange(buffer_raw, 0, buffer_size, flags));
         }
         else if (descriptor_layout.descriptor_type == shader::DescriptorType::STORAGE_BUFFER) {
             glNamedBufferStorage(buffer_raw, buffer_size, nullptr, flags);
-            descriptor.mapped = static_cast<uint8_t*>(glMapNamedBufferRange(buffer_raw, 0, buffer_size, flags));
+            descriptor.mapped = static_cast<std::byte*>(glMapNamedBufferRange(buffer_raw, 0, buffer_size, flags));
         }
         else if (descriptor_layout.descriptor_type == shader::DescriptorType::GENERIC) {
             fe::logging::error("Unified -> OpenGL. Forgot to specialize a generic descriptor %s",

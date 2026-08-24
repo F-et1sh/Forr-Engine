@@ -324,6 +324,11 @@ namespace fe {
         // temp
         struct FORR_API BindModel {
             fe::pointer<resource::Model> model_ptr{};
+            std::span<const std::byte>   push_constants_data{};
+
+            BindModel() = default;
+            BindModel(fe::pointer<resource::Model> model_ptr, std::span<const std::byte> push_constants_data = {})
+                : model_ptr(model_ptr), push_constants_data(push_constants_data) {}
         };
 
         struct FORR_API BindBuffer {
@@ -351,7 +356,7 @@ namespace fe {
     X(BindMaterial)                  \
     X(BindModel)                     \
     X(BindBuffer)                    \
-    X(WriteBuffer)
+    X(WriteBuffer)                   
 
         enum class CommandType : uint8_t {
 #define GENERATE_ENUM(COMMAND_NAME) COMMAND_NAME,
