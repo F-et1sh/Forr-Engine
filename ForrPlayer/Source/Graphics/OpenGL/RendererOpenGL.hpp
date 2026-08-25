@@ -33,13 +33,6 @@ namespace fe {
             FrameData() = default;
         };
 
-        struct FramePushConstants {
-            OpenGLShaderDescriptor descriptor{};
-            uint32_t               current_offset{};
-
-            FramePushConstants() = default;
-        };
-
     public:
         RendererOpenGL(const RendererDesc& desc,
                        IPlatformSystem&    platform_system,
@@ -93,7 +86,6 @@ namespace fe {
         fe::pointer<resource::ShaderProgram> m_BoundShaderProgramPtr{};
 
         std::array<FrameData, MAX_CONCURRENT_FRAMES>          m_FrameData{};
-        std::array<FramePushConstants, MAX_CONCURRENT_FRAMES> m_FramePushConstants{};
 
         // for render graph | temp
         std::unordered_map<uint64_t, gl::Framebuffer> m_FramebuffersCache{};

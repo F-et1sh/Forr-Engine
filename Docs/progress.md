@@ -1,5 +1,17 @@
 ﻿# Forr-Engine Devlog
 
+## 25.08.2026
+### Goal
+    provide VertexLayout
+    separate material and its specialized version as two different resources in resource manager
+    make a video for YouTube
+
+### Done
+    two objects rendered separately
+
+### Problem
+    -
+
 ## 24.08.2026
 ### Goal
     see a texture
