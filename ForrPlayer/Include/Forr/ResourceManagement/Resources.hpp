@@ -130,6 +130,8 @@ namespace fe::resource {
         fe::pointer<ShaderFileData>         shader_file_data_ptr{};
         std::optional<DescriptorsLayoutPtr> descriptors_layout_ptr{};
 
+        // TODO : std::optional<ToSpecialize> to_specialize{};
+
         ShaderProgram()  = default;
         ~ShaderProgram() = default;
 

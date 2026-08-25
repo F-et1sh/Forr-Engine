@@ -29,7 +29,7 @@ public struct SpotLight {
 VertexStageOutput vertexMain(VertexInput input) {
     VertexStageOutput output;
 
-    float4x4 model_matrix = g_ModelMatrices[push_constants.instance_index];
+    float4x4 model_matrix = g_ModelMatrices[input.index];
     
     float4 world_position = mul(float4(input.position, 1.0f), model_matrix);
     float4 view_position  = mul(world_position, g_GlobalData.view);
@@ -38,12 +38,14 @@ VertexStageOutput vertexMain(VertexInput input) {
     output.texture_coord  = input.texture_coord;
     output.world_position = world_position.xyz;
 
+    output.index = input.index;
+
     return output;
 }
 
 [shader("fragment")]
 float4 fragmentMain<M : IMaterial>(VertexStageOutput input) : SV_Target { // temp lighting
-    M material = g_MaterialsRawData.Load<M>(push_constants.material_buffer_offset);
+    M material = g_MaterialsRawData.Load<M>(input.index * 32);
     float4 base_color = material.GetSurfaceData(input.texture_coord);
 
     SpotLight lights[2];
