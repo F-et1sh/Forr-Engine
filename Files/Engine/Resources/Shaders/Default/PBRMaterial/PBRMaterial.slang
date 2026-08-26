@@ -44,8 +44,8 @@ VertexStageOutput vertexMain(VertexInput input) {
 }
 
 [shader("fragment")]
-float4 fragmentMain<M : IMaterial>(VertexStageOutput input) : SV_Target { // temp lighting
-    M material = g_MaterialsRawData.Load<M>(input.index * 32);
+float4 fragmentMain(VertexStageOutput input) : SV_Target { // temp lighting
+    PBRMaterial material = g_MaterialsRawData.Load<PBRMaterial>(input.index * 32);
     float4 base_color = material.GetSurfaceData(input.texture_coord);
 
     SpotLight lights[2];

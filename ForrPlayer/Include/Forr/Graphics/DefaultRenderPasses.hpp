@@ -77,6 +77,9 @@ namespace fe {
         ParameterID            global_data_parameter_id{};
         std::vector<std::byte> global_data_as_bytes{};
 
+        std::vector<int> push_constants_data1{};
+        std::vector<int> push_constants_data2{};
+
         float time{};
     };
     struct ForwardPass {
@@ -177,6 +180,9 @@ namespace fe {
 
             pass_data.global_data_as_bytes.resize(sizeof(ForwardPassData::GlobalData));
             memcpy(&pass_data.global_data_as_bytes[0], &global_data, sizeof(ForwardPassData::GlobalData));
+
+            pass_data.push_constants_data1.resize(1);
+            pass_data.push_constants_data2.resize(1);
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
@@ -206,19 +212,11 @@ namespace fe {
             context.BindShaderProgram(pass_data.default_shader_program_ptr);
             context.BindMaterial(pass_data.default_material_ptr);
 
-            //ForwardPassData::PushConstants push_constants{};
-            //push_constants.instance_index         = 0;
-            //push_constants.material_buffer_offset = 0;
+            pass_data.push_constants_data1[0] = 0;
+            context.BindModel(pass_data.test_model_ptr, pass_data.push_constants_data1); // means 'draw'
 
-            //memcpy(pass_data.push_constants_data.data(), &push_constants, sizeof(ForwardPassData::PushConstants));
-            context.BindModel(pass_data.test_model_ptr); // means 'draw'
-
-            //ForwardPassData::PushConstants push_constants2{};
-            //push_constants2.instance_index         = 1;
-            //push_constants2.material_buffer_offset = sizeof(ForwardPassData::PBRMaterialData);
-
-            //memcpy(pass_data.push_constants_data2.data(), &push_constants2, sizeof(ForwardPassData::PushConstants));
-            context.BindModel(pass_data.test_model2_ptr); // means 'draw'
+            pass_data.push_constants_data2[0] = 1;
+            context.BindModel(pass_data.test_model2_ptr, pass_data.push_constants_data2); // means 'draw'
 
             pass_data.time += 0.01f;
         }

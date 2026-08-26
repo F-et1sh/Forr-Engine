@@ -9,6 +9,7 @@
 
 ### Done
     VertexLayout added | render mode moved from primitive to pipeline desc
+    rendered a scene without specialization
 
 ### Problem
     -
