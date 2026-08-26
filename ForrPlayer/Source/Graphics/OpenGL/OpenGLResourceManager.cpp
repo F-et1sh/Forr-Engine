@@ -225,8 +225,8 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetOrCreatePipeline(fe::poi
     const resource::ShaderProgram& shader_program = *m_ResourceManager.GetResource(shader_program_ptr);
     const resource::Material&      material       = *m_ResourceManager.GetResource(material_ptr);
 
-    SlangParser               parser{};
-    shader::SourceCodeStorage source_codes = parser.CombineAndCompileShader(shader_program, material, m_ResourceManager);
+    SlangParser               slang_parser{};
+    shader::SourceCodeStorage source_codes = slang_parser.CombineAndCompileShader(shader_program, material, m_ResourceManager);
 
     if (source_codes.empty()) {
         if (!m_Pipelines.empty())
@@ -236,6 +236,22 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetOrCreatePipeline(fe::poi
 
     GLuint shader_program_raw = this->createShaderProgramRaw(source_codes);
     opengl_pipeline.shader_program.attach(shader_program_raw);
+
+    // clang-format off
+    switch (material.pipeline_flags.render_mode) {
+        case RenderMode::POINTS        : opengl_pipeline.render_mode = GL_POINTS        ; break;
+        case RenderMode::LINES         : opengl_pipeline.render_mode = GL_LINES         ; break;
+        case RenderMode::LINE_LOOP     : opengl_pipeline.render_mode = GL_LINE_LOOP     ; break;
+        case RenderMode::LINE_STRIP    : opengl_pipeline.render_mode = GL_LINE_STRIP    ; break;
+        case RenderMode::TRIANGLES     : opengl_pipeline.render_mode = GL_TRIANGLES     ; break;
+        case RenderMode::TRIANGLE_STRIP: opengl_pipeline.render_mode = GL_TRIANGLE_STRIP; break;
+        case RenderMode::TRIANGLE_FAN  : opengl_pipeline.render_mode = GL_TRIANGLE_FAN  ; break;
+        default:
+            fe::logging::warning("Unified -> OpenGL. Unsupported render mode %i. Using GL_TRIANGLES as default",
+                material.pipeline_flags.render_mode);
+            opengl_pipeline.render_mode = GL_TRIANGLES;
+    }
+    // clang-format on
 
     opengl_pipeline.depth_test_enable = material.pipeline_flags.depth_test_enable;
     // clang-format off
@@ -377,21 +393,6 @@ fe::GPUHandle<fe::resource::Model::Mesh> fe::OpenGLResourceManager::createMesh(r
 
         opengl_primitive.index_count  = primitive.index_count;
         opengl_primitive.index_offset = primitive.index_offset;
-
-        // clang-format off
-        switch (primitive.render_mode) {
-            case RenderMode::POINTS        : opengl_primitive .render_mode = GL_POINTS        ; break;
-            case RenderMode::LINES         : opengl_primitive .render_mode = GL_LINES         ; break;
-            case RenderMode::LINE_LOOP     : opengl_primitive .render_mode = GL_LINE_LOOP     ; break;
-            case RenderMode::LINE_STRIP    : opengl_primitive .render_mode = GL_LINE_STRIP    ; break;
-            case RenderMode::TRIANGLES     : opengl_primitive .render_mode = GL_TRIANGLES     ; break;
-            case RenderMode::TRIANGLE_STRIP: opengl_primitive .render_mode = GL_TRIANGLE_STRIP; break;
-            case RenderMode::TRIANGLE_FAN  : opengl_primitive .render_mode = GL_TRIANGLE_FAN  ; break;
-            default:
-                fe::logging::warning("Unified -> OpenGL. Unsupported render mode %i. Using GL_TRIANGLES as default", primitive.render_mode);
-                opengl_primitive .render_mode = GL_TRIANGLES;
-        }
-        // clang-format on
     }
 
     glBufferData(GL_ARRAY_BUFFER, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.data(), GL_STATIC_DRAW);

@@ -126,11 +126,15 @@ namespace fe::resource {
     struct FORR_API ShaderProgram {
     public:
         using DescriptorsLayoutPtr = fe::pointer<resource::DescriptorsLayout>;
+        using ShaderProgramPtr     = fe::pointer<resource::ShaderProgram>;
+        // unspecialized type name -> ( optinal ) type name that specializes
+        using SpecializePair = std::pair<fe::hashed_string, std::optional<fe::hashed_string>>;
 
         fe::pointer<ShaderFileData>         shader_file_data_ptr{};
         std::optional<DescriptorsLayoutPtr> descriptors_layout_ptr{};
 
-        // TODO : std::optional<ToSpecialize> to_specialize{};
+        // shader stage -> { specialized ( or unspecialized ) pairs }
+        std::unordered_map<shader::StageBits, std::vector<SpecializePair>> specialized_types{};
 
         ShaderProgram()  = default;
         ~ShaderProgram() = default;
@@ -189,6 +193,7 @@ namespace fe::resource {
         std::span<std::byte> buffer{};
 
         PipelineFlags pipeline_flags{};
+        VertexLayout  vertex_layout{};
 
         Material()  = default;
         ~Material() = default;
