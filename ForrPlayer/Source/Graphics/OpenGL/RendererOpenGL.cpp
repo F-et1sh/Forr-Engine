@@ -296,7 +296,7 @@ void fe::RendererOpenGL::handleCommand(const render_graph::DrawIndexed& command)
     glDrawElementsInstancedBaseVertexBaseInstance(GL_TRIANGLES,
                                                   command.index_count,
                                                   GL_UNSIGNED_INT,
-                                                  reinterpret_cast<void*>(static_cast<uintptr_t>(command.first_index * sizeof(uint32_t))),
+                                                  reinterpret_cast<void*>(command.first_index * sizeof(uint32_t)),
                                                   command.instance_count,
                                                   command.vertex_offset,
                                                   command.first_instance);
