@@ -136,6 +136,8 @@ namespace fe::resource {
         // shader stage -> { specialized ( or unspecialized ) pairs }
         std::unordered_map<shader::StageBits, std::vector<SpecializePair>> specialized_types{};
 
+        VertexLayout vertex_layout{};
+
         ShaderProgram()  = default;
         ~ShaderProgram() = default;
 
@@ -192,8 +194,8 @@ namespace fe::resource {
         // both of this 'std::span's are stored in 'fe::ResourceStorage' like the structure they're in
         std::span<std::byte> buffer{};
 
-        PipelineFlags pipeline_flags{};
-        VertexLayout  vertex_layout{};
+        // basically, render pass sets pipeline flags, but if there is a material - it can override them
+        PipelineFlags pipeline_flags_override{};
 
         Material()  = default;
         ~Material() = default;
