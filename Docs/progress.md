@@ -4,6 +4,7 @@
 ### Goal
     provide VertexLayout
     render the scene without specialized shader
+    move 'material x shader' combination to render pass
     separate material and its specialized version as two different resources in resource manager
     make a video for YouTube
 
