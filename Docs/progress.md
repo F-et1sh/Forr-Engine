@@ -3,6 +3,7 @@
 ## 26.08.2026
 ### Goal
     provide VertexLayout
+    render the scene without specialized shader
     separate material and its specialized version as two different resources in resource manager
     make a video for YouTube
 

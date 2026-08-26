@@ -238,7 +238,7 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetOrCreatePipeline(fe::poi
     opengl_pipeline.shader_program.attach(shader_program_raw);
 
     // clang-format off
-    switch (material.pipeline_flags.render_mode) {
+    switch (material.pipeline_flags_override.render_mode) {
         case RenderMode::POINTS        : opengl_pipeline.render_mode = GL_POINTS        ; break;
         case RenderMode::LINES         : opengl_pipeline.render_mode = GL_LINES         ; break;
         case RenderMode::LINE_LOOP     : opengl_pipeline.render_mode = GL_LINE_LOOP     ; break;
@@ -248,14 +248,14 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetOrCreatePipeline(fe::poi
         case RenderMode::TRIANGLE_FAN  : opengl_pipeline.render_mode = GL_TRIANGLE_FAN  ; break;
         default:
             fe::logging::warning("Unified -> OpenGL. Unsupported render mode %i. Using GL_TRIANGLES as default",
-                material.pipeline_flags.render_mode);
+                material.pipeline_flags_override.render_mode);
             opengl_pipeline.render_mode = GL_TRIANGLES;
     }
     // clang-format on
 
-    opengl_pipeline.depth_test_enable = material.pipeline_flags.depth_test_enable;
+    opengl_pipeline.depth_test_enable = material.pipeline_flags_override.depth_test_enable;
     // clang-format off
-    switch (material.pipeline_flags.depth_mode) {
+    switch (material.pipeline_flags_override.depth_mode) {
         case DepthMode::NEVER   : opengl_pipeline.depth_mode = GL_NEVER   ; break;
         case DepthMode::LESS    : opengl_pipeline.depth_mode = GL_LESS    ; break;
         case DepthMode::EQUAL   : opengl_pipeline.depth_mode = GL_EQUAL   ; break;
@@ -267,9 +267,9 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetOrCreatePipeline(fe::poi
     }
     // clang-format on
 
-    opengl_pipeline.cull_enable = material.pipeline_flags.cull_enable;
+    opengl_pipeline.cull_enable = material.pipeline_flags_override.cull_enable;
     // clang-format off
-    switch (material.pipeline_flags.cull_mode) {
+    switch (material.pipeline_flags_override.cull_mode) {
         case CullMode::NONE          : opengl_pipeline.cull_mode = GL_NONE          ; break;
         case CullMode::FRONT         : opengl_pipeline.cull_mode = GL_FRONT         ; break;
         case CullMode::BACK          : opengl_pipeline.cull_mode = GL_BACK          ; break;
