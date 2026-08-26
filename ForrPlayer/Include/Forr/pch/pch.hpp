@@ -22,6 +22,7 @@
 #include <concepts>
 #include <variant>
 #include <expected>
+#include <utility>
 
 #include "Core/attributes.hpp"
 #include "Core/custom_allocators.hpp"

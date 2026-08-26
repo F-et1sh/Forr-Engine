@@ -53,7 +53,7 @@ namespace fe {
         void InitializeGPUResources() override;
 
     private:
-        static void bindPipeline(const OpenGLPipeline& pipeline);
+        void bindPipeline(const OpenGLPipeline& pipeline);
 
     private:
         void handleCommand(const render_graph::ImageBarrier& command);
@@ -85,7 +85,9 @@ namespace fe {
 
         fe::pointer<resource::ShaderProgram> m_BoundShaderProgramPtr{};
 
-        std::array<FrameData, MAX_CONCURRENT_FRAMES>          m_FrameData{};
+        GLenum m_CurrentRenderMode{};
+
+        std::array<FrameData, MAX_CONCURRENT_FRAMES> m_FrameData{};
 
         // for render graph | temp
         std::unordered_map<uint64_t, gl::Framebuffer> m_FramebuffersCache{};

@@ -139,6 +139,8 @@ void fe::RendererOpenGL::InitializeGPUResources() {
 void fe::RendererOpenGL::bindPipeline(const OpenGLPipeline& pipeline) {
     glUseProgram(pipeline.shader_program.get());
 
+    m_CurrentRenderMode = pipeline.render_mode;
+
     if (pipeline.depth_test_enable) {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(pipeline.depth_mode);
@@ -317,7 +319,7 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BindModel& command) {
         glBindVertexArray(opengl_mesh.vao);
 
         for (const auto& primitive : opengl_mesh.primitives) {
-            glDrawElementsInstancedBaseVertexBaseInstance(primitive.render_mode,
+            glDrawElementsInstancedBaseVertexBaseInstance(m_CurrentRenderMode,
                                                           primitive.index_count,
                                                           GL_UNSIGNED_INT,
                                                           (void*) primitive.index_offset,

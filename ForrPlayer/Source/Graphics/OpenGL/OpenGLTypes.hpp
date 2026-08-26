@@ -48,6 +48,8 @@ namespace fe {
     struct OpenGLPipeline {
         fe::gl::ShaderProgram shader_program{};
 
+        GLenum render_mode{};
+
         bool   depth_test_enable{ true };
         GLenum depth_mode{ GL_LESS };
 
@@ -60,8 +62,6 @@ namespace fe {
     };
 
     struct OpenGLPrimitive {
-        GLenum render_mode{};
-
         uint32_t index_offset{};
         uint32_t index_count{};
 

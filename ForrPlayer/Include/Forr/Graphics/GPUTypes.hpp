@@ -141,6 +141,10 @@ namespace fe {
         PipelineFlags() = default;
     };
 
+    struct FORR_API VertexLayout {
+
+    };
+
     struct FORR_API ParameterID {
         uint8_t set{ std::numeric_limits<uint8_t>::max() };
         uint8_t binding{ std::numeric_limits<uint8_t>::max() };

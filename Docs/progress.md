@@ -1,5 +1,17 @@
 ﻿# Forr-Engine Devlog
 
+## 26.08.2026
+### Goal
+    provide VertexLayout
+    separate material and its specialized version as two different resources in resource manager
+    make a video for YouTube
+
+### Done
+    VertexLayout added | render mode moved from primitive to pipeline desc
+
+### Problem
+    -
+
 ## 25.08.2026
 ### Goal
     provide VertexLayout
