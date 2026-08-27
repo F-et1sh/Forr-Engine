@@ -142,7 +142,6 @@ namespace fe {
     };
 
     struct FORR_API VertexLayout {
-
     };
 
     struct FORR_API ParameterID {
@@ -321,18 +320,14 @@ namespace fe {
             fe::pointer<resource::ShaderProgram> shader_program_ptr{};
         };
 
-        struct FORR_API BindMaterial {
-            fe::pointer<resource::Material> material_ptr{};
-        };
-
         // temp
-        struct FORR_API BindModel {
+        struct FORR_API DrawModel {
             fe::pointer<resource::Model> model_ptr{};
-            std::span<const std::byte>   push_constants_data{};
+            uint32_t                     first_instance{};
 
-            BindModel() = default;
-            BindModel(fe::pointer<resource::Model> model_ptr, std::span<const std::byte> push_constants_data = {})
-                : model_ptr(model_ptr), push_constants_data(push_constants_data) {}
+            DrawModel() = default;
+            DrawModel(fe::pointer<resource::Model> model_ptr, uint32_t first_instance = {})
+                : model_ptr(model_ptr), first_instance(first_instance) {}
         };
 
         struct FORR_API BindBuffer {
@@ -357,10 +352,9 @@ namespace fe {
     X(EndRenderPass)                 \
     X(DrawIndexed)                   \
     X(BindShaderProgram)             \
-    X(BindMaterial)                  \
-    X(BindModel)                     \
+    X(DrawModel)                     \
     X(BindBuffer)                    \
-    X(WriteBuffer)                   
+    X(WriteBuffer)
 
         enum class CommandType : uint8_t {
 #define GENERATE_ENUM(COMMAND_NAME) COMMAND_NAME,

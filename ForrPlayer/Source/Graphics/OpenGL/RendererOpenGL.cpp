@@ -306,12 +306,7 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BindShaderProgram& co
     m_BoundShaderProgramPtr = command.shader_program_ptr;
 }
 
-void fe::RendererOpenGL::handleCommand(const render_graph::BindMaterial& command) {
-    const OpenGLPipeline& pipeline = m_OpenGLResourceManager.GetOrCreatePipeline(m_BoundShaderProgramPtr, command.material_ptr);
-    bindPipeline(pipeline);
-}
-
-void fe::RendererOpenGL::handleCommand(const render_graph::BindModel& command) {
+void fe::RendererOpenGL::handleCommand(const render_graph::DrawModel& command) {
     const resource::Model& model = *m_ResourceManager.GetResource(command.model_ptr);
 
     for (const auto& mesh : model.meshes) {
@@ -325,7 +320,7 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BindModel& command) {
                                                           (void*) primitive.index_offset,
                                                           1,
                                                           0,
-                                                          static_cast<int>(*command.push_constants_data.data()));
+                                                          command.first_instance);
         }
     }
 }

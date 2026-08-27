@@ -77,9 +77,6 @@ namespace fe {
         ParameterID            global_data_parameter_id{};
         std::vector<std::byte> global_data_as_bytes{};
 
-        std::vector<int> push_constants_data1{};
-        std::vector<int> push_constants_data2{};
-
         float time{};
     };
     struct ForwardPass {
@@ -146,6 +143,7 @@ namespace fe {
                     }
                 }
             }
+
             pass_data.default_material_ptr = builder.resource_manager.GetContext().default_pbr_material_ptr;
             if (!pass_data.test_model_ptr) {
                 pass_data.test_model_ptr = builder.resource_manager.ImportResource<resource::Model>(PATH.getModelsPath() / "TatarSuzanne\\TatarSuzanne.gltf");
@@ -180,9 +178,6 @@ namespace fe {
 
             pass_data.global_data_as_bytes.resize(sizeof(ForwardPassData::GlobalData));
             memcpy(&pass_data.global_data_as_bytes[0], &global_data, sizeof(ForwardPassData::GlobalData));
-
-            pass_data.push_constants_data1.resize(1);
-            pass_data.push_constants_data2.resize(1);
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
@@ -210,13 +205,9 @@ namespace fe {
             context.WriteBuffer(pass_data.global_data_parameter_id, pass_data.global_data_as_bytes);
 
             context.BindShaderProgram(pass_data.default_shader_program_ptr);
-            context.BindMaterial(pass_data.default_material_ptr);
 
-            pass_data.push_constants_data1[0] = 0;
-            context.BindModel(pass_data.test_model_ptr, pass_data.push_constants_data1); // means 'draw'
-
-            pass_data.push_constants_data2[0] = 1;
-            context.BindModel(pass_data.test_model2_ptr, pass_data.push_constants_data2); // means 'draw'
+            context.DrawModel(pass_data.test_model_ptr, 0);  // means 'draw'
+            context.DrawModel(pass_data.test_model2_ptr, 1); // means 'draw'
 
             pass_data.time += 0.01f;
         }
