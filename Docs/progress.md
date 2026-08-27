@@ -1,5 +1,17 @@
 ﻿# Forr-Engine Devlog
 
+## 27.08.2026
+### Goal
+    move 'material x shader' combination to render pass
+    separate material and its specialized version as two different resources in resource manager
+    make a video for YouTube
+
+### Done
+    materials removed
+
+### Problem
+    -
+
 ## 26.08.2026
 ### Goal
     provide VertexLayout

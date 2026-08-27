@@ -62,8 +62,7 @@ namespace fe {
         void handleCommand(const render_graph::EndRenderPass& command);
         void handleCommand(const render_graph::DrawIndexed& command);
         void handleCommand(const render_graph::BindShaderProgram& command);
-        void handleCommand(const render_graph::BindMaterial& command);
-        void handleCommand(const render_graph::BindModel& command);
+        void handleCommand(const render_graph::DrawModel& command);
         void handleCommand(const render_graph::BindBuffer& command);
         void handleCommand(const render_graph::WriteBuffer& command);
 

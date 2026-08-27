@@ -93,43 +93,20 @@ namespace fe {
             return *this;
         }
 
-        RenderGraphContext& BindShaderProgram(const fe::pointer<resource::ShaderProgram> shader_program_ptr) {
+        RenderGraphContext& BindShaderProgram(fe::pointer<resource::ShaderProgram> shader_program_ptr) {
             return this->BindShaderProgram(render_graph::BindShaderProgram{ shader_program_ptr });
-        }
-
-        RenderGraphContext& BindMaterial(const render_graph::BindMaterial& command) {
-            command_list.enqueue(command);
-            return *this;
-        }
-
-        RenderGraphContext& BindMaterial(const fe::pointer<resource::Material> material_ptr) {
-            return this->BindMaterial(render_graph::BindMaterial{ material_ptr });
         }
         
         // temp
-        RenderGraphContext& BindModel(const fe::pointer<resource::Model> model_ptr) {
-            command_list.enqueue(render_graph::BindModel{ model_ptr });
+        RenderGraphContext& DrawModel(fe::pointer<resource::Model> model_ptr, uint32_t first_instance) {
+            command_list.enqueue(render_graph::DrawModel{ model_ptr, first_instance });
             return *this;
         }
 
-        RenderGraphContext& BindModel(const render_graph::BindModel& command) {
+        // temp
+        RenderGraphContext& DrawModel(const render_graph::DrawModel& command) {
             command_list.enqueue(command);
             return *this;
-        }
-
-        RenderGraphContext& BindModel(const fe::pointer<resource::Model> model_ptr, std::span<const std::byte> data) {
-            return this->BindModel(render_graph::BindModel{ model_ptr, data });
-        }
-
-        template <typename T>
-        RenderGraphContext& BindModel(const fe::pointer<resource::Model> model_ptr, std::span<const T> data) {
-            return this->BindModel(render_graph::BindModel{ model_ptr, std::as_bytes(data) });
-        }
-
-        template <typename R>
-            requires std::ranges::contiguous_range<R>
-        RenderGraphContext& BindModel(const fe::pointer<resource::Model> model_ptr, const R& range) {
-            return this->BindModel(model_ptr, std::span{ range });
         }
 
         RenderGraphContext& DrawIndexed(const render_graph::DrawIndexed& command) {
