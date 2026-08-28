@@ -78,6 +78,8 @@ namespace fe {
         std::vector<std::byte> global_data_as_bytes{};
 
         float time{};
+
+        //std::unordered_map<size_t, 
     };
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) { // setup can be called twice
@@ -205,6 +207,8 @@ namespace fe {
             context.WriteBuffer(pass_data.global_data_parameter_id, pass_data.global_data_as_bytes);
 
             context.BindShaderProgram(pass_data.default_shader_program_ptr);
+
+            //context.BindPipeline(pass_data.default_shader_program_ptr, );
 
             context.DrawModel(pass_data.test_model_ptr, 0);  // means 'draw'
             context.DrawModel(pass_data.test_model2_ptr, 1); // means 'draw'

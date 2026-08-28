@@ -142,6 +142,7 @@ namespace fe {
     };
 
     struct FORR_API VertexLayout {
+
     };
 
     struct FORR_API ParameterID {
@@ -316,8 +317,14 @@ namespace fe {
             uint32_t first_instance{};
         };
 
+        // TODO : remove
         struct FORR_API BindShaderProgram {
             fe::pointer<resource::ShaderProgram> shader_program_ptr{};
+        };
+
+        struct FORR_API BindPipeline {
+            fe::pointer<resource::ShaderProgram> shader_program_ptr{};
+
         };
 
         // temp
