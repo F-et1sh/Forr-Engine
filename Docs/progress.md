@@ -1,5 +1,18 @@
 ﻿# Forr-Engine Devlog
 
+## 28.08.2026
+### Goal
+    define what is 'pipeline'
+    move 'material x shader' combination to render pass
+    separate material and its specialized version as two different resources in resource manager
+    make a video for YouTube
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 27.08.2026
 ### Goal
     move 'material x shader' combination to render pass
