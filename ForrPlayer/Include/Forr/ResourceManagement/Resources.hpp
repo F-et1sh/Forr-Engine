@@ -123,15 +123,6 @@ namespace fe::resource {
     struct ShaderFileData;
     struct DescriptorsLayout;
 
-    struct FORR_API ShaderEntryPointSpecialization {
-
-
-        ShaderEntryPointSpecialization()  = default;
-        ~ShaderEntryPointSpecialization() = default;
-
-        FORR_RESOURCE_BODY(ShaderEntryPointSpecialization)
-    };
-
     struct FORR_API ShaderProgram {
     public:
         using DescriptorsLayoutPtr = fe::pointer<resource::DescriptorsLayout>;
