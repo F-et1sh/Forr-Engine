@@ -58,14 +58,15 @@ namespace fe {
         FORR_NODISCARD size_t               CreateImage(const render_graph::ImageDesc& image_desc);
         FORR_NODISCARD const OpenGLTexture& GetImage(size_t texture_storage_index);
 
-        FORR_NODISCARD const OpenGLPipeline& GetOrCreatePipeline(fe::pointer<resource::ShaderProgram> shader_program_ptr,
-                                                  fe::pointer<resource::Material>      material_ptr);
+        FORR_NODISCARD size_t                CreatePipeline(const resource::ShaderProgram& shader_program,
+                                                            const resource::Material&      material);
+        FORR_NODISCARD const OpenGLPipeline& GetPipeline(size_t pipeline_storage_index);
 
         FORR_NODISCARD const OpenGLMesh&    GetResource(GPUHandle<resource::Model::Mesh> handle) const;
         FORR_NODISCARD const OpenGLTexture& GetResource(GPUHandle<resource::Texture> handle) const;
 
         // TODO : this is a good place to start providing std::expected<>
-        FORR_NODISCARD ParameterID CreateDescriptorRing(const shader::ReflectedDescriptor& descriptor_layout);
+        FORR_NODISCARD ParameterID                 CreateDescriptorRing(const shader::ReflectedDescriptor& descriptor_layout);
         FORR_NODISCARD OpenGLShaderDescriptorRing& GetDescriptorRing(uint32_t index);
 
     private: // here functions, which used like helpers to create some resources that don't have thier own CPU realization.
@@ -95,7 +96,6 @@ namespace fe {
         // shader buffers : SSBOs and UBOs
         std::vector<OpenGLShaderDescriptorRing> m_ShaderBuffers{};
 
-        // combined 'fe::pointer<resource::ShaderProgram>' and 'fe::pointer<resource::Material>' --> OpenGLPipeline
-        std::unordered_map<size_t, OpenGLPipeline> m_Pipelines{};
+        std::vector<OpenGLPipeline> m_Pipelines{};
     };
 } // namespace fe

@@ -211,28 +211,12 @@ const fe::OpenGLTexture& fe::OpenGLResourceManager::GetImage(size_t texture_stor
     return m_StorageTextures[texture_storage_index];
 }
 
-const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetOrCreatePipeline(fe::pointer<resource::ShaderProgram> shader_program_ptr,
-                                                                         fe::pointer<resource::Material>      material_ptr) {
-    size_t seed{};
-    fe::hash_combine(seed, shader_program_ptr.packed());
-    fe::hash_combine(seed, material_ptr.packed());
-
-    auto it = m_Pipelines.find(seed);
-    if (it != m_Pipelines.end()) return it->second;
-
-    OpenGLPipeline& opengl_pipeline = m_Pipelines[seed];
-
-    const resource::ShaderProgram& shader_program = *m_ResourceManager.GetResource(shader_program_ptr);
-    const resource::Material&      material       = *m_ResourceManager.GetResource(material_ptr);
-
+size_t fe::OpenGLResourceManager::CreatePipeline(const resource::ShaderProgram& shader_program,
+                                                 const resource::Material&      material) {
     SlangParser               slang_parser{};
     shader::SourceCodeStorage source_codes = slang_parser.CombineAndCompileShader(shader_program, material, m_ResourceManager);
 
-    if (source_codes.empty()) {
-        if (!m_Pipelines.empty())
-            return m_Pipelines[0]; // TODO : provide fallbacks
-        fe::logging::fatal("Out of range");
-    }
+    OpenGLPipeline opengl_pipeline{};
 
     GLuint shader_program_raw = this->createShaderProgramRaw(source_codes);
     opengl_pipeline.shader_program.attach(shader_program_raw);
@@ -277,7 +261,15 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetOrCreatePipeline(fe::poi
     }
     // clang-format on
 
-    return opengl_pipeline;
+    m_Pipelines.emplace_back(std::move(opengl_pipeline));
+    return m_Pipelines.size() - 1;
+}
+
+const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetPipeline(size_t pipeline_storage_index) {
+    if (m_Pipelines.size() <= pipeline_storage_index) {
+        fe::logging::fatal("Out of range"); // TODO : provide fallbacks
+    }
+    return m_Pipelines[pipeline_storage_index];
 }
 
 fe::ParameterID fe::OpenGLResourceManager::CreateDescriptorRing(const shader::ReflectedDescriptor& descriptor_layout) {

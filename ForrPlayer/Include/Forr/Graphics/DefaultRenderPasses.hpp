@@ -79,7 +79,16 @@ namespace fe {
 
         float time{};
 
-        //std::unordered_map<size_t, 
+        // pipeline
+
+        // hashed index of combined 'shader_program_ptr.packed()' and
+        //  'material_ptr.packed()' via 'fe::hash_combine(...)'
+        using PipelineHashedIndex = uint64_t;
+
+        // pipeline index in the storage of GPU resource manager
+        using PipelineStorageIndex = uint64_t;
+
+        std::unordered_map<PipelineHashedIndex, PipelineStorageIndex> pipeline_hashed_to_storage_map{};
     };
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) { // setup can be called twice

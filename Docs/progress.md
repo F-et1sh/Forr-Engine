@@ -1,14 +1,14 @@
 ﻿# Forr-Engine Devlog
 
-## 28.08.2026
+## 29.08.2026
 ### Goal
-    define what is 'pipeline'
+    define what 'pipeline' is
     move 'material x shader' combination to render pass
     separate material and its specialized version as two different resources in resource manager
-    make a video for YouTube
+    make a video for YouTube / move this task to 7th September
 
 ### Done
-    -
+    'fe::OpenGLResourceManager::CreatePipeline()' and 'fe::OpenGLResourceManager::GetPipeline()' provided
 
 ### Problem
     -
