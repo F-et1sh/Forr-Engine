@@ -60,6 +60,8 @@ namespace fe {
         // returns 'true', if actually found anything and 'false', if the argument is not changed
         bool ReflectMaterials(std::unordered_map<fe::hashed_string, shader::ReflectedStructureLayout>& material_layouts);
 
+        // TODO : remove this and create 'unified' version - it mustn't just combine shader program and material,
+        //  but specialize shader program, material and descriptors in any way possible
         shader::SourceCodeStorage CombineAndCompileShader(const resource::ShaderProgram& shader_program,
                                                           const resource::Material&      material,
                                                           ResourceManager&               resource_manager);

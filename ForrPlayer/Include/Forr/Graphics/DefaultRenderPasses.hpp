@@ -215,12 +215,26 @@ namespace fe {
             context.BindBuffer(pass_data.global_data_parameter_id);
             context.WriteBuffer(pass_data.global_data_parameter_id, pass_data.global_data_as_bytes);
 
-            context.BindShaderProgram(pass_data.default_shader_program_ptr);
+            size_t seed{};
+            fe::hash_combine(seed, pass_data.default_shader_program_ptr.packed()); // packs uint32_t of index and uint32_t of generation
+            fe::hash_combine(seed, pass_data.default_material_ptr.packed());
 
-            //context.BindPipeline(pass_data.default_shader_program_ptr, );
+            auto it = pass_data.pipeline_hashed_to_storage_map.find(seed);
+            if (it == pass_data.pipeline_hashed_to_storage_map.end()) {
+                //const auto& shader_program = context.resource_manager.GetResource(pass_data.default_shader_program_ptr);
+                //const auto& material = context.resource_manager.GetResource(pass_data.default_material_ptr);
+                //uint64_t pipeline_index = context.CreatePipeline(shader_program, material);
+                 
+                //pass_data.pipeline_hashed_to_storage_map.insert({ seed, pipeline_index });
 
-            context.DrawModel(pass_data.test_model_ptr, 0);  // means 'draw'
-            context.DrawModel(pass_data.test_model2_ptr, 1); // means 'draw'
+                //context.BindPipeline(pipeline_index);
+            }
+            else {
+                //context.BindPipeline(it->second);
+            }
+
+            context.DrawModel(pass_data.test_model_ptr, 0);
+            context.DrawModel(pass_data.test_model2_ptr, 1);
 
             pass_data.time += 0.01f;
         }
