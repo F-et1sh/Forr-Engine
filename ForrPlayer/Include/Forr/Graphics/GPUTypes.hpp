@@ -72,6 +72,17 @@ namespace fe {
     using Vertices = std::vector<Vertex>;
     using Indices  = std::vector<Index>;
 
+    /* forward declarations */
+    namespace shader {
+        struct ReflectedDescriptor;
+    } // namespace shader
+    namespace resource {
+        struct ShaderFileData;
+        struct ShaderProgram;
+        struct Material;
+        struct Model;
+    } // namespace resource
+
     inline static constexpr size_t MAX_COLOR_ATTACHMENTS = 16;
 
     enum class FORR_API RenderIndexType : uint8_t {
@@ -138,11 +149,26 @@ namespace fe {
         bool     cull_enable{ true };
         CullMode cull_mode{ CullMode::FRONT_AND_BACK };
 
-        PipelineFlags() = default;
+        PipelineFlags()  = default;
+        ~PipelineFlags() = default;
     };
 
     struct FORR_API VertexLayout {
+        // TODO : there is nothing yet. I don't know what to do with this.
+        // There are a few options :
+        // - create some 'unified' vertex layout - I don't like this idea
+        // - somehow switch vertex layout at runtime - I don't know how to do this
+        // - ...
+        // For now I'm just leaving this hardcoded
+    };
 
+    struct FORR_API PipelineDesc {
+        PipelineFlags                        pipeline_flags{};
+        fe::pointer<resource::ShaderProgram> shader_program_ptr{};
+        // VertexLayout vertex_layout{};
+
+        PipelineDesc()  = default;
+        ~PipelineDesc() = default;
     };
 
     struct FORR_API ParameterID {
@@ -155,17 +181,6 @@ namespace fe {
         ParameterID()  = default;
         ~ParameterID() = default;
     };
-
-    /* forward declarations */
-    namespace shader {
-        struct ReflectedDescriptor;
-    } // namespace shader
-    namespace resource {
-        struct ShaderFileData;
-        struct ShaderProgram;
-        struct Material;
-        struct Model;
-    } // namespace resource
 
     namespace render_graph {
         enum class FORR_API ImageType : uint8_t {
@@ -324,7 +339,6 @@ namespace fe {
 
         struct FORR_API BindPipeline {
             fe::pointer<resource::ShaderProgram> shader_program_ptr{};
-
         };
 
         // temp

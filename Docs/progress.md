@@ -1,14 +1,25 @@
 ﻿# Forr-Engine Devlog
 
+## 30.08.2026
+### Goal
+    think about shader specializations : how to make them
+    // not sure : separate material and its specialized version as two different resources in resource manager
+
+### Done
+    -
+    
+### Problem
+    -
+
 ## 29.08.2026
 ### Goal
     define what 'pipeline' is
     move 'material x shader' combination to render pass
     separate material and its specialized version as two different resources in resource manager
-    make a video for YouTube / move this task to 7th September
 
 ### Done
     'fe::OpenGLResourceManager::CreatePipeline()' and 'fe::OpenGLResourceManager::GetPipeline()' provided
+    'fe::PipelineDesc' added
 
 ### Problem
     -

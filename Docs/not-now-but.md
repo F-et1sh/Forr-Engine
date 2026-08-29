@@ -1,5 +1,8 @@
 # Forr-Engine Not now, but :
 
+# Added 29.08.2026
+- make a video for YouTube / start this task at 7th September
+
 # Added 23.08.2026
 - rework shader system : provide flexible API for user to manage Slang specialization
 - remove resource manager and renderer from 'fe::render_graph::RenderGraphBuilder'
