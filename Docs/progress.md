@@ -1,12 +1,27 @@
 ﻿# Forr-Engine Devlog
 
-## 30.08.2026
+## 31.08.2026
 ### Goal
+    create unified hpp file for materials to be used by C++ and Slang
     think about shader specializations : how to make them
-    // not sure : separate material and its specialized version as two different resources in resource manager
+    rewrite 'fe::MeshComponent'
+    separate material and its specialized version as two different resources in resource manager
+        do the same for all 'shader things'
 
 ### Done
     -
+    
+### Problem
+    -
+
+## 30.08.2026
+### Goal
+    think about shader specializations : how to make them
+    separate material and its specialized version as two different resources in resource manager
+        do the same for all 'shader things'
+
+### Done
+    bug fixed
     
 ### Problem
     -

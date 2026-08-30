@@ -127,10 +127,10 @@ bool fe::SlangParser::ComposeProgram(GraphicsBackend graphics_backend, bool do_a
     std::expected<Slang::ComPtr<slang::IComponentType>, fe::SlangParser::SpecializationErrors> expected_result =
         this->specializeGraphicsBackend(m_ComposedProgram.get(), graphics_backend);
 
-    if (expected_result.has_value()) {
-        Slang::ComPtr<slang::IComponentType> specialized_program = std::move(expected_result.value());
-        m_ComposedProgram.swap(specialized_program);
-    }
+    //if (expected_result.has_value()) {
+    //    Slang::ComPtr<slang::IComponentType> specialized_program = std::move(expected_result.value());
+    //    m_ComposedProgram.swap(specialized_program);
+    //}
 
     return true;
 }
@@ -221,7 +221,8 @@ bool fe::SlangParser::parseDescriptorRecursive(slang::VariableLayoutReflection* 
 
                     parameter.name            = name;
                     parameter.descriptor_type = ShaderDescriptor::GENERIC;
-                }
+                } break;
+
                 case SlangCategory::DescriptorTableSlot: {
                     auto& parameter = descriptors_layout.descriptors.emplace_back();
                     SlangParser::parseDescriptorTable(element_variable_layout, parameter);
