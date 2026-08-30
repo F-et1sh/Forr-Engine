@@ -11,7 +11,7 @@
         For example, if .png ( example.png ) hasn't data about "min filter", so, the member
             fe::resource::Texture::min_filter will be set to default, but if the resource manager finds
             a metadata file near ( example.png.fs ) it will fill the structure from it.
-        Sometimes one file ( extension ) can create multiple resources. For example, ShaderProgram and 
+        Sometimes one file ( extension ) can create multiple resources. For example, ShaderProgram and
             MaterialLayout are both created from .slang file - if it happends, you have to create a 
             structure, that will point to all of resources created by that 
             file ( ShaderFileData in the case of .slang )
@@ -126,7 +126,6 @@ namespace fe::resource {
     struct FORR_API ShaderProgram {
     public:
         using DescriptorsLayoutPtr = fe::pointer<resource::DescriptorsLayout>;
-        using ShaderProgramPtr     = fe::pointer<resource::ShaderProgram>;
         // unspecialized type name -> ( optinal ) type name that specializes
         using SpecializePair = std::pair<fe::hashed_string, std::optional<fe::hashed_string>>;
 
@@ -136,7 +135,7 @@ namespace fe::resource {
         // shader stage -> { specialized ( or unspecialized ) pairs }
         std::unordered_map<shader::StageBits, std::vector<SpecializePair>> specialized_types{};
 
-        VertexLayout vertex_layout{};
+        //VertexLayout vertex_layout{};
 
         ShaderProgram()  = default;
         ~ShaderProgram() = default;
@@ -196,6 +195,8 @@ namespace fe::resource {
 
         // basically, render pass sets pipeline flags, but if there is a material - it can override them
         PipelineFlags pipeline_flags_override{};
+
+        GPUHandle<Material> gpu_handle{};
 
         Material()  = default;
         ~Material() = default;
