@@ -78,21 +78,26 @@ namespace fe {
         std::vector<std::byte> global_data_as_bytes{};
 
         float time{};
-
-        // pipeline
-
-        // hashed index of combined 'shader_program_ptr.packed()' and
-        //  'material_ptr.packed()' via 'fe::hash_combine(...)'
-        using PipelineHashedIndex = uint64_t;
-
-        // pipeline index in the storage of GPU resource manager
-        using PipelineStorageIndex = uint64_t;
-
-        std::unordered_map<PipelineHashedIndex, PipelineStorageIndex> pipeline_hashed_to_storage_map{};
     };
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) { // setup can be called twice
             builder.writeToScreen(true);
+
+            fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
+            const resource::ShaderFileData&       shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
+
+            struct SpecializedEntryPoint {
+                std::vector<fe::hashed_string> to_specialize{};
+            };
+
+            struct SpecializedShaderProgram {
+                std::unordered_map<shader::StageBits, SpecializedEntryPoint> entry_points_to_specialized{};
+            };
+
+            SpecializedShaderProgram specialized_shader_program{};
+            specialized_shader_program.entry_points_to_specialized[shader::StageBits::FRAGMENT].to_specialize.emplace_back("PBRMaterial");
+
+            size_t pipeline_storage_index = builder.renderer.CreatePipeline(shader_file_data, specialized_shader_program);
 
             if (!pass_data.default_shader_program_ptr) {
                 fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
@@ -214,24 +219,6 @@ namespace fe {
 
             context.BindBuffer(pass_data.global_data_parameter_id);
             context.WriteBuffer(pass_data.global_data_parameter_id, pass_data.global_data_as_bytes);
-
-            size_t seed{};
-            fe::hash_combine(seed, pass_data.default_shader_program_ptr.packed()); // packs uint32_t of index and uint32_t of generation
-            fe::hash_combine(seed, pass_data.default_material_ptr.packed());
-
-            auto it = pass_data.pipeline_hashed_to_storage_map.find(seed);
-            if (it == pass_data.pipeline_hashed_to_storage_map.end()) {
-                //const auto& shader_program = context.resource_manager.GetResource(pass_data.default_shader_program_ptr);
-                //const auto& material = context.resource_manager.GetResource(pass_data.default_material_ptr);
-                //uint64_t pipeline_index = context.CreatePipeline(shader_program, material);
-                 
-                //pass_data.pipeline_hashed_to_storage_map.insert({ seed, pipeline_index });
-
-                //context.BindPipeline(pipeline_index);
-            }
-            else {
-                //context.BindPipeline(it->second);
-            }
 
             context.DrawModel(pass_data.test_model_ptr, 0);
             context.DrawModel(pass_data.test_model2_ptr, 1);

@@ -1,5 +1,23 @@
 ﻿# Forr-Engine Devlog
 
+## 01.09.2026
+### Goal
+    rewrite 'fe::resource::ShaderFileData' - make it contain everything that was founded in the shader file
+        and specialized versions of it. Then, provide specialization API for this
+        'resource::MaterialLayout', 'resource::ShaderProgram' and 'resource::DescriptorSets' mustn't be unique CPU resources
+    provide some 'material layout key' that will contain 'fe::pointer<fe::resource::ShaderFileData>' and some indices
+        to reach needed material layout in the 'fe::resource::ShaderFileData'
+    provide API to assemble a shader from 'resource::ShaderFileData' by collecting needed entry points and
+        specializing them if needed, like Lego
+    rewrite 'fe::MeshComponent'
+    create unified hpp file for materials to be used by C++ and Slang
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 31.08.2026
 ### Goal
     create unified hpp file for materials to be used by C++ and Slang
@@ -9,7 +27,7 @@
         do the same for all 'shader things'
 
 ### Done
-    -
+    was thinking about shader's specialization
     
 ### Problem
     -
