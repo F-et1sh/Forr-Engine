@@ -534,6 +534,7 @@ namespace fe {
 
             ACCELERATION_STRUCTURE,
 
+            // TODO : remove
             GENERIC,
 
             UNKNOWN
