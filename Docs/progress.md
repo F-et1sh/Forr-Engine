@@ -14,6 +14,7 @@
 
 ### Done
     ReflectedEntryPoint, SpecializationValue, SpecializationArgument, EntryPointSpecialization and ProgramSpecialization are added
+    resource::ShaderProgram, resource::MaterialLayout and resource::DescriptorsLayout are removed
 
 ### Problem
     School : Russian language, Russian literature, Math, Physics and deadlines

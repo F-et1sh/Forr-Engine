@@ -12,11 +12,15 @@
             fe::resource::Texture::min_filter will be set to default, but if the resource manager finds
             a metadata file near ( example.png.fs ) it will fill the structure from it.
 
-        // TODO : this rule might be removed. Better create one resource and store its 'sub resources' inside
+        // TODO : this rule might be removed. Better create one resource and store its 'sub-resources' inside.
+            Also, when I start creating resources out of 'fe::resource::', which will be OOP-based wrapper classes for user
+            I think you could create classes for that 'sub-resources' too
+        ---
         Sometimes one file ( extension ) can create multiple resources. For example, ShaderProgram and
             MaterialLayout are both created from .slang file - if it happends, you have to create a 
             structure, that will point to all of resources created by that 
             file ( ShaderFileData in the case of .slang )
+        ---
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -121,64 +125,12 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Texture)
     };
 
-    /* forward declarations */
-    struct ShaderFileData;
-    struct DescriptorsLayout;
-
-    struct FORR_API ShaderProgram {
-    public:
-        using DescriptorsLayoutPtr = fe::pointer<resource::DescriptorsLayout>;
-        // unspecialized type name -> ( optinal ) type name that specializes
-        using SpecializePair = std::pair<fe::hashed_string, std::optional<fe::hashed_string>>;
-
-        fe::pointer<ShaderFileData>         shader_file_data_ptr{};
-        std::optional<DescriptorsLayoutPtr> descriptors_layout_ptr{};
-
-        // shader stage -> { specialized ( or unspecialized ) pairs }
-        std::unordered_map<shader::StageBits, std::vector<SpecializePair>> specialized_types{};
-
-        //VertexLayout vertex_layout{};
-
-        ShaderProgram()  = default;
-        ~ShaderProgram() = default;
-
-        FORR_RESOURCE_BODY(ShaderProgram)
-    };
-
-    struct FORR_API DescriptorsLayout {
-    public:
-        fe::pointer<ShaderFileData>        shader_file_data_ptr{};
-        shader::ReflectedDescriptorsLayout reflected_layout{};
-
-        DescriptorsLayout() = default;
-        DescriptorsLayout(shader::ReflectedDescriptorsLayout reflected_layout, fe::pointer<ShaderFileData> shader_file_data_ptr)
-            : reflected_layout(std::move(reflected_layout)), shader_file_data_ptr(shader_file_data_ptr) {}
-        ~DescriptorsLayout() = default;
-
-        FORR_RESOURCE_BODY(DescriptorsLayout)
-    };
-
-    // TODO : maybe rename this to 'StructureLayout'
-    struct FORR_API MaterialLayout {
-        fe::pointer<ShaderFileData>      shader_file_data_ptr{};
-        shader::ReflectedStructureLayout reflected_layout{};
-
-        MaterialLayout() = default;
-        MaterialLayout(shader::ReflectedStructureLayout reflected_layout, fe::pointer<ShaderFileData> shader_file_data_ptr)
-            : reflected_layout(std::move(reflected_layout)), shader_file_data_ptr(shader_file_data_ptr) {}
-        ~MaterialLayout() = default;
-
-        FORR_RESOURCE_BODY(MaterialLayout)
-    };
-
     struct FORR_API Material {
     public:
-        // TODO : remove this
-        fe::pointer<fe::resource::MaterialLayout> layout_ptr{};
-
         struct MaterialLayoutKey {
             fe::pointer<resource::ShaderFileData> shader_file_data{};
-            size_t                                structure_layout_storage_index{};
+            // index of structure layout in 'fe::resource::ShaderFileData::structure_layouts'
+            size_t structure_layout_storage_index{};
         };
 
         MaterialLayoutKey layout_key{};
@@ -224,7 +176,7 @@ namespace fe::resource {
         std::vector<shader::ReflectedEntryPoint>      entry_points{};
 
         // created resources
-        struct FORR_API ShaderProgram {
+        struct ShaderProgram {
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr{};
 
             std::vector<size_t> descriptor_layout_indices{};
@@ -248,8 +200,8 @@ namespace fe::resource {
     };
 
     struct FORR_API Model {
-        struct FORR_API Mesh {
-            struct FORR_API Primitive {
+        struct Mesh {
+            struct Primitive {
                 fe::pointer<Material> material_ptr{};
 
                 RenderMode render_mode{ RenderMode::TRIANGLES }; // triangles by default
@@ -270,7 +222,7 @@ namespace fe::resource {
             std::vector<float>     weights{}; // weights to be applied to the Morph Targets
         };
 
-        struct FORR_API AnimationChannel {
+        struct AnimationChannel {
             enum class TargetPath {
                 TRANSLATION,
                 ROTATION,
@@ -283,7 +235,7 @@ namespace fe::resource {
             TargetPath target_path{}; // "rotation", "translation", "scale"
         };
 
-        struct FORR_API AnimationSampler {
+        struct AnimationSampler {
             enum class InterpolationMode {
                 LINEAR,
                 STEP,
@@ -295,12 +247,12 @@ namespace fe::resource {
             InterpolationMode      interpolation{ InterpolationMode::LINEAR };
         };
 
-        struct FORR_API Animation {
+        struct Animation {
             std::vector<AnimationChannel> channels{};
             std::vector<AnimationSampler> samplers{};
         };
 
-        struct FORR_API Node {
+        struct Node {
             // TODO : I think this shouldn't be just int
             int camera{ -1 };
             int skin{ -1 };
@@ -322,7 +274,7 @@ namespace fe::resource {
             std::vector<float> weights{};
         };
 
-        struct FORR_API Skin {
+        struct Skin {
             std::string            name{};
             std::vector<glm::mat4> inverse_bind_matrices{};
             int                    skeleton{ -1 }; // the index of the node used as a skeleton root
