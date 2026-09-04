@@ -88,6 +88,9 @@ namespace fe {
         template <typename T>
         void WriteBuffer(ParameterID parameter_id, std::span<const T> data) { WriteBuffer(parameter_id, std::as_bytes(data)); }
 
+        virtual FORR_NODISCARD PipelineID CreatePipeline(const PipelineDesc& pipeline_desc) = 0;
+        virtual void                      BindPipeline(PipelineID pipeline_id)              = 0;
+
         // write to SSBO or UBO
         virtual void WriteBuffer(ParameterID parameter_id, std::span<const std::byte> data) = 0;
 

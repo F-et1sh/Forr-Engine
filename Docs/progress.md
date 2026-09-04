@@ -1,5 +1,19 @@
 ﻿# Forr-Engine Devlog
 
+## 05.09.2026
+### Goal
+    provide API to create and bind pipeline via 'fe::IRenderer'
+    provide API to assemble a shader from 'resource::ShaderFileData' by collecting needed entry points and
+        specializing them if needed, like Lego
+    rewrite 'fe::MeshComponent'
+    create unified hpp file for materials to be used by C++ and Slang
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 04.09.2026
 ### Goal
     rewrite 'fe::resource::ShaderFileData' - make it contain everything that was founded in the shader file
@@ -15,6 +29,7 @@
 ### Done
     ReflectedEntryPoint, SpecializationValue, SpecializationArgument, EntryPointSpecialization and ProgramSpecialization are added
     resource::ShaderProgram, resource::MaterialLayout and resource::DescriptorsLayout are removed
+    'fe::IRenderer::CreatePipeline()' and 'fe::IRenderer::BindPipeline()' added
 
 ### Problem
     School : Russian language, Russian literature, Math, Physics and deadlines

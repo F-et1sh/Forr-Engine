@@ -130,13 +130,13 @@ namespace fe::resource {
         struct MaterialLayoutKey {
             fe::pointer<resource::ShaderFileData> shader_file_data{};
             // index of structure layout in 'fe::resource::ShaderFileData::structure_layouts'
-            size_t structure_layout_storage_index{};
+            size_t structure_layout_storage_index{ std::numeric_limits<size_t>::max() };
         };
 
         MaterialLayoutKey layout_key{};
 
         struct Sampler {
-            std::size_t          offset{};
+            std::size_t          offset{ std::numeric_limits<size_t>::max() };
             fe::pointer<Texture> texture_ptr{};
         };
 
@@ -158,8 +158,6 @@ namespace fe::resource {
         // basically, render pass sets pipeline flags, but if there is a material - it can override them
         PipelineFlags pipeline_flags_override{};
 
-        GPUHandle<Material> gpu_handle{};
-
         Material()  = default;
         ~Material() = default;
 
@@ -174,19 +172,6 @@ namespace fe::resource {
         std::vector<shader::ReflectedPushConstants>   push_constants_layouts{};
         std::vector<shader::ReflectedStructureLayout> structure_layouts{};
         std::vector<shader::ReflectedEntryPoint>      entry_points{};
-
-        // created resources
-        struct ShaderProgram {
-            fe::pointer<resource::ShaderFileData> shader_file_data_ptr{};
-
-            std::vector<size_t> descriptor_layout_indices{};
-            std::vector<size_t> push_constants_layout_indices{};
-            std::vector<size_t> entry_point_indices{};
-
-            GPUHandle<ShaderProgram> gpu_handle{};
-        };
-
-        std::vector<ShaderProgram> shader_programs{};
 
         // this is needed to not accses disk twice
         std::vector<uint8_t> slang_serialized_data{}; // serialized module
