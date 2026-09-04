@@ -11,6 +11,8 @@
         For example, if .png ( example.png ) hasn't data about "min filter", so, the member
             fe::resource::Texture::min_filter will be set to default, but if the resource manager finds
             a metadata file near ( example.png.fs ) it will fill the structure from it.
+
+        // TODO : this rule might be removed. Better create one resource and store its 'sub resources' inside
         Sometimes one file ( extension ) can create multiple resources. For example, ShaderProgram and
             MaterialLayout are both created from .slang file - if it happends, you have to create a 
             structure, that will point to all of resources created by that 
@@ -171,7 +173,15 @@ namespace fe::resource {
 
     struct FORR_API Material {
     public:
+        // TODO : remove this
         fe::pointer<fe::resource::MaterialLayout> layout_ptr{};
+
+        struct MaterialLayoutKey {
+            fe::pointer<resource::ShaderFileData> shader_file_data{};
+            size_t                                structure_layout_storage_index{};
+        };
+
+        MaterialLayoutKey layout_key{};
 
         struct Sampler {
             std::size_t          offset{};
@@ -207,18 +217,27 @@ namespace fe::resource {
     // this is a basic structure, created by 'fe::ShaderImporter', while importing a file
     struct FORR_API ShaderFileData {
     public:
-        using ShaderProgramPtr     = fe::pointer<resource::ShaderProgram>;
-        using DescriptorsLayoutPtr = fe::pointer<resource::DescriptorsLayout>;
-        using MaterialLayoutPtr    = fe::pointer<resource::MaterialLayout>;
+        // initial resources
+        std::vector<shader::ReflectedDescriptor>      descriptor_layouts{};
+        std::vector<shader::ReflectedPushConstants>   push_constants_layouts{};
+        std::vector<shader::ReflectedStructureLayout> structure_layouts{};
+        std::vector<shader::ReflectedEntryPoint>      entry_points{};
 
-        using MaterialLayoutsContainer = std::unordered_map<fe::hashed_string, MaterialLayoutPtr>;
+        // created resources
+        struct FORR_API ShaderProgram {
+            fe::pointer<resource::ShaderFileData> shader_file_data_ptr{};
 
-        std::optional<ShaderProgramPtr>         shader_program_ptr{};
-        std::optional<DescriptorsLayoutPtr>     descriptors_layout_ptr{};
-        std::optional<MaterialLayoutsContainer> material_layout_ptrs{};
+            std::vector<size_t> descriptor_layout_indices{};
+            std::vector<size_t> push_constants_layout_indices{};
+            std::vector<size_t> entry_point_indices{};
+
+            GPUHandle<ShaderProgram> gpu_handle{};
+        };
+
+        std::vector<ShaderProgram> shader_programs{};
 
         // this is needed to not accses disk twice
-        std::vector<uint8_t> slang_serialized_data{};
+        std::vector<uint8_t> slang_serialized_data{}; // serialized module
         // this is used as an unique index in 'slang::ISession::loadModuleFromIRBlob()'
         std::string full_path{};
 

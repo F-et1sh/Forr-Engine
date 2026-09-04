@@ -1,6 +1,6 @@
 ﻿# Forr-Engine Devlog
 
-## 01.09.2026
+## 04.09.2026
 ### Goal
     rewrite 'fe::resource::ShaderFileData' - make it contain everything that was founded in the shader file
         and specialized versions of it. Then, provide specialization API for this
@@ -13,10 +13,10 @@
     create unified hpp file for materials to be used by C++ and Slang
 
 ### Done
-    -
+    ReflectedEntryPoint, SpecializationValue, SpecializationArgument, EntryPointSpecialization and ProgramSpecialization are added
 
 ### Problem
-    -
+    School : Russian language, Russian literature, Math, Physics and deadlines
 
 ## 31.08.2026
 ### Goal

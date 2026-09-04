@@ -97,7 +97,7 @@ namespace fe {
             SpecializedShaderProgram specialized_shader_program{};
             specialized_shader_program.entry_points_to_specialized[shader::StageBits::FRAGMENT].to_specialize.emplace_back("PBRMaterial");
 
-            size_t pipeline_storage_index = builder.renderer.CreatePipeline(shader_file_data, specialized_shader_program);
+            //size_t pipeline_storage_index = builder.renderer.CreatePipeline(shader_file_data, specialized_shader_program);
 
             if (!pass_data.default_shader_program_ptr) {
                 fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
