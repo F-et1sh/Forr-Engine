@@ -405,7 +405,7 @@ namespace fe {
             FORR_CLASS_NONCOPYABLE(CommandList)
 
             template <typename Command>
-                requires std::is_trivially_copyable_v<Command>
+                requires std::is_trivially_copyable_v<Command> && std::is_trivially_destructible_v<Command>
             void enqueue(const Command& command) {
                 constexpr CommandType type = CommandTraits<Command>::Type;
 
@@ -683,7 +683,7 @@ namespace fe {
 
         struct FORR_API EntryPointSpecialization {
             std::vector<SpecializationArgument> arguments{};
-            fe::hashed_string                         name{};
+            fe::hashed_string                   name{};
 
             EntryPointSpecialization() = default;
             EntryPointSpecialization(std::vector<SpecializationArgument> arguments, fe::hashed_string name)
