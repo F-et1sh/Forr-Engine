@@ -78,7 +78,6 @@ namespace fe {
     } // namespace shader
     namespace resource {
         struct ShaderFileData;
-        struct ShaderProgram;
         struct Material;
         struct Model;
     } // namespace resource
@@ -162,15 +161,7 @@ namespace fe {
         // For now I'm just leaving this hardcoded
     };
 
-    struct FORR_API PipelineDesc {
-        PipelineFlags                        pipeline_flags{};
-        fe::pointer<resource::ShaderProgram> shader_program_ptr{};
-        // VertexLayout vertex_layout{};
-
-        PipelineDesc()  = default;
-        ~PipelineDesc() = default;
-    };
-
+    // TODO : think about moving this into 'IRenderer.hpp' or new file
     struct FORR_API ParameterID {
         uint8_t set{ std::numeric_limits<uint8_t>::max() };
         uint8_t binding{ std::numeric_limits<uint8_t>::max() };
@@ -180,6 +171,18 @@ namespace fe {
 
         ParameterID()  = default;
         ~ParameterID() = default;
+    };
+
+    struct FORR_API PipelineDesc {
+        PipelineFlags pipeline_flags{};
+        // VertexLayout vertex_layout{};
+
+        PipelineDesc()  = default;
+    };
+
+    struct FORR_API PipelineID {
+        // index in the list of shader buffers in GPU resource manager
+        uint32_t storage_index{ std::numeric_limits<uint32_t>::max() };
     };
 
     namespace render_graph {
