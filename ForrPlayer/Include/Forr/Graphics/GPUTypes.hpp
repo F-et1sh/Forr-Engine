@@ -626,25 +626,6 @@ namespace fe {
             bool operator==(const ReflectedPushConstants&) const noexcept = default;
         };
 
-        enum class FORR_API StageBits : std::uint8_t {
-            NONE     = 0,
-            VERTEX   = 1 << 0,
-            GEOMETRY = 1 << 1,
-            FRAGMENT = 1 << 2,
-            COMPUTE  = 1 << 3,
-        };
-
-        struct FORR_API ReflectedDescriptorsLayout {
-            std::vector<shader::ReflectedDescriptor> descriptors{};
-            shader::ReflectedPushConstants           push_constants{};
-
-            ReflectedDescriptorsLayout() = default;
-            ReflectedDescriptorsLayout(std::vector<shader::ReflectedDescriptor> descriptors, shader::ReflectedPushConstants push_constants)
-                : descriptors(std::move(descriptors)), push_constants(std::move(push_constants)) {}
-
-            bool operator==(const ReflectedDescriptorsLayout&) const noexcept = default;
-        };
-
         struct FORR_API ReflectedStructureLayout {
             uint32_t                             size{};
             std::vector<shader::ReflectedMember> members{};
@@ -655,6 +636,70 @@ namespace fe {
                 : size(size), members(std::move(members)), name(std::move(name)) {}
 
             bool operator==(const ReflectedStructureLayout&) const noexcept = default;
+        };
+
+        enum class FORR_API StageBits : std::uint8_t {
+            NONE     = 0,
+            VERTEX   = 1 << 0,
+            GEOMETRY = 1 << 1,
+            FRAGMENT = 1 << 2,
+            COMPUTE  = 1 << 3,
+        };
+
+        struct FORR_API ReflectedEntryPoint {
+            StageBits stage_flag{};
+
+            std::vector<fe::hashed_string> arguments{};
+            std::vector<fe::hashed_string> generic_arguments{};
+
+            fe::hashed_string name{};
+
+            ReflectedEntryPoint() = default;
+            ReflectedEntryPoint(StageBits stage_flag, std::vector<fe::hashed_string> arguments, std::vector<fe::hashed_string> generic_arguments, fe::hashed_string name)
+                : stage_flag(stage_flag), arguments(std::move(arguments)), generic_arguments(std::move(generic_arguments)), name(std::move(name)) {}
+
+            bool operator==(const ReflectedEntryPoint&) const noexcept = default;
+        };
+
+        using SpecializationValue = std::variant<fe::hashed_string,
+                                                 bool,
+                                                 int32_t,
+                                                 uint32_t,
+                                                 int64_t,
+                                                 uint64_t,
+                                                 float,
+                                                 double>;
+
+        struct FORR_API SpecializationArgument {
+            fe::hashed_string   name{};
+            SpecializationValue value{};
+
+            SpecializationArgument() = default;
+            SpecializationArgument(fe::hashed_string name, SpecializationValue value)
+                : value(std::move(value)), name(std::move(name)) {}
+
+            bool operator==(const SpecializationArgument&) const noexcept = default;
+        };
+
+        struct FORR_API EntryPointSpecialization {
+            std::vector<SpecializationArgument> arguments{};
+            fe::hashed_string                         name{};
+
+            EntryPointSpecialization() = default;
+            EntryPointSpecialization(std::vector<SpecializationArgument> arguments, fe::hashed_string name)
+                : arguments(std::move(arguments)), name(std::move(name)) {}
+
+            bool operator==(const EntryPointSpecialization&) const noexcept = default;
+        };
+
+        struct FORR_API ProgramSpecialization {
+            std::vector<EntryPointSpecialization> entry_points{};
+
+            ProgramSpecialization() = default;
+            ProgramSpecialization(std::vector<EntryPointSpecialization> entry_points)
+                : entry_points(std::move(entry_points)) {}
+
+            bool operator==(const ProgramSpecialization&) const noexcept = default;
         };
 
         using SourceCode        = std::vector<uint8_t>;
