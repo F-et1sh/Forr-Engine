@@ -86,18 +86,20 @@ namespace fe {
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
             const resource::ShaderFileData&       shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
 
-            struct SpecializedEntryPoint {
-                std::vector<fe::hashed_string> to_specialize{};
+            shader::ProgramSpecialization shader_program_specialization{
+                .global_arguments{ { "TBuffer", "VulkanBuffer" } },
+                .entry_points{}
             };
 
-            struct SpecializedShaderProgram {
-                std::unordered_map<shader::StageBits, SpecializedEntryPoint> entry_points_to_specialized{};
+            PipelineDesc pipeline_desc{
+                .pipeline_flags{ .render_mode = fe::RenderMode::TRIANGLE_STRIP, .depth_test_enable = false },  // fe::PipelineFlags
+                .files{ shader_file_data_ptr },                                                                // std::vector<fe::pointer<resource::ShaderFileData>>
+                .entry_points{ "vertexMain", "FragmentMain" },                                                 // std::vector<fe::hashed_string>
+                .descriptor_sets{ "g_MaterialsRawData", "g_ModelMatrices", "g_GlobalData", "push_constants" }, // std::vector<fe::hashed_string>
+                .specialization{ shader_program_specialization }                                               // shader::ProgramSpecialization
             };
 
-            SpecializedShaderProgram specialized_shader_program{};
-            specialized_shader_program.entry_points_to_specialized[shader::StageBits::FRAGMENT].to_specialize.emplace_back("PBRMaterial");
-
-            //size_t pipeline_storage_index = builder.renderer.CreatePipeline(shader_file_data, specialized_shader_program);
+            size_t pipeline_storage_index = builder.renderer.CreatePipeline(pipeline_desc);
 
             if (!pass_data.default_shader_program_ptr) {
                 fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
