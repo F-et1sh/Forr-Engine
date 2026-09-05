@@ -47,6 +47,7 @@
     <ClInclude Include="Source\Graphics\Slang\SlangParser.hpp" />
     <ClInclude Include="Include\Forr\Core\string.hpp" />
     <ClInclude Include="Include\Forr\Graphics\DefaultRenderPasses.hpp" />
+    <ClInclude Include="Include\Forr\Graphics\RenderGraphCommands.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -81,5 +82,6 @@
     <ClCompile Include="..\ThirdParty\VulkanMemoryAllocator\src\vk_mem_alloc.cpp" />
     <ClCompile Include="Source\Graphics\RenderGraph.cpp" />
     <ClCompile Include="Source\Graphics\Slang\SlangParser.cpp" />
+    <ClCompile Include="Source\Graphics\RenderGraphCommands.cpp" />
   </ItemGroup>
 </Project>

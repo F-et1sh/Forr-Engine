@@ -9,7 +9,7 @@
     create unified hpp file for materials to be used by C++ and Slang
 
 ### Done
-    -
+    working over the architecture
 
 ### Problem
     -
@@ -32,7 +32,7 @@
     'fe::IRenderer::CreatePipeline()' and 'fe::IRenderer::BindPipeline()' added
 
 ### Problem
-    School : Russian language, Russian literature, Math, Physics and deadlines
+    School : Russian language, Russian literature, Maths, Physics and deadlines
 
 ## 31.08.2026
 ### Goal

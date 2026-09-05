@@ -147,9 +147,6 @@ namespace fe {
 
         bool     cull_enable{ true };
         CullMode cull_mode{ CullMode::FRONT_AND_BACK };
-
-        PipelineFlags()  = default;
-        ~PipelineFlags() = default;
     };
 
     struct FORR_API VertexLayout {
@@ -177,7 +174,10 @@ namespace fe {
         PipelineFlags pipeline_flags{};
         // VertexLayout vertex_layout{};
 
-        PipelineDesc()  = default;
+        fe::pointer<resource::ShaderFileData> shader_file_data_ptr{};
+        // 'lego' should be here
+
+        PipelineDesc() = default;
     };
 
     struct FORR_API PipelineID {
@@ -341,7 +341,8 @@ namespace fe {
         };
 
         struct FORR_API BindPipeline {
-            fe::pointer<resource::ShaderProgram> shader_program_ptr{};
+            //fe::pointer<resource::ShaderProgram> shader_program_ptr{};
+            PipelineID pipeline_id{};
         };
 
         // temp
@@ -677,36 +678,22 @@ namespace fe {
             fe::hashed_string   name{};
             SpecializationValue value{};
 
-            SpecializationArgument() = default;
-            SpecializationArgument(fe::hashed_string name, SpecializationValue value)
-                : value(std::move(value)), name(std::move(name)) {}
-
             bool operator==(const SpecializationArgument&) const noexcept = default;
         };
 
         struct FORR_API EntryPointSpecialization {
-            std::vector<SpecializationArgument> arguments{};
             fe::hashed_string                   name{};
-
-            EntryPointSpecialization() = default;
-            EntryPointSpecialization(std::vector<SpecializationArgument> arguments, fe::hashed_string name)
-                : arguments(std::move(arguments)), name(std::move(name)) {}
+            std::vector<SpecializationArgument> arguments{};
 
             bool operator==(const EntryPointSpecialization&) const noexcept = default;
         };
 
-        struct FORR_API ProgramSpecialization {
+        struct FORR_API ProgramSpecialization { // this should be called 'ShaderProgramSpecialization', but it's already in 'fe::shader::'
+            std::vector<SpecializationArgument>   global_arguments{};
             std::vector<EntryPointSpecialization> entry_points{};
-
-            ProgramSpecialization() = default;
-            ProgramSpecialization(std::vector<EntryPointSpecialization> entry_points)
-                : entry_points(std::move(entry_points)) {}
 
             bool operator==(const ProgramSpecialization&) const noexcept = default;
         };
-
-        using SourceCode        = std::vector<uint8_t>;
-        using SourceCodeStorage = std::unordered_map<shader::StageBits, SourceCode>;
     } // namespace shader
 } // namespace fe
 
