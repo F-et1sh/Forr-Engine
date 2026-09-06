@@ -86,20 +86,35 @@ namespace fe {
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
             const resource::ShaderFileData&       shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
 
-            shader::ProgramSpecialization shader_program_specialization{
-                .global_arguments{ { "TBuffer", "VulkanBuffer" } },
-                .entry_points{}
-            };
+            shader::ProgramSpecialization shader_program_specialization{};
+
+            if (builder.renderer.GetCurrentGraphicsBackend() == GraphicsBackend::OpenGL) {
+                shader_program_specialization.global_arguments.emplace_back(shader::SpecializationArgument{ "TBuffer", "OpenGLBuffer" });
+            }
+            else if (builder.renderer.GetCurrentGraphicsBackend() == GraphicsBackend::Vulkan) {
+                shader_program_specialization.global_arguments.emplace_back(shader::SpecializationArgument{ "TBuffer", "VulkanBuffer" });
+            }
 
             PipelineDesc pipeline_desc{
-                .pipeline_flags{ .render_mode = fe::RenderMode::TRIANGLE_STRIP, .depth_test_enable = false },  // fe::PipelineFlags
-                .files{ shader_file_data_ptr },                                                                // std::vector<fe::pointer<resource::ShaderFileData>>
-                .entry_points{ "vertexMain", "FragmentMain" },                                                 // std::vector<fe::hashed_string>
-                .descriptor_sets{ "g_MaterialsRawData", "g_ModelMatrices", "g_GlobalData", "push_constants" }, // std::vector<fe::hashed_string>
-                .specialization{ shader_program_specialization }                                               // shader::ProgramSpecialization
+                .pipeline_flags{ .render_mode = fe::RenderMode::TRIANGLE_STRIP, .depth_test_enable = false },
+                .shader_file_ptrs{ shader_file_data_ptr },
+                .entry_points{ "vertexMain", "FragmentMain" },
+                .descriptor_sets{ "g_MaterialsRawData", "g_ModelMatrices", "g_GlobalData", "push_constants" },
+                .specialization{ shader_program_specialization }
             };
 
-            size_t pipeline_storage_index = builder.renderer.CreatePipeline(pipeline_desc);
+            PipelineID pipeline_storage_index = builder.renderer.CreatePipeline(pipeline_desc);
+
+            // ...
+            // }
+            //
+            // static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
+
+            context.BindPipeline(pipeline_storage_index);
+
+            // ...
+            // }
+            // };
 
             if (!pass_data.default_shader_program_ptr) {
                 fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
