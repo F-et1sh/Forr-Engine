@@ -2,6 +2,7 @@
 
 ## 06.09.2026
 ### Goal
+    provide automatical functions for easier assembling 'fe::PipelineDesc'
     provide API to assemble a shader from 'resource::ShaderFileData' by collecting needed entry points and
         specializing them if needed, like Lego
     'fe::SlangParser' must able to assemble the Lego

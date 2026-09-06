@@ -171,13 +171,23 @@ namespace fe {
     };
 
     struct FORR_API PipelineDesc {
-        PipelineFlags pipeline_flags{};
-        // VertexLayout vertex_layout{};
+        fe::PipelineFlags pipeline_flags{};
 
-        fe::pointer<resource::ShaderFileData> shader_file_data_ptr{};
-        // 'lego' should be here
+        std::vector<fe::pointer<resource::ShaderFileData>> shader_file_ptrs{};
+        std::vector<fe::hashed_string>                     entry_points{};
+        std::vector<fe::hashed_string>                     descriptor_sets{};
 
-        PipelineDesc() = default;
+        std::optional<shader::ProgramSpecialization> specialization{};
+
+        static PipelineDesc CreateAuto(std::vector<fe::pointer<resource::ShaderFileData>> shader_file_ptrs,
+                                       fe::PipelineFlags                                  flags) {
+
+            PipelineDesc desc{};
+            desc.shader_file_ptrs = std::move(shader_file_ptrs);
+            desc.pipeline_flags   = flags;
+
+            return desc;
+        }
     };
 
     struct FORR_API PipelineID {
