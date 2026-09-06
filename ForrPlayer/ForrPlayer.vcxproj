@@ -113,7 +113,6 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     <ClInclude Include="Include\Forr\Graphics\DefaultRenderPasses.hpp" />
     <ClInclude Include="Include\Forr\Graphics\IRenderer.hpp" />
     <ClInclude Include="Include\Forr\Graphics\RenderGraph.hpp" />
-    <ClInclude Include="Include\Forr\Graphics\RenderGraphCommands.hpp" />
     <ClInclude Include="Include\Forr\Layer.hpp" />
     <ClInclude Include="Include\Forr\PCH\pch.hpp" />
     <ClInclude Include="Include\Forr\Platform\IPlatformSystem.hpp" />
@@ -179,7 +178,6 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     </ClCompile>
     <ClCompile Include="Source\ECS\Systems\RenderSystem.cpp" />
     <ClCompile Include="Source\Graphics\RenderGraph.cpp" />
-    <ClCompile Include="Source\Graphics\RenderGraphCommands.cpp" />
     <ClCompile Include="Source\Graphics\Slang\SlangParser.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\ShaderImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceCreator.cpp" />

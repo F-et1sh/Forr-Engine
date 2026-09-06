@@ -1,5 +1,22 @@
 ﻿# Forr-Engine Devlog
 
+## 06.09.2026
+### Goal
+    provide API to assemble a shader from 'resource::ShaderFileData' by collecting needed entry points and
+        specializing them if needed, like Lego
+    'fe::SlangParser' must able to assemble the Lego
+    provide API to create and bind pipeline via 'fe::IRenderer'
+    provide using one session in 'fe::SlangParser'
+    provide resource GUIDs to prevent double-loading
+    rewrite 'fe::MeshComponent'
+    create unified hpp file for materials to be used by C++ and Slang
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 05.09.2026
 ### Goal
     provide API to create and bind pipeline via 'fe::IRenderer'
