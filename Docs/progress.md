@@ -1,6 +1,6 @@
 ﻿# Forr-Engine Devlog
 
-## 06.09.2026
+## 15.09.2026
 ### Goal
     provide automatical functions for easier assembling 'fe::PipelineDesc'
     provide API to assemble a shader from 'resource::ShaderFileData' by collecting needed entry points and
@@ -13,10 +13,14 @@
     create unified hpp file for materials to be used by C++ and Slang
 
 ### Done
-    -
+    reviewed all my repositories' README.md and LICENSE ( changed to MIT )
 
 ### Problem
-    -
+    Time-management problem : trying to resolve via 'time-management.md' since 13.09.2026
+        this week is an experiment, when I'm trying hard to use the new 'time-management.md'
+    YouTube
+    School
+    Procrastination
 
 ## 05.09.2026
 ### Goal

@@ -181,10 +181,9 @@ namespace fe {
 
         static PipelineDesc CreateAuto(std::vector<fe::pointer<resource::ShaderFileData>> shader_file_ptrs,
                                        fe::PipelineFlags                                  flags) {
-
             PipelineDesc desc{};
-            desc.shader_file_ptrs = std::move(shader_file_ptrs);
-            desc.pipeline_flags   = flags;
+
+            // ...
 
             return desc;
         }
