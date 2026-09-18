@@ -1,5 +1,21 @@
 ﻿# Forr-Engine Devlog
 
+## 18.09.2026
+### Goal
+    make the project compile
+
+    provide API to create and bind pipeline via 'fe::IRenderer'
+    provide API to assemble a shader from 'resource::ShaderFileData' by collecting needed entry points and
+        specializing them if needed, like Lego
+    rewrite 'fe::MeshComponent'
+    create unified hpp file for materials to be used by C++ and Slang
+
+### Done
+    trying to revive the project
+
+### Problem
+    -
+
 ## 15.09.2026
 ### Goal
     provide automatical functions for easier assembling 'fe::PipelineDesc'

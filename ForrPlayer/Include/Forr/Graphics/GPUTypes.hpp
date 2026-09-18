@@ -81,6 +81,7 @@ namespace fe {
         struct Material;
         struct Model;
     } // namespace resource
+    class ResourceManager;
 
     inline static constexpr size_t MAX_COLOR_ATTACHMENTS = 16;
 
@@ -176,17 +177,9 @@ namespace fe {
         std::vector<fe::pointer<resource::ShaderFileData>> shader_file_ptrs{};
         std::vector<fe::hashed_string>                     entry_points{};
         std::vector<fe::hashed_string>                     descriptor_sets{};
+        std::optional<fe::hashed_string>                   push_constants{};
 
         std::optional<shader::ProgramSpecialization> specialization{};
-
-        static PipelineDesc CreateAuto(std::vector<fe::pointer<resource::ShaderFileData>> shader_file_ptrs,
-                                       fe::PipelineFlags                                  flags) {
-            PipelineDesc desc{};
-
-            // ...
-
-            return desc;
-        }
     };
 
     struct FORR_API PipelineID {

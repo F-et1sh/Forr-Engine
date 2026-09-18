@@ -99,5 +99,7 @@ namespace fe {
 
         // TODO : remove this. It should work other way
         virtual void InitializeGPUResources() = 0;
+
+        virtual GraphicsBackend GetCurrentGraphicsBackend() = 0;
     };
 } // namespace fe

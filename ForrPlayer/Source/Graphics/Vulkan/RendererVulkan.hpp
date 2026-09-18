@@ -52,6 +52,8 @@ namespace fe {
 
         void InitializeGPUResources() override;
 
+        GraphicsBackend GetCurrentGraphicsBackend() override { return GraphicsBackend::Vulkan; }
+
     private: // Vulkan initialization queue
         // Create Vulkan base :
         // - volk

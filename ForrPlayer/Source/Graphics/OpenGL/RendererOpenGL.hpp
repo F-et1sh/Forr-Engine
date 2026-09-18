@@ -52,6 +52,8 @@ namespace fe {
 
         void InitializeGPUResources() override;
 
+        GraphicsBackend GetCurrentGraphicsBackend() override { return GraphicsBackend::OpenGL; }
+
     private:
         void bindPipeline(const OpenGLPipeline& pipeline);
 
