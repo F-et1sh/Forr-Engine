@@ -99,7 +99,8 @@ namespace fe {
                 .pipeline_flags{ .render_mode = fe::RenderMode::TRIANGLE_STRIP, .depth_test_enable = false },
                 .shader_file_ptrs{ shader_file_data_ptr },
                 .entry_points{ "vertexMain", "FragmentMain" },
-                .descriptor_sets{ "g_MaterialsRawData", "g_ModelMatrices", "g_GlobalData", "push_constants" },
+                .descriptor_sets{ "g_MaterialsRawData", "g_ModelMatrices", "g_GlobalData" },
+                .push_constants{ "push_constants" },
                 .specialization{ shader_program_specialization }
             };
 
