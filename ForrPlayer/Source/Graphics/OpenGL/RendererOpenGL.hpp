@@ -42,10 +42,10 @@ namespace fe {
 
         RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) override;
 
-        ParameterID CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) override;
+        std::expected<ParameterID, ParameterCreationErrors> CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) override;
 
-        void BindBuffer(ParameterID parameter_id) override;
-        void WriteBuffer(ParameterID parameter_id, std::span<const std::byte> data) override;
+        void BindParameter(ParameterID parameter_id) override;
+        void WriteParameter(ParameterID parameter_id, std::span<const std::byte> data) override;
 
         void BeginFrame() override;
         void EndFrame(const render_graph::CommandList& render_command_list) override;
@@ -63,7 +63,7 @@ namespace fe {
         void handleCommand(const render_graph::BeginRenderPass& command);
         void handleCommand(const render_graph::EndRenderPass& command);
         void handleCommand(const render_graph::DrawIndexed& command);
-        void handleCommand(const render_graph::BindShaderProgram& command);
+        void handleCommand(const render_graph::BindPipeline& command);
         void handleCommand(const render_graph::DrawModel& command);
         void handleCommand(const render_graph::BindBuffer& command);
         void handleCommand(const render_graph::WriteBuffer& command);

@@ -26,7 +26,7 @@ public struct SpotLight {
 };
 
 [shader("vertex")]
-VertexStageOutput vertexMain(VertexInput input) {
+VertexStageOutput vertexMain<M : IMaterial>(VertexInput input) {
     VertexStageOutput output;
 
     float4x4 model_matrix = g_ModelMatrices[input.index];

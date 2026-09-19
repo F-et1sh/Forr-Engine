@@ -272,7 +272,7 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetPipeline(size_t pipeline
     return m_Pipelines[pipeline_storage_index];
 }
 
-fe::ParameterID fe::OpenGLResourceManager::CreateDescriptorRing(const shader::ReflectedDescriptor& descriptor_layout) {
+std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::OpenGLResourceManager::CreateDescriptorRing(const shader::ReflectedDescriptor& descriptor_layout) {
     ParameterID parameter_id{};
     parameter_id.set           = descriptor_layout.set;
     parameter_id.binding       = descriptor_layout.binding;
@@ -303,21 +303,16 @@ fe::ParameterID fe::OpenGLResourceManager::CreateDescriptorRing(const shader::Re
             descriptor.mapped = static_cast<std::byte*>(glMapNamedBufferRange(buffer_raw, 0, buffer_size, flags));
         }
         else if (descriptor_layout.descriptor_type == shader::DescriptorType::GENERIC) {
-            fe::logging::error("Unified -> OpenGL. Forgot to specialize a generic descriptor %s",
-                               descriptor_layout.name.c_str());
-            return {};
+            return std::unexpected{ ParameterCreationErrors::FORGOT_TO_SPECIALIZE_GENERIC_DESCRIPTOR };
         }
         else {
             glDeleteBuffers(1, &buffer_raw);
-            fe::logging::error("Unified -> OpenGL. Failed to create a buffer ( SSBO or UBO ) : unsupported descriptor type %i",
-                               descriptor_layout.descriptor_type);
-            return {};
+            return std::unexpected{ ParameterCreationErrors::UNSUPPORTED_MEMORY_TYPE };
         }
 
         if (!descriptor.mapped) {
             glDeleteBuffers(1, &buffer_raw);
-            fe::logging::error("Unified -> OpenGL. Failed to create a buffer ( SSBO or UBO ). Mapped memory is nullptr");
-            return {};
+            return std::unexpected{ ParameterCreationErrors::MAPPED_MEMORY_WAS_NULLPTR };
         }
 
         descriptor.buffer.attach(buffer_raw);
