@@ -42,18 +42,34 @@ namespace fe {
         }
 
         template <resource::resource_t T>
-        FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) {
+        FORR_NODISCARD std::optional<std::reference_wrapper<T>> GetResource(fe::pointer<T> ptr) {
             auto& storage = this->GetStorage<T>();
-            if (!storage.is_valid(ptr)) return nullptr; // TODO : provide fallbacks
-            return storage.get(ptr);
+            if (!storage.is_valid(ptr)) return std::nullopt;
+            return *storage.get(ptr);
         }
 
         template <resource::resource_t T>
-        FORR_NODISCARD const T* GetResource(fe::pointer<T> ptr) const {
+        FORR_NODISCARD std::optional<std::reference_wrapper<const T>> GetResource(fe::pointer<T> ptr) const {
             auto& storage = this->GetStorage<T>();
-            if (!storage.is_valid(ptr)) return nullptr; // TODO : provide fallbacks
-            return storage.get(ptr);
+            if (!storage.is_valid(ptr)) return std::nullopt;
+            return *storage.get(ptr);
         }
+
+        // TODO : provide 'fe::ResourceStorage::GetDefaultResource<T>()'
+        //
+        //template <resource::resource_t T>
+        //FORR_NODISCARD std::reference_wrapper<T> GetOrFallbackResource(fe::pointer<T> ptr) {
+        //    auto& storage = this->GetStorage<T>();
+        //    if (!storage.is_valid(ptr)) return this->GetDefaultResource<T>();
+        //    return storage.get(ptr);
+        //}
+
+        //template <resource::resource_t T>
+        //FORR_NODISCARD std::reference_wrapper<const T> GetOrFallbackResource(fe::pointer<T> ptr) const {
+        //    auto& storage = this->GetStorage<T>();
+        //    if (!storage.is_valid(ptr)) return this->GetDefaultResource<T>();
+        //    return storage.get(ptr);
+        //}
 
         template <resource::resource_t T, typename Func>
         void RunForEach(Func&& func) {
@@ -81,6 +97,7 @@ namespace fe {
             return m_Context;
         }
 
+        // TODO : change this to something more unified, like 'AllocateBufferRaw()'
         FORR_NODISCARD std::byte* AllocateMaterialBufferRaw(size_t size, size_t alignment = alignof(std::max_align_t)) {
             return this->m_MaterialsBuffer.allocate(size, alignment);
         }
