@@ -56,10 +56,10 @@ namespace fe {
         }
 
         template <resource::resource_t T>
-        FORR_NODISCARD std::optional<std::reference_wrapper<T>> GetResource(fe::pointer<T> ptr) { return m_Storage.GetResource(ptr); }
+        FORR_NODISCARD std::optional<T&> GetResource(fe::pointer<T> ptr) { return m_Storage.GetResource(ptr); }
 
         template <resource::resource_t T>
-        FORR_NODISCARD std::optional<std::reference_wrapper<const T>> GetResource(fe::pointer<T> ptr) const { return m_Storage.GetResource(ptr); }
+        FORR_NODISCARD std::optional<const T&> GetResource(fe::pointer<T> ptr) const { return m_Storage.GetResource(ptr); }
 
         // TODO : soon
         //

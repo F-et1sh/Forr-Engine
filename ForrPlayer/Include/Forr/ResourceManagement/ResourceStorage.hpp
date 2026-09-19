@@ -42,14 +42,14 @@ namespace fe {
         }
 
         template <resource::resource_t T>
-        FORR_NODISCARD std::optional<std::reference_wrapper<T>> GetResource(fe::pointer<T> ptr) {
+        FORR_NODISCARD std::optional<T&> GetResource(fe::pointer<T> ptr) {
             auto& storage = this->GetStorage<T>();
             if (!storage.is_valid(ptr)) return std::nullopt;
             return *storage.get(ptr);
         }
 
         template <resource::resource_t T>
-        FORR_NODISCARD std::optional<std::reference_wrapper<const T>> GetResource(fe::pointer<T> ptr) const {
+        FORR_NODISCARD std::optional<const T&> GetResource(fe::pointer<T> ptr) const {
             auto& storage = this->GetStorage<T>();
             if (!storage.is_valid(ptr)) return std::nullopt;
             return *storage.get(ptr);
