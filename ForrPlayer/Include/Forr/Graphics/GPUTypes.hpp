@@ -337,13 +337,7 @@ namespace fe {
             uint32_t first_instance{};
         };
 
-        // TODO : remove
-        struct FORR_API BindShaderProgram {
-            fe::pointer<resource::ShaderProgram> shader_program_ptr{};
-        };
-
         struct FORR_API BindPipeline {
-            //fe::pointer<resource::ShaderProgram> shader_program_ptr{};
             PipelineID pipeline_id{};
         };
 
@@ -378,7 +372,7 @@ namespace fe {
     X(BeginRenderPass)               \
     X(EndRenderPass)                 \
     X(DrawIndexed)                   \
-    X(BindShaderProgram)             \
+    X(BindPipeline)                  \
     X(DrawModel)                     \
     X(BindBuffer)                    \
     X(WriteBuffer)
@@ -540,7 +534,6 @@ namespace fe {
 
             ACCELERATION_STRUCTURE,
 
-            // TODO : remove
             GENERIC,
 
             UNKNOWN

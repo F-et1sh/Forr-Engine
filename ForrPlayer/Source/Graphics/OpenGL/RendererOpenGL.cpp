@@ -75,11 +75,11 @@ fe::RenderGraphBindings fe::RendererOpenGL::CreateGPUResources(const RenderGraph
     return bindings;
 }
 
-fe::ParameterID fe::RendererOpenGL::CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) {
+std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::RendererOpenGL::CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) {
     return m_OpenGLResourceManager.CreateDescriptorRing(descriptor_layout);
 }
 
-void fe::RendererOpenGL::BindBuffer(ParameterID parameter_id) {
+void fe::RendererOpenGL::BindParameter(ParameterID parameter_id) {
     OpenGLShaderDescriptorRing& descriptor_ring = m_OpenGLResourceManager.GetDescriptorRing(parameter_id.storage_index);
     OpenGLShaderDescriptor&     descriptor      = descriptor_ring[m_CurrentFrame];
 
@@ -94,7 +94,7 @@ void fe::RendererOpenGL::BindBuffer(ParameterID parameter_id) {
     }
 }
 
-void fe::RendererOpenGL::WriteBuffer(ParameterID parameter_id, std::span<const std::byte> data) {
+void fe::RendererOpenGL::WriteParameter(ParameterID parameter_id, std::span<const std::byte> data) {
     OpenGLShaderDescriptorRing& descriptor_ring = m_OpenGLResourceManager.GetDescriptorRing(parameter_id.storage_index);
     OpenGLShaderDescriptor&     descriptor      = descriptor_ring[m_CurrentFrame];
     std::memcpy(descriptor.mapped, data.data(), data.size());
@@ -302,7 +302,7 @@ void fe::RendererOpenGL::handleCommand(const render_graph::DrawIndexed& command)
                                                   command.first_instance);
 }
 
-void fe::RendererOpenGL::handleCommand(const render_graph::BindShaderProgram& command) {
+void fe::RendererOpenGL::handleCommand(const render_graph::BindPipeline& command) {
     m_BoundShaderProgramPtr = command.shader_program_ptr;
 }
 

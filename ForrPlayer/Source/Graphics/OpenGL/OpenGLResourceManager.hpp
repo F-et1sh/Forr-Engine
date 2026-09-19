@@ -65,8 +65,8 @@ namespace fe {
         FORR_NODISCARD const OpenGLMesh&    GetResource(GPUHandle<resource::Model::Mesh> handle) const;
         FORR_NODISCARD const OpenGLTexture& GetResource(GPUHandle<resource::Texture> handle) const;
 
-        // TODO : this is a good place to start providing std::expected<>
-        FORR_NODISCARD ParameterID                 CreateDescriptorRing(const shader::ReflectedDescriptor& descriptor_layout);
+        FORR_NODISCARD std::expected<ParameterID, ParameterCreationErrors> CreateDescriptorRing(const shader::ReflectedDescriptor& descriptor_layout);
+        // TODO : provide 'std::expected' here
         FORR_NODISCARD OpenGLShaderDescriptorRing& GetDescriptorRing(uint32_t index);
 
     private: // here functions, which used like helpers to create some resources that don't have thier own CPU realization.

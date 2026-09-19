@@ -64,6 +64,18 @@ namespace fe {
     // TODO : make it changeable dynamically and remove this
     constexpr inline static size_t MAX_CONCURRENT_FRAMES = 2;
 
+    // TODO : fill this and move somewhere else
+    enum class PipelineCreationErrors {
+        ERROR,
+    };
+
+    // TODO : move this somewhere else
+    enum class ParameterCreationErrors {
+        FORGOT_TO_SPECIALIZE_GENERIC_DESCRIPTOR,
+        UNSUPPORTED_MEMORY_TYPE,
+        MAPPED_MEMORY_WAS_NULLPTR
+    };
+
     // if you want to add some variable here, use static method IRenderer::Create()
     // the member should be appended to the devired class, not here
     class FORR_API IRenderer {
@@ -78,21 +90,24 @@ namespace fe {
         virtual FORR_NODISCARD RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) = 0;
 
         // create a buffer ( SSBO/UBO ) via its reflected data
-        // @returns fe::ParameterID is a variable that can be used in fe::IRenderer::BindBuffer() or fe::IRenderer::WriteBuffer()
-        virtual FORR_NODISCARD ParameterID CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) = 0;
+        // @returns fe::ParameterID is a variable that can be used in fe::IRenderer::BindBuffer() or fe::IRenderer::WriteParameter()
+        virtual FORR_NODISCARD std::expected<ParameterID, ParameterCreationErrors> CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) = 0;
 
         // bind SSBO or UBO
-        virtual void BindBuffer(ParameterID parameter_id) = 0;
+        virtual void BindParameter(ParameterID parameter_id) = 0;
 
         // write to SSBO or UBO
         template <typename T>
-        void WriteBuffer(ParameterID parameter_id, std::span<const T> data) { WriteBuffer(parameter_id, std::as_bytes(data)); }
-
-        virtual FORR_NODISCARD PipelineID CreatePipeline(const PipelineDesc& pipeline_desc) = 0;
-        virtual void                      BindPipeline(PipelineID pipeline_id)              = 0;
+        void WriteParameter(ParameterID parameter_id, std::span<const T> data) { WriteParameter(parameter_id, std::as_bytes(data)); }
 
         // write to SSBO or UBO
-        virtual void WriteBuffer(ParameterID parameter_id, std::span<const std::byte> data) = 0;
+        virtual void WriteParameter(ParameterID parameter_id, std::span<const std::byte> data) = 0;
+
+        virtual void DestroyParameter(ParameterID parameter_id)                                = 0;
+
+        virtual FORR_NODISCARD std::expected<PipelineID, PipelineCreationErrors> CreatePipeline(const PipelineDesc& pipeline_desc) = 0;
+        virtual void                                                             BindPipeline(PipelineID pipeline_id)              = 0;
+        virtual void                                                             DestroyPipeline(PipelineID pipeline_id)           = 0;
 
         virtual void BeginFrame()                                                   = 0;
         virtual void EndFrame(const render_graph::CommandList& render_command_list) = 0;

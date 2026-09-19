@@ -20,6 +20,7 @@
     'fe::ResourceManager::GetResource()' changed from 'T*'/'const T*' to 'std::optional<std::reference_wrapper<T>>'/'std::optional<std::reference_wrapper<const T>>'
     'fe::ResourceManager::GetResource()' changed from 'std::optional<std::reference_wrapper<T>>'/'std::optional<std::reference_wrapper<const T>>' to
         'std::optional<T&>'/'std::optional<const T&>'
+    PBREffectBuilder, PBREffectError, PBREffectErrorCodes and PBRMaterialEffect added + some work with other engine systems, mostly graphics
 
 ### Problem
     -
