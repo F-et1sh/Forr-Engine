@@ -15,44 +15,8 @@
 #include "ECS/Components.hpp"
 
 namespace fe {
-    struct ShadowPassData {
-        fe::pointer<resource::ShaderProgram> shadow_shader_program_ptr{};
-    };
-    struct ShadowPass {
-        static void Setup(RenderGraphBuilder& builder, ShadowPassData& pass_data) {
-            builder.createImage(render_graph::ImageDesc{ fe::string_hash("ShadowMap"),
-                                                         render_graph::ImageType::IMAGE_TYPE_2D,
-                                                         render_graph::Format::RGBA8_SRGB,
-                                                         glm::ivec3{ 3840, 2160, 1 },
-                                                         1,
-                                                         render_graph::ImageUsageBits::RENDER_TARGET });
-            builder.writeImage(fe::string_hash("ShadowMap"), ResourceState::RENDER_TARGET);
-
-            if (!pass_data.shadow_shader_program_ptr) {
-                // it should work like this, I guess
-                fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Shadow.slang");
-
-                const resource::ShaderFileData& shader_file_data = *builder.resource_manager.GetResource(shader_file_data_ptr);
-                if (!shader_file_data.shader_program_ptr.has_value()) {
-                    builder.assertFatal("No shadow shader");
-                    return;
-                }
-
-                pass_data.shadow_shader_program_ptr = shader_file_data.shader_program_ptr.value();
-            }
-        }
-
-        static void Execute(RenderGraphContext& context, ShadowPassData& pass_data) {
-            auto view = context.render_registry.view<TransformComponent>();
-            // ...
-        }
-
-        ShadowPass()  = default;
-        ~ShadowPass() = default;
-    };
-
     struct ForwardPassData { // everything is temp
-        fe::pointer<resource::ShaderProgram> default_shader_program_ptr{};
+        PipelineID pipeline_id{};
 
         fe::pointer<resource::Material> default_material_ptr{};
         fe::pointer<resource::Model>    test_model_ptr{};
@@ -84,7 +48,7 @@ namespace fe {
             builder.writeToScreen(true);
 
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
-            const resource::ShaderFileData&       shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
+            const resource::ShaderFileData& shader_file_data = *builder.resource_manager.GetResource(shader_file_data_ptr);
 
             shader::ProgramSpecialization shader_program_specialization{};
 
@@ -111,7 +75,7 @@ namespace fe {
             //
             // static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
 
-            context.BindPipeline(pipeline_storage_index);
+            //context.BindPipeline(pipeline_storage_index);
 
             // ...
             // }

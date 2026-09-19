@@ -282,9 +282,6 @@ namespace fe::resource {
 
 #define FORR_RESOURCES_LIST(X) \
     X(Texture)                 \
-    X(ShaderProgram)           \
-    X(DescriptorsLayout)       \
-    X(MaterialLayout)          \
     X(Material)                \
     X(ShaderFileData)          \
     X(Model)
