@@ -1,7 +1,15 @@
 # Forr-Engine Not now, but :
 
+# Added 19.09.2026
+- When I start creating resources out of 'fe::resource::', which will be OOP-based wrapper classes for user interface
+  I think you could create classes for the 'sub-resources' too. ( 'sub-resource' - is a resource inside of other resource )
+
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
+
 # Added 29.08.2026
 - make a video for YouTube / start this task at 7th September
+
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
 
 # Added 23.08.2026
 - rework shader system : provide flexible API for user to manage Slang specialization

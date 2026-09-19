@@ -11,16 +11,8 @@
         For example, if .png ( example.png ) hasn't data about "min filter", so, the member
             fe::resource::Texture::min_filter will be set to default, but if the resource manager finds
             a metadata file near ( example.png.fs ) it will fill the structure from it.
-
-        // TODO : this rule might be removed. Better create one resource and store its 'sub-resources' inside.
-            Also, when I start creating resources out of 'fe::resource::', which will be OOP-based wrapper classes for user
-            I think you could create classes for that 'sub-resources' too
-        ---
-        Sometimes one file ( extension ) can create multiple resources. For example, ShaderProgram and
-            MaterialLayout are both created from .slang file - if it happends, you have to create a 
-            structure, that will point to all of resources created by that 
-            file ( ShaderFileData in the case of .slang )
-        ---
+        Sometimes one file ( extension ) might need to create multiple resources. In this case, better create
+            one resource and store its 'sub-resources' inside.
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.

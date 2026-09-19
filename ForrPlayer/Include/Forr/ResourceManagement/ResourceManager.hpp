@@ -56,10 +56,22 @@ namespace fe {
         }
 
         template <resource::resource_t T>
-        FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) { return m_Storage.GetResource(ptr); }
+        FORR_NODISCARD std::optional<std::reference_wrapper<T>> GetResource(fe::pointer<T> ptr) { return m_Storage.GetResource(ptr); }
 
         template <resource::resource_t T>
-        FORR_NODISCARD const T* GetResource(fe::pointer<T> ptr) const { return m_Storage.GetResource(ptr); }
+        FORR_NODISCARD std::optional<std::reference_wrapper<const T>> GetResource(fe::pointer<T> ptr) const { return m_Storage.GetResource(ptr); }
+
+        // TODO : soon
+        //
+        //template <resource::resource_t T>
+        //FORR_NODISCARD std::reference_wrapper<T> GetOrFallbackResource(fe::pointer<T> ptr) {
+        //    return m_Storage.GetOrFallbackResource(ptr);
+        //}
+
+        //template <resource::resource_t T>
+        //FORR_NODISCARD std::reference_wrapper<const T> GetOrFallbackResource(fe::pointer<T> ptr) const {
+        //    return m_Storage.GetOrFallbackResource(ptr);
+        //}
 
         // TODO : add 'FindResource()'
 

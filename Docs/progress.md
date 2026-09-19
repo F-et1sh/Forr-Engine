@@ -13,11 +13,11 @@
     create unified hpp file for materials to be used by C++ and Slang
 
     move default resources from resource management's context to 'fe::ResourceStorage'
-    provide 'fe::ResourceManager::GetOrFallbackResource()' and change 'fe::ResourceManager::GetResource()';
-        make 'fe::ResourceManager' more hight-level, without changing 'fe::typed_pointer_storage'
+    change 'fe::ResourceManager::GetResource()', make 'fe::ResourceManager' more hight-level, without changing 'fe::typed_pointer_storage'
 
 ### Done
     DefaultPipelineBuilders.hpp added
+    'fe::ResourceManager::GetResource()' changed from 'T*'/'const T*' to 'std::optional<std::reference_wrapper<T>>'/'std::optional<std::reference_wrapper<const T>>'
 
 ### Problem
     -
