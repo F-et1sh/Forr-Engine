@@ -48,6 +48,13 @@ namespace fe {
             return storage.get(ptr);
         }
 
+        template <resource::resource_t T>
+        FORR_NODISCARD const T* GetResource(fe::pointer<T> ptr) const {
+            auto& storage = this->GetStorage<T>();
+            if (!storage.is_valid(ptr)) return nullptr; // TODO : provide fallbacks
+            return storage.get(ptr);
+        }
+
         template <resource::resource_t T, typename Func>
         void RunForEach(Func&& func) {
             auto& storage = this->GetStorage<T>();

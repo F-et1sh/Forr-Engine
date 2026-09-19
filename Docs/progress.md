@@ -1,5 +1,27 @@
 ﻿# Forr-Engine Devlog
 
+## 19.09.2026
+### Goal
+    create fe::PBRPipelineBuilder
+
+    make the project compile
+
+    provide API to create and bind pipeline via 'fe::IRenderer'
+    provide API to assemble a shader from 'resource::ShaderFileData' by collecting needed entry points and
+        specializing them if needed, like Lego
+    rewrite 'fe::MeshComponent'
+    create unified hpp file for materials to be used by C++ and Slang
+
+    move default resources from resource management's context to 'fe::ResourceStorage'
+    provide 'fe::ResourceManager::GetOrFallbackResource()' and change 'fe::ResourceManager::GetResource()';
+        make 'fe::ResourceManager' more hight-level, without changing 'fe::typed_pointer_storage'
+
+### Done
+    DefaultPipelineBuilders.hpp added
+
+### Problem
+    -
+
 ## 18.09.2026
 ### Goal
     make the project compile

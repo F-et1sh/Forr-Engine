@@ -58,6 +58,9 @@ namespace fe {
         template <resource::resource_t T>
         FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) { return m_Storage.GetResource(ptr); }
 
+        template <resource::resource_t T>
+        FORR_NODISCARD const T* GetResource(fe::pointer<T> ptr) const { return m_Storage.GetResource(ptr); }
+
         // TODO : add 'FindResource()'
 
         template <resource::resource_t T, typename Func>
