@@ -1,5 +1,21 @@
 ﻿# Forr-Engine Devlog
 
+## 20.09.2026
+### Goal
+    make the project compile
+
+    provide API to create and bind pipeline via 'fe::IRenderer'
+    rewrite 'fe::MeshComponent'
+    create unified hpp file for materials to be used by C++ and Slang
+
+    move default resources from resource management's context to 'fe::ResourceStorage'
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 19.09.2026
 ### Goal
     create fe::PBRPipelineBuilder
