@@ -272,16 +272,16 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetPipeline(size_t pipeline
     return m_Pipelines[pipeline_storage_index];
 }
 
-std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::OpenGLResourceManager::CreateDescriptorRing(const shader::ReflectedDescriptor& descriptor_layout) {
+std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::OpenGLResourceManager::CreateDescriptorRing(const ParameterDesc& parameter_desc) {
     ParameterID parameter_id{};
-    parameter_id.set           = descriptor_layout.set;
-    parameter_id.binding       = descriptor_layout.binding;
+    parameter_id.set           = parameter_desc.set;
+    parameter_id.binding       = parameter_desc.binding;
     parameter_id.storage_index = m_ShaderBuffers.size();
 
     size_t buffer_size = 16 * 1024; // 16KB
 
-    if (descriptor_layout.array_size != 0) {
-        buffer_size = descriptor_layout.array_size * descriptor_layout.size;
+    if (parameter_desc.array_size != 0) {
+        buffer_size = parameter_desc.array_size * parameter_desc.size;
     }
 
     OpenGLShaderDescriptorRing descriptor_ring{};
@@ -294,15 +294,15 @@ std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::OpenGLResourceMa
                            GL_MAP_PERSISTENT_BIT |
                            GL_MAP_COHERENT_BIT;
 
-        if (descriptor_layout.descriptor_type == shader::DescriptorType::UNIFORM_BUFFER) {
+        if (parameter_desc.descriptor_type == shader::DescriptorType::UNIFORM_BUFFER) {
             glNamedBufferStorage(buffer_raw, buffer_size, nullptr, flags);
             descriptor.mapped = static_cast<std::byte*>(glMapNamedBufferRange(buffer_raw, 0, buffer_size, flags));
         }
-        else if (descriptor_layout.descriptor_type == shader::DescriptorType::STORAGE_BUFFER) {
+        else if (parameter_desc.descriptor_type == shader::DescriptorType::STORAGE_BUFFER) {
             glNamedBufferStorage(buffer_raw, buffer_size, nullptr, flags);
             descriptor.mapped = static_cast<std::byte*>(glMapNamedBufferRange(buffer_raw, 0, buffer_size, flags));
         }
-        else if (descriptor_layout.descriptor_type == shader::DescriptorType::GENERIC) {
+        else if (parameter_desc.descriptor_type == shader::DescriptorType::GENERIC) {
             return std::unexpected{ ParameterCreationErrors::FORGOT_TO_SPECIALIZE_GENERIC_DESCRIPTOR };
         }
         else {
@@ -317,7 +317,7 @@ std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::OpenGLResourceMa
 
         descriptor.buffer.attach(buffer_raw);
         descriptor.size = buffer_size;
-        descriptor.type = descriptor_layout.descriptor_type;
+        descriptor.type = parameter_desc.descriptor_type;
     }
 
     m_ShaderBuffers.emplace_back(std::move(descriptor_ring));

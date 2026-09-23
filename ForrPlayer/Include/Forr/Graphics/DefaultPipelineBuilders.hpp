@@ -14,8 +14,10 @@
 #include "Graphics/IRenderer.hpp"
 
 namespace fe {
+    // TODO : move parameter ids to some new 'render context', they mustn't be here
+    //
     // 'effects' are structures that contain everything that was built by the builder
-    struct FORR_API PBRMaterialEffect {
+    struct FORR_API PBREffectMaterial {
         fe::PipelineID pipeline_id{};
 
         fe::ParameterID materials_raw_data_parameter_id{};
@@ -71,7 +73,7 @@ namespace fe {
 
     class FORR_API PBREffectBuilder {
     public:
-        static std::expected<PBRMaterialEffect, PBREffectError> Build(fe::pointer<resource::ShaderFileData> shader_file_data_ptr,
+        static std::expected<PBREffectMaterial, PBREffectError> Build(fe::pointer<resource::ShaderFileData> shader_file_data_ptr,
                                                                       fe::pointer<resource::Material>       material_ptr,
                                                                       ResourceManager&                      resource_manager,
                                                                       IRenderer&                            renderer) {
@@ -172,12 +174,12 @@ namespace fe {
             specialization.global_arguments.emplace_back(shader::SpecializationArgument{ .name  = unspecialized_buffer_name,
                                                                                          .value = buffer_specialization_name.get() });
 
-            PBRMaterialEffect pbr_material_effect{};
+            PBREffectMaterial pbr_effect_material{};
 
             // create pipeline
             auto pipeline_id_expected = renderer.CreatePipeline(pipeline_desc);
             if (pipeline_id_expected.has_value()) {
-                pbr_material_effect.pipeline_id = pipeline_id_expected.value();
+                pbr_effect_material.pipeline_id = pipeline_id_expected.value();
             }
             else {
                 return std::unexpected{ PBREffectError{ PBREffectErrorCodes::FAILED_TO_CREATE_PIPELINE, pipeline_id_expected.error() } };
@@ -190,29 +192,29 @@ namespace fe {
                 });
 
                 if (it == shader_file_data.descriptor_layouts.end()) {
-                    pbr_material_effect.free(renderer);
+                    pbr_effect_material.free(renderer);
                     return std::unexpected{ PBREffectError{ PBREffectErrorCodes::DESCRIPTOR_ABSENT, descriptor_set } };
                 }
 
                 auto parameter_expected = renderer.CreateParameter(*it);
                 if (parameter_expected.has_value()) {
                     if (it->name == materials_raw_data_name) { // g_MaterialsRawData
-                        pbr_material_effect.materials_raw_data_parameter_id = parameter_expected.value();
+                        pbr_effect_material.materials_raw_data_parameter_id = parameter_expected.value();
                     }
                     else if (it->name == model_matrices_name) { // g_ModelMatrices
-                        pbr_material_effect.model_matrices_parameter_id = parameter_expected.value();
+                        pbr_effect_material.model_matrices_parameter_id = parameter_expected.value();
                     }
                     else if (it->name == global_data_name) { // g_GlobalData
-                        pbr_material_effect.global_data_parameter_id = parameter_expected.value();
+                        pbr_effect_material.global_data_parameter_id = parameter_expected.value();
                     }
                 }
                 else {
-                    pbr_material_effect.free(renderer);
+                    pbr_effect_material.free(renderer);
                     return std::unexpected{ PBREffectError{ PBREffectErrorCodes::FAILED_TO_CREATE_PARAMETER, parameter_expected.error() } };
                 }
             }
 
-            return pbr_material_effect;
+            return pbr_effect_material;
         }
     };
 } // namespace fe

@@ -42,7 +42,7 @@ namespace fe {
 
         RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) override;
 
-        std::expected<ParameterID, ParameterCreationErrors> CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) override;
+        std::expected<ParameterID, ParameterCreationErrors> CreateParameter(const ParameterDesc& parameter_desc) override;
 
         void BindParameter(ParameterID parameter_id) override;
         void WriteParameter(ParameterID parameter_id, std::span<const std::byte> data) override;

@@ -159,7 +159,32 @@ namespace fe {
         // For now I'm just leaving this hardcoded
     };
 
-    // TODO : think about moving this into 'IRenderer.hpp' or new file
+    struct FORR_API ParameterDesc {
+        shader::DescriptorType descriptor_type{ shader::DescriptorType::UNKNOWN };
+        uint8_t                stage_flags{};
+        bool                   is_bindless{};
+        uint32_t               array_size{ 1 };
+        uint32_t               size{};
+        uint32_t               set{};
+        uint32_t               binding{};
+
+        ParameterDesc() = default;
+        ParameterDesc(const shader::ReflectedDescriptor& descriptor_layout)
+            : descriptor_type(descriptor_layout.descriptor_type),
+              stage_flags(descriptor_layout.stage_flags),
+              is_bindless(descriptor_layout.is_bindless),
+              array_size(descriptor_layout.array_size),
+              size(descriptor_layout.size),
+              set(descriptor_layout.set),
+              binding(descriptor_layout.binding) {}
+    };
+
+    enum class ParameterCreationErrors {
+        FORGOT_TO_SPECIALIZE_GENERIC_DESCRIPTOR,
+        UNSUPPORTED_MEMORY_TYPE,
+        MAPPED_MEMORY_WAS_NULLPTR
+    };
+    
     struct FORR_API ParameterID {
         uint8_t set{ std::numeric_limits<uint8_t>::max() };
         uint8_t binding{ std::numeric_limits<uint8_t>::max() };
@@ -180,6 +205,11 @@ namespace fe {
         std::optional<fe::hashed_string>                   push_constants{};
 
         std::optional<shader::ProgramSpecialization> specialization{};
+    };
+
+    enum class PipelineCreationErrors {
+        ERROR,
+        // TODO : fill this up
     };
 
     struct FORR_API PipelineID {

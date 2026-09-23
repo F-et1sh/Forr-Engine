@@ -11,8 +11,8 @@
 ===============================================*/
 
 #pragma once
-#include "RenderGraph.hpp"
 #include "ECS/Components.hpp"
+#include "DefaultPipelineBuilders.hpp"
 
 namespace fe {
     struct ForwardPassData { // everything is temp
@@ -41,6 +41,8 @@ namespace fe {
         ParameterID            global_data_parameter_id{};
         std::vector<std::byte> global_data_as_bytes{};
 
+        PBREffectMaterial pbr_effect_material{};
+
         float time{};
     };
     struct ForwardPass {
@@ -48,98 +50,39 @@ namespace fe {
             builder.writeToScreen(true);
 
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
-            const resource::ShaderFileData& shader_file_data = *builder.resource_manager.GetResource(shader_file_data_ptr);
 
-            shader::ProgramSpecialization shader_program_specialization{};
-
-            if (builder.renderer.GetCurrentGraphicsBackend() == GraphicsBackend::OpenGL) {
-                shader_program_specialization.global_arguments.emplace_back(shader::SpecializationArgument{ "TBuffer", "OpenGLBuffer" });
+            auto expected_result = PBREffectBuilder::Build(shader_file_data_ptr,
+                                                           builder.resource_manager.GetContext().default_pbr_material_ptr,
+                                                           builder.resource_manager,
+                                                           builder.renderer);
+            if (expected_result.has_value()) {
+                pass_data.pbr_effect_material = expected_result.value();
             }
-            else if (builder.renderer.GetCurrentGraphicsBackend() == GraphicsBackend::Vulkan) {
-                shader_program_specialization.global_arguments.emplace_back(shader::SpecializationArgument{ "TBuffer", "VulkanBuffer" });
-            }
-
-            PipelineDesc pipeline_desc{
-                .pipeline_flags{ .render_mode = fe::RenderMode::TRIANGLE_STRIP, .depth_test_enable = false },
-                .shader_file_ptrs{ shader_file_data_ptr },
-                .entry_points{ "vertexMain", "FragmentMain" },
-                .descriptor_sets{ "g_MaterialsRawData", "g_ModelMatrices", "g_GlobalData" },
-                .push_constants{ "push_constants" },
-                .specialization{ shader_program_specialization }
-            };
-
-            PipelineID pipeline_storage_index = builder.renderer.CreatePipeline(pipeline_desc);
-
-            // ...
-            // }
-            //
-            // static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
-
-            //context.BindPipeline(pipeline_storage_index);
-
-            // ...
-            // }
-            // };
-
-            if (!pass_data.default_shader_program_ptr) {
-                fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
-                const resource::ShaderFileData&       shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
-                if (!shader_file_data.shader_program_ptr.has_value()) {
-                    builder.assertFatal("No shader");
-                    return;
-                }
-                pass_data.default_shader_program_ptr = shader_file_data.shader_program_ptr.value();
-
-                if (pass_data.model_matrices_parameter_id.storage_index == ~0) {
-                    const auto& shader_program = *builder.resource_manager.GetResource(pass_data.default_shader_program_ptr);
-                    const auto& descriptors    = *builder.resource_manager.GetResource(shader_program.descriptors_layout_ptr.value());
-
-                    auto it = std::ranges::find_if(descriptors.reflected_layout.descriptors, [](const shader::ReflectedDescriptor& descriptor) -> bool {
-                        return descriptor.name == fe::hashed_string{ "g_ModelMatrices" };
-                    });
-
-                    if (it == descriptors.reflected_layout.descriptors.end()) {
-                        fe::logging::error("Failed to find g_ModelMatrices");
+            else {
+                const auto& error = expected_result.error();
+                std::string error_code_string = std::to_string(static_cast<const uint8_t>(error.error_code));
+                std::string error_string      = "Failed to create PBR effect material via default PBR material ptr from resource manager\nError code : " + error_code_string;
+                
+                if (error.detailed_message.has_value()) {
+                    error_string += "\nAdditional message : ";
+                    
+                    const auto& detailed_message = error.detailed_message.value();
+                    if (std::holds_alternative<PipelineCreationErrors>(detailed_message)) {
+                        const auto& value = std::get<PipelineCreationErrors>(detailed_message);
+                        error_string += std::to_string(static_cast<const uint8_t>(value));
                     }
-                    else {
-                        const auto& descriptor                = *it;
-                        pass_data.model_matrices_parameter_id = builder.renderer.CreateParameter(descriptor);
+                    else if (std::holds_alternative<ParameterCreationErrors>(detailed_message)) {
+                        const auto& value = std::get<ParameterCreationErrors>(detailed_message);
+                        error_string += std::to_string(static_cast<const uint8_t>(value));
+                    }
+                    else if (std::holds_alternative<fe::hashed_string>(detailed_message)) {
+                        const auto& value = std::get<fe::hashed_string>(detailed_message);
+                        error_string += value;
                     }
                 }
 
-                if (pass_data.materials_parameter_id.storage_index == ~0) {
-                    const auto& shader_program = *builder.resource_manager.GetResource(pass_data.default_shader_program_ptr);
-                    const auto& descriptors    = *builder.resource_manager.GetResource(shader_program.descriptors_layout_ptr.value());
-
-                    auto it = std::ranges::find_if(descriptors.reflected_layout.descriptors, [](const shader::ReflectedDescriptor& descriptor) -> bool {
-                        return descriptor.name == fe::hashed_string{ "g_MaterialsRawData" };
-                    });
-
-                    if (it == descriptors.reflected_layout.descriptors.end()) {
-                        fe::logging::error("Failed to find g_MaterialsRawData");
-                    }
-                    else {
-                        const auto& descriptor           = *it;
-                        pass_data.materials_parameter_id = builder.renderer.CreateParameter(descriptor);
-                    }
-                }
-
-                if (pass_data.global_data_parameter_id.storage_index == ~0) {
-                    const auto& shader_program = *builder.resource_manager.GetResource(pass_data.default_shader_program_ptr);
-                    const auto& descriptors    = *builder.resource_manager.GetResource(shader_program.descriptors_layout_ptr.value());
-
-                    auto it = std::ranges::find_if(descriptors.reflected_layout.descriptors, [](const shader::ReflectedDescriptor& descriptor) -> bool {
-                        return descriptor.name == fe::hashed_string{ "g_GlobalData" };
-                    });
-
-                    if (it == descriptors.reflected_layout.descriptors.end()) {
-                        fe::logging::error("Failed to find g_GlobalData");
-                    }
-                    else {
-                        const auto& descriptor             = *it;
-                        pass_data.global_data_parameter_id = builder.renderer.CreateParameter(descriptor);
-                    }
-                }
+                builder.assertFatal(error_string);
+                return;
             }
 
             pass_data.default_material_ptr = builder.resource_manager.GetContext().default_pbr_material_ptr;
