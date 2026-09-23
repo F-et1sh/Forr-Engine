@@ -41,8 +41,6 @@ namespace fe {
         ParameterID            global_data_parameter_id{};
         std::vector<std::byte> global_data_as_bytes{};
 
-        PBREffectMaterial pbr_effect_material{};
-
         float time{};
     };
     struct ForwardPass {
@@ -51,15 +49,15 @@ namespace fe {
 
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
 
-            auto expected_result = PBREffectBuilder::Build(shader_file_data_ptr,
+            auto pipeline_result = PBRPipelineBuilder::Build(shader_file_data_ptr,
                                                            builder.resource_manager.GetContext().default_pbr_material_ptr,
                                                            builder.resource_manager,
                                                            builder.renderer);
-            if (expected_result.has_value()) {
-                pass_data.pbr_effect_material = expected_result.value();
+            if (pipeline_result.has_value()) {
+                pass_data.pipeline_id = pipeline_result.value();
             }
             else {
-                const auto& error = expected_result.error();
+                const auto& error = pipeline_result.error();
                 std::string error_code_string = std::to_string(static_cast<const uint8_t>(error.error_code));
                 std::string error_string      = "Failed to create PBR effect material via default PBR material ptr from resource manager\nError code : " + error_code_string;
                 
