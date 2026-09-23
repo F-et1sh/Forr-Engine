@@ -1,5 +1,22 @@
 ﻿# Forr-Engine Devlog
 
+## 23.09.2026
+### Goal
+    create render context to store parameters
+    provide API to create and bind pipeline via 'fe::IRenderer'
+    make the project compile
+
+    rewrite 'fe::MeshComponent'
+    create unified hpp file for materials to be used by C++ and Slang
+
+    move default resources from resource management's context to 'fe::ResourceStorage'
+
+### Done
+    fe::ParameterDesc provided
+
+### Problem
+    -
+
 ## 20.09.2026
 ### Goal
     make the project compile
@@ -11,7 +28,7 @@
     move default resources from resource management's context to 'fe::ResourceStorage'
 
 ### Done
-    -
+    PBRMaterialEffect --> PBREffectMaterial
 
 ### Problem
     -

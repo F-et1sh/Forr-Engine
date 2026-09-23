@@ -75,8 +75,8 @@ fe::RenderGraphBindings fe::RendererOpenGL::CreateGPUResources(const RenderGraph
     return bindings;
 }
 
-std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::RendererOpenGL::CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) {
-    return m_OpenGLResourceManager.CreateDescriptorRing(descriptor_layout);
+std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::RendererOpenGL::CreateParameter(const ParameterDesc& parameter_desc) {
+    return m_OpenGLResourceManager.CreateDescriptorRing(parameter_desc);
 }
 
 void fe::RendererOpenGL::BindParameter(ParameterID parameter_id) {

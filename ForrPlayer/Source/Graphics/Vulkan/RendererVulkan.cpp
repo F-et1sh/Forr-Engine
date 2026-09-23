@@ -50,7 +50,7 @@ fe::RenderGraphBindings fe::RendererVulkan::CreateGPUResources(const RenderGraph
     return {};
 }
 
-std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::RendererVulkan::CreateParameter(const shader::ReflectedDescriptor& descriptor_layout) {
+std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::RendererVulkan::CreateParameter(const ParameterDesc& parameter_desc) {
     return {};
 }
 
