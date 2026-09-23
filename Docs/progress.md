@@ -2,8 +2,8 @@
 
 ## 23.09.2026
 ### Goal
-    create render context to store parameters
-    provide API to create and bind pipeline via 'fe::IRenderer'
+    create render context to store parameters ( in fe::IRenderer )
+    provide API to create and bind pipeline via 'fe::IRenderer' ( for OpenGL )
     make the project compile
 
     rewrite 'fe::MeshComponent'
