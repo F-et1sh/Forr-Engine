@@ -34,15 +34,15 @@ namespace fe {
         }
 
         FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getEngineAssetsPath() const {
-            return m_AssetsPath / "Engine";
+            return m_AssetsPath / L"Engine";
         }
 
         FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getUserAssetsPath() const {
-            return m_AssetsPath / "User";
+            return m_AssetsPath / L"User";
         }
 
         FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getSharedAssetsPath() const {
-            return m_AssetsPath / "Shared";
+            return m_AssetsPath / L"Shared";
         }
 
         FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getEngineResourcesPath() const {
@@ -63,9 +63,9 @@ namespace fe {
 
         //
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getMetadataExtension() const { return L".forr_meta"; }
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getMaterialExtension() const { return L".forr_material"; }
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getShaderExtension() const { return L".slang"; }
+        FORR_STATIC FORR_NODISCARD FORR_CONSTEVAL std::wstring_view getMetadataExtension() { return L".forr_meta"; }
+        FORR_STATIC FORR_NODISCARD FORR_CONSTEVAL std::wstring_view getMaterialExtension() { return L".forr_material"; }
+        FORR_STATIC FORR_NODISCARD FORR_CONSTEVAL std::wstring_view getShaderExtension() { return L".slang"; }
 
     private:
         PathManager()  = default;

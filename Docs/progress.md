@@ -1,5 +1,22 @@
 ﻿# Forr-Engine Devlog
 
+## 25.09.2026
+### Goal
+    create render context to store parameters ( in fe::IRenderer )
+    provide API to create and bind pipeline via 'fe::IRenderer' ( for OpenGL )
+    make the project compile
+
+    rewrite 'fe::MeshComponent'
+    create unified hpp file for materials to be used by C++ and Slang
+
+    move default resources from resource management's context to 'fe::ResourceStorage'
+
+### Done
+    slightly improved some const moments in 'fe::PathManager'
+
+### Problem
+    -
+
 ## 23.09.2026
 ### Goal
     create render context to store parameters ( in fe::IRenderer )

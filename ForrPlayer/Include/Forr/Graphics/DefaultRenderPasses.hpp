@@ -50,20 +50,20 @@ namespace fe {
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
 
             auto pipeline_result = PBRPipelineBuilder::Build(shader_file_data_ptr,
-                                                           builder.resource_manager.GetContext().default_pbr_material_ptr,
-                                                           builder.resource_manager,
-                                                           builder.renderer);
+                                                             builder.resource_manager.GetContext().default_pbr_material_ptr,
+                                                             builder.resource_manager,
+                                                             builder.renderer);
             if (pipeline_result.has_value()) {
                 pass_data.pipeline_id = pipeline_result.value();
             }
             else {
-                const auto& error = pipeline_result.error();
+                const auto& error             = pipeline_result.error();
                 std::string error_code_string = std::to_string(static_cast<const uint8_t>(error.error_code));
                 std::string error_string      = "Failed to create PBR effect material via default PBR material ptr from resource manager\nError code : " + error_code_string;
-                
+
                 if (error.detailed_message.has_value()) {
                     error_string += "\nAdditional message : ";
-                    
+
                     const auto& detailed_message = error.detailed_message.value();
                     if (std::holds_alternative<PipelineCreationErrors>(detailed_message)) {
                         const auto& value = std::get<PipelineCreationErrors>(detailed_message);

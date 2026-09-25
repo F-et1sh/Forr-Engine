@@ -13,6 +13,8 @@
 
 #pragma once
 
+#define FORR_STATIC static
+
 #if __cplusplus >= 201703L // C++17
 #define FORR_MAYBE_UNUSED [[maybe_unused]]
 #define FORR_NODISCARD [[nodiscard]]
@@ -23,10 +25,14 @@
 
 #if __cplusplus >= 202002L // C++20
 #define FORR_LIKELY [[likely]]
-#define FORR_UNLIKELY [[unlikely]]
+#define FORR_UNLIKELY [[unlikely]]  
+#define FORR_CONSTEVAL consteval
+#define FORR_CONSTINIT constinit
 #else
 #define FORR_LIKELY
 #define FORR_UNLIKELY
+#define FORR_CONSTEVAL
+#define FORR_CONSTINIT
 #endif
 
 #ifdef _WIN32
