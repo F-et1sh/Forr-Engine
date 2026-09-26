@@ -1,5 +1,17 @@
 ﻿# Forr-Engine Devlog
 
+## 26.09.2026
+### Goal
+    provide API to create and bind pipeline via 'fe::IRenderer' ( for OpenGL )
+    make the project compile
+    create minimal user interface to use the engine as a framework
+
+### Done
+    'fe::pointer<>' upgrade. Now you can set how many bytes you want to spend on its handle and generation index
+
+### Problem
+    -
+
 ## 25.09.2026
 ### Goal
     create render context to store parameters ( in fe::IRenderer )

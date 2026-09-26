@@ -100,6 +100,10 @@ void fe::RendererOpenGL::WriteParameter(ParameterID parameter_id, std::span<cons
     std::memcpy(descriptor.mapped, data.data(), data.size());
 }
 
+void fe::RendererOpenGL::DestroyParameter(ParameterID parameter_id) {
+    // TODO : move to the frame's end or destroy right there ?
+}
+
 void fe::RendererOpenGL::BeginFrame() {
     if (m_FrameData[m_CurrentFrame].sync) {
         glClientWaitSync(m_FrameData[m_CurrentFrame].sync, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);

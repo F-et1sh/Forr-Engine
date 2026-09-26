@@ -47,6 +47,8 @@ namespace fe {
         void BindParameter(ParameterID parameter_id) override;
         void WriteParameter(ParameterID parameter_id, std::span<const std::byte> data) override;
 
+        void DestroyParameter(ParameterID parameter_id) override;
+
         void BeginFrame() override;
         void EndFrame(const render_graph::CommandList& render_command_list) override;
 

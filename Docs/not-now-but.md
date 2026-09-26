@@ -1,5 +1,14 @@
 # Forr-Engine Not now, but :
 
+# Added 26.09.2026
+- create render context to store parameters ( in fe::IRenderer )
+- rewrite 'fe::MeshComponent'
+- create unified hpp file for materials to be used by C++ and Slang
+- move default resources from resource management's context to 'fe::ResourceStorage'
+- create minimal user interface to use the engine as a framework
+
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
+
 # Added 19.09.2026
 - When I start creating resources out of 'fe::resource::', which will be OOP-based wrapper classes for user interface
   I think you could create classes for the 'sub-resources' too. ( 'sub-resource' - is a resource inside of other resource )

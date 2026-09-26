@@ -151,4 +151,35 @@ namespace fe {
             return pipeline_id_expected.value();
         }
     };
+
+    enum class SolidColorPipelineErrorCodes {
+        SHADER_FILE_DATA_PTR_WAS_INVALID,
+        VERTEX_ENTRY_POINT_ABSENT,
+        FRAGMENT_ENTRY_POINT_ABSENT,
+        UNKNOWN_GRAPHICS_BACKEND,
+        FAILED_TO_CREATE_PIPELINE,
+    };
+
+    struct FORR_API SolidColorPipelineError {
+        using DetailedMessageVariants = std::variant<SolidColorPipelineErrorCodes,
+                                                     ParameterCreationErrors,
+                                                     fe::hashed_string>;
+
+        SolidColorPipelineErrorCodes           error_code{};
+        std::optional<DetailedMessageVariants> detailed_message{}; // used only in specific cases
+
+        SolidColorPipelineError(SolidColorPipelineErrorCodes error_code)
+            : error_code(error_code) {}
+        SolidColorPipelineError(SolidColorPipelineErrorCodes error_code, DetailedMessageVariants detailed_message)
+            : error_code(error_code), detailed_message(std::move(detailed_message)) {}
+    };
+
+    class FORR_API SolidColorPipelineBuilder {
+        static std::expected<fe::PipelineID, SolidColorPipelineError> Build(fe::pointer<resource::ShaderFileData> shader_file_data_ptr,
+                                                                            ResourceManager&                      resource_manager,
+                                                                            IRenderer&                            renderer) {
+            // TODO : fill this
+            return {};
+        }
+    };
 } // namespace fe

@@ -29,20 +29,20 @@ namespace fe {
     using handle_t     = uint32_t;
     using generation_t = uint32_t;
 
-    inline constexpr static uint64_t PACKING_SHIFT = sizeof(generation_t) * 8;
-
-    template <typename _Ty>
+    template <typename T>
     concept storable_t =
-        (!std::is_void_v<_Ty>) &&
-        (!std::is_reference_v<_Ty>) &&
-        (std::is_move_constructible_v<_Ty>) &&
-        (!std::is_abstract_v<_Ty>) &&
-        (!std::is_array_v<_Ty>);
+        (!std::is_void_v<T>) &&
+        (!std::is_reference_v<T>) &&
+        (std::is_move_constructible_v<T>) &&
+        (!std::is_abstract_v<T>) &&
+        (!std::is_array_v<T>);
 
-    template <typename _Ty>
+    template <typename T, typename HandleT = handle_t, typename GenerationT = generation_t>
     class FORR_NODISCARD pointer {
+    private:
+        inline constexpr static uint64_t PACKING_SHIFT = sizeof(GenerationT) * 8;
     public:
-        constexpr pointer(handle_t index, generation_t generation) noexcept
+        constexpr pointer(HandleT index, GenerationT generation) noexcept
             : m_index(index), m_generation(generation) {}
         ~pointer() = default;
 
@@ -52,24 +52,24 @@ namespace fe {
         pointer(const pointer&) noexcept            = default;
         pointer& operator=(const pointer&) noexcept = default;
 
-        constexpr handle_t     index() const noexcept { return m_index; }
-        constexpr generation_t generation() const noexcept { return m_generation; }
+        constexpr HandleT     index() const noexcept { return m_index; }
+        constexpr GenerationT generation() const noexcept { return m_generation; }
 
         constexpr uint64_t packed() const noexcept {
             return (static_cast<uint64_t>(m_index) << PACKING_SHIFT) | static_cast<uint64_t>(m_generation);
         }
 
         // the pointer is going to be changed after unpacking
-        // it is not just letting you get an unpacked pointer<_Ty>
-        constexpr pointer<_Ty> unpack(uint64_t packed) noexcept {
-            m_index      = static_cast<handle_t>(packed >> PACKING_SHIFT);
-            m_generation = static_cast<generation_t>(packed & std::numeric_limits<generation_t>::max());
+        // it is not just letting you get an unpacked pointer<T>
+        constexpr pointer<T> unpack(uint64_t packed) noexcept {
+            m_index      = static_cast<HandleT>(packed >> PACKING_SHIFT);
+            m_generation = static_cast<GenerationT>(packed & std::numeric_limits<GenerationT>::max());
             return *this;
         }
 
         constexpr bool is_valid() const noexcept {
-            return m_index != std::numeric_limits<handle_t>::max() &&
-                   m_generation != std::numeric_limits<generation_t>::max();
+            return m_index != std::numeric_limits<HandleT>::max() &&
+                   m_generation != std::numeric_limits<GenerationT>::max();
         }
 
         constexpr bool operator==(const pointer&) const noexcept = default;
@@ -78,8 +78,8 @@ namespace fe {
         constexpr operator bool() const noexcept { return this->is_valid(); }
 
     private:
-        handle_t     m_index{ std::numeric_limits<handle_t>::max() };
-        generation_t m_generation{ std::numeric_limits<generation_t>::max() };
+        HandleT     m_index{ std::numeric_limits<HandleT>::max() };
+        GenerationT m_generation{ std::numeric_limits<GenerationT>::max() };
 
         template <storable_t>
         friend class typed_pointer_storage;
@@ -99,15 +99,15 @@ namespace fe {
         }
     };
 
-    template <storable_t _Ty>
+    template <storable_t T>
     class typed_pointer_storage {
     public:
-        using pointer_t = pointer<_Ty>;
+        using pointer_t = pointer<T>;
 
         typed_pointer_storage()  = default;
         ~typed_pointer_storage() = default;
 
-        FORR_NODISCARD pointer_t create(const _Ty& value) {
+        FORR_NODISCARD pointer_t create(const T& value) {
             //std::unique_lock lock(m_mutex);
 
             handle_t index{};
@@ -129,7 +129,7 @@ namespace fe {
             return pointer_t(index, m_slots_generation[index]);
         }
 
-        FORR_NODISCARD pointer_t create(_Ty&& value) {
+        FORR_NODISCARD pointer_t create(T&& value) {
             //std::unique_lock lock(m_mutex);
 
             handle_t index{};
@@ -152,28 +152,28 @@ namespace fe {
         }
 
         FORR_NODISCARD pointer_t create()
-            requires std::default_initializable<_Ty>
+            requires std::default_initializable<T>
         {
-            return create(_Ty{});
+            return create(T{});
         }
 
         void destroy(pointer_t handle) {
             //std::unique_lock lock(m_mutex);
             if (!is_valid_locked(handle)) return;
 
-            m_slots_object[handle.m_index].~_Ty();
+            m_slots_object[handle.m_index].~T();
             m_slots_alive[handle.m_index] = false;
 
             m_free_list.push_back(handle.m_index);
         }
 
-        FORR_NODISCARD _Ty* get(pointer_t handle) noexcept {
+        FORR_NODISCARD T* get(pointer_t handle) noexcept {
             //std::shared_lock lock(m_mutex);
             if (!is_valid_locked(handle)) return nullptr;
             return std::addressof(m_slots_object[handle.m_index]);
         }
 
-        FORR_NODISCARD const _Ty* get(pointer_t handle) const noexcept {
+        FORR_NODISCARD const T* get(pointer_t handle) const noexcept {
             //std::shared_lock lock(m_mutex);
             if (!is_valid_locked(handle)) return nullptr;
             return std::addressof(m_slots_object[handle.m_index]);
@@ -191,26 +191,26 @@ namespace fe {
 
         // this function runs your lambda through all objects of the storage.
         // it can be invoked by :
-        // [](_Ty&, fe::pointer<_Ty>) -> void {}
-        // [](fe::pointer<_Ty>, _Ty&) -> void {}
-        // [](_Ty&) -> void {}
-        // [](fe::pointer<_Ty>) -> void {}
-        // [](const _Ty&, fe::pointer<_Ty>) -> void {}
-        // [](fe::pointer<_Ty>, const _Ty&) -> void {}
-        // [](const _Ty&) -> void {}
+        // [](T&, fe::pointer<T>) -> void {}
+        // [](fe::pointer<T>, T&) -> void {}
+        // [](T&) -> void {}
+        // [](fe::pointer<T>) -> void {}
+        // [](const T&, fe::pointer<T>) -> void {}
+        // [](fe::pointer<T>, const T&) -> void {}
+        // [](const T&) -> void {}
         template <typename _Func>
         void for_each(_Func&& func) {
             //std::shared_lock lock(m_mutex);
             for (size_t i = 0; i < m_slots_object.size(); i++) {
                 if (!m_slots_alive[i]) continue;
 
-                if constexpr (std::is_invocable_v<_Func, _Ty&, pointer_t>) {
+                if constexpr (std::is_invocable_v<_Func, T&, pointer_t>) {
                     func(m_slots_object[i], pointer_t(i, m_slots_generation[i]));
                 }
-                else if constexpr (std::is_invocable_v<_Func, pointer_t, _Ty&>) {
+                else if constexpr (std::is_invocable_v<_Func, pointer_t, T&>) {
                     func(pointer_t(i, m_slots_generation[i]), m_slots_object[i]);
                 }
-                else if constexpr (std::is_invocable_v<_Func, _Ty&>) {
+                else if constexpr (std::is_invocable_v<_Func, T&>) {
                     func(m_slots_object[i]);
                 }
                 else if constexpr (std::is_invocable_v<_Func, pointer_t>) {
@@ -224,23 +224,23 @@ namespace fe {
 
         // this function runs your lambda through all objects of the storage
         // it can be invoked by :
-        // [](fe::pointer<_Ty>) -> void {}
-        // [](const _Ty&, fe::pointer<_Ty>) -> void {}
-        // [](fe::pointer<_Ty>, const _Ty&) -> void {}
-        // [](const _Ty&) -> void {}
+        // [](fe::pointer<T>) -> void {}
+        // [](const T&, fe::pointer<T>) -> void {}
+        // [](fe::pointer<T>, const T&) -> void {}
+        // [](const T&) -> void {}
         template <typename _Func>
         void for_each(_Func&& func) const {
             //std::shared_lock lock(m_mutex);
             for (size_t i = 0; i < m_slots_object.size(); i++) {
                 if (!m_slots_alive[i]) continue;
 
-                if constexpr (std::is_invocable_v<_Func, const _Ty&, pointer_t>) {
+                if constexpr (std::is_invocable_v<_Func, const T&, pointer_t>) {
                     func(m_slots_object[i], pointer_t(i, m_slots_generation[i]));
                 }
-                else if constexpr (std::is_invocable_v<_Func, pointer_t, const _Ty&>) {
+                else if constexpr (std::is_invocable_v<_Func, pointer_t, const T&>) {
                     func(pointer_t(i, m_slots_generation[i]), m_slots_object[i]);
                 }
-                else if constexpr (std::is_invocable_v<_Func, const _Ty&>) {
+                else if constexpr (std::is_invocable_v<_Func, const T&>) {
                     func(m_slots_object[i]);
                 }
                 else if constexpr (std::is_invocable_v<_Func, pointer_t>) {
@@ -260,7 +260,7 @@ namespace fe {
         }
 
         // devided to be more cache friendly
-        std::vector<_Ty>      m_slots_object;
+        std::vector<T>      m_slots_object;
         std::vector<handle_t> m_slots_generation;
         std::vector<bool>     m_slots_alive;
         //
@@ -274,9 +274,9 @@ namespace fe {
         virtual ~base_storage() = default;
     };
 
-    template <storable_t _Ty>
+    template <storable_t T>
     struct derived_storage : base_storage {
-        typed_pointer_storage<_Ty> storage;
+        typed_pointer_storage<T> storage;
     };
 
     // this class might be slow. better - do not use it
@@ -285,17 +285,17 @@ namespace fe {
         pointer_storage()  = default;
         ~pointer_storage() = default;
 
-        template <storable_t _Ty>
-        FORR_NODISCARD typed_pointer_storage<_Ty>& get_storage() {
+        template <storable_t T>
+        FORR_NODISCARD typed_pointer_storage<T>& get_storage() {
             std::unique_lock lock(m_registry_mutex);
 
-            std::type_index id = std::type_index(typeid(_Ty));
+            std::type_index id = std::type_index(typeid(T));
             auto            it = m_storages.find(id);
             if (it != m_storages.end()) {
-                return static_cast<derived_storage<_Ty>*>(it->second.get())->storage;
+                return static_cast<derived_storage<T>*>(it->second.get())->storage;
             }
 
-            auto  up  = std::make_unique<derived_storage<_Ty>>();
+            auto  up  = std::make_unique<derived_storage<T>>();
             auto* ptr = &up->storage;
             m_storages.emplace(id, std::move(up));
             return *ptr;
