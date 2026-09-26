@@ -36,27 +36,29 @@ namespace fe {
         (!std::is_array_v<T>);
 
     template <typename T,
-              typename HandleT     = default_handle_t,
-              typename GenerationT = default_generation_t>
-    concept pointer_t = requires {
-        { T() };
-        { T(std::declval<HandleT>(), std::declval<GenerationT>()) };
+              typename HandleT,
+              typename GenerationT>
+    concept pointer_t = requires(T t) {
+        typename T::HandleT;
+        typename T::GenerationT;
 
-        { std::declval<T>().index() } -> std::same_as<HandleT>;
-        { std::declval<T>().generation() } -> std::same_as<GenerationT>;
+        { T() };
+        { T(std::declval<typename T::HandleT>(), std::declval<typename T::GenerationT>()) };
+
+        { t.index() } -> std::same_as<typename T::HandleT>;
+        { t.generation() } -> std::same_as<typename T::GenerationT>;
     };
 
     template <typename T,
-              typename HandleT      = default_handle_t,
-              typename GenerationT  = default_generation_t,
-              typename PackedT      = default_packed_t,
-              typename CustomFields = empty_custom_fields_t>
-    concept pointer_packer_t = requires {
-        { std::declval<T>().operator()(std::declval<HandleT>(),
-                                       std::declval<GenerationT>(),
-                                       std::declval<PackedT>(),
-                                       std::declval<CustomFields>()) }
-          -> std::same_as<PackedT>;
+              typename HandleT,
+              typename GenerationT,
+              typename PackedT,
+              typename CustomFields>
+    concept pointer_packer_t = requires(T t) {
+        { t(std::declval<HandleT>(),
+            std::declval<GenerationT>(),
+            std::declval<PackedT>(),
+            std::declval<CustomFields>()) } -> std::same_as<PackedT>;
     };
 
     template <typename T,
@@ -83,6 +85,9 @@ namespace fe {
             }
         };
 
+        using HandleT     = HandleT;
+        using GenerationT = GenerationT;
+
     public:
         constexpr pointer(HandleT index, GenerationT generation) noexcept
             : m_index(index), m_generation(generation) {}
@@ -103,16 +108,16 @@ namespace fe {
         FORR_NODISCARD constexpr HandleT     index() const noexcept { return m_index; }
         FORR_NODISCARD constexpr GenerationT generation() const noexcept { return m_generation; }
 
-        FORR_NODISCARD constexpr std::reference_wrapper<CustomFields> custom_fields() noexcept
+        FORR_NODISCARD constexpr CustomFields& custom_fields() noexcept
             requires(!std::is_same_v<CustomFields, empty_custom_fields_t>)
         {
             return m_custom_fields;
-        }; // Microsoft Visual Studio 2026 IntelliSense wants me to put ';' here, sorry
-        FORR_NODISCARD constexpr std::reference_wrapper<const CustomFields> custom_fields() noexcept const
+        }
+        FORR_NODISCARD constexpr const CustomFields& custom_fields() noexcept const
             requires(!std::is_same_v<CustomFields, empty_custom_fields_t>)
         {
             return m_custom_fields;
-        }; // Microsoft Visual Studio 2026 IntelliSense wants me to put ';' here, sorry
+        }
 
         template <pointer_packer_t PackFn = DefaultPacker>
         FORR_NODISCARD constexpr PackedT packed() const noexcept { return PackFn::operator()(m_index, m_generation, m_custom_fields); }
@@ -136,9 +141,6 @@ namespace fe {
         HandleT                             m_index{ std::numeric_limits<HandleT>::max() };
         GenerationT                         m_generation{ std::numeric_limits<GenerationT>::max() };
         FORR_NO_UNIQUE_ADDRESS CustomFields m_custom_fields{};
-
-        template <storable_t>
-        friend class typed_pointer_storage;
     };
 
     template <typename T,
@@ -153,16 +155,12 @@ namespace fe {
         }
     };
 
-    template <storable_t T,
-              typename HandleT     = default_handle_t,
-              typename GenerationT = default_generation_t,
-              typename PackedT     = default_packed_t,
-              pointer_t PointerT   = fe::pointer<T, HandleT, GenerationT, PackedT>>
+    template <storable_t T, pointer_t PointerT = pointer<T>>
     class typed_pointer_storage {
     public:
         typed_pointer_storage() = default;
         ~typed_pointer_storage() {
-            for (size_t i = 0; i < m_slots_object.size(); ++i) {
+            for (size_t i = 0; i < m_slots_object.size(); i++) {
                 if (m_slots_alive[i]) {
                     std::destroy_at(get_ptr(i));
                 }
@@ -180,7 +178,7 @@ namespace fe {
 
         template <typename... Args>
         FORR_NODISCARD PointerT emplace(Args&&... args) {
-            HandleT index{};
+            PointerT::HandleT index{};
 
             if (!m_free_list.empty()) {
                 index = m_free_list.back();
@@ -191,11 +189,11 @@ namespace fe {
                 m_slots_generation[index]++;
             }
             else {
-                index = static_cast<HandleT>(m_slots_generation.size());
+                index = static_cast<PointerT::HandleT>(m_slots_generation.size());
 
-                if (m_slots_generation[index] == std::numeric_limits<GenerationT>::max() - 1) {
+                if (m_slots_generation[index] == std::numeric_limits<PointerT::GenerationT>::max() - 1) {
                     fe::logging::fatal("Generation overflow in fe::typed_pointer_storage::emplace()\nPointer's generation index reached %s",
-                                       std::to_string(std::numeric_limits<GenerationT>::max() - 1).c_str());
+                                       std::to_string(std::numeric_limits<PointerT::GenerationT>::max() - 1).c_str());
                 }
 
                 m_slots_object.emplace_back();
@@ -226,17 +224,17 @@ namespace fe {
             m_free_list.emplace_back(handle.index());
         }
 
-        FORR_NODISCARD std::optional<std::reference_wrapper<T>> get(PointerT handle) noexcept {
-            if (!is_valid(handle)) return std::nullopt;
+        FORR_NODISCARD T* get(PointerT handle) {
+            if (!is_valid(handle)) return nullptr;
             return *get_ptr(handle.index());
         }
 
-        FORR_NODISCARD std::optional<std::reference_wrapper<const T>> get(PointerT handle) const noexcept {
-            if (!is_valid(handle)) return std::nullopt;
+        FORR_NODISCARD const T* get(PointerT handle) const {
+            if (!is_valid(handle)) return nullptr;
             return *get_ptr(handle.index());
         }
 
-        FORR_NODISCARD bool is_valid(PointerT handle) const noexcept {
+        FORR_NODISCARD bool is_valid(PointerT handle) const {
             if (handle.index() >= m_slots_alive.size()) return false;
             if (!m_slots_alive[handle.index()]) return false;
             return m_slots_generation[handle.index()] == handle.generation();
@@ -328,12 +326,12 @@ namespace fe {
         }
 
         // devided to be more cache friendly
-        std::vector<Slot>    m_slots_object;
-        std::vector<HandleT> m_slots_generation;
-        std::vector<uint8_t> m_slots_alive; // use 'uint8_t' instead of 'bool' for simple byte-addressable storage
+        std::vector<Slot>              m_slots_object;
+        std::vector<PointerT::HandleT> m_slots_generation;
+        std::vector<uint8_t>           m_slots_alive; // use 'uint8_t' instead of 'bool' for simple byte-addressable storage
         //
 
-        std::vector<HandleT> m_free_list;
+        std::vector<PointerT::HandleT> m_free_list;
     };
 
 } // namespace fe

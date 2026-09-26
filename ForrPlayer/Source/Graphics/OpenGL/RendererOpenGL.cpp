@@ -80,14 +80,21 @@ std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::RendererOpenGL::
 }
 
 void fe::RendererOpenGL::BindParameter(ParameterID parameter_id) {
-    OpenGLShaderDescriptorRing& descriptor_ring = m_OpenGLResourceManager.GetDescriptorRing(parameter_id.storage_index);
-    OpenGLShaderDescriptor&     descriptor      = descriptor_ring[m_CurrentFrame];
+    OpenGLShaderDescriptorRing* descriptor_ring = m_OpenGLResourceManager.GetDescriptorRing(parameter_id);
+    if (!descriptor_ring) {
+        fe::logging::error("Failed to write parameter. Failed to get descriptor ring.\nParameterID :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
+                           static_cast<uint32_t>(parameter_id.index()),
+                           static_cast<uint32_t>(parameter_id.generation()),
+                           static_cast<uint32_t>(parameter_id.custom_fields().set),
+                           static_cast<uint32_t>(parameter_id.custom_fields().binding));
+    }
+    OpenGLShaderDescriptor& descriptor = descriptor_ring->operator[](m_CurrentFrame);
 
     if (descriptor.type == shader::DescriptorType::STORAGE_BUFFER) {
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, static_cast<GLuint>(parameter_id.binding), descriptor.buffer.get());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, static_cast<GLuint>(parameter_id.custom_fields().binding), descriptor.buffer.get());
     }
     else if (descriptor.type == shader::DescriptorType::UNIFORM_BUFFER) {
-        glBindBufferBase(GL_UNIFORM_BUFFER, static_cast<GLuint>(parameter_id.binding), descriptor.buffer.get());
+        glBindBufferBase(GL_UNIFORM_BUFFER, static_cast<GLuint>(parameter_id.custom_fields().binding), descriptor.buffer.get());
     }
     else {
         fe::logging::error("OpenGL::BindBuffer() : Failed to bind buffer. Unsupported descriptor type %i", descriptor.type);
@@ -95,8 +102,15 @@ void fe::RendererOpenGL::BindParameter(ParameterID parameter_id) {
 }
 
 void fe::RendererOpenGL::WriteParameter(ParameterID parameter_id, std::span<const std::byte> data) {
-    OpenGLShaderDescriptorRing& descriptor_ring = m_OpenGLResourceManager.GetDescriptorRing(parameter_id.storage_index);
-    OpenGLShaderDescriptor&     descriptor      = descriptor_ring[m_CurrentFrame];
+    OpenGLShaderDescriptorRing* descriptor_ring = m_OpenGLResourceManager.GetDescriptorRing(parameter_id);
+    if (!descriptor_ring) {
+        fe::logging::error("Failed to write parameter. Failed to get descriptor ring.\nParameterID :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
+                           static_cast<uint32_t>(parameter_id.index()),
+                           static_cast<uint32_t>(parameter_id.generation()),
+                           static_cast<uint32_t>(parameter_id.custom_fields().set),
+                           static_cast<uint32_t>(parameter_id.custom_fields().binding));
+    }
+    OpenGLShaderDescriptor& descriptor = descriptor_ring->operator[](m_CurrentFrame);
     std::memcpy(descriptor.mapped, data.data(), data.size());
 }
 
