@@ -8,6 +8,7 @@
 
 ### Done
     'fe::pointer<>' upgrade. Now you can set how many bytes you want to spend on its handle and generation index
+    'pointer.hpp' big update
 
 ### Problem
     -

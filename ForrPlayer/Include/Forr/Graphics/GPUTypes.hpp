@@ -190,7 +190,8 @@ namespace fe {
         uint8_t binding{ std::numeric_limits<uint8_t>::max() };
 
         // index in the list of shader buffers in GPU resource manager
-        uint32_t storage_index{ std::numeric_limits<uint32_t>::max() };
+
+        fe::pointer<ParameterID, uint32_t, uint16_t> storage_ptr{}; // TODO : maybe change uint32_t to this ?
 
         ParameterID()  = default;
         ~ParameterID() = default;
