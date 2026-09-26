@@ -21,6 +21,12 @@
 #include "attributes.hpp"
 
 namespace fe {
+    using default_handle_t     = uint32_t;
+    using default_generation_t = uint32_t;
+    using default_packed_t     = uint64_t;
+
+    struct empty_custom_fields_t {};
+
     template <typename T>
     concept storable_t =
         (!std::is_void_v<T>) &&
@@ -30,36 +36,48 @@ namespace fe {
         (!std::is_array_v<T>);
 
     template <typename T,
-              typename HandleT     = uint32_t,
-              typename GenerationT = uint32_t,
-              typename PackedT     = uint64_t>
+              typename HandleT     = default_handle_t,
+              typename GenerationT = default_generation_t>
     concept pointer_t = requires {
         { T() };
         { T(std::declval<HandleT>(), std::declval<GenerationT>()) };
 
         { std::declval<T>().index() } -> std::same_as<HandleT>;
         { std::declval<T>().generation() } -> std::same_as<GenerationT>;
-        { std::declval<T>().packed() } -> std::same_as<PackedT>;
     };
 
     template <typename T,
-              typename HandleT     = uint32_t,
-              typename GenerationT = uint32_t,
-              typename PackedT     = uint64_t>
+              typename HandleT      = default_handle_t,
+              typename GenerationT  = default_generation_t,
+              typename PackedT      = default_packed_t,
+              typename CustomFields = empty_custom_fields_t>
+    concept pointer_packer_t = requires {
+        { std::declval<T>().operator()(std::declval<HandleT>(),
+                                       std::declval<GenerationT>(),
+                                       std::declval<PackedT>(),
+                                       std::declval<CustomFields>()) }
+          -> std::same_as<PackedT>;
+    };
+
+    template <typename T,
+              typename HandleT      = default_handle_t,
+              typename GenerationT  = default_generation_t,
+              typename PackedT      = default_packed_t,
+              typename CustomFields = empty_custom_fields_t>
     class FORR_NODISCARD pointer {
     public:
         inline constexpr static PackedT PACKING_SHIFT = sizeof(GenerationT) * 8;
 
         struct DefaultPacker {
         public:
-            FORR_NODISCARD static constexpr PackedT operator()(HandleT index, GenerationT generation) noexcept {
+            FORR_NODISCARD static constexpr PackedT operator()(HandleT index, GenerationT generation, CustomFields custom_fields) noexcept {
                 return (static_cast<PackedT>(index) << PACKING_SHIFT) | static_cast<PackedT>(generation);
             }
         };
 
         struct DefaultUnpacker {
         public:
-            FORR_NODISCARD static constexpr std::pair<HandleT, GenerationT> operator()(PackedT packed) noexcept {
+            FORR_NODISCARD static constexpr std::tuple<HandleT, GenerationT, CustomFields> operator()(PackedT packed) noexcept {
                 return { static_cast<HandleT>(packed >> PACKING_SHIFT),
                          static_cast<GenerationT>(packed & std::numeric_limits<GenerationT>::max()) };
             }
@@ -70,11 +88,12 @@ namespace fe {
             : m_index(index), m_generation(generation) {}
         ~pointer() = default;
 
-        template <typename UnpackFn = DefaultUnpacker>
+        template <pointer_packer_t UnpackFn = DefaultUnpacker>
         constexpr explicit pointer(PackedT packed) noexcept {
-            auto unpacked = UnpackFn::operator()(packed);
-            m_index       = unpacked.first;
-            m_generation  = unpacked.second;
+            auto unpacked   = UnpackFn::operator()(packed);
+            m_index         = std::get<0>(unpacked);
+            m_generation    = std::get<1>(unpacked);
+            m_custom_fields = std::get<2>(unpacked);
         }
 
         constexpr pointer() noexcept                = default;
@@ -84,13 +103,23 @@ namespace fe {
         FORR_NODISCARD constexpr HandleT     index() const noexcept { return m_index; }
         FORR_NODISCARD constexpr GenerationT generation() const noexcept { return m_generation; }
 
-        template <typename PackFn = DefaultPacker>
-        FORR_NODISCARD constexpr PackedT packed() const noexcept { return PackFn::operator()(m_index, m_generation); }
+        FORR_NODISCARD constexpr std::reference_wrapper<CustomFields> custom_fields() noexcept
+            requires(!std::is_same_v<CustomFields, empty_custom_fields_t>)
+        {
+            return m_custom_fields;
+        }; // Microsoft Visual Studio 2026 IntelliSense wants me to put ';' here, sorry
+        FORR_NODISCARD constexpr std::reference_wrapper<const CustomFields> custom_fields() noexcept const
+            requires(!std::is_same_v<CustomFields, empty_custom_fields_t>)
+        {
+            return m_custom_fields;
+        }; // Microsoft Visual Studio 2026 IntelliSense wants me to put ';' here, sorry
 
-        template <typename UnpackFn = DefaultUnpacker>
+        template <pointer_packer_t PackFn = DefaultPacker>
+        FORR_NODISCARD constexpr PackedT packed() const noexcept { return PackFn::operator()(m_index, m_generation, m_custom_fields); }
+
+        template <pointer_packer_t UnpackFn = DefaultUnpacker>
         FORR_NODISCARD static constexpr pointer from_packed(PackedT packed) noexcept {
-            auto unpacked = UnpackFn::operator()(packed);
-            return pointer(unpacked.first, unpacked.second);
+            return pointer::pointer<UnpackFn>(packed);
         }
 
         FORR_NODISCARD constexpr bool is_valid() const noexcept {
@@ -104,17 +133,18 @@ namespace fe {
         FORR_NODISCARD constexpr operator bool() const noexcept { return this->is_valid(); }
 
     private:
-        HandleT     m_index{ std::numeric_limits<HandleT>::max() };
-        GenerationT m_generation{ std::numeric_limits<GenerationT>::max() };
+        HandleT                             m_index{ std::numeric_limits<HandleT>::max() };
+        GenerationT                         m_generation{ std::numeric_limits<GenerationT>::max() };
+        FORR_NO_UNIQUE_ADDRESS CustomFields m_custom_fields{};
 
         template <storable_t>
         friend class typed_pointer_storage;
     };
 
     template <typename T,
-              typename HandleT     = uint32_t,
-              typename GenerationT = uint32_t,
-              typename PackedT     = uint64_t,
+              typename HandleT     = default_handle_t,
+              typename GenerationT = default_generation_t,
+              typename PackedT     = default_packed_t,
               typename PackFn      = pointer<T, HandleT, GenerationT, PackedT>::DefaultPacker,
               typename UnpackFn    = pointer<T, HandleT, GenerationT, PackedT>::DefaultUnpacker>
     struct pointer_hash {
@@ -124,9 +154,9 @@ namespace fe {
     };
 
     template <storable_t T,
-              typename HandleT     = uint32_t,
-              typename GenerationT = uint32_t,
-              typename PackedT     = uint64_t,
+              typename HandleT     = default_handle_t,
+              typename GenerationT = default_generation_t,
+              typename PackedT     = default_packed_t,
               pointer_t PointerT   = fe::pointer<T, HandleT, GenerationT, PackedT>>
     class typed_pointer_storage {
     public:
