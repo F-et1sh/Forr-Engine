@@ -66,8 +66,8 @@ namespace fe {
         FORR_NODISCARD const OpenGLTexture& GetResource(GPUHandle<resource::Texture> handle) const;
 
         FORR_NODISCARD std::expected<ParameterID, ParameterCreationErrors> CreateDescriptorRing(const ParameterDesc& parameter_desc);
-        // TODO : provide 'std::expected' here
-        FORR_NODISCARD OpenGLShaderDescriptorRing& GetDescriptorRing(uint32_t index);
+        FORR_NODISCARD OpenGLShaderDescriptorRing*                         GetDescriptorRing(ParameterID parameter_id) { return m_Parameters.get(parameter_id); }
+        FORR_NODISCARD const OpenGLShaderDescriptorRing*                   GetDescriptorRing(ParameterID parameter_id) const { return m_Parameters.get(parameter_id); }
 
     private: // here functions, which used like helpers to create some resources that don't have thier own CPU realization.
              // The functions return 'GPUHandle<>' but you DON'T have to set 'GPUHandle<> gpu_handle' in the resources, the functions does it by themselves
@@ -89,13 +89,10 @@ namespace fe {
     private:
         ResourceManager& m_ResourceManager;
 
-        // GPU analogue of CPU resources
-        std::vector<OpenGLMesh>    m_StorageMeshes{};
-        std::vector<OpenGLTexture> m_StorageTextures{};
-
-        // shader buffers : SSBOs and UBOs
-        std::vector<OpenGLShaderDescriptorRing> m_ShaderBuffers{};
-
+        std::vector<OpenGLMesh>     m_StorageMeshes{};
+        std::vector<OpenGLTexture>  m_StorageTextures{};
         std::vector<OpenGLPipeline> m_Pipelines{};
+
+        fe::typed_pointer_storage<OpenGLShaderDescriptorRing, ParameterID> m_Parameters{};
     };
 } // namespace fe

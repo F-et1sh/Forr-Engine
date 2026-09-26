@@ -272,12 +272,7 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetPipeline(size_t pipeline
     return m_Pipelines[pipeline_storage_index];
 }
 
-std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::OpenGLResourceManager::CreateDescriptorRing(const ParameterDesc& parameter_desc) {
-    ParameterID parameter_id{};
-    parameter_id.set           = parameter_desc.set;
-    parameter_id.binding       = parameter_desc.binding;
-    parameter_id.storage_index = m_ShaderBuffers.size();
-
+FORR_NODISCARD std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::OpenGLResourceManager::CreateDescriptorRing(const ParameterDesc& parameter_desc) {
     size_t buffer_size = 16 * 1024; // 16KB
 
     if (parameter_desc.array_size != 0) {
@@ -320,16 +315,7 @@ std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::OpenGLResourceMa
         descriptor.type = parameter_desc.descriptor_type;
     }
 
-    m_ShaderBuffers.emplace_back(std::move(descriptor_ring));
-
-    return parameter_id;
-}
-
-fe::OpenGLShaderDescriptorRing& fe::OpenGLResourceManager::GetDescriptorRing(uint32_t index) {
-    if (m_ShaderBuffers.size() <= index) {
-        fe::logging::fatal("Out of range"); // TODO : provide fallbacks
-    }
-    return m_ShaderBuffers[index];
+    return m_Parameters.emplace(std::move(descriptor_ring));
 }
 
 // TODO : provide fallbacks

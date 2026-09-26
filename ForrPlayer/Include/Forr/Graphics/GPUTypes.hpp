@@ -214,11 +214,11 @@ namespace fe {
         }
     };
 
-    using ParameterID = fe::pointer<ParameterID,
-                                    uint32_t, // index                   ( 32 bytes )
-                                    uint16_t, // generation              ( 16 bytes )
-                                    uint64_t, // packed aka all together ( 64 bytes )
-                                    ParameterIDFields>; //               ( 16 bytes )
+    using ParameterID = fe::pointer<ParameterIDFields,  // random type to define that this handle works with parameters
+                                    uint32_t,           // index                   ( 32 bytes )
+                                    uint16_t,           // generation              ( 16 bytes )
+                                    uint64_t,           // packed aka all together ( 64 bytes )
+                                    ParameterIDFields>; //                         ( 16 bytes )
 
     struct FORR_API PipelineDesc {
         fe::PipelineFlags pipeline_flags{};

@@ -10,6 +10,7 @@
     'fe::pointer<>' upgrade. Now you can set how many bytes you want to spend on its handle and generation index
     'pointer.hpp' big update
     'pointer.hpp' update / 'fe::ParameterID' reworked
+    parameters creation and binding provided for OpenGL ( destorying remaining )
 
 ### Problem
     -
