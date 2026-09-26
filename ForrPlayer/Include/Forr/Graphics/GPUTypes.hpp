@@ -184,18 +184,41 @@ namespace fe {
         UNSUPPORTED_MEMORY_TYPE,
         MAPPED_MEMORY_WAS_NULLPTR
     };
-    
-    struct FORR_API ParameterID {
+
+    struct FORR_API ParameterIDFields {
         uint8_t set{ std::numeric_limits<uint8_t>::max() };
         uint8_t binding{ std::numeric_limits<uint8_t>::max() };
-
-        // index in the list of shader buffers in GPU resource manager
-
-        fe::pointer<ParameterID, uint32_t, uint16_t> storage_ptr{}; // TODO : maybe change uint32_t to this ?
-
-        ParameterID()  = default;
-        ~ParameterID() = default;
     };
+
+    struct FORR_API ParameterIDPacker {
+        // [index 4 bytes] [generation 2 bytes] [set 1 byte] [binding 1 byte] -> 8 byte together
+        FORR_NODISCARD static constexpr uint64_t operator()(uint32_t index, uint16_t generation, ParameterIDFields fields) noexcept {
+            return (static_cast<uint64_t>(index) << 32) |
+                   (static_cast<uint64_t>(generation) << 16) |
+                   (static_cast<uint64_t>(fields.set) << 8) |
+                   static_cast<uint64_t>(fields.binding);
+        }
+    };
+
+    struct FORR_API ParameterIDUnpacker {
+        // 8 byte together --> [index 4 bytes] [generation 2 bytes] [set 1 byte] [binding 1 byte]
+        FORR_NODISCARD static constexpr std::tuple<uint32_t, uint16_t, ParameterIDFields> operator()(uint64_t packed) noexcept {
+            uint32_t index      = static_cast<uint32_t>(packed >> 32);
+            uint16_t generation = static_cast<uint16_t>((packed >> 16) & 0xFFFF);
+
+            ParameterIDFields fields{};
+            fields.set     = static_cast<uint8_t>((packed >> 8) & 0xFFFF);
+            fields.binding = static_cast<uint8_t>(packed & 0xFFFF);
+
+            return { index, generation, fields };
+        }
+    };
+
+    using ParameterID = fe::pointer<ParameterID,
+                                    uint32_t, // index                   ( 32 bytes )
+                                    uint16_t, // generation              ( 16 bytes )
+                                    uint64_t, // packed aka all together ( 64 bytes )
+                                    ParameterIDFields>; //               ( 16 bytes )
 
     struct FORR_API PipelineDesc {
         fe::PipelineFlags pipeline_flags{};

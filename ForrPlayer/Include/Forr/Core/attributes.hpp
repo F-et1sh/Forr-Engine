@@ -28,11 +28,13 @@
 #define FORR_UNLIKELY [[unlikely]]  
 #define FORR_CONSTEVAL consteval
 #define FORR_CONSTINIT constinit
+#define FORR_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #else
 #define FORR_LIKELY
 #define FORR_UNLIKELY
 #define FORR_CONSTEVAL
 #define FORR_CONSTINIT
+#define FORR_NO_UNIQUE_ADDRESS
 #endif
 
 #ifdef _WIN32
