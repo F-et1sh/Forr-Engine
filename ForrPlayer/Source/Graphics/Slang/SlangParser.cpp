@@ -63,6 +63,75 @@ fe::SlangParser::SlangParser(std::span<const char*> full_search_paths) {
     }
 }
 
+std::expected<std::unordered_map<fe::shader::StageBits, std::vector<uint8_t>>, fe::SlangParser::ShaderBuildErrors> fe::SlangParser::BuildShaderCodes(const PipelineDesc& pipeline_desc, ResourceManager& resource_manager) {
+    std::vector<Slang::ComPtr<slang::IModule>> loaded_modules{};
+
+    loaded_modules.reserve(pipeline_desc.shader_file_data_ptrs.size());
+
+    for (auto shader_file_ptr : pipeline_desc.shader_file_data_ptrs) {
+        auto shader_file_data_optional = resource_manager.GetResource(shader_file_ptr);
+        if (!shader_file_data_optional.has_value()) {
+            fe::logging::warning("Failed to get shader file data resource\nShader file data ptr :\nindex = %i\ngeneration = %i.\nContinuing building the shader codes",
+                                 static_cast<uint32_t>(shader_file_ptr.index()),
+                                 static_cast<uint32_t>(shader_file_ptr.generation()));
+            continue;
+        }
+
+        const auto& shader_file_data = shader_file_data_optional.value();
+
+        if (shader_file_data.slang_serialized_data.empty() ||
+            shader_file_data.slang_serialized_data.data() == nullptr) {
+            fe::logging::warning("Serialized Slang ( Unified ) -> Slang. Failed to deserialize shader file data's module. It was empty.\nContinuing building the shader codes");
+            continue;
+        }
+
+        Slang::ComPtr<ISlangBlob> blob{};
+        ISlangBlob*               blob_raw = slang_createBlob(shader_file_data.slang_serialized_data.data(),
+                                                              shader_file_data.slang_serialized_data.size());
+        blob.attach(blob_raw);
+
+        Slang::ComPtr<slang::IBlob> load_diagnostics{};
+        slang::IModule*             loaded_module_raw = m_Session->loadModuleFromIRBlob(shader_file_data.full_path.c_str(),
+                                                                                        shader_file_data.full_path.c_str(),
+                                                                                        blob_raw,
+                                                                                        load_diagnostics.writeRef());
+
+        if (!loaded_module_raw) {
+            fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to deserialize shader file data's module. %s.\nContinuing building the shader codes",
+                               (const char*) load_diagnostics->getBufferPointer());
+            continue;
+        }
+
+        loaded_modules.emplace_back(loaded_module_raw);
+
+        uint32_t dependency_count = m_Module->getDependencyFileCount();
+        loaded_modules.reserve(loaded_modules.size() + dependency_count);
+        for (uint32_t i = 0; i < dependency_count; i++) {
+            const char* dependency_file = m_Module->getDependencyFilePath(i);
+
+            Slang::ComPtr<slang::IBlob> load_diagnostics{};
+            slang::IModule*             imported_module_raw = m_Session->loadModule(dependency_file, load_diagnostics.writeRef());
+            if (imported_module_raw) {
+                int parameters_count = imported_module_raw->getSpecializationParamCount();
+                loaded_modules.emplace_back(imported_module_raw);
+            }
+            else {
+                fe::logging::error("Slang -> Unified. Failed to load a slang dependency module. Continuing loading\n%s",
+                                   (const char*) load_diagnostics->getBufferPointer());
+                continue;
+            }
+        }
+    }
+
+    std::vector<slang::IComponentType*> component_types{};
+    component_types.reserve(loaded_modules.size());
+
+    // TODO : create composite here ...
+
+    std::unordered_map<fe::shader::StageBits, std::vector<uint8_t>> source_codes{};
+    return source_codes;
+}
+
 bool fe::SlangParser::LoadFromFile(const std::filesystem::path& resource_full_path) {
     Slang::ComPtr<slang::IBlob> load_diagnostics{};
     m_Module = m_Session->loadModule(resource_full_path.generic_string().c_str(), load_diagnostics.writeRef());

@@ -22,6 +22,8 @@
 
 #include "Tools.hpp"
 
+#include "Graphics/Slang/SlangParser.hpp"
+
 namespace fe {
     class RendererOpenGL : public IRenderer {
     private:
@@ -87,9 +89,14 @@ namespace fe {
         // render targets' hash --> framebuffer
         std::unordered_map<uint64_t, gl::Framebuffer> m_FramebuffersCache{};
 
-        //fe::typed_pointer_storage<OpenGLMesh, MeshID>                                            m_StorageMeshes{};
-        //fe::typed_pointer_storage<OpenGLTexture, TextureID>                                         m_StorageTextures{};
+        // TODO : soon
+        //
+        //fe::typed_pointer_storage<OpenGLMesh, fe::graphics::MeshHandle>                     m_Meshes{};
+        //fe::typed_pointer_storage<OpenGLTexture, fe::graphics::TextureHandle>               m_Textures{};
+        //fe::typed_pointer_storage<OpenGLShaderParameterRing, fe::graphics::ParameterHandle> m_Parameters{};
+        //fe::typed_pointer_storage<OpenGLPipeline, fe::graphics::PipelineHandle>             m_Pipelines{};
+
         fe::typed_pointer_storage<OpenGLShaderParameterRing, ParameterID> m_Parameters{};
-        fe::typed_pointer_storage<OpenGLPipeline, PipelineID>              m_Pipelines{};
+        fe::typed_pointer_storage<OpenGLPipeline, PipelineID>             m_Pipelines{};
     };
 } // namespace fe

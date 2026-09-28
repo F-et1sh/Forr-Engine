@@ -164,7 +164,10 @@ void fe::RendererOpenGL::DestroyParameter(ParameterID parameter_id) {
 }
 
 FORR_NODISCARD std::expected<fe::PipelineID, fe::PipelineCreationErrors> fe::RendererOpenGL::CreatePipeline(const PipelineDesc& pipeline_desc) {
-
+    SlangParser slang_parser{};
+    auto source_codes = slang_parser.BuildShaderCodes(pipeline_desc, m_ResourceManager);
+    // TODO : create pipeline ...
+    return {};
 }
 
 void fe::RendererOpenGL::BindPipeline(PipelineID pipeline_id) {
