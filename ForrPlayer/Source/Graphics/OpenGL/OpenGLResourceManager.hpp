@@ -68,6 +68,7 @@ namespace fe {
         FORR_NODISCARD std::expected<ParameterID, ParameterCreationErrors> CreateDescriptorRing(const ParameterDesc& parameter_desc);
         FORR_NODISCARD OpenGLShaderDescriptorRing*                         GetDescriptorRing(ParameterID parameter_id) { return m_Parameters.get(parameter_id); }
         FORR_NODISCARD const OpenGLShaderDescriptorRing*                   GetDescriptorRing(ParameterID parameter_id) const { return m_Parameters.get(parameter_id); }
+        void                                                               DestroyDescriptorRing(ParameterID parameter_id);
 
     private: // here functions, which used like helpers to create some resources that don't have thier own CPU realization.
              // The functions return 'GPUHandle<>' but you DON'T have to set 'GPUHandle<> gpu_handle' in the resources, the functions does it by themselves
@@ -94,5 +95,6 @@ namespace fe {
         std::vector<OpenGLPipeline> m_Pipelines{};
 
         fe::typed_pointer_storage<OpenGLShaderDescriptorRing, ParameterID> m_Parameters{};
+        std::vector<ParameterID>                                           m_ParametersToDestroyQueue{};
     };
 } // namespace fe

@@ -1,5 +1,18 @@
 ﻿# Forr-Engine Devlog
 
+## 28.09.2026
+### Goal
+    move GPU resource manager's logic into its renderer ( remove it )
+    provide parameters destroying
+    provide API to create and bind pipeline via 'fe::IRenderer' ( for OpenGL )
+    translate old system of GPU resource manager to the new one ( updated 'fe::typed_pointer_storage' )
+
+### Done
+    deferred deletion queue done ( for OpenGL )
+
+### Problem
+    -
+
 ## 26.09.2026
 ### Goal
     provide API to create and bind pipeline via 'fe::IRenderer' ( for OpenGL )

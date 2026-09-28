@@ -214,11 +214,11 @@ namespace fe {
         }
     };
 
-    using ParameterID = fe::pointer<ParameterIDFields,  // random type to define that this handle works with parameters
-                                    uint32_t,           // index                   ( 32 bytes )
-                                    uint16_t,           // generation              ( 16 bytes )
-                                    uint64_t,           // packed aka all together ( 64 bytes )
-                                    ParameterIDFields>; //                         ( 16 bytes )
+    using ParameterID = fe::pointer<struct ParameterTag, // a tag to define that this handle works with parameters
+                                    uint32_t,            // index                   ( 32 bytes )
+                                    uint16_t,            // generation              ( 16 bytes )
+                                    uint64_t,            // packed aka all together ( 64 bytes )
+                                    ParameterIDFields>;  //                         ( 16 bytes )
 
     struct FORR_API PipelineDesc {
         fe::PipelineFlags pipeline_flags{};
@@ -236,10 +236,7 @@ namespace fe {
         // TODO : fill this up
     };
 
-    struct FORR_API PipelineID {
-        // index in the list of shader buffers in GPU resource manager
-        uint32_t storage_index{ std::numeric_limits<uint32_t>::max() };
-    };
+    using PipelineID = fe::pointer<struct PipelineTag>; // a tag to define that this handle works with pipelines
 
     namespace render_graph {
         enum class FORR_API ImageType : uint8_t {
