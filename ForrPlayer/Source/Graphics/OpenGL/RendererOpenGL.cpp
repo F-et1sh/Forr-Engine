@@ -66,7 +66,7 @@ std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::RendererOpenGL::
         buffer_size = parameter_desc.array_size * parameter_desc.size;
     }
 
-    OpenGLShaderDescriptorRing descriptor_ring{};
+    OpenGLShaderParameterRing descriptor_ring{};
 
     for (auto& descriptor : descriptor_ring) {
         GLuint buffer_raw{};
@@ -106,7 +106,7 @@ std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::RendererOpenGL::
 }
 
 void fe::RendererOpenGL::BindParameter(ParameterID parameter_id) {
-    OpenGLShaderDescriptorRing* descriptor_ring = m_Parameters.get(parameter_id);
+    OpenGLShaderParameterRing* descriptor_ring = m_Parameters.get(parameter_id);
     if (!descriptor_ring) {
         fe::logging::error("Failed to write parameter. Failed to get descriptor ring.\nParameterID :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
                            static_cast<uint32_t>(parameter_id.index()),
@@ -115,7 +115,7 @@ void fe::RendererOpenGL::BindParameter(ParameterID parameter_id) {
                            static_cast<uint32_t>(parameter_id.custom_fields().binding));
         return;
     }
-    OpenGLShaderDescriptor& descriptor = descriptor_ring->operator[](m_CurrentFrame);
+    OpenGLShaderParameter& descriptor = descriptor_ring->operator[](m_CurrentFrame);
 
     if (descriptor.type == shader::DescriptorType::STORAGE_BUFFER) {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, static_cast<GLuint>(parameter_id.custom_fields().binding), descriptor.buffer.get());
@@ -129,7 +129,7 @@ void fe::RendererOpenGL::BindParameter(ParameterID parameter_id) {
 }
 
 void fe::RendererOpenGL::WriteParameter(ParameterID parameter_id, std::span<const std::byte> data) {
-    OpenGLShaderDescriptorRing* descriptor_ring = m_Parameters.get(parameter_id);
+    OpenGLShaderParameterRing* descriptor_ring = m_Parameters.get(parameter_id);
     if (!descriptor_ring) {
         fe::logging::error("Failed to write parameter. Failed to get descriptor ring.\nParameterID :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
                            static_cast<uint32_t>(parameter_id.index()),
@@ -138,12 +138,12 @@ void fe::RendererOpenGL::WriteParameter(ParameterID parameter_id, std::span<cons
                            static_cast<uint32_t>(parameter_id.custom_fields().binding));
         return;
     }
-    OpenGLShaderDescriptor& descriptor = descriptor_ring->operator[](m_CurrentFrame);
+    OpenGLShaderParameter& descriptor = descriptor_ring->operator[](m_CurrentFrame);
     std::memcpy(descriptor.mapped, data.data(), data.size());
 }
 
 void fe::RendererOpenGL::DestroyParameter(ParameterID parameter_id) {
-    OpenGLShaderDescriptorRing* descriptor_ring = m_Parameters.get(parameter_id);
+    OpenGLShaderParameterRing* descriptor_ring = m_Parameters.get(parameter_id);
     if (!descriptor_ring) {
         fe::logging::error("Failed to destroy parameter. Failed to get descriptor ring.\nParameterID :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
                            static_cast<uint32_t>(parameter_id.index()),
@@ -152,10 +152,10 @@ void fe::RendererOpenGL::DestroyParameter(ParameterID parameter_id) {
                            static_cast<uint32_t>(parameter_id.custom_fields().binding));
         return;
     }
-    
+
     auto& buffers_to_destory = m_FrameData[m_CurrentFrame].buffers_to_destroy;
     buffers_to_destory.reserve(buffers_to_destory.size() + MAX_CONCURRENT_FRAMES);
-    
+
     for (auto& descriptor : *descriptor_ring) {
         buffers_to_destory.emplace_back(std::move(descriptor));
     }
@@ -164,6 +164,7 @@ void fe::RendererOpenGL::DestroyParameter(ParameterID parameter_id) {
 }
 
 FORR_NODISCARD std::expected<fe::PipelineID, fe::PipelineCreationErrors> fe::RendererOpenGL::CreatePipeline(const PipelineDesc& pipeline_desc) {
+
 }
 
 void fe::RendererOpenGL::BindPipeline(PipelineID pipeline_id) {
@@ -198,6 +199,17 @@ void fe::RendererOpenGL::BindPipeline(PipelineID pipeline_id) {
 }
 
 void fe::RendererOpenGL::DestroyPipeline(PipelineID pipeline_id) {
+    OpenGLPipeline* pipeline = m_Pipelines.get(pipeline_id);
+    if (!pipeline) {
+        fe::logging::error("Failed to destroy pipeline. Failed to get pipeline.\nPipelineID :\nindex = %i\ngeneration = %i",
+                           static_cast<uint32_t>(pipeline_id.index()),
+                           static_cast<uint32_t>(pipeline_id.generation()));
+        return;
+    }
+
+    m_FrameData[m_CurrentFrame].shader_programs_to_destory.emplace_back(std::move(pipeline->shader_program));
+
+    m_Pipelines.destroy(pipeline_id);
 }
 
 void fe::RendererOpenGL::BeginFrame() {
@@ -206,15 +218,16 @@ void fe::RendererOpenGL::BeginFrame() {
     }
 
     m_FrameData[m_CurrentFrame].buffers_to_destroy.clear();
+    m_FrameData[m_CurrentFrame].shader_programs_to_destory.clear();
 }
 
 void fe::RendererOpenGL::EndFrame(const render_graph::CommandList& render_command_list) {
     render_command_list.handle_all([&](const auto& command) { this->handleCommand(command); });
 
     glfwSwapBuffers(m_GLFWwindow);
-   
+
     m_FrameData[m_CurrentFrame].sync.reset();
-    
+
     GLsync sync_raw = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     m_FrameData[m_CurrentFrame].sync.attach(sync_raw);
 

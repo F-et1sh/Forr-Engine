@@ -279,7 +279,7 @@ FORR_NODISCARD std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::O
         buffer_size = parameter_desc.array_size * parameter_desc.size;
     }
 
-    OpenGLShaderDescriptorRing descriptor_ring{};
+    OpenGLShaderParameterRing descriptor_ring{};
 
     for (auto& descriptor : descriptor_ring) {
         GLuint buffer_raw{};
@@ -320,7 +320,7 @@ FORR_NODISCARD std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::O
 
 void fe::OpenGLResourceManager::DestroyDescriptorRing(ParameterID parameter_id) {
     
-    m_Parameters.destroy(parameter_id);
+    //m_Parameters.destroy(parameter_id);
 
 }
 
