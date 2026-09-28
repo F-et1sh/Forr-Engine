@@ -226,12 +226,12 @@ namespace fe {
 
         FORR_NODISCARD T* get(PointerT handle) {
             if (!is_valid(handle)) return nullptr;
-            return *get_ptr(handle.index());
+            return get_ptr(handle.index());
         }
 
         FORR_NODISCARD const T* get(PointerT handle) const {
             if (!is_valid(handle)) return nullptr;
-            return *get_ptr(handle.index());
+            return get_ptr(handle.index());
         }
 
         FORR_NODISCARD bool is_valid(PointerT handle) const {

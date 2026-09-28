@@ -77,7 +77,7 @@ namespace fe {
             // pre-create pipeline desc
             PipelineDesc pipeline_desc{
                 .pipeline_flags   = material.pipeline_flags_override,
-                .shader_file_ptrs = { shader_file_data_ptr },
+                .shader_file_data_ptrs = { shader_file_data_ptr },
                 .entry_points     = { vertex_entry_point_name, fragment_entry_point_name },
                 .descriptor_sets  = descriptor_set_names,
                 .push_constants   = { push_constants_name },
@@ -95,7 +95,7 @@ namespace fe {
                 if (!material_shader_file_data_optional.has_value())
                     return std::unexpected{ PBRPipelineErrorCodes::MATERIAL_LAYOUT_SHADER_FILE_DATA_PTR_WAS_INVALID };
 
-                pipeline_desc.shader_file_ptrs.emplace_back(material.layout_key.shader_file_data);
+                pipeline_desc.shader_file_data_ptrs.emplace_back(material.layout_key.shader_file_data);
                 shader_file_data_to_find_material_structure = material_shader_file_data_optional.value();
             }
 

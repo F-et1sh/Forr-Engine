@@ -4,6 +4,7 @@
 ### Goal
     'fe::OpenGLDescriptorRing' --> 'fe::OpenGLParameterRing'
     move GPU resource manager's logic into its renderer ( remove it )
+    move GPU handles and some IDs ( PipelineID, ParameterID ) to new 'fe::graphics::'
     provide parameters destroying
     provide API to create and bind pipeline via 'fe::IRenderer' ( for OpenGL )
     translate old system of GPU resource manager to the new one ( updated 'fe::typed_pointer_storage' )
@@ -12,9 +13,10 @@
 ### Done
     deferred deletion queue done ( for OpenGL )
     'fe::OpenGLDescriptorRing' --> 'fe::OpenGLParameterRing'
+    pipeline creation in progress
 
 ### Problem
-    -
+    Lack of sleep
 
 ## 26.09.2026
 ### Goal

@@ -43,16 +43,18 @@ namespace fe {
 
         template <resource::resource_t T>
         FORR_NODISCARD std::optional<T&> GetResource(fe::pointer<T> ptr) {
-            auto& storage = this->GetStorage<T>();
-            if (!storage.is_valid(ptr)) return std::nullopt;
-            return *storage.get(ptr);
+            auto& storage  = this->GetStorage<T>();
+            auto* resource = storage.get(ptr);
+            if (!resource) return std::nullopt;
+            return *resource;
         }
 
         template <resource::resource_t T>
         FORR_NODISCARD std::optional<const T&> GetResource(fe::pointer<T> ptr) const {
-            auto& storage = this->GetStorage<T>();
-            if (!storage.is_valid(ptr)) return std::nullopt;
-            return *storage.get(ptr);
+            const auto& storage  = this->GetStorage<T>();
+            const auto* resource = storage.get(ptr);
+            if (!resource) return std::nullopt;
+            return *resource;
         }
 
         // TODO : provide 'fe::ResourceStorage::GetDefaultResource<T>()'
@@ -77,9 +79,23 @@ namespace fe {
             storage.for_each(func);
         }
 
-        // unsafe helper function
         template <resource::resource_t T>
         FORR_NODISCARD fe::typed_pointer_storage<T>& GetStorage() {
+            if constexpr (false) {
+            }
+#define GENERATE_STORAGES(RESOURCE_NAME)                                 \
+    else if constexpr (std::is_same_v<T, fe::resource::RESOURCE_NAME>) { \
+        return m_Storage##RESOURCE_NAME;                                 \
+    }
+            FORR_RESOURCES_LIST(GENERATE_STORAGES)
+#undef GENERATE_STORAGES
+            else {
+                static_assert(std::false_type::value && "Forgot to add new resource to FORR_RESOURCES_LIST");
+            }
+        }
+
+        template <resource::resource_t T>
+        FORR_NODISCARD const fe::typed_pointer_storage<T>& GetStorage() const {
             if constexpr (false) {
             }
 #define GENERATE_STORAGES(RESOURCE_NAME)                                 \

@@ -30,19 +30,29 @@ namespace fe {
             "computeMain"
         };
 
-        enum class SpecializationErrors { // first time of using 'std::expected'
+        enum class SpecializationErrors : uint8_t { // first time of using 'std::expected'
             NO_PARAMETERS,
             UNSUPPORTED_GRAPHICS_BACKEND,
             SPECIALIZATION_FAILED
         };
 
+        enum class ShaderBuildErrors : uint8_t {
+            ERROR,
+            // TODO : fill this up
+        };
+
     public:
-        // this will use 'PATH.getShadersPath().generic_string().c_str()' if you leave argument 'search_paths' as null
+        // this will use 'PATH.getShadersPath().generic_string().c_str()' if you leave the argument 'search_paths' as default
         SlangParser(std::span<const char*> full_search_paths = {});
         ~SlangParser() = default;
 
         FORR_CLASS_MOVABLE(SlangParser)
         FORR_CLASS_NONCOPYABLE(SlangParser)
+
+        // TODO : firstly pass whole 'fe::PipelineDesc', then collapse this function, making the class more modular
+        std::expected<std::unordered_map<fe::shader::StageBits, std::vector<uint8_t>>, ShaderBuildErrors> BuildShaderCodes(const PipelineDesc& pipeline_desc, ResourceManager& resource_manager);
+
+        // TODO : rewrite or remove all methods below
 
         bool LoadFromFile(const std::filesystem::path& resource_full_path);
 
