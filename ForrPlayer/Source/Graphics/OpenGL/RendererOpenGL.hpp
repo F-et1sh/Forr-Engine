@@ -27,8 +27,9 @@ namespace fe {
     private:
         struct FrameData {
             // Vulkan fence's analogue in OpenGL
-            fe::gl::Sync                sync{};
-            std::vector<fe::gl::Buffer> buffers_to_destroy{};
+            fe::gl::Sync                       sync{};
+            std::vector<fe::gl::Buffer>        buffers_to_destroy{};
+            std::vector<fe::gl::ShaderProgram> shader_programs_to_destory{};
 
             FrameData() = default;
         };
@@ -86,7 +87,9 @@ namespace fe {
         // render targets' hash --> framebuffer
         std::unordered_map<uint64_t, gl::Framebuffer> m_FramebuffersCache{};
 
-        fe::typed_pointer_storage<OpenGLShaderDescriptorRing, ParameterID> m_Parameters{};
+        //fe::typed_pointer_storage<OpenGLMesh, MeshID>                                            m_StorageMeshes{};
+        //fe::typed_pointer_storage<OpenGLTexture, TextureID>                                         m_StorageTextures{};
+        fe::typed_pointer_storage<OpenGLShaderParameterRing, ParameterID> m_Parameters{};
         fe::typed_pointer_storage<OpenGLPipeline, PipelineID>              m_Pipelines{};
     };
 } // namespace fe

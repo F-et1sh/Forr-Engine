@@ -66,8 +66,8 @@ namespace fe {
         FORR_NODISCARD const OpenGLTexture& GetResource(GPUHandle<resource::Texture> handle) const;
 
         FORR_NODISCARD std::expected<ParameterID, ParameterCreationErrors> CreateDescriptorRing(const ParameterDesc& parameter_desc);
-        FORR_NODISCARD OpenGLShaderDescriptorRing*                         GetDescriptorRing(ParameterID parameter_id) { return m_Parameters.get(parameter_id); }
-        FORR_NODISCARD const OpenGLShaderDescriptorRing*                   GetDescriptorRing(ParameterID parameter_id) const { return m_Parameters.get(parameter_id); }
+        FORR_NODISCARD OpenGLShaderParameterRing*                         GetDescriptorRing(ParameterID parameter_id) { return m_Parameters.get(parameter_id); }
+        FORR_NODISCARD const OpenGLShaderParameterRing*                   GetDescriptorRing(ParameterID parameter_id) const { return m_Parameters.get(parameter_id); }
         void                                                               DestroyDescriptorRing(ParameterID parameter_id);
 
     private: // here functions, which used like helpers to create some resources that don't have thier own CPU realization.
@@ -94,7 +94,7 @@ namespace fe {
         std::vector<OpenGLTexture>  m_StorageTextures{};
         std::vector<OpenGLPipeline> m_Pipelines{};
 
-        fe::typed_pointer_storage<OpenGLShaderDescriptorRing, ParameterID> m_Parameters{};
+        fe::typed_pointer_storage<OpenGLShaderParameterRing, ParameterID> m_Parameters{};
         std::vector<ParameterID>                                           m_ParametersToDestroyQueue{};
     };
 } // namespace fe

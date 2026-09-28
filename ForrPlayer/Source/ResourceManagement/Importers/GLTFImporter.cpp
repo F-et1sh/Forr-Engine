@@ -631,7 +631,7 @@ fe::pointer<Material> fe::GLTFImporter::createMaterial(GLTFImportContext& contex
     const auto& default_pbr_material        = *context.storage.GetResource(resource_management_context.default_pbr_material_ptr);
 
     this_material.pipeline_flags_override = default_pbr_material.pipeline_flags_override;
-    this_material.layout_ptr              = default_pbr_material.layout_ptr;
+    this_material.layout_key              = default_pbr_material.layout_key;
     this_material.buffer                  = default_pbr_material.buffer;
 
     auto ptr = context.storage.CreateResource<Material>(std::move(this_material));

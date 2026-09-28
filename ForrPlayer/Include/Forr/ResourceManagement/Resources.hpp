@@ -109,7 +109,7 @@ namespace fe::resource {
         };
         std::vector<MipData> mip_levels{};
 
-        GPUHandle<Texture> gpu_handle{};
+        fe::pointer<Texture> gpu_handle{};
 
         Texture()  = default;
         ~Texture() = default;
