@@ -318,6 +318,12 @@ FORR_NODISCARD std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::O
     return m_Parameters.emplace(std::move(descriptor_ring));
 }
 
+void fe::OpenGLResourceManager::DestroyDescriptorRing(ParameterID parameter_id) {
+    
+    m_Parameters.destroy(parameter_id);
+
+}
+
 // TODO : provide fallbacks
 #define GET_RESOURCE_INSTANCE(RETURN_T, HANDLE_T, STORAGE)                                     \
     const RETURN_T& fe::OpenGLResourceManager::GetResource(GPUHandle<HANDLE_T> handle) const { \

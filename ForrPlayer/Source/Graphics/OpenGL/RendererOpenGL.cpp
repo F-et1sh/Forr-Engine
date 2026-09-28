@@ -19,8 +19,7 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
                                    ResourceManager&    resource_manager)
     : m_PlatformSystem(platform_system),
       m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index)),
-      m_ResourceManager(resource_manager),
-      m_OpenGLResourceManager(resource_manager) {
+      m_ResourceManager(resource_manager) {
 
     m_GLFWwindow = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
 
@@ -41,21 +40,6 @@ fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
         fe::logging::error("Failed to initialize OpenGL context");
         return;
     }
-
-    { // temp
-        m_Camera.setType(Camera::Type::LOOKAT);
-        m_Camera.setPosition(glm::vec3(0.0f, 0.0f, -4.5f));
-        m_Camera.setRotation(glm::vec3(0.0f));
-        m_Camera.setFlipY(false);
-
-        float speed  = 0.15f;
-        float fov    = 60.0f;
-        float aspect = (float) m_PrimaryWindow.getWidth() / (float) m_PrimaryWindow.getHeight();
-        float znear  = 1.0f;
-        float zfar   = 1000.0f;
-        m_Camera.setPerspective(fov, aspect, znear, zfar);
-        m_Camera.setMovementSpeed(speed);
-    }
 }
 
 fe::RendererOpenGL::~RendererOpenGL() {
@@ -64,29 +48,72 @@ fe::RendererOpenGL::~RendererOpenGL() {
 
 fe::RenderGraphBindings fe::RendererOpenGL::CreateGPUResources(const RenderGraphCompileResult& compile_result) {
     RenderGraphBindings bindings{};
-    bindings.image_bindings.reserve(compile_result.image_descs.size());
+    //bindings.image_bindings.reserve(compile_result.image_descs.size());
 
-    for (const render_graph::ImageDesc& image_desc : compile_result.image_descs) {
-        bindings.image_bindings[image_desc.handle.hashed_name] = m_OpenGLResourceManager.CreateImage(image_desc);
-    }
+    //for (const render_graph::ImageDesc& image_desc : compile_result.image_descs) {
+    //    bindings.image_bindings[image_desc.handle.hashed_name] = m_OpenGLResourceManager.CreateImage(image_desc);
+    //}
 
-    // TODO : provide buffers
+    //// TODO : provide buffers
 
     return bindings;
 }
 
 std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::RendererOpenGL::CreateParameter(const ParameterDesc& parameter_desc) {
-    return m_OpenGLResourceManager.CreateDescriptorRing(parameter_desc);
+    size_t buffer_size = 16 * 1024; // 16KB
+
+    if (parameter_desc.array_size != 0) {
+        buffer_size = parameter_desc.array_size * parameter_desc.size;
+    }
+
+    OpenGLShaderDescriptorRing descriptor_ring{};
+
+    for (auto& descriptor : descriptor_ring) {
+        GLuint buffer_raw{};
+        glCreateBuffers(1, &buffer_raw);
+
+        GLbitfield flags = GL_MAP_WRITE_BIT |
+                           GL_MAP_PERSISTENT_BIT |
+                           GL_MAP_COHERENT_BIT;
+
+        if (parameter_desc.descriptor_type == shader::DescriptorType::UNIFORM_BUFFER) {
+            glNamedBufferStorage(buffer_raw, buffer_size, nullptr, flags);
+            descriptor.mapped = static_cast<std::byte*>(glMapNamedBufferRange(buffer_raw, 0, buffer_size, flags));
+        }
+        else if (parameter_desc.descriptor_type == shader::DescriptorType::STORAGE_BUFFER) {
+            glNamedBufferStorage(buffer_raw, buffer_size, nullptr, flags);
+            descriptor.mapped = static_cast<std::byte*>(glMapNamedBufferRange(buffer_raw, 0, buffer_size, flags));
+        }
+        else if (parameter_desc.descriptor_type == shader::DescriptorType::GENERIC) {
+            return std::unexpected{ ParameterCreationErrors::FORGOT_TO_SPECIALIZE_GENERIC_DESCRIPTOR };
+        }
+        else {
+            glDeleteBuffers(1, &buffer_raw);
+            return std::unexpected{ ParameterCreationErrors::UNSUPPORTED_MEMORY_TYPE };
+        }
+
+        if (!descriptor.mapped) {
+            glDeleteBuffers(1, &buffer_raw);
+            return std::unexpected{ ParameterCreationErrors::MAPPED_MEMORY_WAS_NULLPTR };
+        }
+
+        descriptor.buffer.attach(buffer_raw);
+        descriptor.size = buffer_size;
+        descriptor.type = parameter_desc.descriptor_type;
+    }
+
+    return m_Parameters.emplace(std::move(descriptor_ring));
 }
 
 void fe::RendererOpenGL::BindParameter(ParameterID parameter_id) {
-    OpenGLShaderDescriptorRing* descriptor_ring = m_OpenGLResourceManager.GetDescriptorRing(parameter_id);
+    OpenGLShaderDescriptorRing* descriptor_ring = m_Parameters.get(parameter_id);
     if (!descriptor_ring) {
         fe::logging::error("Failed to write parameter. Failed to get descriptor ring.\nParameterID :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
                            static_cast<uint32_t>(parameter_id.index()),
                            static_cast<uint32_t>(parameter_id.generation()),
                            static_cast<uint32_t>(parameter_id.custom_fields().set),
                            static_cast<uint32_t>(parameter_id.custom_fields().binding));
+        return;
     }
     OpenGLShaderDescriptor& descriptor = descriptor_ring->operator[](m_CurrentFrame);
 
@@ -102,66 +129,57 @@ void fe::RendererOpenGL::BindParameter(ParameterID parameter_id) {
 }
 
 void fe::RendererOpenGL::WriteParameter(ParameterID parameter_id, std::span<const std::byte> data) {
-    OpenGLShaderDescriptorRing* descriptor_ring = m_OpenGLResourceManager.GetDescriptorRing(parameter_id);
+    OpenGLShaderDescriptorRing* descriptor_ring = m_Parameters.get(parameter_id);
     if (!descriptor_ring) {
         fe::logging::error("Failed to write parameter. Failed to get descriptor ring.\nParameterID :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
                            static_cast<uint32_t>(parameter_id.index()),
                            static_cast<uint32_t>(parameter_id.generation()),
                            static_cast<uint32_t>(parameter_id.custom_fields().set),
                            static_cast<uint32_t>(parameter_id.custom_fields().binding));
+        return;
     }
     OpenGLShaderDescriptor& descriptor = descriptor_ring->operator[](m_CurrentFrame);
     std::memcpy(descriptor.mapped, data.data(), data.size());
 }
 
 void fe::RendererOpenGL::DestroyParameter(ParameterID parameter_id) {
-    // TODO : move to the frame's end or destroy right there ?
-}
-
-void fe::RendererOpenGL::BeginFrame() {
-    if (m_FrameData[m_CurrentFrame].sync) {
-        glClientWaitSync(m_FrameData[m_CurrentFrame].sync, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+    OpenGLShaderDescriptorRing* descriptor_ring = m_Parameters.get(parameter_id);
+    if (!descriptor_ring) {
+        fe::logging::error("Failed to destroy parameter. Failed to get descriptor ring.\nParameterID :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
+                           static_cast<uint32_t>(parameter_id.index()),
+                           static_cast<uint32_t>(parameter_id.generation()),
+                           static_cast<uint32_t>(parameter_id.custom_fields().set),
+                           static_cast<uint32_t>(parameter_id.custom_fields().binding));
+        return;
     }
+    
+    auto& buffers_to_destory = m_FrameData[m_CurrentFrame].buffers_to_destroy;
+    buffers_to_destory.reserve(buffers_to_destory.size() + MAX_CONCURRENT_FRAMES);
+    
+    for (auto& descriptor : *descriptor_ring) {
+        buffers_to_destory.emplace_back(std::move(descriptor));
+    }
+
+    m_Parameters.destroy(parameter_id);
 }
 
-void fe::RendererOpenGL::EndFrame(const render_graph::CommandList& render_command_list) {
-    render_command_list.handle_all([&](const auto& command) { this->handleCommand(command); });
-
-    m_FrameData[m_CurrentFrame].sync.reset();
-    GLsync sync_raw = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-    m_FrameData[m_CurrentFrame].sync.attach(sync_raw);
-
-    glfwSwapBuffers(m_GLFWwindow);
-
-    // reset
-    m_CurrentMaterial = {};
-    m_CurrentMesh     = {};
-
-    m_CurrentFrame = (m_CurrentFrame + 1) % MAX_CONCURRENT_FRAMES;
+FORR_NODISCARD std::expected<fe::PipelineID, fe::PipelineCreationErrors> fe::RendererOpenGL::CreatePipeline(const PipelineDesc& pipeline_desc) {
 }
 
-void fe::RendererOpenGL::InitializeGPUResources() {
-    m_ResourceManager.RunForEach<resource::Texture>([&](resource::Texture& texture) {
-        m_OpenGLResourceManager.CreateResource(texture);
+void fe::RendererOpenGL::BindPipeline(PipelineID pipeline_id) {
+    OpenGLPipeline* pipeline = m_Pipelines.get(pipeline_id);
+    if (!pipeline) {
+        fe::logging::error("Failed to bind pipeline. Failed to get pipeline.\nPipelineID :\nindex = %i\ngeneration = %i",
+                           static_cast<uint32_t>(pipeline_id.index()),
+                           static_cast<uint32_t>(pipeline_id.generation()));
+        return;
+    }
 
-        fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
-    });
+    glUseProgram(pipeline->shader_program.get());
 
-    m_ResourceManager.RunForEach<resource::Model>([&](resource::Model& model) {
-        m_OpenGLResourceManager.CreateResource(model);
-
-        fe::logging::info("Loaded model's mesh count %i", model.meshes.size());
-    });
-}
-
-void fe::RendererOpenGL::bindPipeline(const OpenGLPipeline& pipeline) {
-    glUseProgram(pipeline.shader_program.get());
-
-    m_CurrentRenderMode = pipeline.render_mode;
-
-    if (pipeline.depth_test_enable) {
+    if (pipeline->depth_test_enable) {
         glEnable(GL_DEPTH_TEST);
-        glDepthFunc(pipeline.depth_mode);
+        glDepthFunc(pipeline->depth_mode);
     }
     else {
         glDisable(GL_DEPTH_TEST);
@@ -169,14 +187,77 @@ void fe::RendererOpenGL::bindPipeline(const OpenGLPipeline& pipeline) {
 
     // TODO : enable this
     //
-    //if (pipeline.cull_enable) {
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
+    ////if (pipeline.cull_enable) {
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
+    //glFrontFace(GL_CCW);
+    ////}
+    ////else {
+    ////glDisable(GL_CULL_FACE);
+    ////}
+}
+
+void fe::RendererOpenGL::DestroyPipeline(PipelineID pipeline_id) {
+}
+
+void fe::RendererOpenGL::BeginFrame() {
+    if (m_FrameData[m_CurrentFrame].sync) {
+        glClientWaitSync(m_FrameData[m_CurrentFrame].sync, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+    }
+
+    m_FrameData[m_CurrentFrame].buffers_to_destroy.clear();
+}
+
+void fe::RendererOpenGL::EndFrame(const render_graph::CommandList& render_command_list) {
+    render_command_list.handle_all([&](const auto& command) { this->handleCommand(command); });
+
+    glfwSwapBuffers(m_GLFWwindow);
+   
+    m_FrameData[m_CurrentFrame].sync.reset();
+    
+    GLsync sync_raw = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    m_FrameData[m_CurrentFrame].sync.attach(sync_raw);
+
+    m_CurrentFrame = (m_CurrentFrame + 1) % MAX_CONCURRENT_FRAMES;
+}
+
+void fe::RendererOpenGL::InitializeGPUResources() {
+    //m_ResourceManager.RunForEach<resource::Texture>([&](resource::Texture& texture) {
+    //    m_OpenGLResourceManager.CreateResource(texture);
+
+    //    fe::logging::info("Loaded texture's size : %i %i", texture.width, texture.height);
+    //});
+
+    //m_ResourceManager.RunForEach<resource::Model>([&](resource::Model& model) {
+    //    m_OpenGLResourceManager.CreateResource(model);
+
+    //    fe::logging::info("Loaded model's mesh count %i", model.meshes.size());
+    //});
+}
+
+void fe::RendererOpenGL::bindPipeline(const OpenGLPipeline& pipeline) {
+    //glUseProgram(pipeline.shader_program.get());
+
+    //m_CurrentRenderMode = pipeline.render_mode;
+
+    //if (pipeline.depth_test_enable) {
+    //    glEnable(GL_DEPTH_TEST);
+    //    glDepthFunc(pipeline.depth_mode);
     //}
     //else {
-    //glDisable(GL_CULL_FACE);
+    //    glDisable(GL_DEPTH_TEST);
     //}
+
+    //// TODO : enable this
+    ////
+    ////if (pipeline.cull_enable) {
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
+    //glFrontFace(GL_CCW);
+    ////}
+    ////else {
+    ////glDisable(GL_CULL_FACE);
+    ////}
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& command) {
@@ -321,32 +402,32 @@ void fe::RendererOpenGL::handleCommand(const render_graph::DrawIndexed& command)
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::BindPipeline& command) {
-    m_BoundShaderProgramPtr = command.shader_program_ptr;
+    //m_BoundShaderProgramPtr = command.shader_program_ptr;
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::DrawModel& command) {
-    const resource::Model& model = *m_ResourceManager.GetResource(command.model_ptr);
+    //const resource::Model& model = *m_ResourceManager.GetResource(command.model_ptr);
 
-    for (const auto& mesh : model.meshes) {
-        const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(mesh.gpu_handle);
-        glBindVertexArray(opengl_mesh.vao);
+    //for (const auto& mesh : model.meshes) {
+    //    const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(mesh.gpu_handle);
+    //    glBindVertexArray(opengl_mesh.vao);
 
-        for (const auto& primitive : opengl_mesh.primitives) {
-            glDrawElementsInstancedBaseVertexBaseInstance(m_CurrentRenderMode,
-                                                          primitive.index_count,
-                                                          GL_UNSIGNED_INT,
-                                                          (void*) primitive.index_offset,
-                                                          1,
-                                                          0,
-                                                          command.first_instance);
-        }
-    }
+    //    for (const auto& primitive : opengl_mesh.primitives) {
+    //        glDrawElementsInstancedBaseVertexBaseInstance(m_CurrentRenderMode,
+    //                                                      primitive.index_count,
+    //                                                      GL_UNSIGNED_INT,
+    //                                                      (void*) primitive.index_offset,
+    //                                                      1,
+    //                                                      0,
+    //                                                      command.first_instance);
+    //    }
+    //}
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::BindBuffer& command) {
-    this->BindBuffer(command.parameter_id);
+    //this->BindBuffer(command.parameter_id);
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::WriteBuffer& command) {
-    this->WriteBuffer(command.parameter_id, command.data);
+    //this->WriteBuffer(command.parameter_id, command.data);
 }

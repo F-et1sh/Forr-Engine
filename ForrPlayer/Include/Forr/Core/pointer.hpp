@@ -108,7 +108,7 @@ namespace fe {
         FORR_NODISCARD constexpr HandleT     index() const noexcept { return m_index; }
         FORR_NODISCARD constexpr GenerationT generation() const noexcept { return m_generation; }
 
-        FORR_NODISCARD constexpr CustomFields& custom_fields() noexcept
+        FORR_NODISCARD CustomFields& custom_fields() noexcept
             requires(!std::is_same_v<CustomFields, empty_custom_fields_t>)
         {
             return m_custom_fields;

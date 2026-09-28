@@ -80,18 +80,14 @@ namespace fe {
         // create a buffer ( SSBO/UBO ) via its reflected data
         // @returns fe::ParameterID is a variable that can be used in fe::IRenderer::BindBuffer() or fe::IRenderer::WriteParameter()
         virtual FORR_NODISCARD std::expected<ParameterID, ParameterCreationErrors> CreateParameter(const ParameterDesc& parameter_desc) = 0;
-
         // bind SSBO or UBO
         virtual void BindParameter(ParameterID parameter_id) = 0;
-
         // write to SSBO or UBO
         template <typename T>
         void WriteParameter(ParameterID parameter_id, std::span<const T> data) { WriteParameter(parameter_id, std::as_bytes(data)); }
-
         // write to SSBO or UBO
         virtual void WriteParameter(ParameterID parameter_id, std::span<const std::byte> data) = 0;
-
-        virtual void DestroyParameter(ParameterID parameter_id) = 0;
+        virtual void DestroyParameter(ParameterID parameter_id)                                = 0;
 
         virtual FORR_NODISCARD std::expected<PipelineID, PipelineCreationErrors> CreatePipeline(const PipelineDesc& pipeline_desc) = 0;
         virtual void                                                             BindPipeline(PipelineID pipeline_id)              = 0;

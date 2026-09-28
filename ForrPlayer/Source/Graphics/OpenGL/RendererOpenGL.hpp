@@ -27,8 +27,8 @@ namespace fe {
     private:
         struct FrameData {
             // Vulkan fence's analogue in OpenGL
-            fe::gl::Sync           sync{};
-            OpenGLShaderDescriptor storage_buffer{};
+            fe::gl::Sync                sync{};
+            std::vector<fe::gl::Buffer> buffers_to_destroy{};
 
             FrameData() = default;
         };
@@ -43,11 +43,13 @@ namespace fe {
         RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) override;
 
         std::expected<ParameterID, ParameterCreationErrors> CreateParameter(const ParameterDesc& parameter_desc) override;
+        void                                                BindParameter(ParameterID parameter_id) override;
+        void                                                WriteParameter(ParameterID parameter_id, std::span<const std::byte> data) override;
+        void                                                DestroyParameter(ParameterID parameter_id) override;
 
-        void BindParameter(ParameterID parameter_id) override;
-        void WriteParameter(ParameterID parameter_id, std::span<const std::byte> data) override;
-
-        void DestroyParameter(ParameterID parameter_id) override;
+        FORR_NODISCARD std::expected<PipelineID, PipelineCreationErrors> CreatePipeline(const PipelineDesc& pipeline_desc) override;
+        void                                                             BindPipeline(PipelineID pipeline_id) override;
+        void                                                             DestroyPipeline(PipelineID pipeline_id) override;
 
         void BeginFrame() override;
         void EndFrame(const render_graph::CommandList& render_command_list) override;
@@ -78,23 +80,13 @@ namespace fe {
 
         GLFWwindow* m_GLFWwindow = nullptr;
 
-        OpenGLResourceManager m_OpenGLResourceManager{ m_ResourceManager };
-
-        Camera m_Camera{}; // temp
-
-        // TODO : remove this
-        GPUHandle<resource::Material>    m_CurrentMaterial{};
-        GPUHandle<resource::Model::Mesh> m_CurrentMesh{};
-
-        fe::pointer<resource::ShaderProgram> m_BoundShaderProgramPtr{};
-
-        GLenum m_CurrentRenderMode{};
-
         std::array<FrameData, MAX_CONCURRENT_FRAMES> m_FrameData{};
+        uint32_t                                     m_CurrentFrame{};
 
-        // for render graph | temp
+        // render targets' hash --> framebuffer
         std::unordered_map<uint64_t, gl::Framebuffer> m_FramebuffersCache{};
 
-        uint32_t m_CurrentFrame{};
+        fe::typed_pointer_storage<OpenGLShaderDescriptorRing, ParameterID> m_Parameters{};
+        fe::typed_pointer_storage<OpenGLPipeline, PipelineID>              m_Pipelines{};
     };
 } // namespace fe
