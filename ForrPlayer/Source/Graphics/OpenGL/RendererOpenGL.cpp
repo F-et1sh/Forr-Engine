@@ -166,8 +166,61 @@ void fe::RendererOpenGL::DestroyParameter(ParameterID parameter_id) {
 FORR_NODISCARD std::expected<fe::PipelineID, fe::PipelineCreationErrors> fe::RendererOpenGL::CreatePipeline(const PipelineDesc& pipeline_desc) {
     SlangParser slang_parser{};
     auto source_codes = slang_parser.BuildShaderCodes(pipeline_desc, m_ResourceManager);
-    // TODO : create pipeline ...
-    return {};
+    
+    OpenGLPipeline opengl_pipeline{};
+
+    GLuint shader_program_raw = this->createShaderProgramRaw(source_codes);
+    opengl_pipeline.shader_program.attach(shader_program_raw);
+
+    // clang-format off
+    switch (pipeline_desc.pipeline_flags.render_mode) {
+        case RenderMode::POINTS        : opengl_pipeline.render_mode = GL_POINTS        ; break;
+        case RenderMode::LINES         : opengl_pipeline.render_mode = GL_LINES         ; break;
+        case RenderMode::LINE_LOOP     : opengl_pipeline.render_mode = GL_LINE_LOOP     ; break;
+        case RenderMode::LINE_STRIP    : opengl_pipeline.render_mode = GL_LINE_STRIP    ; break;
+        case RenderMode::TRIANGLES     : opengl_pipeline.render_mode = GL_TRIANGLES     ; break;
+        case RenderMode::TRIANGLE_STRIP: opengl_pipeline.render_mode = GL_TRIANGLE_STRIP; break;
+        case RenderMode::TRIANGLE_FAN  : opengl_pipeline.render_mode = GL_TRIANGLE_FAN  ; break;
+        default:
+            fe::logging::warning("Unified -> OpenGL. Unsupported render mode %i. Using GL_TRIANGLES as default",
+                pipeline_desc.pipeline_flags.render_mode);
+            opengl_pipeline.render_mode = GL_TRIANGLES;
+    }
+    // clang-format on
+
+    opengl_pipeline.depth_test_enable = pipeline_desc.pipeline_flags.depth_test_enable;
+    // clang-format off
+    switch (pipeline_desc.pipeline_flags.depth_mode) {
+        case DepthMode::NEVER   : opengl_pipeline.depth_mode = GL_NEVER   ; break;
+        case DepthMode::LESS    : opengl_pipeline.depth_mode = GL_LESS    ; break;
+        case DepthMode::EQUAL   : opengl_pipeline.depth_mode = GL_EQUAL   ; break;
+        case DepthMode::LEQUAL  : opengl_pipeline.depth_mode = GL_LEQUAL  ; break;
+        case DepthMode::GREATER : opengl_pipeline.depth_mode = GL_GREATER ; break;
+        case DepthMode::NOTEQUAL: opengl_pipeline.depth_mode = GL_NOTEQUAL; break;
+        case DepthMode::GEQUAL  : opengl_pipeline.depth_mode = GL_GEQUAL  ; break;
+        case DepthMode::ALWAYS  : opengl_pipeline.depth_mode = GL_ALWAYS  ; break;
+            default:
+                fe::logging::warning("Unified -> OpenGL. Unsupported depth mode %i. Using GL_LESS as default",
+                    pipeline_desc.pipeline_flags.depth_mode);
+            opengl_pipeline.depth_mode = GL_LESS;
+    }
+    // clang-format on
+
+    opengl_pipeline.cull_enable = pipeline_desc.pipeline_flags.cull_enable;
+    // clang-format off
+    switch (pipeline_desc.pipeline_flags.cull_mode) {
+        case CullMode::NONE          : opengl_pipeline.cull_mode = GL_NONE          ; break;
+        case CullMode::FRONT         : opengl_pipeline.cull_mode = GL_FRONT         ; break;
+        case CullMode::BACK          : opengl_pipeline.cull_mode = GL_BACK          ; break;
+        case CullMode::FRONT_AND_BACK: opengl_pipeline.cull_mode = GL_FRONT_AND_BACK; break;
+            default:
+                fe::logging::warning("Unified -> OpenGL. Unsupported cull mode %i. Using GL_NONE as default",
+                    pipeline_desc.pipeline_flags.cull_mode);
+            opengl_pipeline.cull_mode = GL_NONE;
+    }
+    // clang-format on
+
+    return m_Pipelines.emplace(std::move(opengl_pipeline));
 }
 
 void fe::RendererOpenGL::BindPipeline(PipelineID pipeline_id) {
@@ -274,6 +327,66 @@ void fe::RendererOpenGL::bindPipeline(const OpenGLPipeline& pipeline) {
     ////else {
     ////glDisable(GL_CULL_FACE);
     ////}
+}
+
+GLuint fe::RendererOpenGL::createShaderProgramRaw(const shader::SourceCode& source_code) {
+    GLuint opengl_shader_program_raw = glCreateProgram();
+    bool   compilation_failed{};
+
+    for (const auto& [shader_type, source_code] : source_codes) {
+        unsigned int opengl_type{};
+        unsigned int opengl_shader{};
+
+        // clang-format off
+        switch (shader_type) {
+            case shader::StageBits::VERTEX  : opengl_type = GL_VERTEX_SHADER  ; break;
+            case shader::StageBits::FRAGMENT: opengl_type = GL_FRAGMENT_SHADER; break;
+            case shader::StageBits::GEOMETRY: opengl_type = GL_GEOMETRY_SHADER; break;
+            case shader::StageBits::COMPUTE : opengl_type = GL_COMPUTE_SHADER ; break;
+        }
+        // clang-format on
+
+        opengl_shader = glCreateShader(opengl_type);
+
+        glShaderBinary(1, &opengl_shader, GL_SHADER_BINARY_FORMAT_SPIR_V, source_code.data(), source_code.size());
+        glSpecializeShader(opengl_shader, "main", 0, nullptr, nullptr);
+
+        // code for GLSL importing
+
+        //const char* glsl_text_ptr = reinterpret_cast<const char*>(source_code.data());
+        //GLint       length        = static_cast<GLint>(source_code.size());
+        //glShaderSource(opengl_shader, 1, &glsl_text_ptr, &length);
+
+        //glCompileShader(opengl_shader);
+
+        int result = 0;
+        glGetShaderiv(opengl_shader, GL_COMPILE_STATUS, &result);
+        if (result == GL_FALSE) {
+            int length = 0;
+            glGetShaderiv(opengl_shader, GL_INFO_LOG_LENGTH, &length);
+            char* message = (char*) _malloca(length * sizeof(char));
+            glGetShaderInfoLog(opengl_shader, length, &length, message);
+
+            fe::logging::error("Unified -> OpenGL. Failed to compile a shader\nMessage : %s", message);
+            compilation_failed = true;
+        }
+        else {
+            glAttachShader(opengl_shader_program_raw, opengl_shader);
+        }
+
+        glDeleteShader(opengl_shader);
+    };
+
+    if (compilation_failed) {
+        glDeleteProgram(opengl_shader_program_raw);
+        return 0;
+    }
+    else {
+        glLinkProgram(opengl_shader_program_raw);
+        glValidateProgram(opengl_shader_program_raw);
+
+        return opengl_shader_program_raw;
+    }
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& command) {

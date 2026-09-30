@@ -62,7 +62,8 @@ namespace fe {
         GraphicsBackend GetCurrentGraphicsBackend() override { return GraphicsBackend::OpenGL; }
 
     private:
-        void bindPipeline(const OpenGLPipeline& pipeline);
+        void   bindPipeline(const OpenGLPipeline& pipeline);
+        GLuint createShaderProgramRaw(const shader::SourceCode& source_code);
 
     private:
         void handleCommand(const render_graph::ImageBarrier& command);
