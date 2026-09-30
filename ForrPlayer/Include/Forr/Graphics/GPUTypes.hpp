@@ -741,14 +741,8 @@ namespace fe {
             bool operator==(const ProgramSpecialization&) const noexcept = default;
         };
 
-        using SourceCode = std::vector<uint8_t>;
-
-        struct FORR_API ProgramSources {
-            SourceCode vertex{};
-            SourceCode geometry{};
-            SourceCode fragment{};
-            SourceCode compute{};
-        };
+        using SourceCode     = std::vector<uint8_t>;
+        using ProgramSources = std::unordered_map<StageBits, SourceCode>;
     } // namespace shader
 } // namespace fe
 

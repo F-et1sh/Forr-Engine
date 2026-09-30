@@ -63,7 +63,7 @@ fe::SlangParser::SlangParser(std::span<const char*> full_search_paths) {
     }
 }
 
-std::expected<std::unordered_map<fe::shader::StageBits, std::vector<uint8_t>>, fe::SlangParser::ShaderBuildErrors> fe::SlangParser::BuildShaderCodes(const PipelineDesc& pipeline_desc, ResourceManager& resource_manager) {
+std::expected<fe::shader::ProgramSources, fe::SlangParser::ShaderBuildErrors> fe::SlangParser::BuildShaderSources(const PipelineDesc& pipeline_desc, ResourceManager& resource_manager) {
     std::vector<Slang::ComPtr<slang::IModule>> loaded_modules{};
 
     loaded_modules.reserve(pipeline_desc.shader_file_data_ptrs.size());
@@ -97,7 +97,7 @@ std::expected<std::unordered_map<fe::shader::StageBits, std::vector<uint8_t>>, f
                                                                                         load_diagnostics.writeRef());
 
         if (!loaded_module_raw) {
-            fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to deserialize shader file data's module. %s.\nContinuing building the shader codes",
+            fe::logging::warning("Serialized Slang ( Unified ) -> Slang. Failed to deserialize shader file data's module. %s.\nContinuing building the shader codes",
                                (const char*) load_diagnostics->getBufferPointer());
             continue;
         }
@@ -116,19 +116,101 @@ std::expected<std::unordered_map<fe::shader::StageBits, std::vector<uint8_t>>, f
                 loaded_modules.emplace_back(imported_module_raw);
             }
             else {
-                fe::logging::error("Slang -> Unified. Failed to load a slang dependency module. Continuing loading\n%s",
+                fe::logging::warning("Slang -> Unified. Failed to load a slang dependency module. Continuing loading\n%s",
                                    (const char*) load_diagnostics->getBufferPointer());
                 continue;
             }
         }
     }
 
+    Slang::ComPtr<slang::IModule> modules_composite{};
+
     std::vector<slang::IComponentType*> component_types{};
-    component_types.reserve(loaded_modules.size());
+    component_types.append_range(loaded_modules);
 
-    // TODO : create composite here ...
+    // TODO : gather all descriptors and push constants here / do reflection
 
-    std::unordered_map<fe::shader::StageBits, std::vector<uint8_t>> source_codes{};
+    struct EntryPoint {
+        Slang::ComPtr<slang::IComponentType> entry_point{};
+        ShaderType                           shader_type{};
+
+        EntryPoint() = default;
+        EntryPoint(slang::IComponentType* entry_point, ShaderType shader_type)
+            : entry_point(entry_point), shader_type(shader_type) {}
+
+        FORR_CLASS_MOVABLE(EntryPoint)
+        FORR_CLASS_NONCOPYABLE(EntryPoint)
+    };
+
+    std::vector<EntryPoint> entry_points{};
+
+    for (size_t i = 0; i < pipeline_desc.entry_points.size(); i++) {
+        std::string_view entry_point_name = pipeline_desc.entry_points[i];
+
+        Slang::ComPtr<slang::IEntryPoint> entry_point{};
+        SlangResult                       result = shader_module->findEntryPointByName(entry_point_name.data(), entry_point.writeRef()); // find this entry point in shader's module
+
+        if (SLANG_FAILED(result)) continue;
+
+        ShaderType shader_type{};
+
+        if (entry_point_name == SlangParser::ENTRY_POINT_NAMES[0]) { // vertex
+            shader_type = ShaderType::VERTEX;
+        }
+        else if (entry_point_name == SlangParser::ENTRY_POINT_NAMES[1]) { // fragment
+            shader_type = ShaderType::FRAGMENT;
+        }
+        else if (entry_point_name == SlangParser::ENTRY_POINT_NAMES[2]) { // compute
+            shader_type = ShaderType::COMPUTE;
+        }
+
+        if (entry_point->getSpecializationParamCount() > 0) { // specialize only if needed
+
+            std::array<slang::SpecializationArg, 1> specialization_args{};
+            specialization_args[0].kind = slang::SpecializationArg::Kind::Type;
+            specialization_args[0].type = material_type;
+
+            slang::IComponentType*      component_type_raw{};
+            Slang::ComPtr<slang::IBlob> diagnostics{};
+
+            int parameters_count = entry_point->getSpecializationParamCount();
+
+            SlangResult result = entry_point->specialize(specialization_args.data(),
+                                                         specialization_args.size(),
+                                                         &component_type_raw,
+                                                         diagnostics.writeRef());
+            if (SLANG_FAILED(result)) {
+                fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to specialize an entry point. Continuing collecting entry points.\n%s",
+                                   (const char*) diagnostics->getBufferPointer());
+                continue;
+            }
+
+            entry_points.emplace_back(EntryPoint{ component_type_raw, shader_type });
+        }
+        else {
+            entry_points.emplace_back(EntryPoint{ entry_point, shader_type });
+        }
+    }
+
+    component_types.reserve(component_types.size() + entry_points.size());
+    for (EntryPoint& entry_point : entry_points) {
+        component_types.emplace_back(entry_point.entry_point);
+    }
+
+    Slang::ComPtr<slang::IComponentType> composed_program{};
+
+    Slang::ComPtr<slang::IBlob> composition_diagnostics{};
+    SlangResult                 composition_result = m_Session->createCompositeComponentType(component_types.data(),
+                                                                                             component_types.size(),
+                                                                                             composed_program.writeRef(),
+                                                                                             composition_diagnostics.writeRef());
+    if (SLANG_FAILED(composition_result)) {
+        fe::logging::error("Slang -> Unified. Failed to create a composed program\n%s",
+                           (const char*) composition_diagnostics->getBufferPointer());
+        return std::unexpected{ ShaderBuildErrors::COMPOSITION_FAILED };
+    }
+
+    shader::ProgramSources source_codes{};
     return source_codes;
 }
 

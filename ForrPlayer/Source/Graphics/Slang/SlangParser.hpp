@@ -36,9 +36,10 @@ namespace fe {
             SPECIALIZATION_FAILED
         };
 
+    public:
         enum class ShaderBuildErrors : uint8_t {
             ERROR,
-            // TODO : fill this up
+            COMPOSITION_FAILED
         };
 
     public:
@@ -50,7 +51,7 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(SlangParser)
 
         // TODO : firstly pass whole 'fe::PipelineDesc', then collapse this function, making the class more modular
-        std::expected<std::unordered_map<fe::shader::StageBits, std::vector<uint8_t>>, ShaderBuildErrors> BuildShaderCodes(const PipelineDesc& pipeline_desc, ResourceManager& resource_manager);
+        std::expected<shader::ProgramSources, ShaderBuildErrors> BuildShaderSources(const PipelineDesc& pipeline_desc, ResourceManager& resource_manager);
 
         // TODO : rewrite or remove all methods below
 
