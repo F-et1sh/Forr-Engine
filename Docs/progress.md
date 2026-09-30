@@ -1,5 +1,18 @@
 ﻿# Forr-Engine Devlog
 
+## 30.09.2026
+### Goal
+    move GPU resource manager's logic into its renderer ( remove it )
+    move GPU handles and some IDs ( PipelineID, ParameterID ) to new 'fe::graphics::'
+    translate old system of GPU resource manager to the new one ( updated 'fe::typed_pointer_storage' )
+        also remove 'fe::GPUHandle<>', use 'fe::pointer<>' instead
+
+### Done
+    'fe::shader::SourceCode' added ( again ), 'fe::shader::ProgramSources' added
+
+### Problem
+    -
+
 ## 28.09.2026
 ### Goal
     'fe::OpenGLDescriptorRing' --> 'fe::OpenGLParameterRing'
