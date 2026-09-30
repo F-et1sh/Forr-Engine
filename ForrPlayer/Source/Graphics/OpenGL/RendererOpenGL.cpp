@@ -165,11 +165,23 @@ void fe::RendererOpenGL::DestroyParameter(ParameterID parameter_id) {
 
 FORR_NODISCARD std::expected<fe::PipelineID, fe::PipelineCreationErrors> fe::RendererOpenGL::CreatePipeline(const PipelineDesc& pipeline_desc) {
     SlangParser slang_parser{};
-    auto source_codes = slang_parser.BuildShaderCodes(pipeline_desc, m_ResourceManager);
-    
+    auto        source_codes = slang_parser.BuildShaderCodes(pipeline_desc, m_ResourceManager);
+
+    if (!source_codes.has_value()) {
+        switch (source_codes.error()) {
+            // TODO : provide correct errors here
+            case fe::SlangParser::ShaderBuildErrors::ERROR:
+                return std::unexpected{ PipelineCreationErrors::ERROR };
+                break;
+            default:
+                return std::unexpected{ PipelineCreationErrors::ERROR };
+                break;
+        }
+    }
+
     OpenGLPipeline opengl_pipeline{};
 
-    GLuint shader_program_raw = this->createShaderProgramRaw(source_codes);
+    GLuint shader_program_raw = this->createShaderProgramRaw(source_codes.value());
     opengl_pipeline.shader_program.attach(shader_program_raw);
 
     // clang-format off
@@ -329,11 +341,11 @@ void fe::RendererOpenGL::bindPipeline(const OpenGLPipeline& pipeline) {
     ////}
 }
 
-GLuint fe::RendererOpenGL::createShaderProgramRaw(const shader::SourceCode& source_code) {
+GLuint fe::RendererOpenGL::createShaderProgramRaw(const shader::ProgramSources& program_sources) {
     GLuint opengl_shader_program_raw = glCreateProgram();
     bool   compilation_failed{};
 
-    for (const auto& [shader_type, source_code] : source_codes) {
+    for (const auto& [shader_type, source_code] : program_sources) {
         unsigned int opengl_type{};
         unsigned int opengl_shader{};
 

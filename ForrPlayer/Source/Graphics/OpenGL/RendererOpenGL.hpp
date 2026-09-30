@@ -63,7 +63,7 @@ namespace fe {
 
     private:
         void   bindPipeline(const OpenGLPipeline& pipeline);
-        GLuint createShaderProgramRaw(const shader::SourceCode& source_code);
+        GLuint createShaderProgramRaw(const shader::ProgramSources& program_sources);
 
     private:
         void handleCommand(const render_graph::ImageBarrier& command);
