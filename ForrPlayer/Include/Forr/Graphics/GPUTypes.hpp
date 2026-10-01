@@ -734,7 +734,7 @@ namespace fe {
             bool operator==(const EntryPointSpecialization&) const noexcept = default;
         };
 
-        struct FORR_API ProgramSpecialization { // this should be called 'ShaderProgramSpecialization', but it's already in 'fe::shader::'
+        struct FORR_API ProgramSpecialization {
             std::vector<SpecializationArgument>   global_arguments{};
             std::vector<EntryPointSpecialization> entry_points{};
 
