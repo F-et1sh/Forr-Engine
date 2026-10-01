@@ -122,9 +122,7 @@ std::expected<fe::shader::ProgramSources, fe::SlangParser::ShaderBuildErrors> fe
             }
         }
     }
-
-    Slang::ComPtr<slang::IModule> modules_composite{};
-
+   
     std::vector<slang::IComponentType*> component_types{};
     component_types.append_range(loaded_modules);
 
@@ -144,28 +142,31 @@ std::expected<fe::shader::ProgramSources, fe::SlangParser::ShaderBuildErrors> fe
 
     std::vector<EntryPoint> entry_points{};
 
-    for (size_t i = 0; i < pipeline_desc.entry_points.size(); i++) {
-        std::string_view entry_point_name = pipeline_desc.entry_points[i];
+    for (const fe::hashed_string& entry_point_name : pipeline_desc.entry_points){
 
-        Slang::ComPtr<slang::IEntryPoint> entry_point{};
-        SlangResult                       result = shader_module->findEntryPointByName(entry_point_name.data(), entry_point.writeRef()); // find this entry point in shader's module
+Slang::ComPtr<slang::IEntryPoint> found_entry_point{};
+bool found = false;
 
-        if (SLANG_FAILED(result)) continue;
+for (slang::IModule* module : loaded_modules) {
+Slang::ComPtr<slang::IEntryPoint> entry_point{};
+SlangResult                       result = module, entry_point.writeRef()); // find this entry point in shader's module
 
-        ShaderType shader_type{};
+        if (SLANG_SUCCESS(result)) {
+if (found) {
+fe::logging::warning("Found another declaration of entry point %s", entry_point_name.c_str());
+continue;
+}
+found = true;
+found_entry_point.attach(entry_point.detach);
+}
+}
 
-        if (entry_point_name == SlangParser::ENTRY_POINT_NAMES[0]) { // vertex
-            shader_type = ShaderType::VERTEX;
-        }
-        else if (entry_point_name == SlangParser::ENTRY_POINT_NAMES[1]) { // fragment
-            shader_type = ShaderType::FRAGMENT;
-        }
-        else if (entry_point_name == SlangParser::ENTRY_POINT_NAMES[2]) { // compute
-            shader_type = ShaderType::COMPUTE;
-        }
+// TODO : automatically define shader entry point type to use here
 
-        if (entry_point->getSpecializationParamCount() > 0) { // specialize only if needed
 
+        ShaderType shader_type{}; //= pipeline_desc.get_entry_point_type(entry_point_name);
+
+       
             std::array<slang::SpecializationArg, 1> specialization_args{};
             specialization_args[0].kind = slang::SpecializationArg::Kind::Type;
             specialization_args[0].type = material_type;
