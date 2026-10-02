@@ -98,7 +98,7 @@ std::expected<fe::shader::ProgramSources, fe::SlangParser::ShaderBuildErrors> fe
 
         if (!loaded_module_raw) {
             fe::logging::warning("Serialized Slang ( Unified ) -> Slang. Failed to deserialize shader file data's module. %s.\nContinuing building the shader codes",
-                               (const char*) load_diagnostics->getBufferPointer());
+                                 (const char*) load_diagnostics->getBufferPointer());
             continue;
         }
 
@@ -117,12 +117,12 @@ std::expected<fe::shader::ProgramSources, fe::SlangParser::ShaderBuildErrors> fe
             }
             else {
                 fe::logging::warning("Slang -> Unified. Failed to load a slang dependency module. Continuing loading\n%s",
-                                   (const char*) load_diagnostics->getBufferPointer());
+                                     (const char*) load_diagnostics->getBufferPointer());
                 continue;
             }
         }
     }
-   
+
     std::vector<slang::IComponentType*> component_types{};
     component_types.append_range(loaded_modules);
 
@@ -142,55 +142,49 @@ std::expected<fe::shader::ProgramSources, fe::SlangParser::ShaderBuildErrors> fe
 
     std::vector<EntryPoint> entry_points{};
 
-    for (const fe::hashed_string& entry_point_name : pipeline_desc.entry_points){
+    for (const fe::hashed_string& entry_point_name : pipeline_desc.entry_points) {
 
-Slang::ComPtr<slang::IEntryPoint> found_entry_point{};
-bool found = false;
+        Slang::ComPtr<slang::IEntryPoint> found_entry_point{};
+        bool                              found = false;
 
-for (slang::IModule* module : loaded_modules) {
-Slang::ComPtr<slang::IEntryPoint> entry_point{};
-SlangResult                       result = module, entry_point.writeRef()); // find this entry point in shader's module
+        for (slang::IModule* loaded_module : loaded_modules) {
+            Slang::ComPtr<slang::IEntryPoint> entry_point{};
+            SlangResult                       result = loaded_module->findEntryPointByName(entry_point_name.c_str(), entry_point.writeRef()); // find this entry point in shader's module
 
-        if (SLANG_SUCCESS(result)) {
-if (found) {
-fe::logging::warning("Found another declaration of entry point %s", entry_point_name.c_str());
-continue;
-}
-found = true;
-found_entry_point.attach(entry_point.detach);
-}
-}
+            if (SLANG_SUCCEEDED(result)) {
+                if (found) {
+                    fe::logging::warning("Found another declaration of entry point %s", entry_point_name.c_str());
+                    continue;
+                }
+                found = true;
+                found_entry_point.attach(entry_point.detach());
+            }
+        }
 
-// TODO : automatically define shader entry point type to use here
-
+        // TODO : automatically define shader entry point type to use here
 
         ShaderType shader_type{}; //= pipeline_desc.get_entry_point_type(entry_point_name);
 
-       
-            std::array<slang::SpecializationArg, 1> specialization_args{};
-            specialization_args[0].kind = slang::SpecializationArg::Kind::Type;
-            specialization_args[0].type = material_type;
+        std::array<slang::SpecializationArg, 1> specialization_args{};
+        specialization_args[0].kind = slang::SpecializationArg::Kind::Type;
+        specialization_args[0].type = material_type;
 
-            slang::IComponentType*      component_type_raw{};
-            Slang::ComPtr<slang::IBlob> diagnostics{};
+        slang::IComponentType*      component_type_raw{};
+        Slang::ComPtr<slang::IBlob> diagnostics{};
 
-            int parameters_count = entry_point->getSpecializationParamCount();
+        int parameters_count = entry_point->getSpecializationParamCount();
 
-            SlangResult result = entry_point->specialize(specialization_args.data(),
-                                                         specialization_args.size(),
-                                                         &component_type_raw,
-                                                         diagnostics.writeRef());
-            if (SLANG_FAILED(result)) {
-                fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to specialize an entry point. Continuing collecting entry points.\n%s",
-                                   (const char*) diagnostics->getBufferPointer());
-                continue;
-            }
-
-            entry_points.emplace_back(EntryPoint{ component_type_raw, shader_type });
+        SlangResult result = entry_point->specialize(specialization_args.data(),
+                                                     specialization_args.size(),
+                                                     &component_type_raw,
+                                                     diagnostics.writeRef());
+        if (SLANG_FAILED(result)) {
+            fe::logging::error("Serialized Slang ( Unified ) -> Slang. Failed to specialize an entry point. Continuing collecting entry points.\n%s",
+                               (const char*) diagnostics->getBufferPointer());
+            continue;
         }
-        else {
-            entry_points.emplace_back(EntryPoint{ entry_point, shader_type });
-        }
+
+        entry_points.emplace_back(EntryPoint{ component_type_raw, shader_type });
     }
 
     component_types.reserve(component_types.size() + entry_points.size());

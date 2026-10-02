@@ -1,5 +1,20 @@
 ﻿# Forr-Engine Devlog
 
+## 03.10.2026
+### Goal
+    add 'fe::hashed_string_view'
+    move GPU resource manager's logic into its renderer ( remove it )
+    move GPU handles and some IDs ( PipelineID, ParameterID ) to new 'fe::graphics::'
+    translate old system of GPU resource manager to the new one ( updated 'fe::typed_pointer_storage' )
+        also remove 'fe::GPUHandle<>', use 'fe::pointer<>' instead
+    remove PCH from most of the files
+
+### Done
+    -
+    
+### Problem
+    -
+
 ## 30.09.2026
 ### Goal
     add 'fe::hashed_string_view'
