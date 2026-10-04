@@ -128,7 +128,7 @@ std::expected<fe::shader::ProgramSources, fe::SlangParser::ShaderBuildErrors> fe
     // add all loaded modules
     component_types.append_range(loaded_modules);
 
-    // TODO : gather all descriptors and push constants here / do reflection
+    // TODO : provide descriptors and push constants checking
 
     struct EntryPoint {
         Slang::ComPtr<slang::IEntryPoint> entry_point{};
@@ -354,7 +354,7 @@ std::expected<fe::shader::ProgramSources, fe::SlangParser::ShaderBuildErrors> fe
         Slang::ComPtr<slang::IBlob> entry_point_code_diagnostics{};
         SlangResult                 result = composed_program->getEntryPointCode(i, 0, spirv_code.writeRef(), entry_point_code_diagnostics.writeRef());
         if (SLANG_FAILED(result)) {
-            fe::logging::error("Failed to get the %s entry point code\n%s",
+            fe::logging::error("Failed to get the %s entry point source code\n%s",
                                entry_point.entry_point_name,
                                (const char*) entry_point_code_diagnostics->getBufferPointer());
             continue;
