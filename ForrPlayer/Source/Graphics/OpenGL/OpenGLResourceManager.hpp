@@ -65,10 +65,10 @@ namespace fe {
         FORR_NODISCARD const OpenGLMesh&    GetResource(GPUHandle<resource::Model::Mesh> handle) const;
         FORR_NODISCARD const OpenGLTexture& GetResource(GPUHandle<resource::Texture> handle) const;
 
-        FORR_NODISCARD std::expected<ParameterID, ParameterCreationErrors> CreateDescriptorRing(const ParameterDesc& parameter_desc);
-        FORR_NODISCARD OpenGLShaderParameterRing*                         GetDescriptorRing(ParameterID parameter_id) { return m_Parameters.get(parameter_id); }
-        FORR_NODISCARD const OpenGLShaderParameterRing*                   GetDescriptorRing(ParameterID parameter_id) const { return m_Parameters.get(parameter_id); }
-        void                                                               DestroyDescriptorRing(ParameterID parameter_id);
+        FORR_NODISCARD std::expected<ParameterHandle, ParameterCreationErrors> CreateDescriptorRing(const ParameterDesc& parameter_desc);
+        FORR_NODISCARD OpenGLShaderParameterRing*                         GetDescriptorRing(ParameterHandle parameter_id) { return m_Parameters.get(parameter_id); }
+        FORR_NODISCARD const OpenGLShaderParameterRing*                   GetDescriptorRing(ParameterHandle parameter_id) const { return m_Parameters.get(parameter_id); }
+        void                                                               DestroyDescriptorRing(ParameterHandle parameter_id);
 
     private: // here functions, which used like helpers to create some resources that don't have thier own CPU realization.
              // The functions return 'GPUHandle<>' but you DON'T have to set 'GPUHandle<> gpu_handle' in the resources, the functions does it by themselves
@@ -94,7 +94,7 @@ namespace fe {
         std::vector<OpenGLTexture>  m_StorageTextures{};
         std::vector<OpenGLPipeline> m_Pipelines{};
 
-        fe::typed_pointer_storage<OpenGLShaderParameterRing, ParameterID> m_Parameters{};
-        std::vector<ParameterID>                                           m_ParametersToDestroyQueue{};
+        fe::typed_pointer_storage<OpenGLShaderParameterRing, ParameterHandle> m_Parameters{};
+        std::vector<ParameterHandle>                                           m_ParametersToDestroyQueue{};
     };
 } // namespace fe

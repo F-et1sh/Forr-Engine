@@ -16,7 +16,7 @@
 // TODO : remove this. This should be in 'main.cpp' of the user
 namespace fe {
     static entt::registry m_Registry{};    // temp
-    static ParameterID    m_ParameterID{}; // temp
+    static ParameterHandle    m_ParameterHandle{}; // temp
 } // namespace fe
 
 fe::Application::Application(const ApplicationDesc& desc) {
@@ -57,8 +57,8 @@ void fe::Application::InitializePlatformSystem(const ApplicationDesc& desc) {
 
 void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
     std::vector<std::filesystem::path> paths{}; // temp
-    //paths.emplace_back(PATH.getModelsPath() / "TatarSuzanne/TatarSuzanne.gltf");
-    //paths.emplace_back(PATH.getModelsPath() / "PirateRoom/PirateRoom.gltf");
+    paths.emplace_back(PATH.getModelsPath() / "TatarSuzanne/TatarSuzanne.gltf");
+    paths.emplace_back(PATH.getModelsPath() / "PirateRoom/PirateRoom.gltf");
 
     ResourceManagerDesc resource_manager_desc{};
     resource_manager_desc.graphics_backend = desc.graphics_backend;

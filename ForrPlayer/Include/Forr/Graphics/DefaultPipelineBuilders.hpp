@@ -26,8 +26,8 @@ namespace fe {
     };
 
     struct FORR_API PBRPipelineError {
-        using DetailedMessageVariants = std::variant<PipelineCreationErrors,
-                                                     ParameterCreationErrors,
+        using DetailedMessageVariants = std::variant<graphics::PipelineCreationErrors,
+                                                     graphics::ParameterCreationErrors,
                                                      fe::hashed_string>;
 
         PBRPipelineErrorCodes                  error_code{};
@@ -41,10 +41,10 @@ namespace fe {
 
     class FORR_API PBRPipelineBuilder {
     public:
-        static std::expected<fe::PipelineID, PBRPipelineError> Build(fe::pointer<resource::ShaderFileData> shader_file_data_ptr,
-                                                                     fe::pointer<resource::Material>       material_ptr,
-                                                                     ResourceManager&                      resource_manager,
-                                                                     IRenderer&                            renderer) {
+        static std::expected<fe::graphics::PipelineHandle, PBRPipelineError> Build(fe::pointer<resource::ShaderFileData> shader_file_data_ptr,
+                                                                                   fe::pointer<resource::Material>       material_ptr,
+                                                                                   ResourceManager&                      resource_manager,
+                                                                                   IRenderer&                            renderer) {
             /* declare common shader resources */
             inline const static fe::hashed_string vertex_entry_point_name{ "vertexMain" };
             inline const static fe::hashed_string fragment_entry_point_name{ "fragmentMain" };
@@ -72,7 +72,7 @@ namespace fe {
             auto& material         = material_optional.value();
 
             // pre-create pipeline desc
-            PipelineDesc pipeline_desc{
+            graphics::PipelineDesc pipeline_desc{
                 .pipeline_flags        = material.pipeline_flags_override,
                 .shader_file_data_ptrs = { shader_file_data_ptr },
                 .entry_points          = { vertex_entry_point_name, fragment_entry_point_name },
@@ -159,7 +159,7 @@ namespace fe {
 
     struct FORR_API SolidColorPipelineError {
         using DetailedMessageVariants = std::variant<SolidColorPipelineErrorCodes,
-                                                     ParameterCreationErrors,
+                                                     graphics::ParameterCreationErrors,
                                                      fe::hashed_string>;
 
         SolidColorPipelineErrorCodes           error_code{};
@@ -172,9 +172,9 @@ namespace fe {
     };
 
     class FORR_API SolidColorPipelineBuilder {
-        static std::expected<fe::PipelineID, SolidColorPipelineError> Build(fe::pointer<resource::ShaderFileData> shader_file_data_ptr,
-                                                                            ResourceManager&                      resource_manager,
-                                                                            IRenderer&                            renderer) {
+        static std::expected<fe::graphics::PipelineHandle, SolidColorPipelineError> Build(fe::pointer<resource::ShaderFileData> shader_file_data_ptr,
+                                                                                          ResourceManager&                      resource_manager,
+                                                                                          IRenderer&                            renderer) {
             // TODO : fill this
             return {};
         }

@@ -22,7 +22,6 @@
 #pragma once
 #include <vector>
 #include <span>
-#include "Core/types.hpp"
 #include "Core/guid.hpp"
 
 #include "Graphics/GPUTypes.hpp"
@@ -109,7 +108,7 @@ namespace fe::resource {
         };
         std::vector<MipData> mip_levels{};
 
-        fe::pointer<Texture> gpu_handle{};
+        graphics::TextureHandle gpu_handle{};
 
         Texture()  = default;
         ~Texture() = default;
@@ -188,7 +187,7 @@ namespace fe::resource {
                 int             index_offset{};
             };
 
-            GPUHandle<Mesh> gpu_handle{};
+            graphics::MeshHandle gpu_handle{};
 
             std::string name{};
 

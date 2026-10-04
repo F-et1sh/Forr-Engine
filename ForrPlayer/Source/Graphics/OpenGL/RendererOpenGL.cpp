@@ -59,7 +59,7 @@ fe::RenderGraphBindings fe::RendererOpenGL::CreateGPUResources(const RenderGraph
     return bindings;
 }
 
-std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::RendererOpenGL::CreateParameter(const ParameterDesc& parameter_desc) {
+std::expected<fe::ParameterHandle, fe::ParameterCreationErrors> fe::RendererOpenGL::CreateParameter(const ParameterDesc& parameter_desc) {
     size_t buffer_size = 16 * 1024; // 16KB
 
     if (parameter_desc.array_size != 0) {
@@ -105,10 +105,10 @@ std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::RendererOpenGL::
     return m_Parameters.emplace(std::move(descriptor_ring));
 }
 
-void fe::RendererOpenGL::BindParameter(ParameterID parameter_id) {
+void fe::RendererOpenGL::BindParameter(ParameterHandle parameter_id) {
     OpenGLShaderParameterRing* descriptor_ring = m_Parameters.get(parameter_id);
     if (!descriptor_ring) {
-        fe::logging::error("Failed to write parameter. Failed to get descriptor ring.\nParameterID :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
+        fe::logging::error("Failed to write parameter. Failed to get descriptor ring.\nParameterHandle :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
                            static_cast<uint32_t>(parameter_id.index()),
                            static_cast<uint32_t>(parameter_id.generation()),
                            static_cast<uint32_t>(parameter_id.custom_fields().set),
@@ -128,10 +128,10 @@ void fe::RendererOpenGL::BindParameter(ParameterID parameter_id) {
     }
 }
 
-void fe::RendererOpenGL::WriteParameter(ParameterID parameter_id, std::span<const std::byte> data) {
+void fe::RendererOpenGL::WriteParameter(ParameterHandle parameter_id, std::span<const std::byte> data) {
     OpenGLShaderParameterRing* descriptor_ring = m_Parameters.get(parameter_id);
     if (!descriptor_ring) {
-        fe::logging::error("Failed to write parameter. Failed to get descriptor ring.\nParameterID :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
+        fe::logging::error("Failed to write parameter. Failed to get descriptor ring.\nParameterHandle :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
                            static_cast<uint32_t>(parameter_id.index()),
                            static_cast<uint32_t>(parameter_id.generation()),
                            static_cast<uint32_t>(parameter_id.custom_fields().set),
@@ -142,10 +142,10 @@ void fe::RendererOpenGL::WriteParameter(ParameterID parameter_id, std::span<cons
     std::memcpy(descriptor.mapped, data.data(), data.size());
 }
 
-void fe::RendererOpenGL::DestroyParameter(ParameterID parameter_id) {
+void fe::RendererOpenGL::DestroyParameter(ParameterHandle parameter_id) {
     OpenGLShaderParameterRing* descriptor_ring = m_Parameters.get(parameter_id);
     if (!descriptor_ring) {
-        fe::logging::error("Failed to destroy parameter. Failed to get descriptor ring.\nParameterID :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
+        fe::logging::error("Failed to destroy parameter. Failed to get descriptor ring.\nParameterHandle :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
                            static_cast<uint32_t>(parameter_id.index()),
                            static_cast<uint32_t>(parameter_id.generation()),
                            static_cast<uint32_t>(parameter_id.custom_fields().set),
@@ -163,7 +163,7 @@ void fe::RendererOpenGL::DestroyParameter(ParameterID parameter_id) {
     m_Parameters.destroy(parameter_id);
 }
 
-FORR_NODISCARD std::expected<fe::PipelineID, fe::PipelineCreationErrors> fe::RendererOpenGL::CreatePipeline(const PipelineDesc& pipeline_desc) {
+FORR_NODISCARD std::expected<fe::PipelineHandle, fe::PipelineCreationErrors> fe::RendererOpenGL::CreatePipeline(const PipelineDesc& pipeline_desc) {
     SlangParser slang_parser{};
     auto        source_codes = slang_parser.BuildShaderSources(pipeline_desc, m_ResourceManager);
 
@@ -235,10 +235,10 @@ FORR_NODISCARD std::expected<fe::PipelineID, fe::PipelineCreationErrors> fe::Ren
     return m_Pipelines.emplace(std::move(opengl_pipeline));
 }
 
-void fe::RendererOpenGL::BindPipeline(PipelineID pipeline_id) {
+void fe::RendererOpenGL::BindPipeline(PipelineHandle pipeline_id) {
     OpenGLPipeline* pipeline = m_Pipelines.get(pipeline_id);
     if (!pipeline) {
-        fe::logging::error("Failed to bind pipeline. Failed to get pipeline.\nPipelineID :\nindex = %i\ngeneration = %i",
+        fe::logging::error("Failed to bind pipeline. Failed to get pipeline.\nPipelineHandle :\nindex = %i\ngeneration = %i",
                            static_cast<uint32_t>(pipeline_id.index()),
                            static_cast<uint32_t>(pipeline_id.generation()));
         return;
@@ -266,10 +266,10 @@ void fe::RendererOpenGL::BindPipeline(PipelineID pipeline_id) {
     ////}
 }
 
-void fe::RendererOpenGL::DestroyPipeline(PipelineID pipeline_id) {
+void fe::RendererOpenGL::DestroyPipeline(PipelineHandle pipeline_id) {
     OpenGLPipeline* pipeline = m_Pipelines.get(pipeline_id);
     if (!pipeline) {
-        fe::logging::error("Failed to destroy pipeline. Failed to get pipeline.\nPipelineID :\nindex = %i\ngeneration = %i",
+        fe::logging::error("Failed to destroy pipeline. Failed to get pipeline.\nPipelineHandle :\nindex = %i\ngeneration = %i",
                            static_cast<uint32_t>(pipeline_id.index()),
                            static_cast<uint32_t>(pipeline_id.generation()));
         return;
@@ -402,6 +402,15 @@ GLuint fe::RendererOpenGL::createShaderProgramRaw(const shader::ProgramSources& 
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& command) {
+
+    OpenGLTexture* opengl_texture = m_Textures.get(command.handle.texture_handle);
+
+    if (!opengl_texture) {
+        fe::logging::error("Failed to process 'render_graph::BeginRenderPass' command. Couldn't find texture with handle %i ( as packed )",
+                           texture_index.packed());
+        return;
+    }
+
     const auto& opengl_texture = m_OpenGLResourceManager.GetImage(command.handle.storage_index);
     uint64_t    resident_id    = opengl_texture.resident_id;
 
@@ -475,15 +484,28 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& comm
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_raw);
 
         for (size_t i = 0; i < command.color_targets_count; i++) {
-            size_t               texture_index  = command.color_targets[i];
-            const OpenGLTexture& opengl_texture = m_OpenGLResourceManager.GetImage(texture_index);
+            graphics::TextureHandle texture_index  = command.color_targets[i];
+            OpenGLTexture*          opengl_texture = m_Textures.get(texture_index);
 
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, opengl_texture.texture, 0);
+            if (!opengl_texture) {
+                fe::logging::error("Failed to process 'render_graph::BeginRenderPass' command. Couldn't find color target ( texture ) with handle %i ( as packed )",
+                                   texture_index.packed());
+                return;
+            }
+
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, opengl_texture->texture, 0);
         }
 
         if (command.has_depth_target) {
-            const OpenGLTexture& opengl_texture = m_OpenGLResourceManager.GetImage(command.depth_target);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, opengl_texture.texture, 0);
+            OpenGLTexture* opengl_texture = m_Textures.get(command.depth_target);
+
+            if (!opengl_texture) {
+                fe::logging::error("Failed to process 'render_graph::BeginRenderPass' command. Couldn't find depth target ( texture ) with handle %i ( as packed )",
+                                   command.depth_target.packed());
+                return;
+            }
+
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, opengl_texture->texture, 0);
         }
 
         std::vector<GLenum> attachments{};

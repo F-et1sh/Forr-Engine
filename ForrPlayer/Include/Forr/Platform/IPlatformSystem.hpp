@@ -14,7 +14,6 @@
 #include <vector>
 #include <memory>
 #include "Core/attributes.hpp"
-#include "Core/types.hpp"
 
 #include "IWindow.hpp"
 

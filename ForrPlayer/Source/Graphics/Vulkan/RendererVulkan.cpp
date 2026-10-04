@@ -50,14 +50,14 @@ fe::RenderGraphBindings fe::RendererVulkan::CreateGPUResources(const RenderGraph
     return {};
 }
 
-std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::RendererVulkan::CreateParameter(const ParameterDesc& parameter_desc) {
+std::expected<fe::ParameterHandle, fe::ParameterCreationErrors> fe::RendererVulkan::CreateParameter(const ParameterDesc& parameter_desc) {
     return {};
 }
 
-void fe::RendererVulkan::BindParameter(ParameterID parameter_id) {
+void fe::RendererVulkan::BindParameter(ParameterHandle parameter_id) {
 }
 
-void fe::RendererVulkan::WriteParameter(ParameterID parameter_id, std::span<const std::byte> data) {
+void fe::RendererVulkan::WriteParameter(ParameterHandle parameter_id, std::span<const std::byte> data) {
 }
 
 void fe::RendererVulkan::BeginFrame() {

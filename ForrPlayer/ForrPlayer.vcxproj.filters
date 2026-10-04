@@ -14,7 +14,6 @@
     <ClInclude Include="Source\Platform\GLFW\WindowGLFW.hpp" />
     <ClInclude Include="Include\Forr\Graphics\IRenderer.hpp" />
     <ClInclude Include="Include\Forr\Graphics\GPUTypes.hpp" />
-    <ClInclude Include="Include\Forr\Core\types.hpp" />
     <ClInclude Include="Include\Forr\Core\path.hpp" />
     <ClInclude Include="Source\Tools.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Camera.hpp" />
