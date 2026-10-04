@@ -41,62 +41,72 @@ namespace fe {
     }
 
     // this is like std::string but it uses hash to compare
-    class hashed_string {
+    template <typename T>
+        requires std::is_same_v<T, std::string> || std::is_same_v<T, std::string_view>
+    class hashed_string_base {
     public:
-        hashed_string()  = default;
-        ~hashed_string() = default;
+        hashed_string_base()  = default;
+        ~hashed_string_base() = default;
 
-        constexpr hashed_string(const char* str) : string(str), hash(fe::string_hash(str)) {}
-        constexpr explicit hashed_string(std::string string) : string(std::move(string)), hash(fe::string_hash(string)) {}
-        constexpr explicit hashed_string(std::string_view string_view) : string(string_view), hash(fe::string_hash(string_view)) {}
+        constexpr hashed_string_base(const char* str) : m_string(str), m_hash(fe::string_hash(str)) {}
+        constexpr explicit hashed_string_base(std::string string) : m_string(std::move(string)), m_hash(fe::string_hash(string)) {}
+        constexpr explicit hashed_string_base(std::string_view string_view) : m_string(string_view), m_hash(fe::string_hash(string_view)) {}
 
-        FORR_NODISCARD operator std::string_view() const noexcept { return { string.data(), size() }; }
-        FORR_NODISCARD operator std::string() const noexcept { return string; }
-        FORR_NODISCARD operator fe::StringHash() const noexcept { return hash; }
+        FORR_NODISCARD operator std::string_view() const noexcept { return { m_string.data(), size() }; }
+        FORR_NODISCARD operator std::string() const noexcept { return m_string; }
+        FORR_NODISCARD operator fe::StringHash() const noexcept { return m_hash; }
 
-        FORR_NODISCARD std::size_t size() const noexcept { return string.size(); }
+        FORR_NODISCARD std::size_t size() const noexcept { return m_string.size(); }
         FORR_NODISCARD bool        empty() const noexcept { return size() == 0; }
 
-        FORR_NODISCARD const char* c_str() const noexcept { return string.c_str(); }
-        FORR_NODISCARD const char* data_ptr() const noexcept { return string.data(); }
+        FORR_NODISCARD const char* c_str() const noexcept {
+            if constexpr (std::is_same_v<T, std::string>)
+                return m_string.c_str();
+            else if constexpr (std::is_same_v<T, std::string_view>) {
+                return m_string.data();
+            }
+        }
 
-        FORR_NODISCARD fe::StringHash get_hash() const noexcept { return hash; }
+        FORR_NODISCARD fe::StringHash get_hash() const noexcept { return m_hash; }
 
         // this compares only hash
-        FORR_NODISCARD bool operator==(const hashed_string& other) const noexcept { return hash == other.hash; }
+        FORR_NODISCARD bool operator==(const hashed_string_base& other) const noexcept { return m_hash == other.m_hash; }
 
-        FORR_NODISCARD bool operator==(const std::string& string) const noexcept { return string == string; }
-        FORR_NODISCARD bool operator==(const char* str) const noexcept { return string == str; }
-        FORR_NODISCARD bool operator==(std::string_view string_view) const noexcept { return string == string_view; }
+        FORR_NODISCARD bool operator==(const std::string& string) const noexcept { return m_string == string; }
+        FORR_NODISCARD bool operator==(const char* str) const noexcept { return m_string == str; }
+        FORR_NODISCARD bool operator==(std::string_view string_view) const noexcept { return m_string == string_view; }
 
-        hashed_string operator=(const hashed_string& other) noexcept {
-            string = other.string;
-            hash   = other.hash;
+        hashed_string_base& operator=(const hashed_string_base& other) noexcept {
+            m_string = other.m_string;
+            m_hash   = other.m_hash;
             return *this;
         }
 
-        hashed_string operator=(const char* str) noexcept {
-            string = str;
-            hash   = fe::string_hash(str);
+        hashed_string_base& operator=(const char* str) noexcept {
+            m_string = str;
+            m_hash   = fe::string_hash(str);
             return *this;
         }
 
-        hashed_string operator=(std::string_view string_view) noexcept {
-            string = string_view.data();
-            hash   = fe::string_hash(string_view.data());
+        hashed_string_base& operator=(std::string_view string_view) noexcept {
+            m_string = string_view;
+            m_hash   = fe::string_hash(string_view.data());
             return *this;
         }
 
-        hashed_string operator=(const std::string& other_string) noexcept {
-            string = other_string;
-            hash   = fe::string_hash(other_string);
+        hashed_string_base& operator=(const std::string& string) noexcept {
+            m_string = string;
+            m_hash   = fe::string_hash(string);
             return *this;
         }
 
     private:
-        std::string    string{};
-        fe::StringHash hash{};
+        T              m_string{};
+        fe::StringHash m_hash{};
     };
+
+    using hashed_string      = hashed_string_base<std::string>;
+    using hashed_string_view = hashed_string_base<std::string_view>;
 
     template <std::size_t N>
     struct fixed_string {

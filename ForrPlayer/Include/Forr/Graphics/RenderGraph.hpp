@@ -281,8 +281,9 @@ namespace fe {
     template <typename RenderPassData>
     struct RenderPassHandle {
         RenderPassData* mapped_data{};
-        // render pass' index in 'fe::RenderGraph::m_RenderPasses'
+        // render pass's index in 'fe::RenderGraph::m_RenderPasses'
         uint32_t render_pass_index{};
+        //fe::hashed_string 
 
         RenderPassHandle()  = default;
         ~RenderPassHandle() = default;
