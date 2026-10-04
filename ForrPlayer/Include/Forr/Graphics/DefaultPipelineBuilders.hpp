@@ -46,19 +46,16 @@ namespace fe {
                                                                      ResourceManager&                      resource_manager,
                                                                      IRenderer&                            renderer) {
             /* declare common shader resources */
-            inline const static fe::hashed_string              vertex_entry_point_name{ "vertexMain" };
-            inline const static fe::hashed_string              fragment_entry_point_name{ "fragmentMain" };
-            inline const static fe::hashed_string              material_interface_name{ "IMaterial" };
-            inline const static fe::hashed_string              materials_raw_data_name{ "g_MaterialsRawData" };
-            inline const static fe::hashed_string              model_matrices_name{ "g_ModelMatrices" };
-            inline const static fe::hashed_string              global_data_name{ "g_GlobalData" };
-            inline const static std::vector<fe::hashed_string> descriptor_set_names{ materials_raw_data_name,
-                                                                                     model_matrices_name,
-                                                                                     global_data_name };
-            inline const static fe::hashed_string              push_constants_name{ "push_constants" };
-            inline const static fe::hashed_string              unspecialized_buffer_name{ "TBuffer" };
-            inline const static fe::hashed_string              opengl_buffer_name{ "OpenGLBuffer" };
-            inline const static fe::hashed_string              vulkan_buffer_name{ "VulkanBuffer" };
+            inline const static fe::hashed_string vertex_entry_point_name{ "vertexMain" };
+            inline const static fe::hashed_string fragment_entry_point_name{ "fragmentMain" };
+            inline const static fe::hashed_string material_interface_name{ "IMaterial" };
+            inline const static fe::hashed_string materials_raw_data_name{ "g_MaterialsRawData" };
+            inline const static fe::hashed_string model_matrices_name{ "g_ModelMatrices" };
+            inline const static fe::hashed_string global_data_name{ "g_GlobalData" };
+            inline const static fe::hashed_string push_constants_name{ "push_constants" };
+            inline const static fe::hashed_string unspecialized_buffer_name{ "TBuffer" };
+            inline const static fe::hashed_string opengl_buffer_name{ "OpenGLBuffer" };
+            inline const static fe::hashed_string vulkan_buffer_name{ "VulkanBuffer" };
 
             // load shader file data and check for error
             auto shader_file_data_optional = resource_manager.GetResource(shader_file_data_ptr);
@@ -76,11 +73,11 @@ namespace fe {
 
             // pre-create pipeline desc
             PipelineDesc pipeline_desc{
-                .pipeline_flags   = material.pipeline_flags_override,
+                .pipeline_flags        = material.pipeline_flags_override,
                 .shader_file_data_ptrs = { shader_file_data_ptr },
-                .entry_points     = { vertex_entry_point_name, fragment_entry_point_name },
-                .descriptor_sets  = descriptor_set_names,
-                .push_constants   = { push_constants_name },
+                .entry_points          = { vertex_entry_point_name, fragment_entry_point_name },
+                .descriptor_sets       = { materials_raw_data_name, model_matrices_name, global_data_name },
+                .push_constants        = { push_constants_name },
             };
 
             // this is needed to write directly into 'pipeline_desc' without extra copyings

@@ -224,9 +224,10 @@ namespace fe {
         fe::PipelineFlags pipeline_flags{};
 
         std::vector<fe::pointer<resource::ShaderFileData>> shader_file_data_ptrs{};
-        std::vector<fe::hashed_string>                     entry_points{};
-        std::vector<fe::hashed_string>                     descriptor_sets{};
-        std::optional<fe::hashed_string>                   push_constants{};
+
+        std::vector<fe::hashed_string>   entry_points{};
+        std::vector<fe::hashed_string>   descriptor_sets{};
+        std::optional<fe::hashed_string> push_constants{};
 
         std::optional<shader::ProgramSpecialization> specialization{};
     };
