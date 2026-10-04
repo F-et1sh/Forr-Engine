@@ -45,14 +45,14 @@ namespace fe {
 
         RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) override;
 
-        std::expected<ParameterID, ParameterCreationErrors> CreateParameter(const ParameterDesc& parameter_desc) override;
-        void                                                BindParameter(ParameterID parameter_id) override;
-        void                                                WriteParameter(ParameterID parameter_id, std::span<const std::byte> data) override;
-        void                                                DestroyParameter(ParameterID parameter_id) override;
+        std::expected<graphics::ParameterHandle, graphics::ParameterCreationErrors> CreateParameter(const graphics::ParameterDesc& parameter_desc) override;
+        void                                                                        BindParameter(graphics::ParameterHandle parameter_id) override;
+        void                                                                        WriteParameter(graphics::ParameterHandle parameter_id, std::span<const std::byte> data) override;
+        void                                                                        DestroyParameter(graphics::ParameterHandle parameter_id) override;
 
-        FORR_NODISCARD std::expected<PipelineID, PipelineCreationErrors> CreatePipeline(const PipelineDesc& pipeline_desc) override;
-        void                                                             BindPipeline(PipelineID pipeline_id) override;
-        void                                                             DestroyPipeline(PipelineID pipeline_id) override;
+        FORR_NODISCARD std::expected<graphics::PipelineHandle, graphics::PipelineCreationErrors> CreatePipeline(const graphics::PipelineDesc& pipeline_desc) override;
+        void                                                                                     BindPipeline(graphics::PipelineHandle pipeline_id) override;
+        void                                                                                     DestroyPipeline(graphics::PipelineHandle pipeline_id) override;
 
         void BeginFrame() override;
         void EndFrame(const render_graph::CommandList& render_command_list) override;
@@ -90,11 +90,9 @@ namespace fe {
         // render targets' hash --> framebuffer
         std::unordered_map<uint64_t, gl::Framebuffer> m_FramebuffersCache{};
 
-        // TODO : soon
-        //
-        //fe::typed_pointer_storage<OpenGLMesh, fe::graphics::MeshHandle>                     m_Meshes{};
-        //fe::typed_pointer_storage<OpenGLTexture, fe::graphics::TextureHandle>               m_Textures{};
-        fe::typed_pointer_storage<OpenGLShaderParameterRing, ParameterID> m_Parameters{};
-        fe::typed_pointer_storage<OpenGLPipeline, PipelineID>             m_Pipelines{};
+        fe::typed_pointer_storage<OpenGLMesh, graphics::MeshHandle>                     m_Meshes{};
+        fe::typed_pointer_storage<OpenGLTexture, graphics::TextureHandle>               m_Textures{};
+        fe::typed_pointer_storage<OpenGLShaderParameterRing, graphics::ParameterHandle> m_Parameters{};
+        fe::typed_pointer_storage<OpenGLPipeline, graphics::PipelineHandle>             m_Pipelines{};
     };
 } // namespace fe

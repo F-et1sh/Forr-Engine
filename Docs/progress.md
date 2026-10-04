@@ -13,6 +13,7 @@
 ### Done
     fixed IntelliSense
     Slang source code compilation done. hashed_string_view added
+    types.hpp removed. 'fe::GPUHandle<>' removed
 
 ### Problem
     -

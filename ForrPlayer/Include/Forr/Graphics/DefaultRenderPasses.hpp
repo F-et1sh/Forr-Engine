@@ -16,21 +16,21 @@
 
 namespace fe {
     struct ForwardPassData { // everything is temp
-        PipelineID pipeline_id{};
+        graphics::PipelineHandle pipeline_id{};
 
         fe::pointer<resource::Material> default_material_ptr{};
         fe::pointer<resource::Model>    test_model_ptr{};
         fe::pointer<resource::Model>    test_model2_ptr{};
 
-        ParameterID            model_matrices_parameter_id{};
-        std::vector<glm::mat4> data{};
+        graphics::ParameterHandle model_matrices_parameter_id{};
+        std::vector<glm::mat4>    data{};
 
         struct alignas(16) PBRMaterialData {
             uint64_t  base_color_texture_handle{};
             glm::vec4 base_color_factor{};
         };
-        ParameterID            materials_parameter_id{};
-        std::vector<std::byte> materials_data{};
+        graphics::ParameterHandle materials_parameter_id{};
+        std::vector<std::byte>    materials_data{};
 
         struct alignas(16) GlobalData {
             glm::mat4 view{};
@@ -38,8 +38,8 @@ namespace fe {
 
             GlobalData() = default;
         };
-        ParameterID            global_data_parameter_id{};
-        std::vector<std::byte> global_data_as_bytes{};
+        graphics::ParameterHandle global_data_parameter_id{};
+        std::vector<std::byte>    global_data_as_bytes{};
 
         float time{};
     };
@@ -65,12 +65,12 @@ namespace fe {
                     error_string += "\nAdditional message : ";
 
                     const auto& detailed_message = error.detailed_message.value();
-                    if (std::holds_alternative<PipelineCreationErrors>(detailed_message)) {
-                        const auto& value = std::get<PipelineCreationErrors>(detailed_message);
+                    if (std::holds_alternative<graphics::PipelineCreationErrors>(detailed_message)) {
+                        const auto& value = std::get<graphics::PipelineCreationErrors>(detailed_message);
                         error_string += std::to_string(static_cast<const uint8_t>(value));
                     }
-                    else if (std::holds_alternative<ParameterCreationErrors>(detailed_message)) {
-                        const auto& value = std::get<ParameterCreationErrors>(detailed_message);
+                    else if (std::holds_alternative<graphics::ParameterCreationErrors>(detailed_message)) {
+                        const auto& value = std::get<graphics::ParameterCreationErrors>(detailed_message);
                         error_string += std::to_string(static_cast<const uint8_t>(value));
                     }
                     else if (std::holds_alternative<fe::hashed_string>(detailed_message)) {

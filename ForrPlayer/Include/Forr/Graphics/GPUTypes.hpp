@@ -26,6 +26,15 @@
 #include <glm/gtx/vector_angle.hpp>
 
 namespace fe {
+    enum class GraphicsBackend {
+        OpenGL,
+        Vulkan
+    };
+
+    enum class PlatformBackend {
+        GLFW
+    };
+
     // TODO : move this into Core
     static constexpr void hash_combine(std::size_t& seed, std::size_t value) noexcept {
         seed ^= value + 0x9e3779b97f4a7c15 + (seed << 6) + (seed >> 2);
@@ -159,85 +168,90 @@ namespace fe {
         // For now I'm just leaving this hardcoded
     };
 
-    struct FORR_API ParameterDesc {
-        shader::DescriptorType descriptor_type{ shader::DescriptorType::UNKNOWN };
-        uint8_t                stage_flags{};
-        bool                   is_bindless{};
-        uint32_t               array_size{ 1 };
-        uint32_t               size{};
-        uint32_t               set{};
-        uint32_t               binding{};
+    namespace graphics {
+        struct FORR_API ParameterDesc {
+            shader::DescriptorType descriptor_type{ shader::DescriptorType::UNKNOWN };
+            uint8_t                stage_flags{};
+            bool                   is_bindless{};
+            uint32_t               array_size{ 1 };
+            uint32_t               size{};
+            uint32_t               set{};
+            uint32_t               binding{};
 
-        ParameterDesc() = default;
-        ParameterDesc(const shader::ReflectedDescriptor& descriptor_layout)
-            : descriptor_type(descriptor_layout.descriptor_type),
-              stage_flags(descriptor_layout.stage_flags),
-              is_bindless(descriptor_layout.is_bindless),
-              array_size(descriptor_layout.array_size),
-              size(descriptor_layout.size),
-              set(descriptor_layout.set),
-              binding(descriptor_layout.binding) {}
-    };
+            ParameterDesc() = default;
+            ParameterDesc(const shader::ReflectedDescriptor& descriptor_layout)
+                : descriptor_type(descriptor_layout.descriptor_type),
+                  stage_flags(descriptor_layout.stage_flags),
+                  is_bindless(descriptor_layout.is_bindless),
+                  array_size(descriptor_layout.array_size),
+                  size(descriptor_layout.size),
+                  set(descriptor_layout.set),
+                  binding(descriptor_layout.binding) {}
+        };
 
-    enum class ParameterCreationErrors {
-        FORGOT_TO_SPECIALIZE_GENERIC_DESCRIPTOR,
-        UNSUPPORTED_MEMORY_TYPE,
-        MAPPED_MEMORY_WAS_NULLPTR
-    };
+        enum class ParameterCreationErrors {
+            FORGOT_TO_SPECIALIZE_GENERIC_DESCRIPTOR,
+            UNSUPPORTED_MEMORY_TYPE,
+            MAPPED_MEMORY_WAS_NULLPTR
+        };
 
-    struct FORR_API ParameterIDFields {
-        uint8_t set{ std::numeric_limits<uint8_t>::max() };
-        uint8_t binding{ std::numeric_limits<uint8_t>::max() };
-    };
+        struct FORR_API ParameterHandleFields {
+            uint8_t set{ std::numeric_limits<uint8_t>::max() };
+            uint8_t binding{ std::numeric_limits<uint8_t>::max() };
+        };
 
-    struct FORR_API ParameterIDPacker {
-        // [index 4 bytes] [generation 2 bytes] [set 1 byte] [binding 1 byte] -> 8 byte together
-        FORR_NODISCARD static constexpr uint64_t operator()(uint32_t index, uint16_t generation, ParameterIDFields fields) noexcept {
-            return (static_cast<uint64_t>(index) << 32) |
-                   (static_cast<uint64_t>(generation) << 16) |
-                   (static_cast<uint64_t>(fields.set) << 8) |
-                   static_cast<uint64_t>(fields.binding);
-        }
-    };
+        struct FORR_API ParameterHandlePacker {
+            // [index 4 bytes] [generation 2 bytes] [set 1 byte] [binding 1 byte] -> 8 byte together
+            FORR_NODISCARD static constexpr uint64_t operator()(uint32_t index, uint16_t generation, ParameterHandleFields fields) noexcept {
+                return (static_cast<uint64_t>(index) << 32) |
+                       (static_cast<uint64_t>(generation) << 16) |
+                       (static_cast<uint64_t>(fields.set) << 8) |
+                       static_cast<uint64_t>(fields.binding);
+            }
+        };
 
-    struct FORR_API ParameterIDUnpacker {
-        // 8 byte together --> [index 4 bytes] [generation 2 bytes] [set 1 byte] [binding 1 byte]
-        FORR_NODISCARD static constexpr std::tuple<uint32_t, uint16_t, ParameterIDFields> operator()(uint64_t packed) noexcept {
-            uint32_t index      = static_cast<uint32_t>(packed >> 32);
-            uint16_t generation = static_cast<uint16_t>((packed >> 16) & 0xFFFF);
+        struct FORR_API ParameterHandleUnpacker {
+            // 8 byte together --> [index 4 bytes] [generation 2 bytes] [set 1 byte] [binding 1 byte]
+            FORR_NODISCARD static constexpr std::tuple<uint32_t, uint16_t, ParameterHandleFields> operator()(uint64_t packed) noexcept {
+                uint32_t index      = static_cast<uint32_t>(packed >> 32);
+                uint16_t generation = static_cast<uint16_t>((packed >> 16) & 0xFFFF);
 
-            ParameterIDFields fields{};
-            fields.set     = static_cast<uint8_t>((packed >> 8) & 0xFFFF);
-            fields.binding = static_cast<uint8_t>(packed & 0xFFFF);
+                ParameterHandleFields fields{};
+                fields.set     = static_cast<uint8_t>((packed >> 8) & 0xFFFF);
+                fields.binding = static_cast<uint8_t>(packed & 0xFFFF);
 
-            return { index, generation, fields };
-        }
-    };
+                return { index, generation, fields };
+            }
+        };
 
-    using ParameterID = fe::pointer<struct ParameterTag, // a tag to define that this handle works with parameters
-                                    uint32_t,            // index                   ( 32 bytes )
-                                    uint16_t,            // generation              ( 16 bytes )
-                                    uint64_t,            // packed aka all together ( 64 bytes )
-                                    ParameterIDFields>;  //                         ( 16 bytes )
+        using ParameterHandle = fe::pointer<struct ParameterTag,    // a tag to define that this handle works with parameters
+                                            uint32_t,               // index                   ( 32 bytes )
+                                            uint16_t,               // generation              ( 16 bytes )
+                                            uint64_t,               // packed aka all together ( 64 bytes )
+                                            ParameterHandleFields>; //                         ( 16 bytes )
 
-    struct FORR_API PipelineDesc {
-        fe::PipelineFlags pipeline_flags{};
+        struct FORR_API PipelineDesc {
+            fe::PipelineFlags pipeline_flags{};
 
-        std::vector<fe::pointer<resource::ShaderFileData>> shader_file_data_ptrs{};
+            std::vector<fe::pointer<resource::ShaderFileData>> shader_file_data_ptrs{};
 
-        std::vector<fe::hashed_string>   entry_points{};
-        std::vector<fe::hashed_string>   descriptor_sets{};
-        std::optional<fe::hashed_string> push_constants{};
+            std::vector<fe::hashed_string>   entry_points{};
+            std::vector<fe::hashed_string>   descriptor_sets{};
+            std::optional<fe::hashed_string> push_constants{};
 
-        std::optional<shader::ProgramSpecialization> specialization{};
-    };
+            std::optional<shader::ProgramSpecialization> specialization{};
+        };
 
-    enum class PipelineCreationErrors {
-        ERROR,
-        // TODO : fill this up
-    };
+        enum class PipelineCreationErrors {
+            ERROR,
+            // TODO : fill this up
+        };
 
-    using PipelineID = fe::pointer<struct PipelineTag>; // a tag to define that this handle works with pipelines
+        using PipelineHandle = fe::pointer<struct PipelineTag>; // a tag to define that this handle works with pipelines
+
+        using TextureHandle = fe::pointer<struct TextureTag>;
+        using MeshHandle    = fe::pointer<struct MeshTag>;
+    } // namespace graphics
 
     namespace render_graph {
         enum class FORR_API ImageType : uint8_t {
@@ -358,15 +372,15 @@ namespace fe {
 
             // TODO : now I use 'std::array' here to make the structure plain data-oriented object
             //          but I would like to use 'std::vector' here
-            std::array<size_t, MAX_COLOR_ATTACHMENTS> color_targets{};
-            size_t                                    color_targets_count{};
+            std::array<graphics::TextureHandle, MAX_COLOR_ATTACHMENTS> color_targets{};
+            size_t                                                     color_targets_count{};
 
-            size_t depth_target{};
+            graphics::TextureHandle depth_target{};
         };
 
-        inline static std::size_t color_depth_targets_hash(const std::array<size_t, MAX_COLOR_ATTACHMENTS>& color_targets,
-                                                           size_t                                           color_targets_count,
-                                                           size_t                                           depth_target) {
+        inline static std::size_t color_depth_targets_hash(const std::array<graphics::TextureHandle, MAX_COLOR_ATTACHMENTS>& color_targets,
+                                                           size_t                                                            color_targets_count,
+                                                           graphics::TextureHandle                                           depth_target) {
             std::size_t seed{};
 
             for (size_t i = 0; i < color_targets_count; i++) {
@@ -390,7 +404,7 @@ namespace fe {
         };
 
         struct FORR_API BindPipeline {
-            PipelineID pipeline_id{};
+            graphics::PipelineHandle pipeline_id{};
         };
 
         // temp
@@ -404,15 +418,15 @@ namespace fe {
         };
 
         struct FORR_API BindBuffer {
-            ParameterID parameter_id{};
+            graphics::ParameterHandle parameter_id{};
         };
 
         struct FORR_API WriteBuffer {
-            ParameterID                parameter_id{};
+            graphics::ParameterHandle  parameter_id{};
             std::span<const std::byte> data{};
 
             WriteBuffer() = default;
-            WriteBuffer(ParameterID parameter_id, std::span<const std::byte> data)
+            WriteBuffer(graphics::ParameterHandle parameter_id, std::span<const std::byte> data)
                 : parameter_id(parameter_id), data(data) {}
         };
 

@@ -112,7 +112,6 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     <ClInclude Include="Include\Forr\Core\path.hpp" />
     <ClInclude Include="Include\Forr\Core\pointer.hpp" />
     <ClInclude Include="Include\Forr\Core\string.hpp" />
-    <ClInclude Include="Include\Forr\Core\types.hpp" />
     <ClInclude Include="Include\Forr\ECS\Components.hpp" />
     <ClInclude Include="Include\Forr\ECS\Systems\RenderSystem.hpp" />
     <ClInclude Include="Include\Forr\Graphics\Camera.hpp" />

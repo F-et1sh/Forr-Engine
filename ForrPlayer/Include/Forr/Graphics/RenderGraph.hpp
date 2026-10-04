@@ -64,7 +64,7 @@ namespace fe {
             return *this;
         }
 
-        RenderGraphContext& BindBuffer(ParameterID parameter_id) {
+        RenderGraphContext& BindBuffer(graphics::ParameterHandle parameter_id) {
             return this->BindBuffer(render_graph::BindBuffer{ parameter_id });
         }
 
@@ -73,18 +73,18 @@ namespace fe {
             return *this;
         }
 
-        RenderGraphContext& WriteBuffer(ParameterID parameter_id, std::span<const std::byte> data) {
+        RenderGraphContext& WriteBuffer(graphics::ParameterHandle parameter_id, std::span<const std::byte> data) {
             return this->WriteBuffer(render_graph::WriteBuffer{ parameter_id, data });
         }
 
         template <typename T>
-        RenderGraphContext& WriteBuffer(ParameterID parameter_id, std::span<const T> data) {
+        RenderGraphContext& WriteBuffer(graphics::ParameterHandle parameter_id, std::span<const T> data) {
             return this->WriteBuffer(render_graph::WriteBuffer{ parameter_id, std::as_bytes(data) });
         }
 
         template <typename R>
             requires std::ranges::contiguous_range<R>
-        RenderGraphContext& WriteBuffer(ParameterID parameter_id, const R& range) {
+        RenderGraphContext& WriteBuffer(graphics::ParameterHandle parameter_id, const R& range) {
             return this->WriteBuffer(parameter_id, std::span{ range });
         }
 
@@ -96,7 +96,7 @@ namespace fe {
         //RenderGraphContext& BindShaderProgram(fe::pointer<resource::ShaderProgram> shader_program_ptr) {
         //    return this->BindShaderProgram(render_graph::BindShaderProgram{ shader_program_ptr });
         //}
-        
+
         // temp
         RenderGraphContext& DrawModel(fe::pointer<resource::Model> model_ptr, uint32_t first_instance) {
             command_list.enqueue(render_graph::DrawModel{ model_ptr, first_instance });
@@ -282,8 +282,8 @@ namespace fe {
     struct RenderPassHandle {
         RenderPassData* mapped_data{};
         // render pass's index in 'fe::RenderGraph::m_RenderPasses'
-        uint32_t render_pass_index{};
-        //fe::hashed_string 
+        uint32_t               render_pass_index{};
+        fe::hashed_string_view render_pass_name{};
 
         RenderPassHandle()  = default;
         ~RenderPassHandle() = default;
@@ -400,6 +400,7 @@ namespace fe {
             RenderPassHandle<RenderPassData> render_pass_handle{};
             render_pass_handle.mapped_data       = mapped_data;
             render_pass_handle.render_pass_index = m_RenderPasses.size() - 1;
+            render_pass_handle.render_pass_name  = name;
 
             return render_pass_handle;
         }

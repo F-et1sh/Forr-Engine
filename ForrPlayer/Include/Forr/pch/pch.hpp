@@ -28,7 +28,6 @@
 #include "Core/custom_allocators.hpp"
 #include "Core/logging.hpp"
 #include "Core/pointer.hpp"
-#include "Core/types.hpp"
 #include "Core/path.hpp"
 #include "Core/guid.hpp"
 #include "Core/string.hpp"

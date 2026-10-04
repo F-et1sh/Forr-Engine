@@ -272,7 +272,7 @@ const fe::OpenGLPipeline& fe::OpenGLResourceManager::GetPipeline(size_t pipeline
     return m_Pipelines[pipeline_storage_index];
 }
 
-FORR_NODISCARD std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::OpenGLResourceManager::CreateDescriptorRing(const ParameterDesc& parameter_desc) {
+FORR_NODISCARD std::expected<fe::ParameterHandle, fe::ParameterCreationErrors> fe::OpenGLResourceManager::CreateDescriptorRing(const ParameterDesc& parameter_desc) {
     size_t buffer_size = 16 * 1024; // 16KB
 
     if (parameter_desc.array_size != 0) {
@@ -318,7 +318,7 @@ FORR_NODISCARD std::expected<fe::ParameterID, fe::ParameterCreationErrors> fe::O
     return m_Parameters.emplace(std::move(descriptor_ring));
 }
 
-void fe::OpenGLResourceManager::DestroyDescriptorRing(ParameterID parameter_id) {
+void fe::OpenGLResourceManager::DestroyDescriptorRing(ParameterHandle parameter_id) {
     
     //m_Parameters.destroy(parameter_id);
 

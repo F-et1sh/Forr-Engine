@@ -11,7 +11,6 @@
 ===============================================*/
 
 #pragma once
-#include "Core/types.hpp"
 #include "Core/pointer.hpp"
 #include "Resources.hpp"
 
