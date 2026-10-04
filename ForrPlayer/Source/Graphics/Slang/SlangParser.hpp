@@ -63,7 +63,7 @@ namespace fe {
         bool ComposeProgram(GraphicsBackend graphics_backend, bool do_all = false);
 
         // returns 'true', if actually found anything and 'false', if the argument is not changed
-        bool ReflectDescriptors(shader::ReflectedDescriptorsLayout& descriptors_layout);
+        bool ReflectDescriptors(shader::ReflectedDescriptor& descriptors_layout);
 
         // returns 'true', if the shader file contains vertexMain(), fragmentMain() or computeMain() and otherwise - 'false'
         bool IsPipeline();
@@ -71,16 +71,10 @@ namespace fe {
         // returns 'true', if actually found anything and 'false', if the argument is not changed
         bool ReflectMaterials(std::unordered_map<fe::hashed_string, shader::ReflectedStructureLayout>& material_layouts);
 
-        // TODO : remove this and create 'unified' version - it mustn't just combine shader program and material,
-        //  but specialize shader program, material and descriptors in any way possible
-        shader::SourceCodeStorage CombineAndCompileShader(const resource::ShaderProgram& shader_program,
-                                                          const resource::Material&      material,
-                                                          ResourceManager&               resource_manager);
-
     private:
         std::expected<Slang::ComPtr<slang::IComponentType>, SpecializationErrors> specializeGraphicsBackend(slang::IComponentType* component_type, GraphicsBackend graphics_backend);
 
-        bool parseDescriptorRecursive(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDescriptorsLayout& descriptors_layout);
+        bool parseDescriptorRecursive(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDescriptor& descriptors_layout);
 
         void parseDescriptorTable(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDescriptor& dst_descriptor);
         void parsePushConstant(slang::VariableLayoutReflection* variable_layout, shader::ReflectedPushConstants& dst_push_constants);

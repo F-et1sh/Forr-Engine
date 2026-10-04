@@ -94,9 +94,6 @@ namespace fe {
         //
         //fe::typed_pointer_storage<OpenGLMesh, fe::graphics::MeshHandle>                     m_Meshes{};
         //fe::typed_pointer_storage<OpenGLTexture, fe::graphics::TextureHandle>               m_Textures{};
-        //fe::typed_pointer_storage<OpenGLShaderParameterRing, fe::graphics::ParameterHandle> m_Parameters{};
-        //fe::typed_pointer_storage<OpenGLPipeline, fe::graphics::PipelineHandle>             m_Pipelines{};
-
         fe::typed_pointer_storage<OpenGLShaderParameterRing, ParameterID> m_Parameters{};
         fe::typed_pointer_storage<OpenGLPipeline, PipelineID>             m_Pipelines{};
     };
