@@ -11,6 +11,7 @@
     fe::IRenderer::CreateGPUResources() --> fe::IRenderer::CreateRenderGraphResources(). RenderGraph buffers creation provided for OpenGL
     RenderGraph logic normilized ( looks terrible, needs to be rewritten )
     resource creation provided for OpenGL
+    OpenGLResourceManager removed
 
 ### Problem
     -
