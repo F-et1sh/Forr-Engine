@@ -20,42 +20,48 @@ namespace fe::gl {
     class Handle {
     public:
         Handle() = default;
-        explicit Handle(HandleT handle) noexcept : handle(handle) {}
+        explicit Handle(HandleT handle) noexcept : m_Handle(handle) {}
 
         ~Handle() { this->reset(); }
 
         FORR_CLASS_NONCOPYABLE(Handle)
 
-        Handle(Handle&& other) noexcept : handle(other.handle) { other.handle = 0; }
+        Handle(Handle&& other) noexcept : m_Handle(other.m_Handle) { other.m_Handle = 0; }
 
         Handle& operator=(Handle&& other) noexcept {
             if (this != &other) {
-                this->attach(other.handle);
-                other.handle = 0; // NOT other.reset()
+                this->attach(other.m_Handle);
+                other.m_Handle = 0; // NOT other.reset()
             }
             return *this;
         }
 
         void reset() noexcept {
-            if (handle) {
-                DestroyFn{}(handle);
-                handle = 0;
+            if (m_Handle) {
+                DestroyFn{}(m_Handle);
+                m_Handle = 0;
             }
         }
 
         void attach(HandleT handle) noexcept {
-            if (this->handle != handle) {
+            if (m_Handle != handle) {
                 this->reset();
-                this->handle = handle;
+                m_Handle = handle;
             }
         }
 
-        FORR_NODISCARD HandleT get() const noexcept { return handle; }
+        HandleT detach() noexcept {
+            HandleT handle = m_Handle;
+            m_Handle       = 0;
+            return handle;
+        }
 
-        operator HandleT() const noexcept { return handle; }
+        FORR_NODISCARD HandleT get() const noexcept { return m_Handle; }
+
+        operator HandleT() const noexcept { return m_Handle; }
 
     protected:
-        HandleT handle{};
+        HandleT m_Handle{};
     };
 
     struct ShaderDestroy {

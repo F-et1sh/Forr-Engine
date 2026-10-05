@@ -68,6 +68,9 @@ namespace fe {
         graphics::TextureHandle createRenderGraphImage(const render_graph::ImageDesc& image_desc);
         graphics::BufferHandle  createRenderGraphBuffer(const render_graph::BufferDesc& buffer_desc);
 
+        graphics::TextureHandle createTexture(const resource::Texture& texture);
+        graphics::MeshHandle    createMesh(const resource::Model::Mesh& mesh);
+
     private:
         void handleCommand(const render_graph::ImageBarrier& command);
         void handleCommand(const render_graph::BufferBarrier& command);
