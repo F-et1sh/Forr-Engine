@@ -33,26 +33,26 @@ namespace fe {
 
         template <resource::resource_t T>
         void CreateMeta(fe::pointer<T> pointer, const std::filesystem::path& resource_relative_path) {
-            std::filesystem::path resource_full_path = PATH.getEngineResourcesPath() / resource_relative_path;
-            std::filesystem::path metadata_path      = resource_full_path.wstring() + PATH.getMetadataExtension();
+            //std::filesystem::path resource_full_path = PATH.getEngineResourcesPath() / resource_relative_path;
+            //std::filesystem::path metadata_path      = resource_full_path.wstring() + PATH.getMetadataExtension();
 
-            std::ofstream file(metadata_path);
-            if (!file.good()) {
-                fe::logging::error("Unified -> %s. Failed create metadata\nResource relative path : %s\nResource full path : %s\nMetadata full path : %s",
-                                   metadata_path.extension().generic_string().c_str(),
-                                   resource_relative_path.generic_string().c_str(),
-                                   resource_full_path.generic_string().c_str(),
-                                   metadata_path);
-                return;
-            }
+            //std::ofstream file(metadata_path);
+            //if (!file.good()) {
+            //    fe::logging::error("Unified -> %s. Failed create metadata\nResource relative path : %s\nResource full path : %s\nMetadata full path : %s",
+            //                       metadata_path.extension().generic_string().c_str(),
+            //                       resource_relative_path.generic_string().c_str(),
+            //                       resource_full_path.generic_string().c_str(),
+            //                       metadata_path);
+            //    return;
+            //}
 
-            if constexpr (std::is_same_v<T, resource::Material>) { // WG21, do C++26 faster plsss
-                resource::Material& resource = *m_Storage.GetResource(pointer);
+            //if constexpr (std::is_same_v<T, resource::Material>) { // WG21, do C++26 faster plsss
+            //    resource::Material& resource = *m_Storage.GetResource(pointer);
 
-                for (const auto& property : resource.properties) {
-                    //property.first
-                }
-            }
+            //    for (const auto& property : resource.properties) {
+            //        //property.first
+            //    }
+            //}
         }
 
     private:

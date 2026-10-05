@@ -76,10 +76,18 @@ namespace fe::render_graph {
         fe::StringHash hashed_name{};
 
         // index in GPU resource manager's strage - used when render passes are already compiled
-        IDType storage_index { std::numeric_limits<resource_packed>::max() };
+        IDType storage_index{};
 
         ResourceHandle() = default;
-        ResourceHandle(fe::StringHash hashed_name) : hashed_name(hashed_name) {}
+
+        ResourceHandle(fe::StringHash hashed_name)
+            requires std::is_same_v<IDType, uint64_t>
+            : hashed_name(hashed_name), storage_index(std::numeric_limits<uint64_t>::max()) {}
+
+        ResourceHandle(fe::StringHash hashed_name)
+            requires(!std::is_same_v<IDType, uint64_t>)
+            : hashed_name(hashed_name), storage_index{} {}
+
         explicit ResourceHandle(fe::StringHash hashed_name, IDType storage_index) : hashed_name(hashed_name), storage_index(storage_index) {}
 
         bool operator==(const ResourceHandle& other) const noexcept { return storage_index == other.storage_index; }
@@ -126,7 +134,7 @@ namespace fe::render_graph {
         ResourceBarrier(fe::StringHash hashed_name,
                         ResourceState  old_state,
                         ResourceState  new_state)
-            : handle(ResourceHandle{ hashed_name, static_cast<size_t>(~0) }), old_state(old_state), new_state(new_state) {}
+            : handle(ResourceHandle<IDType>{ hashed_name }), old_state(old_state), new_state(new_state) {}
     };
 
     using ImageBarrier  = ResourceBarrier<graphics::TextureHandle>;

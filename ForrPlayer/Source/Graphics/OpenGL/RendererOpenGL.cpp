@@ -159,7 +159,7 @@ void fe::RendererOpenGL::DestroyParameter(fe::graphics::ParameterHandle paramete
     buffers_to_destory.reserve(buffers_to_destory.size() + MAX_CONCURRENT_FRAMES);
 
     for (auto& descriptor : *descriptor_ring) {
-        buffers_to_destory.emplace_back(std::move(descriptor));
+        buffers_to_destory.emplace_back(std::move(descriptor.buffer));
     }
 
     m_Parameters.destroy(parameter_id);
@@ -486,7 +486,11 @@ fe::graphics::BufferHandle fe::RendererOpenGL::createRenderGraphBuffer(const ren
 
     glNamedBufferStorage(buffer_raw, buffer_desc.size_in_bytes, nullptr, flags);
 
-    return m_Buffers.emplace(buffer_raw, buffer_desc.size_in_bytes);
+    OpenGLBuffer opengl_buffer{};
+    opengl_buffer.buffer.attach(buffer_raw);
+    opengl_buffer.size = buffer_desc.size_in_bytes;
+
+    return m_Buffers.emplace(std::move(opengl_buffer));
 }
 
 fe::graphics::TextureHandle fe::RendererOpenGL::createTexture(const resource::Texture& texture) {
@@ -647,7 +651,7 @@ fe::graphics::MeshHandle fe::RendererOpenGL::createMesh(const resource::Model::M
     opengl_mesh.vbo.attach(vbo);
     opengl_mesh.ebo.attach(ebo);
 
-    return m_Meshes.create(opengl_mesh);
+    return m_Meshes.create(std::move(opengl_mesh));
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& command) {
