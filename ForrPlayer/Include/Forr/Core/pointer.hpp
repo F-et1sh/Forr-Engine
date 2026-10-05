@@ -113,7 +113,7 @@ namespace fe {
         {
             return m_custom_fields;
         }
-        FORR_NODISCARD constexpr const CustomFields& custom_fields() noexcept const
+        FORR_NODISCARD constexpr const CustomFields& custom_fields() const noexcept
             requires(!std::is_same_v<CustomFields, empty_custom_fields_t>)
         {
             return m_custom_fields;
@@ -121,6 +121,11 @@ namespace fe {
 
         template <pointer_packer_t PackFn = DefaultPacker>
         FORR_NODISCARD constexpr PackedT packed() const noexcept { return PackFn::operator()(m_index, m_generation, m_custom_fields); }
+
+        template <pointer_packer_t PackFn = DefaultPacker>
+        FORR_NODISCARD static constexpr PackedT packed(pointer<T, HandleT, GenerationT, PackedT> pointer_to_pack) noexcept {
+            return PackFn::operator()(pointer_to_pack.m_index, pointer_to_pack.m_generation, pointer_to_pack.m_custom_fields);
+        }
 
         template <pointer_packer_t UnpackFn = DefaultUnpacker>
         FORR_NODISCARD static constexpr pointer from_packed(PackedT packed) noexcept {

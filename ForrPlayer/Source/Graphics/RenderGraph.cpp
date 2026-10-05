@@ -47,38 +47,38 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
     this->calculateResourceLifetimes(resource_lifetimes);
 
     struct ResourceInfo {
-        bool   is_busy{};
-        size_t storage_index{}; // this is a virtual storage index
+        bool     is_busy{};
+        uint64_t virtual_storage_index{};
     };
     // resource desc --> { is busy, storage index }
     std::unordered_map<render_graph::CreationCommand, std::vector<ResourceInfo>> resource_pool{};
 
     // this value is used to generate virtual storage indices
-    size_t virtual_storage_index_number{};
+    uint64_t virtual_storage_index_number{};
 
     // returns resource virtual storage index
-    auto acquire_resource_labmda = [&resource_pool, &virtual_storage_index_number](const render_graph::CreationCommand& desc) -> size_t {
+    auto acquire_resource_labmda = [&resource_pool, &virtual_storage_index_number](const render_graph::CreationCommand& desc) -> uint64_t {
         auto& pool_vector = resource_pool[desc];
 
         for (auto& resource_info : pool_vector) {
             if (!resource_info.is_busy) {
 
                 resource_info.is_busy = true;
-                return resource_info.storage_index;
+                return resource_info.virtual_storage_index;
             }
         }
 
-        ResourceInfo& resource_info = pool_vector.emplace_back();
-        resource_info.is_busy       = true;
-        resource_info.storage_index = virtual_storage_index_number++;
+        ResourceInfo& resource_info         = pool_vector.emplace_back();
+        resource_info.is_busy               = true;
+        resource_info.virtual_storage_index = virtual_storage_index_number++;
 
-        return resource_info.storage_index;
+        return resource_info.virtual_storage_index;
     };
 
-    auto release_resource_lambda = [&resource_pool](const render_graph::CreationCommand& desc, size_t storage_index) {
+    auto release_resource_lambda = [&resource_pool](const render_graph::CreationCommand& desc, uint64_t virtual_storage_index) {
         auto& pool_vector = resource_pool[desc];
         for (auto& resource_info : pool_vector) {
-            if (resource_info.storage_index == storage_index)
+            if (resource_info.virtual_storage_index == virtual_storage_index)
                 resource_info.is_busy = false;
         }
     };
@@ -103,9 +103,9 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
     }
 
     // hashed name --> virtual storage index
-    std::unordered_map<fe::StringHash, size_t> hashed_to_virtual_map{};
+    std::unordered_map<fe::StringHash, uint64_t> hashed_to_virtual_map{};
 
-    // setup virtual indices
+    // set virutal indices in creation commands and barriers to translate them into real indices later
     this->setupVirtualIndices(acquire_resource_labmda,
                               release_resource_lambda,
                               resource_lifetimes,
@@ -121,7 +121,7 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
 
         for (auto& create_request : render_pass.image_create_requests) {
             fe::StringHash hashed_name          = create_request.handle.hashed_name;
-            create_request.handle.storage_index = hashed_to_virtual_map[hashed_name];
+            create_request.handle.storage_index = graphics::TextureHandle::from_packed(hashed_to_virtual_map[hashed_name]); // be careful : hack
             result.image_descs.emplace_back(create_request);
         }
 
@@ -129,7 +129,7 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
 
         for (auto& create_request : render_pass.buffer_create_requests) {
             fe::StringHash hashed_name          = create_request.handle.hashed_name;
-            create_request.handle.storage_index = hashed_to_virtual_map[hashed_name];
+            create_request.handle.storage_index = graphics::BufferHandle::from_packed(hashed_to_virtual_map[hashed_name]); // be careful : hack
             result.buffer_descs.emplace_back(create_request);
         }
     }
@@ -166,11 +166,11 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
             if (image_barrier.new_state == ResourceState::DEPTH_WRITE ||
                 image_barrier.new_state == ResourceState::DEPTH_READ) {
 
-                begin_command.depth_target     = image_barrier.handle.hashed_name;
+                begin_command.depth_target     = graphics::TextureHandle::from_packed(image_barrier.handle.hashed_name); // be careful : hack
                 begin_command.has_depth_target = true;
             }
             else {
-                begin_command.color_targets[j] = image_barrier.handle.hashed_name;
+                begin_command.color_targets[j] = graphics::TextureHandle::from_packed(image_barrier.handle.hashed_name); // be careful : hack
                 begin_command.color_targets_count++;
             }
         }
@@ -226,20 +226,20 @@ void fe::RenderGraph::SetupResourceBindings(const RenderGraphBindings& bindings)
         render_graph::BeginRenderPass& begin_command = render_pass.compiled_begin_command;
 
         for (size_t i = 0; i < begin_command.color_targets_count; i++) {
-            size_t& color_target = begin_command.color_targets[i];
+            graphics::TextureHandle& color_target_handle = begin_command.color_targets[i];
 
-            auto it = bindings.image_bindings.find(color_target);
+            auto it = bindings.image_bindings.find(color_target_handle.packed()); // be careful : hack
             if (it != bindings.image_bindings.end()) {
-                color_target = it->second;
+                color_target_handle = it->second;
             }
             else {
                 fe::logging::error("Failed to set color target's texture index in fe::RenderGraph::SetupResourceBindings. Missing binding for color target hash : %llu",
-                                   color_target);
+                                   color_target_handle);
             }
         }
 
         if (begin_command.has_depth_target) {
-            auto it = bindings.image_bindings.find(begin_command.depth_target);
+            auto it = bindings.image_bindings.find(begin_command.depth_target.packed()); // be careful : hack
             if (it != bindings.image_bindings.end()) {
                 begin_command.depth_target = it->second;
             }

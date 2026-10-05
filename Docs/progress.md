@@ -9,6 +9,7 @@
 
 ### Done
     fe::IRenderer::CreateGPUResources() --> fe::IRenderer::CreateRenderGraphResources(). RenderGraph buffers creation provided for OpenGL
+    RenderGraph logic normilized ( looks terrible, needs to be rewritten )
 
 ### Problem
     -

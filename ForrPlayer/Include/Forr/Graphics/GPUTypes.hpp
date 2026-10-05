@@ -4,6 +4,7 @@
 
     File : GPUTypes.hpp
     Role : Unified GPU types for every renderer
+        TODO : collapse this file to 3 separate files
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -56,6 +57,7 @@ namespace fe {
         ~Vertex() = default;
     };
 
+    // TODO : remove
     struct alignas(16) FORR_API GPULight {
         //uint32_t type{};
 
@@ -68,6 +70,7 @@ namespace fe {
         glm::vec4 color_intensity{};
     };
 
+    // TODO : remove
     // this structure only helps to calculate offsets while loading glTF model
     // you don't have to create structures like this, if you want to create your own material
     struct alignas(16) FORR_API GPUPBRMaterial {
@@ -320,25 +323,35 @@ namespace fe {
 
         // commands
 
+        template <typename T>
+        concept ResourceHandleSeparator =
+            std::is_same_v<T, uint64_t> ||                // unified usage ( mostly inside of render graph )
+            std::is_same_v<T, graphics::TextureHandle> || // when getting image barriers from render graph
+            std::is_same_v<T, graphics::BufferHandle>;    // when getting buffer barriers from render graph
+
         // this needs for 'RenderGraph ( and user interface ) <-> GPU resource manager' connection
+        template <ResourceHandleSeparator IDType>
         struct FORR_API ResourceHandle {
             // hashed name - used for user interface ( fe::string_hash("ShadowMap") )
             fe::StringHash hashed_name{};
 
             // index in GPU resource manager's strage - used when render passes are already compiled
-            size_t storage_index{ static_cast<size_t>(~0) };
+            IDType storage_index { std::numeric_limits<resource_packed>::max(); };
 
             ResourceHandle() = default;
             ResourceHandle(fe::StringHash hashed_name) : hashed_name(hashed_name) {}
-            explicit ResourceHandle(fe::StringHash hashed_name, size_t storage_index) : hashed_name(hashed_name), storage_index(storage_index) {}
+            explicit ResourceHandle(fe::StringHash hashed_name, IDType storage_index) : hashed_name(hashed_name), storage_index(storage_index) {}
 
             bool operator==(const ResourceHandle& other) const noexcept { return storage_index == other.storage_index; }
         };
 
+        using ImageHandle  = ResourceHandle<graphics::TextureHandle>;
+        using BufferHandle = ResourceHandle<graphics::BufferHandle>;
+
         // creation commands aka resource descs ( this commands must not be in 'FORR_RENDER_COMMANDS_LIST' )
 
         struct FORR_API ImageDesc {
-            ResourceHandle handle{};
+            ImageHandle handle{};
 
             ImageType      type{};
             Format         format{};
@@ -350,7 +363,7 @@ namespace fe {
         };
 
         struct FORR_API BufferDesc {
-            ResourceHandle handle{};
+            BufferHandle handle{};
 
             size_t          size_in_bytes{};
             BufferUsageBits usage{};
@@ -363,11 +376,11 @@ namespace fe {
 
         // render commands ( this commands must be in 'FORR_RENDER_COMMANDS_LIST' below )
 
-        template <typename Tag>
+        template <ResourceHandleSeparator IDType>
         struct FORR_API ResourceBarrier {
-            ResourceHandle handle{};
-            ResourceState  old_state{};
-            ResourceState  new_state{};
+            ResourceHandle<IDType> handle{};
+            ResourceState          old_state{};
+            ResourceState          new_state{};
 
             ResourceBarrier() = default;
             ResourceBarrier(fe::StringHash hashed_name,
@@ -376,8 +389,8 @@ namespace fe {
                 : handle(ResourceHandle{ hashed_name, static_cast<size_t>(~0) }), old_state(old_state), new_state(new_state) {}
         };
 
-        using ImageBarrier  = ResourceBarrier<struct ImageTag>;
-        using BufferBarrier = ResourceBarrier<struct BufferTag>;
+        using ImageBarrier  = ResourceBarrier<graphics::TextureHandle>;
+        using BufferBarrier = ResourceBarrier<graphics::BufferHandle>;
 
         struct FORR_API BeginRenderPass {
             bool is_to_screen{};

@@ -488,17 +488,15 @@ fe::graphics::BufferHandle fe::RendererOpenGL::createRenderGraphBuffer(const ren
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& command) {
-
-    OpenGLTexture* opengl_texture = m_Textures.get(command.handle.texture_handle);
+    OpenGLTexture* opengl_texture = m_Textures.get(command.handle.storage_index);
 
     if (!opengl_texture) {
-        fe::logging::error("Failed to process 'render_graph::BeginRenderPass' command. Couldn't find texture with handle %i ( as packed )",
-                           texture_index.packed());
+        fe::logging::error("Failed to process 'render_graph::BeginRenderPass' command. Couldn't find texture with handle %llu ( as packed )",
+                           command.handle.storage_index.packed());
         return;
     }
 
-    const auto& opengl_texture = m_OpenGLResourceManager.GetImage(command.handle.storage_index);
-    uint64_t    resident_id    = opengl_texture.resident_id;
+    uint64_t resident_id = opengl_texture->resident_id;
 
     if (command.new_state == ResourceState::SHADER_READ_ONLY) {
         if (!glIsTextureHandleResidentARB(resident_id)) {
@@ -574,7 +572,7 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& comm
             OpenGLTexture*          opengl_texture = m_Textures.get(texture_index);
 
             if (!opengl_texture) {
-                fe::logging::error("Failed to process 'render_graph::BeginRenderPass' command. Couldn't find color target ( texture ) with handle %i ( as packed )",
+                fe::logging::error("Failed to process 'render_graph::BeginRenderPass' command. Couldn't find color target ( texture ) with handle %llu ( as packed )",
                                    texture_index.packed());
                 return;
             }
@@ -586,7 +584,7 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BeginRenderPass& comm
             OpenGLTexture* opengl_texture = m_Textures.get(command.depth_target);
 
             if (!opengl_texture) {
-                fe::logging::error("Failed to process 'render_graph::BeginRenderPass' command. Couldn't find depth target ( texture ) with handle %i ( as packed )",
+                fe::logging::error("Failed to process 'render_graph::BeginRenderPass' command. Couldn't find depth target ( texture ) with handle %llu ( as packed )",
                                    command.depth_target.packed());
                 return;
             }
