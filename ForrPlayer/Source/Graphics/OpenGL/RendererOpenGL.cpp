@@ -46,20 +46,22 @@ fe::RendererOpenGL::~RendererOpenGL() {
     glFinish();
 }
 
-fe::RenderGraphBindings fe::RendererOpenGL::CreateGPUResources(const RenderGraphCompileResult& compile_result) {
+fe::RenderGraphBindings fe::RendererOpenGL::CreateRenderGraphResources(const RenderGraphCompileResult& compile_result) {
     RenderGraphBindings bindings{};
-    //bindings.image_bindings.reserve(compile_result.image_descs.size());
+    bindings.image_bindings.reserve(compile_result.image_descs.size());
 
-    //for (const render_graph::ImageDesc& image_desc : compile_result.image_descs) {
-    //    bindings.image_bindings[image_desc.handle.hashed_name] = m_OpenGLResourceManager.CreateImage(image_desc);
-    //}
+    for (const render_graph::ImageDesc& image_desc : compile_result.image_descs) {
+        bindings.image_bindings[image_desc.handle.hashed_name] = this->createRenderGraphImage(image_desc);
+    }
 
-    //// TODO : provide buffers
+    for (const render_graph::BufferDesc& buffer_desc : compile_result.buffer_descs) {
+        bindings.buffer_bindings[buffer_desc.handle.hashed_name] = this->createRenderGraphBuffer(buffer_desc);
+    }
 
     return bindings;
 }
 
-std::expected<fe::ParameterHandle, fe::ParameterCreationErrors> fe::RendererOpenGL::CreateParameter(const ParameterDesc& parameter_desc) {
+std::expected<fe::graphics::ParameterHandle, fe::graphics::ParameterCreationErrors> fe::RendererOpenGL::CreateParameter(const graphics::ParameterDesc& parameter_desc) {
     size_t buffer_size = 16 * 1024; // 16KB
 
     if (parameter_desc.array_size != 0) {
@@ -85,16 +87,16 @@ std::expected<fe::ParameterHandle, fe::ParameterCreationErrors> fe::RendererOpen
             descriptor.mapped = static_cast<std::byte*>(glMapNamedBufferRange(buffer_raw, 0, buffer_size, flags));
         }
         else if (parameter_desc.descriptor_type == shader::DescriptorType::GENERIC) {
-            return std::unexpected{ ParameterCreationErrors::FORGOT_TO_SPECIALIZE_GENERIC_DESCRIPTOR };
+            return std::unexpected{ graphics::ParameterCreationErrors::FORGOT_TO_SPECIALIZE_GENERIC_DESCRIPTOR };
         }
         else {
             glDeleteBuffers(1, &buffer_raw);
-            return std::unexpected{ ParameterCreationErrors::UNSUPPORTED_MEMORY_TYPE };
+            return std::unexpected{ graphics::ParameterCreationErrors::UNSUPPORTED_MEMORY_TYPE };
         }
 
         if (!descriptor.mapped) {
             glDeleteBuffers(1, &buffer_raw);
-            return std::unexpected{ ParameterCreationErrors::MAPPED_MEMORY_WAS_NULLPTR };
+            return std::unexpected{ graphics::ParameterCreationErrors::MAPPED_MEMORY_WAS_NULLPTR };
         }
 
         descriptor.buffer.attach(buffer_raw);
@@ -105,7 +107,7 @@ std::expected<fe::ParameterHandle, fe::ParameterCreationErrors> fe::RendererOpen
     return m_Parameters.emplace(std::move(descriptor_ring));
 }
 
-void fe::RendererOpenGL::BindParameter(ParameterHandle parameter_id) {
+void fe::RendererOpenGL::BindParameter(fe::graphics::ParameterHandle parameter_id) {
     OpenGLShaderParameterRing* descriptor_ring = m_Parameters.get(parameter_id);
     if (!descriptor_ring) {
         fe::logging::error("Failed to write parameter. Failed to get descriptor ring.\nParameterHandle :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
@@ -128,7 +130,7 @@ void fe::RendererOpenGL::BindParameter(ParameterHandle parameter_id) {
     }
 }
 
-void fe::RendererOpenGL::WriteParameter(ParameterHandle parameter_id, std::span<const std::byte> data) {
+void fe::RendererOpenGL::WriteParameter(fe::graphics::ParameterHandle parameter_id, std::span<const std::byte> data) {
     OpenGLShaderParameterRing* descriptor_ring = m_Parameters.get(parameter_id);
     if (!descriptor_ring) {
         fe::logging::error("Failed to write parameter. Failed to get descriptor ring.\nParameterHandle :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
@@ -142,7 +144,7 @@ void fe::RendererOpenGL::WriteParameter(ParameterHandle parameter_id, std::span<
     std::memcpy(descriptor.mapped, data.data(), data.size());
 }
 
-void fe::RendererOpenGL::DestroyParameter(ParameterHandle parameter_id) {
+void fe::RendererOpenGL::DestroyParameter(fe::graphics::ParameterHandle parameter_id) {
     OpenGLShaderParameterRing* descriptor_ring = m_Parameters.get(parameter_id);
     if (!descriptor_ring) {
         fe::logging::error("Failed to destroy parameter. Failed to get descriptor ring.\nParameterHandle :\nindex = %i\ngeneration = %i\nset = %i\nbinding = %i",
@@ -163,7 +165,7 @@ void fe::RendererOpenGL::DestroyParameter(ParameterHandle parameter_id) {
     m_Parameters.destroy(parameter_id);
 }
 
-FORR_NODISCARD std::expected<fe::PipelineHandle, fe::PipelineCreationErrors> fe::RendererOpenGL::CreatePipeline(const PipelineDesc& pipeline_desc) {
+FORR_NODISCARD std::expected<fe::graphics::PipelineHandle, fe::graphics::PipelineCreationErrors> fe::RendererOpenGL::CreatePipeline(const graphics::PipelineDesc& pipeline_desc) {
     SlangParser slang_parser{};
     auto        source_codes = slang_parser.BuildShaderSources(pipeline_desc, m_ResourceManager);
 
@@ -171,10 +173,10 @@ FORR_NODISCARD std::expected<fe::PipelineHandle, fe::PipelineCreationErrors> fe:
         switch (source_codes.error()) {
             // TODO : provide correct errors here
             case fe::SlangParser::ShaderBuildErrors::ERROR:
-                return std::unexpected{ PipelineCreationErrors::ERROR };
+                return std::unexpected{ graphics::PipelineCreationErrors::ERROR };
                 break;
             default:
-                return std::unexpected{ PipelineCreationErrors::ERROR };
+                return std::unexpected{ graphics::PipelineCreationErrors::ERROR };
                 break;
         }
     }
@@ -235,7 +237,7 @@ FORR_NODISCARD std::expected<fe::PipelineHandle, fe::PipelineCreationErrors> fe:
     return m_Pipelines.emplace(std::move(opengl_pipeline));
 }
 
-void fe::RendererOpenGL::BindPipeline(PipelineHandle pipeline_id) {
+void fe::RendererOpenGL::BindPipeline(graphics::PipelineHandle pipeline_id) {
     OpenGLPipeline* pipeline = m_Pipelines.get(pipeline_id);
     if (!pipeline) {
         fe::logging::error("Failed to bind pipeline. Failed to get pipeline.\nPipelineHandle :\nindex = %i\ngeneration = %i",
@@ -266,7 +268,7 @@ void fe::RendererOpenGL::BindPipeline(PipelineHandle pipeline_id) {
     ////}
 }
 
-void fe::RendererOpenGL::DestroyPipeline(PipelineHandle pipeline_id) {
+void fe::RendererOpenGL::DestroyPipeline(graphics::PipelineHandle pipeline_id) {
     OpenGLPipeline* pipeline = m_Pipelines.get(pipeline_id);
     if (!pipeline) {
         fe::logging::error("Failed to destroy pipeline. Failed to get pipeline.\nPipelineHandle :\nindex = %i\ngeneration = %i",
@@ -399,6 +401,90 @@ GLuint fe::RendererOpenGL::createShaderProgramRaw(const shader::ProgramSources& 
 
         return opengl_shader_program_raw;
     }
+}
+
+fe::graphics::TextureHandle fe::RendererOpenGL::createRenderGraphImage(const render_graph::ImageDesc& image_desc) {
+    GLuint opengl_texture_raw{};
+    GLenum target{};
+
+    switch (image_desc.type) {
+        case render_graph::ImageType::IMAGE_TYPE_1D:
+            target = GL_TEXTURE_1D;
+            break;
+        case render_graph::ImageType::IMAGE_TYPE_2D:
+            target = GL_TEXTURE_2D;
+            break;
+        case render_graph::ImageType::IMAGE_TYPE_3D:
+            target = GL_TEXTURE_3D;
+            break;
+        default:
+            fe::logging::error("Unified RenderGraph -> OpenGL. Unsupported image type %i. Using GL_TEXTURE_2D as default", image_desc.type);
+            target = GL_TEXTURE_2D;
+    }
+
+    glCreateTextures(target, 1, &opengl_texture_raw);
+    glBindTexture(target, opengl_texture_raw);
+
+    GLenum internal_format = GL_RGBA8;
+    GLenum data_format     = GL_RGBA;
+    GLenum data_type       = GL_UNSIGNED_BYTE;
+
+    // clang-format off
+    switch (image_desc.format) {
+        case render_graph::Format::RGBA8_UNORM       : internal_format = GL_RGBA8                ; data_format = GL_RGBA             ; data_type = GL_UNSIGNED_BYTE                  ; break;
+        case render_graph::Format::RGBA8_SRGB        : internal_format = GL_SRGB8_ALPHA8         ; data_format = GL_RGBA             ; data_type = GL_UNSIGNED_BYTE                  ; break;
+        case render_graph::Format::BGRA8_UNORM       : internal_format = GL_RGBA8                ; data_format = GL_BGRA             ; data_type = GL_UNSIGNED_BYTE                  ; break;
+        case render_graph::Format::RGBA16_SFLOAT     : internal_format = GL_RGBA16F              ; data_format = GL_RGBA             ; data_type = GL_FLOAT                          ; break;
+        case render_graph::Format::R11G11B10_SFLOAT  : internal_format = GL_R11F_G11F_B10F       ; data_format = GL_RGB              ; data_type = GL_FLOAT                          ; break;
+        case render_graph::Format::RG16_SFLOAT       : internal_format = GL_RG16F                ; data_format = GL_RG               ; data_type = GL_FLOAT                          ; break;
+        case render_graph::Format::R32_UINT          : internal_format = GL_R32UI                ; data_format = GL_RED_INTEGER      ; data_type = GL_UNSIGNED_INT                   ; break;
+        case render_graph::Format::R32_SFLOAT        : internal_format = GL_R32F                 ; data_format = GL_RED              ; data_type = GL_FLOAT                          ; break;
+        case render_graph::Format::D32_SFLOAT        : internal_format = GL_DEPTH_COMPONENT32F   ; data_format = GL_DEPTH_COMPONENT  ; data_type = GL_FLOAT                          ; break;
+        case render_graph::Format::D24_UNORM_S8_UINT : internal_format = GL_DEPTH24_STENCIL8     ; data_format = GL_DEPTH_STENCIL    ; data_type = GL_UNSIGNED_INT_24_8              ; break;
+        case render_graph::Format::D32_SFLOAT_S8_UINT: internal_format = GL_DEPTH32F_STENCIL8    ; data_format = GL_DEPTH_STENCIL    ; data_type = GL_FLOAT_32_UNSIGNED_INT_24_8_REV ; break;
+        
+        default:
+            fe::logging::warning("Unified RenderGraph -> OpenGL. Unsupported format %i. Using GL_RGBA8 as default", image_desc.format);
+    }
+    // clang-format on
+
+    // clang-format off
+    switch (image_desc.type) {
+        case render_graph::ImageType::IMAGE_TYPE_1D: glTexImage1D(GL_TEXTURE_1D, 0, internal_format, image_desc.extent.x                                          , 0, data_format, data_type, nullptr); break;
+        case render_graph::ImageType::IMAGE_TYPE_2D: glTexImage2D(GL_TEXTURE_2D, 0, internal_format, image_desc.extent.x, image_desc.extent.y                     , 0, data_format, data_type, nullptr); break;
+        case render_graph::ImageType::IMAGE_TYPE_3D: glTexImage3D(GL_TEXTURE_3D, 0, internal_format, image_desc.extent.x, image_desc.extent.y, image_desc.extent.z, 0, data_format, data_type, nullptr); break;
+            default:
+            // already mentioned upper
+            glTexImage2D(GL_TEXTURE_2D, 0, internal_format, image_desc.extent.x, image_desc.extent.y, 0, data_format, data_type, nullptr);
+    }
+    // clang-format on
+
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(target, 0);
+
+    OpenGLTexture opengl_texture{};
+
+    opengl_texture.resident_id = glGetTextureHandleARB(opengl_texture_raw);
+    opengl_texture.texture.attach(opengl_texture_raw);
+
+    return m_Textures.create(std::move(opengl_texture));
+}
+
+fe::graphics::BufferHandle fe::RendererOpenGL::createRenderGraphBuffer(const render_graph::BufferDesc& buffer_desc) {
+    GLuint buffer_raw{};
+    glCreateBuffers(1, &buffer_raw);
+
+    // TODO : provide using 'buffer_desc.usage'
+    GLbitfield flags = 0;
+
+    glNamedBufferStorage(buffer_raw, buffer_desc.size_in_bytes, nullptr, flags);
+
+    return m_Buffers.emplace(buffer_raw, buffer_desc.size_in_bytes);
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::ImageBarrier& command) {

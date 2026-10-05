@@ -168,6 +168,15 @@ namespace fe {
         // For now I'm just leaving this hardcoded
     };
 
+    // forward declaration
+    namespace render_graph {
+        // 'resource' in render graph is an image or buffer
+        // and they should be separated but able to be unified via packing the 'fe::pointer<>'
+        using resource_handle     = uint32_t;
+        using resource_generation = uint32_t;
+        using resource_packed     = uint64_t;
+    } // namespace render_graph
+
     namespace graphics {
         struct FORR_API ParameterDesc {
             shader::DescriptorType descriptor_type{ shader::DescriptorType::UNKNOWN };
@@ -249,8 +258,18 @@ namespace fe {
 
         using PipelineHandle = fe::pointer<struct PipelineTag>; // a tag to define that this handle works with pipelines
 
-        using TextureHandle = fe::pointer<struct TextureTag>;
-        using MeshHandle    = fe::pointer<struct MeshTag>;
+        // this handle is shared between imported assets and render graph images
+        using TextureHandle = fe::pointer<struct TextureTag,
+                                          render_graph::resource_handle,
+                                          render_graph::resource_generation,
+                                          render_graph::resource_packed>;
+        // this handle is used only by render graph
+        using BufferHandle = fe::pointer<struct BufferTag,
+                                         render_graph::resource_handle,
+                                         render_graph::resource_generation,
+                                         render_graph::resource_packed>;
+
+        using MeshHandle = fe::pointer<struct MeshTag>;
     } // namespace graphics
 
     namespace render_graph {
@@ -306,7 +325,7 @@ namespace fe {
             // hashed name - used for user interface ( fe::string_hash("ShadowMap") )
             fe::StringHash hashed_name{};
 
-            // index in GPU resource manager's strage - used, when render passes are already compiled
+            // index in GPU resource manager's strage - used when render passes are already compiled
             size_t storage_index{ static_cast<size_t>(~0) };
 
             ResourceHandle() = default;
@@ -333,7 +352,8 @@ namespace fe {
         struct FORR_API BufferDesc {
             ResourceHandle handle{};
 
-            // ...
+            size_t          size_in_bytes{};
+            BufferUsageBits usage{};
 
             bool operator==(const BufferDesc& other) const noexcept = default;
         };

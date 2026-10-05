@@ -15,8 +15,8 @@
 
 // TODO : remove this. This should be in 'main.cpp' of the user
 namespace fe {
-    static entt::registry m_Registry{};    // temp
-    static ParameterHandle    m_ParameterHandle{}; // temp
+    static entt::registry            m_Registry{};        // temp
+    static graphics::ParameterHandle m_ParameterHandle{}; // temp
 } // namespace fe
 
 fe::Application::Application(const ApplicationDesc& desc) {
@@ -88,6 +88,6 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
     auto forward_pass_data_mapped = m_RenderGraph->AddPass<ForwardPassData, ForwardPass>("Forward Pass"); // TODO : make a storage for this mapped data
 
     auto create_command_list = std::move(m_RenderGraph->Compile());
-    auto mapping_result      = std::move(m_Renderer->CreateGPUResources(create_command_list));
+    auto mapping_result      = std::move(m_Renderer->CreateRenderGraphResources(create_command_list));
     m_RenderGraph->SetupResourceBindings(mapping_result);
 }

@@ -74,7 +74,7 @@ namespace fe {
                                                  size_t              primary_window_index,
                                                  ResourceManager&    resource_manager);
 
-        virtual FORR_NODISCARD RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) = 0;
+        virtual FORR_NODISCARD RenderGraphBindings CreateRenderGraphResources(const RenderGraphCompileResult& compile_result) = 0;
 
         // create a buffer ( SSBO/UBO ) via its reflected data
         // @returns fe::ParameterHandle is a variable that can be used in fe::IRenderer::BindBuffer() or fe::IRenderer::WriteParameter()
