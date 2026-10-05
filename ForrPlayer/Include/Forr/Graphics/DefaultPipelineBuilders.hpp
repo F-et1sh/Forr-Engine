@@ -58,18 +58,18 @@ namespace fe {
             const static fe::hashed_string vulkan_buffer_name{ "VulkanBuffer" };
 
             // load shader file data and check for error
-            auto shader_file_data_optional = resource_manager.GetResource(shader_file_data_ptr);
-            if (!shader_file_data_optional.has_value())
+            auto shader_file_data_raw_pointer = resource_manager.GetResource(shader_file_data_ptr);
+            if (!shader_file_data_raw_pointer)
                 return std::unexpected{ PBRPipelineErrorCodes::SHADER_FILE_DATA_PTR_WAS_INVALID };
 
             // load material and check for error
-            auto material_optional = resource_manager.GetResource(material_ptr);
-            if (!material_optional.has_value())
+            auto material_raw_pointer = resource_manager.GetResource(material_ptr);
+            if (!material_raw_pointer)
                 return std::unexpected{ PBRPipelineErrorCodes::MATERIAL_PTR_WAS_INVALID };
 
             /* translate 'optionals' to 'T&' */
-            auto& shader_file_data = shader_file_data_optional.value();
-            auto& material         = material_optional.value();
+            auto& shader_file_data = *shader_file_data_raw_pointer;
+            auto& material         = *material_raw_pointer;
 
             // pre-create pipeline desc
             graphics::PipelineDesc pipeline_desc{
@@ -88,12 +88,12 @@ namespace fe {
 
             // load material's shader file data if they are not from the same file
             if (material.layout_key.shader_file_data != shader_file_data_ptr) {
-                auto material_shader_file_data_optional = resource_manager.GetResource(material.layout_key.shader_file_data);
-                if (!material_shader_file_data_optional.has_value())
+                auto material_shader_file_data_raw_pointer = resource_manager.GetResource(material.layout_key.shader_file_data);
+                if (!material_shader_file_data_raw_pointer)
                     return std::unexpected{ PBRPipelineErrorCodes::MATERIAL_LAYOUT_SHADER_FILE_DATA_PTR_WAS_INVALID };
 
                 pipeline_desc.shader_file_data_ptrs.emplace_back(material.layout_key.shader_file_data);
-                shader_file_data_to_find_material_structure = material_shader_file_data_optional.value();
+                shader_file_data_to_find_material_structure = *material_shader_file_data_raw_pointer;
             }
 
             size_t layout_index      = material.layout_key.structure_layout_storage_index;

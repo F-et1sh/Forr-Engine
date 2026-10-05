@@ -16,29 +16,29 @@
 #include "Graphics/Slang/SlangParser.hpp"
 
 fe::pointer<fe::resource::ShaderFileData> fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
-    resource::ShaderFileData shader_file_data{};
+    //resource::ShaderFileData shader_file_data{};
 
-    SlangParser parser{};
-    if (!parser.LoadFromFile(resource_full_path)) {
-        fe::logging::error("Slang -> Unified. Failed to load a shader\nPath : %s", resource_full_path.generic_string().c_str());
-        return {};
-    }
+    //SlangParser parser{};
+    //if (!parser.LoadFromFile(resource_full_path)) {
+    //    fe::logging::error("Slang -> Unified. Failed to load a shader\nPath : %s", resource_full_path.generic_string().c_str());
+    //    return {};
+    //}
 
-    shader_file_data.full_path = resource_full_path.generic_string().c_str();
+    //shader_file_data.full_path = resource_full_path.generic_string().c_str();
 
-    if (!parser.ExtractSerializedData(shader_file_data.slang_serialized_data)) {
-        fe::logging::error("Slang -> Unified. Failed to extract serialized data\nPath : %s", resource_full_path.generic_string().c_str());
-        return {};
-    }
+    //if (!parser.ExtractSerializedData(shader_file_data.slang_serialized_data)) {
+    //    fe::logging::error("Slang -> Unified. Failed to extract serialized data\nPath : %s", resource_full_path.generic_string().c_str());
+    //    return {};
+    //}
 
-    if (!parser.ComposeProgram(storage.GetContext().graphics_backend)) {
-        fe::logging::error("Slang -> Unified. Failed to compose the program\nPath : %s", resource_full_path.generic_string().c_str());
-        return {};
-    }
+    //if (!parser.ComposeProgram(storage.GetContext().graphics_backend)) {
+    //    fe::logging::error("Slang -> Unified. Failed to compose the program\nPath : %s", resource_full_path.generic_string().c_str());
+    //    return {};
+    //}
 
-    auto ptr = storage.CreateResource(std::move(shader_file_data));
-    // after moving 'shader_file_data' into the storage, we can't use that value again
-    auto& this_shader_file_data = *storage.GetResource(ptr);
+    //auto ptr = storage.CreateResource(std::move(shader_file_data));
+    //// after moving 'shader_file_data' into the storage, we can't use that value again
+    //auto& this_shader_file_data = *storage.GetResource(ptr);
 
     //shader::ReflectedDescriptor descriptor_layout{};
     //fe::pointer<resource::DescriptorsLayout> descriptors_layout_ptr{};
@@ -77,5 +77,7 @@ fe::pointer<fe::resource::ShaderFileData> fe::ShaderImporter::Import(ResourceSto
     //    }
     //}
 
-    return ptr;
+    //return ptr;
+
+    return {};
 }

@@ -42,20 +42,34 @@ namespace fe {
         }
 
         template <resource::resource_t T>
-        FORR_NODISCARD std::optional<T&> GetResource(fe::pointer<T> ptr) {
-            auto& storage  = this->GetStorage<T>();
-            auto* resource = storage.get(ptr);
-            if (!resource) return std::nullopt;
-            return *resource;
+        FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) {
+            auto& storage = this->GetStorage<T>();
+            return storage.get(ptr);
         }
 
         template <resource::resource_t T>
-        FORR_NODISCARD std::optional<const T&> GetResource(fe::pointer<T> ptr) const {
-            const auto& storage  = this->GetStorage<T>();
-            const auto* resource = storage.get(ptr);
-            if (!resource) return std::nullopt;
-            return *resource;
+        FORR_NODISCARD const T* GetResource(fe::pointer<T> ptr) const {
+            const auto& storage = this->GetStorage<T>();
+            return storage.get(ptr);
         }
+
+        // TODO : wait till C++26
+        //
+        //template <resource::resource_t T>
+        //FORR_NODISCARD std::optional<T&> GetResource(fe::pointer<T> ptr) {
+        //    auto& storage  = this->GetStorage<T>();
+        //    auto* resource = storage.get(ptr);
+        //    if (!resource) return std::nullopt;
+        //    return *resource;
+        //}
+        //
+        //template <resource::resource_t T>
+        //FORR_NODISCARD std::optional<const T&> GetResource(fe::pointer<T> ptr) const {
+        //    const auto& storage  = this->GetStorage<T>();
+        //    const auto* resource = storage.get(ptr);
+        //    if (!resource) return std::nullopt;
+        //    return *resource;
+        //}
 
         // TODO : provide 'fe::ResourceStorage::GetDefaultResource<T>()'
         //

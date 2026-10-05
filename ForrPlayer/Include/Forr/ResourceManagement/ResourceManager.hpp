@@ -55,11 +55,19 @@ namespace fe {
             return m_Storage.CreateResource();
         }
 
-        template <resource::resource_t T>
-        FORR_NODISCARD std::optional<T&> GetResource(fe::pointer<T> ptr) { return m_Storage.GetResource(ptr); }
+        // TODO : wait till C++26
+        //
+        //template <resource::resource_t T>
+        //FORR_NODISCARD std::optional<T&> GetResource(fe::pointer<T> ptr) { return m_Storage.GetResource(ptr); }
+        //
+        //template <resource::resource_t T>
+        //FORR_NODISCARD std::optional<const T&> GetResource(fe::pointer<T> ptr) const { return m_Storage.GetResource(ptr); }
 
         template <resource::resource_t T>
-        FORR_NODISCARD std::optional<const T&> GetResource(fe::pointer<T> ptr) const { return m_Storage.GetResource(ptr); }
+        FORR_NODISCARD T* GetResource(fe::pointer<T> ptr) { return m_Storage.GetResource(ptr); }
+
+        template <resource::resource_t T>
+        FORR_NODISCARD const T* GetResource(fe::pointer<T> ptr) const { return m_Storage.GetResource(ptr); }
 
         // TODO : soon
         //
