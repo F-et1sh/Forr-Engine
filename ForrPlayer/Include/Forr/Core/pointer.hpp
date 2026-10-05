@@ -11,13 +11,14 @@
 ===============================================*/
 
 #pragma once
-#include <string>
-#include <vector>
-#include <cstdint>
-#include <unordered_map>
-#include <typeindex>
-#include <memory>
-#include <type_traits>
+#include <array>
+#include <cstddef>
+#include <concepts>
+#include <functional>
+#include <limits>
+#include <new>
+#include <tuple>
+#include <utility>
 
 #include "attributes.hpp"
 
@@ -36,30 +37,34 @@ namespace fe {
         (!std::is_abstract_v<T>) &&
         (!std::is_array_v<T>);
 
-    template <typename T,
-              typename HandleT,
-              typename GenerationT>
+    template <typename T>
     concept pointer_t = requires(T t) {
-        typename T::HandleT;
-        typename T::GenerationT;
+        typename T::HandleType;
+        typename T::GenerationType;
 
-        { T() };
-        { T(std::declval<typename T::HandleT>(), std::declval<typename T::GenerationT>()) };
+        { T{} };
 
-        { t.index() } -> std::same_as<typename T::HandleT>;
-        { t.generation() } -> std::same_as<typename T::GenerationT>;
+        { T(std::declval<typename T::HandleType>(),
+            std::declval<typename T::GenerationType>()) };
+
+        { t.index() } -> std::same_as<typename T::HandleType>;
+        { t.generation() } -> std::same_as<typename T::GenerationType>;
     };
 
     template <typename T,
               typename HandleT,
               typename GenerationT,
-              typename PackedT,
-              typename CustomFields>
-    concept pointer_packer_t = requires(T t) {
-        { t(std::declval<HandleT>(),
-            std::declval<GenerationT>(),
-            std::declval<PackedT>(),
-            std::declval<CustomFields>()) } -> std::same_as<PackedT>;
+              typename CustomFields,
+              typename PackedT>
+    concept pointer_packer_t = requires(HandleT      index,
+                                        GenerationT  generation,
+                                        CustomFields fields) {
+        { T::operator()(index, generation, fields) } -> std::same_as<PackedT>;
+    };
+
+    template <typename T, typename PackedT>
+    concept pointer_unpacker_t = requires(PackedT packed) {
+        { T::operator()(packed) };
     };
 
     template <typename T,
@@ -70,6 +75,9 @@ namespace fe {
     class FORR_NODISCARD pointer {
     public:
         inline constexpr static PackedT PACKING_SHIFT = sizeof(GenerationT) * 8;
+
+        static_assert(sizeof(HandleT) * 8 + sizeof(GenerationT) * 8 <= sizeof(PackedT) * 8,
+                      "HandleT and GenerationT do not fit into PackedT");
 
         struct DefaultPacker {
         public:
@@ -82,16 +90,20 @@ namespace fe {
         public:
             FORR_NODISCARD static constexpr std::tuple<HandleT, GenerationT, CustomFields> operator()(PackedT packed) noexcept {
                 return { static_cast<HandleT>(packed >> PACKING_SHIFT),
-                         static_cast<GenerationT>(packed & std::numeric_limits<GenerationT>::max()) };
+                         static_cast<GenerationT>(packed & std::numeric_limits<GenerationT>::max()),
+                         CustomFields{} };
             }
         };
+
+        using HandleType     = HandleT;
+        using GenerationType = GenerationT;
 
     public:
         constexpr pointer(HandleT index, GenerationT generation) noexcept
             : m_index(index), m_generation(generation) {}
         ~pointer() = default;
 
-        template <pointer_packer_t UnpackFn = DefaultUnpacker>
+        template <pointer_unpacker_t UnpackFn = DefaultUnpacker>
         constexpr explicit pointer(PackedT packed) noexcept {
             auto unpacked   = UnpackFn::operator()(packed);
             m_index         = std::get<0>(unpacked);
@@ -121,13 +133,22 @@ namespace fe {
         FORR_NODISCARD constexpr PackedT packed() const noexcept { return PackFn::operator()(m_index, m_generation, m_custom_fields); }
 
         template <pointer_packer_t PackFn = DefaultPacker>
-        FORR_NODISCARD static constexpr PackedT packed(pointer<T, HandleT, GenerationT, PackedT> pointer_to_pack) noexcept {
-            return PackFn::operator()(pointer_to_pack.m_index, pointer_to_pack.m_generation, pointer_to_pack.m_custom_fields);
+        FORR_NODISCARD static constexpr PackedT packed(const pointer& pointer_to_pack) noexcept {
+            return PackFn::operator()(pointer_to_pack.m_index,
+                                      pointer_to_pack.m_generation,
+                                      pointer_to_pack.m_custom_fields);
         }
 
-        template <pointer_packer_t UnpackFn = DefaultUnpacker>
+        template <pointer_unpacker_t UnpackFn = DefaultUnpacker>
         FORR_NODISCARD static constexpr pointer from_packed(PackedT packed) noexcept {
-            return pointer::pointer<UnpackFn>(packed);
+            const auto unpacked = UnpackFn::operator()(packed);
+
+            pointer result{};
+            result.m_index         = std::get<0>(unpacked);
+            result.m_generation    = std::get<1>(unpacked);
+            result.m_custom_fields = std::get<2>(unpacked);
+
+            return result;
         }
 
         FORR_NODISCARD constexpr bool is_valid() const noexcept {
@@ -170,6 +191,11 @@ namespace fe {
             }
         }
 
+        // TEMORARY
+        FORR_CLASS_NONCOPYABLE(typed_pointer_storage)
+        // TEMORARY
+        FORR_CLASS_NONMOVABLE(typed_pointer_storage)
+
         FORR_NODISCARD PointerT create(const T& value) { return emplace(value); }
         FORR_NODISCARD PointerT create(T&& value) { return emplace(std::move(value)); }
 
@@ -181,23 +207,23 @@ namespace fe {
 
         template <typename... Args>
         FORR_NODISCARD PointerT emplace(Args&&... args) {
-            typename PointerT::HandleT index{};
+            typename PointerT::HandleType index{};
 
             if (!m_free_list.empty()) {
                 index = m_free_list.back();
-                m_free_list.pop_back();
 
                 std::construct_at(get_ptr(index), std::forward<Args>(args)...);
+
+                m_free_list.pop_back();
                 m_slots_alive[index] = true;
                 m_slots_generation[index]++;
             }
             else {
-                index = static_cast<PointerT::HandleT>(m_slots_generation.size());
-
-                if (m_slots_generation[index] == std::numeric_limits<typename PointerT::GenerationT>::max() - 1) {
-                    fe::logging::fatal("Generation overflow in fe::typed_pointer_storage::emplace()\nPointer's generation index reached %s",
-                                       std::to_string(std::numeric_limits<typename PointerT::GenerationT>::max() - 1).c_str());
+                if (m_slots_generation.size() >= std::numeric_limits<typename PointerT::HandleType>::max()) {
+                    fe::logging::fatal("Handle overflow");
                 }
+
+                index = static_cast<typename PointerT::HandleType>(m_slots_generation.size());
 
                 m_slots_object.emplace_back();
                 m_slots_generation.emplace_back(0);
@@ -321,30 +347,30 @@ namespace fe {
         };
 
         FORR_NODISCARD T* get_ptr(size_t index) noexcept {
-            return reinterpret_cast<T*>(std::addressof(m_slots_object[index].storage));
+            return std::launder(reinterpret_cast<T*>(m_slots_object[index].storage.data()));
         }
 
         FORR_NODISCARD const T* get_ptr(size_t index) const noexcept {
-            return reinterpret_cast<const T*>(std::addressof(m_slots_object[index].storage));
+            return std::launder(reinterpret_cast<const T*>(m_slots_object[index].storage.data()));
         }
 
         // devided to be more cache friendly
-        std::vector<Slot>                       m_slots_object;
-        std::vector<typename PointerT::HandleT> m_slots_generation;
-        std::vector<uint8_t>                    m_slots_alive; // use 'uint8_t' instead of 'bool' for simple byte-addressable storage
+        std::vector<Slot>                              m_slots_object;
+        std::vector<typename PointerT::GenerationType> m_slots_generation;
+        std::vector<uint8_t>                           m_slots_alive; // use 'uint8_t' instead of 'bool' for simple byte-addressable storage
         //
 
-        std::vector<typename PointerT::HandleT> m_free_list;
+        std::vector<typename PointerT::HandleType> m_free_list;
     };
 
 } // namespace fe
 
 namespace std {
     template <fe::storable_t T>
-    struct std::hash<fe::pointer<T>> {
-        constexpr std::size_t operator()(const fe::pointer<T>& p) const noexcept {
+    struct hash<fe::pointer<T>> {
+        constexpr std::size_t operator()(
+            const fe::pointer<T>& p) const noexcept {
             return std::hash<uint64_t>{}(p.packed());
         }
     };
-
 } // namespace std

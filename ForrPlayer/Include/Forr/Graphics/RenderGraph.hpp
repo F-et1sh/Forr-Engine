@@ -13,7 +13,7 @@
 #pragma once
 
 #include "ResourceManagement/ResourceManager.hpp"
-#include "GPUTypes.hpp"
+#include "RenderGraphTypes.hpp"
 
 #include "entt/entt.hpp"
 

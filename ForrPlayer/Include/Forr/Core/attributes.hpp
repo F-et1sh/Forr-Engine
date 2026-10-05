@@ -99,3 +99,7 @@
 #define FORR_CLASS_MOVABLE(T)             \
     T(T&&) noexcept            = default; \
     T& operator=(T&&) noexcept = default;
+
+#define FORR_CLASS_NONMOVABLE(T)    \
+    T(T&&) noexcept            = delete; \
+    T& operator=(T&&) noexcept = delete;
