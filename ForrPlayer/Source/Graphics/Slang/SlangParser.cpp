@@ -70,15 +70,15 @@ std::expected<fe::shader::ProgramSources, fe::SlangParser::ShaderBuildErrors> fe
 
     // find all modules
     for (auto shader_file_ptr : pipeline_desc.shader_file_data_ptrs) {
-        auto shader_file_data_optional = resource_manager.GetResource(shader_file_ptr);
-        if (!shader_file_data_optional.has_value()) {
+        auto shader_file_data_raw_ptr = resource_manager.GetResource(shader_file_ptr);
+        if (!shader_file_data_raw_ptr) {
             fe::logging::warning("Failed to get shader file data resource\nShader file data ptr :\nindex = %i\ngeneration = %i.\nContinuing building the shader codes",
                                  static_cast<uint32_t>(shader_file_ptr.index()),
                                  static_cast<uint32_t>(shader_file_ptr.generation()));
             continue;
         }
 
-        const auto& shader_file_data = shader_file_data_optional.value();
+        const auto& shader_file_data = *shader_file_data_raw_ptr;
 
         if (shader_file_data.slang_serialized_data.empty() ||
             shader_file_data.slang_serialized_data.data() == nullptr) {

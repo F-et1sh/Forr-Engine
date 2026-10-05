@@ -156,8 +156,18 @@ namespace fe {
                    m_generation != std::numeric_limits<GenerationT>::max();
         }
 
-        FORR_NODISCARD constexpr bool operator==(const pointer&) const noexcept = default;
-        FORR_NODISCARD constexpr bool operator!=(const pointer&) const noexcept = default;
+        FORR_NODISCARD constexpr bool operator==(const pointer& other) const noexcept {
+            if constexpr (!std::is_same_v<CustomFields, empty_custom_fields_t>) {
+                return m_index == other.m_index &&
+                       m_generation == other.m_generation &&
+                       m_custom_fields == other.m_custom_fields;
+            }
+            else {
+                return m_index == other.m_index &&
+                       m_generation == other.m_generation;
+            }
+        }
+        FORR_NODISCARD constexpr bool operator!=(const pointer& other) const noexcept { return !(*this == other); }
 
         FORR_NODISCARD constexpr operator bool() const noexcept { return this->is_valid(); }
 
