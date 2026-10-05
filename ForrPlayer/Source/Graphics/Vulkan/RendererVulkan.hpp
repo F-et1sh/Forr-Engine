@@ -29,7 +29,6 @@
 #include "VulkanTypes.hpp"
 
 #include "Graphics/Camera.hpp"
-#include "VulkanResourceManager.hpp"
 
 namespace fe {
     class RendererVulkan : public IRenderer {
@@ -42,10 +41,10 @@ namespace fe {
 
         RenderGraphBindings CreateRenderGraphResources(const RenderGraphCompileResult& compile_result) override;
 
-        std::expected<ParameterHandle, ParameterCreationErrors> CreateParameter(const ParameterDesc& parameter_desc) override;
+        std::expected<graphics::ParameterHandle, graphics::ParameterCreationErrors> CreateParameter(const graphics::ParameterDesc& parameter_desc) override;
 
-        void BindParameter(ParameterHandle parameter_id) override;
-        void WriteParameter(ParameterHandle parameter_id, std::span<const std::byte> data) override;
+        void BindParameter(graphics::ParameterHandle parameter_id) override;
+        void WriteParameter(graphics::ParameterHandle parameter_id, std::span<const std::byte> data) override;
 
         void BeginFrame() override;
         void EndFrame(const render_graph::CommandList& render_command_list) override;
@@ -174,8 +173,6 @@ namespace fe {
 
         VulkanContext m_Context{};
 
-        VulkanResourceManager m_VulkanResourceManager{ m_Context, m_ResourceManager };
-
         RendererDesc                     m_Description{};
         VulkanSwapchain                  m_Swapchain{ m_Description, m_Context, m_PrimaryWindow };
         fe::vk::RenderPass               m_RenderPass{};
@@ -186,11 +183,9 @@ namespace fe {
         fe::vk::DescriptorPool m_DescriptorPool{};
 
         std::array<FrameData, MAX_CONCURRENT_FRAMES> m_FrameData{};
-        std::vector<fe::vk::Semaphore>                              m_RenderCompleteSemaphores{};
+        std::vector<fe::vk::Semaphore>               m_RenderCompleteSemaphores{};
 
-        Camera                           m_Camera{};
-        GPUHandle<resource::Material>    m_CurrentMaterial{};
-        GPUHandle<resource::Model::Mesh> m_CurrentMesh{};
+        Camera m_Camera{};
 
         uint32_t m_CurrentFrame{};
         uint32_t m_ImageIndex{};

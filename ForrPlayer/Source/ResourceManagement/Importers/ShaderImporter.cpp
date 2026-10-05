@@ -40,42 +40,42 @@ fe::pointer<fe::resource::ShaderFileData> fe::ShaderImporter::Import(ResourceSto
     // after moving 'shader_file_data' into the storage, we can't use that value again
     auto& this_shader_file_data = *storage.GetResource(ptr);
 
-    shader::ReflectedDescriptorsLayout       descriptors_layout{};
-    fe::pointer<resource::DescriptorsLayout> descriptors_layout_ptr{};
+    //shader::ReflectedDescriptor descriptor_layout{};
+    //fe::pointer<resource::DescriptorsLayout> descriptors_layout_ptr{};
 
-    if (parser.ReflectDescriptors(descriptors_layout)) {
-        descriptors_layout_ptr                       = storage.CreateResource(resource::DescriptorsLayout{ std::move(descriptors_layout), ptr });
-        this_shader_file_data.descriptors_layout_ptr = descriptors_layout_ptr;
-    }
+    //if (parser.ReflectDescriptors(descriptor_layout)) {
+    //    descriptors_layout_ptr                       = storage.CreateResource(resource::DescriptorsLayout{ std::move(descriptors_layout), ptr });
+    //    this_shader_file_data.descriptors_layout_ptr = descriptors_layout_ptr;
+    //}
 
-    if (parser.IsPipeline()) {
-        resource::ShaderProgram shader_program{};
+    //if (parser.IsPipeline()) {
+    //    resource::ShaderProgram shader_program{};
 
-        if (descriptors_layout_ptr.is_valid()) {
-            shader_program.descriptors_layout_ptr = descriptors_layout_ptr;
-        }
-        else {
-            shader_program.descriptors_layout_ptr = std::nullopt;
-        }
+    //    if (descriptors_layout_ptr.is_valid()) {
+    //        shader_program.descriptors_layout_ptr = descriptors_layout_ptr;
+    //    }
+    //    else {
+    //        shader_program.descriptors_layout_ptr = std::nullopt;
+    //    }
 
-        shader_program.shader_file_data_ptr = ptr;
+    //    shader_program.shader_file_data_ptr = ptr;
 
-        auto pipeline_ptr                        = storage.CreateResource(std::move(shader_program));
-        this_shader_file_data.shader_program_ptr = pipeline_ptr;
-    }
+    //    auto pipeline_ptr                        = storage.CreateResource(std::move(shader_program));
+    //    this_shader_file_data.shader_program_ptr = pipeline_ptr;
+    //}
 
-    std::unordered_map<fe::hashed_string, shader::ReflectedStructureLayout> material_layouts{};
-    if (parser.ReflectMaterials(material_layouts)) {
+    //std::unordered_map<fe::hashed_string, shader::ReflectedStructureLayout> material_layouts{};
+    //if (parser.ReflectMaterials(material_layouts)) {
 
-        auto& material_layout_ptrs = this_shader_file_data.material_layout_ptrs.emplace();
-        material_layout_ptrs.reserve(material_layouts.size());
+    //    auto& material_layout_ptrs = this_shader_file_data.material_layout_ptrs.emplace();
+    //    material_layout_ptrs.reserve(material_layouts.size());
 
-        for (auto& [material_name, material_layout] : material_layouts) {
+    //    for (auto& [material_name, material_layout] : material_layouts) {
 
-            auto material_layout_ptr = storage.CreateResource(std::move(resource::MaterialLayout{ std::move(material_layout), ptr }));
-            material_layout_ptrs.emplace(material_name, material_layout_ptr);
-        }
-    }
+    //        auto material_layout_ptr = storage.CreateResource(std::move(resource::MaterialLayout{ std::move(material_layout), ptr }));
+    //        material_layout_ptrs.emplace(material_name, material_layout_ptr);
+    //    }
+    //}
 
     return ptr;
 }

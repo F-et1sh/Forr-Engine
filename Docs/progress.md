@@ -2,6 +2,7 @@
 
 ## 05.10.2026
 ### Goal
+    rewrite ShaderImporter
     provide entry points' reflection
     move GPU resource manager's logic into its renderer ( remove it )
     translate old system of GPU resource manager to the new one ( updated 'fe::typed_pointer_storage' )
@@ -13,6 +14,8 @@
     resource creation provided for OpenGL
     OpenGLResourceManager removed
     fe::pointer<> problems fixed
+    RenderGraphTypes.hpp and ShaderReflection.hpp added. VulkanResourceManager removed
+    fixing fe::pointer<> again
 
 ### Problem
     -

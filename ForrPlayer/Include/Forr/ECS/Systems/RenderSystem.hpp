@@ -22,7 +22,7 @@ namespace fe {
         uint32_t index_count{};
 
         // TODO : change this to fe::pointer<>
-        GPUHandle<resource::Model::Mesh>    mesh_handle{};
+        graphics::MeshHandle                mesh_handle{};
         fe::pointer<fe::resource::Material> material_ptr{};
 
         uint64_t sort_key{};
@@ -41,7 +41,7 @@ namespace fe {
     private:
         //void handleMeshComponents();
         //void handleLightComponents();
-        
+
         //void addEntry(const MeshComponent& mesh_component);
         //void addToDrawList(fe::pointer<resource::Model> model_ptr, const glm::mat4& transform);
 

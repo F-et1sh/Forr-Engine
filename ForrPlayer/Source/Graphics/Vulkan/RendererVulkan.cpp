@@ -50,14 +50,14 @@ fe::RenderGraphBindings fe::RendererVulkan::CreateRenderGraphResources(const Ren
     return {};
 }
 
-std::expected<fe::ParameterHandle, fe::ParameterCreationErrors> fe::RendererVulkan::CreateParameter(const ParameterDesc& parameter_desc) {
+std::expected<fe::graphics::ParameterHandle, fe::graphics::ParameterCreationErrors> fe::RendererVulkan::CreateParameter(const graphics::ParameterDesc& parameter_desc) {
     return {};
 }
 
-void fe::RendererVulkan::BindParameter(ParameterHandle parameter_id) {
+void fe::RendererVulkan::BindParameter(graphics::ParameterHandle parameter_id) {
 }
 
-void fe::RendererVulkan::WriteParameter(ParameterHandle parameter_id, std::span<const std::byte> data) {
+void fe::RendererVulkan::WriteParameter(graphics::ParameterHandle parameter_id, std::span<const std::byte> data) {
 }
 
 void fe::RendererVulkan::BeginFrame() {
@@ -165,21 +165,17 @@ void fe::RendererVulkan::EndFrame(const render_graph::CommandList& render_comman
     }
 
     m_CurrentFrame = (m_CurrentFrame + 1) % MAX_CONCURRENT_FRAMES;
-
-    // reset
-    m_CurrentMaterial = {};
-    m_CurrentMesh     = {};
 }
 
 void fe::RendererVulkan::InitializeGPUResources() {
     m_ResourceManager.RunForEach<resource::Texture>([&](resource::Texture& texture) {
-        m_VulkanResourceManager.CreateResource(texture);
+        //m_VulkanResourceManager.CreateResource(texture);
 
         fe::logging::info("VULKAN. Loaded texture's size : %i %i", texture.width, texture.height);
     });
 
     m_ResourceManager.RunForEach<resource::Model>([&](resource::Model& model) {
-        m_VulkanResourceManager.CreateResource(model);
+        //m_VulkanResourceManager.CreateResource(model);
 
         fe::logging::info("VULKAN. Loaded model's mesh count %i", model.meshes.size());
     });

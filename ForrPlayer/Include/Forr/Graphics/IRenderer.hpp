@@ -32,7 +32,7 @@ namespace fe {
         ~RendererDesc() = default;
     };
 
-    struct DrawCommand {
+    struct FORR_API DrawCommand {
         uint32_t index_count{};
         uint32_t index_offset{};
         uint32_t instance_index{};
@@ -40,7 +40,7 @@ namespace fe {
         uint64_t sort_key{};
 
         // TODO : change this to fe::pointer<>
-        GPUHandle<resource::Model::Mesh>    mesh_handle{};
+        graphics::MeshHandle                mesh_handle{};
         fe::pointer<fe::resource::Material> material_ptr{};
 
         DrawCommand()  = default;
@@ -48,7 +48,7 @@ namespace fe {
     };
 
     // TODO : remove this
-    struct RenderPacket {
+    struct FORR_API RenderPacket {
         std::vector<glm::mat4>   object_transforms{};
         std::vector<DrawCommand> draw_commands{};
         std::vector<GPULight>    lights{};

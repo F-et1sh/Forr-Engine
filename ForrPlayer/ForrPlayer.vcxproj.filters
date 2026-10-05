@@ -33,7 +33,6 @@
     <ClInclude Include="Source\ResourceManagement\Importers\ShaderImporter.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceManagementContext.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLRAII.hpp" />
-    <ClInclude Include="Source\Graphics\Vulkan\VulkanResourceManager.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\RendererVulkan.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VKTools.hpp" />
     <ClInclude Include="Source\Graphics\Vulkan\VulkanContext.hpp" />
@@ -46,6 +45,8 @@
     <ClInclude Include="Include\Forr\Core\string.hpp" />
     <ClInclude Include="Include\Forr\Graphics\DefaultRenderPasses.hpp" />
     <ClInclude Include="Include\Forr\Graphics\DefaultPipelineBuilders.hpp" />
+    <ClInclude Include="Include\Forr\Graphics\ShaderReflection.hpp" />
+    <ClInclude Include="Include\Forr\Graphics\RenderGraphTypes.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -72,7 +73,6 @@
     <ClCompile Include="Source\ResourceManagement\ResourceCreator.cpp" />
     <ClCompile Include="..\ThirdParty\SPIRV-Reflect\src\spirv_reflect.c" />
     <ClCompile Include="Source\ResourceManagement\Importers\ShaderImporter.cpp" />
-    <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManager.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="Source\ECS\Systems\RenderSystem.cpp" />

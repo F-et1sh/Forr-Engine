@@ -13,11 +13,15 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include "Core/attributes.hpp"
 
+#include "Graphics/GPUTypes.hpp"
 #include "IWindow.hpp"
 
 namespace fe {
+    enum class PlatformBackend {
+        GLFW
+    };
+
     struct FORR_API PlatformSystemDesc {
         PlatformBackend platform_backend{};
         GraphicsBackend graphics_backend{};

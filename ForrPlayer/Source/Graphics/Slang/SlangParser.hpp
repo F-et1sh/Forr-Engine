@@ -23,19 +23,6 @@
 
 namespace fe {
     class SlangParser {
-    private:
-        static constexpr std::array<std::string_view, 3> ENTRY_POINT_NAMES{
-            "vertexMain",
-            "fragmentMain",
-            "computeMain"
-        };
-
-        enum class SpecializationErrors : uint8_t { // first time of using 'std::expected'
-            NO_PARAMETERS,
-            UNSUPPORTED_GRAPHICS_BACKEND,
-            SPECIALIZATION_FAILED
-        };
-
     public:
         enum class ShaderBuildErrors : uint8_t {
             ERROR,
@@ -51,48 +38,9 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(SlangParser)
 
         // TODO : firstly pass whole 'fe::PipelineDesc', then collapse this function, making the class more modular
-        std::expected<shader::ProgramSources, ShaderBuildErrors> BuildShaderSources(const PipelineDesc& pipeline_desc, ResourceManager& resource_manager);
-
-        // TODO : rewrite or remove all methods below
-
-        bool LoadFromFile(const std::filesystem::path& resource_full_path);
-
-        bool ExtractSerializedData(std::vector<uint8_t>& dst_vector);
-
-        // pass the graphics backend to specialize the shader program
-        bool ComposeProgram(GraphicsBackend graphics_backend, bool do_all = false);
-
-        // returns 'true', if actually found anything and 'false', if the argument is not changed
-        bool ReflectDescriptors(shader::ReflectedDescriptor& descriptors_layout);
-
-        // returns 'true', if the shader file contains vertexMain(), fragmentMain() or computeMain() and otherwise - 'false'
-        bool IsPipeline();
-
-        // returns 'true', if actually found anything and 'false', if the argument is not changed
-        bool ReflectMaterials(std::unordered_map<fe::hashed_string, shader::ReflectedStructureLayout>& material_layouts);
+        std::expected<shader::ProgramSources, ShaderBuildErrors> BuildShaderSources(const graphics::PipelineDesc& pipeline_desc, ResourceManager& resource_manager);
 
     private:
-        std::expected<Slang::ComPtr<slang::IComponentType>, SpecializationErrors> specializeGraphicsBackend(slang::IComponentType* component_type, GraphicsBackend graphics_backend);
-
-        bool parseDescriptorRecursive(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDescriptor& descriptors_layout);
-
-        void parseDescriptorTable(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDescriptor& dst_descriptor);
-        void parsePushConstant(slang::VariableLayoutReflection* variable_layout, shader::ReflectedPushConstants& dst_push_constants);
-
-        void parseMemberRecursive(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDataNode* dst_reflected_data_node);
-        void parseMemberRecursive(slang::TypeLayoutReflection* type_layout, shader::ReflectedDataNode* dst_reflected_data_node);
-
-        void mapMatrix(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
-        void mapVector(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
-        void mapScalar(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
-
-        Slang::ComPtr<slang::IModule> deserializeModule(fe::pointer<resource::ShaderFileData> shader_file_data_ptr, ResourceManager& resource_manager);
-
-    private:
-        Slang::ComPtr<slang::ISession>       m_Session{};
-        Slang::ComPtr<slang::IModule>        m_Module{};
-        Slang::ComPtr<slang::IComponentType> m_ComposedProgram{};
-
-        // static cache
+        Slang::ComPtr<slang::ISession> m_Session{};
     };
 } // namespace fe
