@@ -172,12 +172,11 @@ FORR_NODISCARD std::expected<fe::graphics::PipelineHandle, fe::graphics::Pipelin
     if (!source_codes.has_value()) {
         switch (source_codes.error()) {
             // TODO : provide correct errors here
-            case fe::SlangParser::ShaderBuildErrors::ERROR:
+            case fe::SlangParser::ShaderBuildErrors::COMPOSITION_FAILED:
                 return std::unexpected{ graphics::PipelineCreationErrors::ERROR };
                 break;
             default:
                 return std::unexpected{ graphics::PipelineCreationErrors::ERROR };
-                break;
         }
     }
 

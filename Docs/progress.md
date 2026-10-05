@@ -1,5 +1,17 @@
 ﻿# Forr-Engine Devlog
 
+## 06.10.2026
+### Goal
+    rewrite ShaderImporter
+    provide entry points' reflection
+    remove PCH from most of the files
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 05.10.2026
 ### Goal
     rewrite ShaderImporter
@@ -18,6 +30,7 @@
     fixing fe::pointer<> again
     std::optional<T&> fe::ResourceManager::GetResource() --> ( temporarily ) T* fe::ResourceManager::GetResource()
     the project finally compiled
+    reflections and rewriting ShaderImporter in progress
 
 ### Problem
     -
