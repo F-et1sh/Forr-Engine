@@ -12,6 +12,7 @@
     RenderGraph logic normilized ( looks terrible, needs to be rewritten )
     resource creation provided for OpenGL
     OpenGLResourceManager removed
+    fe::pointer<> problems fixed
 
 ### Problem
     -

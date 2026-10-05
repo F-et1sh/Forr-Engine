@@ -11,6 +11,7 @@
 ===============================================*/
 
 #pragma once
+#include <string>
 #include <vector>
 #include <cstdint>
 #include <unordered_map>
@@ -84,9 +85,6 @@ namespace fe {
                          static_cast<GenerationT>(packed & std::numeric_limits<GenerationT>::max()) };
             }
         };
-
-        using HandleT     = HandleT;
-        using GenerationT = GenerationT;
 
     public:
         constexpr pointer(HandleT index, GenerationT generation) noexcept
@@ -183,7 +181,7 @@ namespace fe {
 
         template <typename... Args>
         FORR_NODISCARD PointerT emplace(Args&&... args) {
-            PointerT::HandleT index{};
+            typename PointerT::HandleT index{};
 
             if (!m_free_list.empty()) {
                 index = m_free_list.back();
@@ -196,9 +194,9 @@ namespace fe {
             else {
                 index = static_cast<PointerT::HandleT>(m_slots_generation.size());
 
-                if (m_slots_generation[index] == std::numeric_limits<PointerT::GenerationT>::max() - 1) {
+                if (m_slots_generation[index] == std::numeric_limits<typename PointerT::GenerationT>::max() - 1) {
                     fe::logging::fatal("Generation overflow in fe::typed_pointer_storage::emplace()\nPointer's generation index reached %s",
-                                       std::to_string(std::numeric_limits<PointerT::GenerationT>::max() - 1).c_str());
+                                       std::to_string(std::numeric_limits<typename PointerT::GenerationT>::max() - 1).c_str());
                 }
 
                 m_slots_object.emplace_back();
@@ -331,12 +329,12 @@ namespace fe {
         }
 
         // devided to be more cache friendly
-        std::vector<Slot>              m_slots_object;
-        std::vector<PointerT::HandleT> m_slots_generation;
-        std::vector<uint8_t>           m_slots_alive; // use 'uint8_t' instead of 'bool' for simple byte-addressable storage
+        std::vector<Slot>                       m_slots_object;
+        std::vector<typename PointerT::HandleT> m_slots_generation;
+        std::vector<uint8_t>                    m_slots_alive; // use 'uint8_t' instead of 'bool' for simple byte-addressable storage
         //
 
-        std::vector<PointerT::HandleT> m_free_list;
+        std::vector<typename PointerT::HandleT> m_free_list;
     };
 
 } // namespace fe
