@@ -234,7 +234,7 @@ namespace fe {
     // this structure is needed for the 'fe::RenderGraph::SetupResourceBindings()'
     struct FORR_API RenderGraphBindings {
         std::unordered_map<size_t, graphics::TextureHandle> image_bindings{};
-        std::unordered_map<size_t, graphics::BufferHandle>  buffer_bindings{};
+        std::unordered_map<size_t, graphics::BufferHandle> buffer_bindings{};
 
         RenderGraphBindings()  = default;
         ~RenderGraphBindings() = default;
@@ -339,9 +339,6 @@ namespace fe {
                     : handle(handle), old_state(old_state), new_state(new_state) {}
             };
 
-            using ResourceBarrier = ResourceBarrier;
-            using ResourceBarrier = ResourceBarrier;
-
             fe::fixed_string<32> name{};
 
             std::vector<ResourceBarrier> image_reads{};
@@ -434,15 +431,15 @@ namespace fe {
         // setup resource lifetimes
         void calculateResourceLifetimes(std::unordered_map<fe::StringHash, ResourceLifetime>& resource_lifetimes);
 
-        // setup virtual indices
+        // set virutal indices in barriers
+        // and prepare virtual indices for craetion commands to translate them into real indices later
         template <typename AcquireFn, typename ReleaseFn>
         void setupVirtualIndices(AcquireFn&&                                                        acquire_func,
                                  ReleaseFn&&                                                        release_func,
                                  std::unordered_map<fe::StringHash, ResourceLifetime>&              resource_lifetimes,
                                  std::unordered_map<fe::StringHash, render_graph::CreationCommand>& hashed_to_desc_map,
                                  std::unordered_map<fe::StringHash, size_t>&                        hashed_to_virtual_map_dst) {
-
-            for (uint32_t i = 0; i < m_RenderPasses.size(); i++) {
+            for (size_t i = 0; i < m_RenderPasses.size(); i++) {
                 RenderPass& render_pass = m_RenderPasses[i];
 
                 for (const auto& [hashed_name, lifetime] : resource_lifetimes) {
@@ -453,11 +450,15 @@ namespace fe {
                 }
 
                 for (render_graph::ImageBarrier& image_barrier : render_pass.compiled_image_barriers) {
-                    image_barrier.handle.storage_index = hashed_to_virtual_map_dst[image_barrier.handle.hashed_name];
+                    // temporary set 'storage_index' as this. Now it is broken, but we have to store this virtual index somehow;
+                    // we will translate this 'storage_index' into the real id in 'fe::RenderGraph::SetupResourceBindings()' later
+                    image_barrier.handle.storage_index = graphics::TextureHandle::from_packed(hashed_to_virtual_map_dst[image_barrier.handle.hashed_name]); // be careful : hack
                 }
 
                 for (render_graph::BufferBarrier& buffer_barrier : render_pass.compiled_buffer_barriers) {
-                    buffer_barrier.handle.storage_index = hashed_to_virtual_map_dst[buffer_barrier.handle.hashed_name];
+                    // temporary set 'storage_index' as this. Now it is broken, but we have to store this virtual index somehow;
+                    // we will translate this 'storage_index' into the real id in 'fe::RenderGraph::SetupResourceBindings()' later
+                    buffer_barrier.handle.storage_index = graphics::BufferHandle::from_packed(hashed_to_virtual_map_dst[buffer_barrier.handle.hashed_name]); // be careful : hack
                 }
 
                 for (const auto& [hashed_name, lifetime] : resource_lifetimes) {
