@@ -41,10 +41,14 @@ namespace fe {
 
         RenderGraphBindings CreateRenderGraphResources(const RenderGraphCompileResult& compile_result) override;
 
-        std::expected<graphics::ParameterHandle, graphics::ParameterCreationErrors> CreateParameter(const graphics::ParameterDesc& parameter_desc) override;
+        FORR_NODISCARD std::expected<graphics::ParameterHandle, graphics::ParameterCreationErrors> CreateParameter(const graphics::ParameterDesc& parameter_desc) override;
+        void                                                                                       BindParameter(graphics::ParameterHandle parameter_id) override;
+        void                                                                                       WriteParameter(graphics::ParameterHandle parameter_id, std::span<const std::byte> data) override;
+        void                                                                                       DestroyParameter(graphics::ParameterHandle parameter_id) override;
 
-        void BindParameter(graphics::ParameterHandle parameter_id) override;
-        void WriteParameter(graphics::ParameterHandle parameter_id, std::span<const std::byte> data) override;
+        FORR_NODISCARD std::expected<graphics::PipelineHandle, graphics::PipelineCreationErrors> CreatePipeline(const graphics::PipelineDesc& pipeline_desc) override;
+        void                                                                                     BindPipeline(graphics::PipelineHandle pipeline_id) override;
+        void                                                                                     DestroyPipeline(graphics::PipelineHandle pipeline_id) override;
 
         void BeginFrame() override;
         void EndFrame(const render_graph::CommandList& render_command_list) override;

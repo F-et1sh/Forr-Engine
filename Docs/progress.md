@@ -17,6 +17,7 @@
     RenderGraphTypes.hpp and ShaderReflection.hpp added. VulkanResourceManager removed
     fixing fe::pointer<> again
     std::optional<T&> fe::ResourceManager::GetResource() --> ( temporarily ) T* fe::ResourceManager::GetResource()
+    the project finally compiled
 
 ### Problem
     -

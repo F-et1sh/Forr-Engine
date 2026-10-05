@@ -31,11 +31,13 @@ namespace fe {
 
     template <typename T>
     concept storable_t =
-        (!std::is_void_v<T>) &&
-        (!std::is_reference_v<T>) &&
-        (std::is_move_constructible_v<T>) &&
-        (!std::is_abstract_v<T>) &&
-        (!std::is_array_v<T>);
+        !std::is_void_v<T> &&
+        !std::is_reference_v<T> &&
+        !std::is_const_v<T> &&
+        !std::is_volatile_v<T> &&
+        !std::is_array_v<T> &&
+        !std::is_function_v<T> &&
+        std::destructible<T>;
 
     template <typename T>
     concept pointer_t = requires(T t) {
@@ -62,9 +64,13 @@ namespace fe {
         { T::operator()(index, generation, fields) } -> std::same_as<PackedT>;
     };
 
-    template <typename T, typename PackedT>
+    template <typename T,
+              typename HandleT,
+              typename GenerationT,
+              typename CustomFields,
+              typename PackedT>
     concept pointer_unpacker_t = requires(PackedT packed) {
-        { T::operator()(packed) };
+        { T::operator()(packed) } -> std::same_as<std::tuple<HandleT, GenerationT, CustomFields>>;
     };
 
     template <typename T,
@@ -103,9 +109,11 @@ namespace fe {
             : m_index(index), m_generation(generation) {}
         ~pointer() = default;
 
-        template <pointer_unpacker_t UnpackFn = DefaultUnpacker>
+        template <typename UnpackFn = DefaultUnpacker>
+            requires pointer_unpacker_t<UnpackFn, HandleT, GenerationT, CustomFields, PackedT>
         constexpr explicit pointer(PackedT packed) noexcept {
-            auto unpacked   = UnpackFn::operator()(packed);
+            auto unpacked = UnpackFn::operator()(packed);
+
             m_index         = std::get<0>(unpacked);
             m_generation    = std::get<1>(unpacked);
             m_custom_fields = std::get<2>(unpacked);
@@ -129,17 +137,20 @@ namespace fe {
             return m_custom_fields;
         }
 
-        template <pointer_packer_t PackFn = DefaultPacker>
+        template <typename PackFn = DefaultPacker>
+            requires pointer_packer_t<PackFn, HandleT, GenerationT, CustomFields, PackedT>
         FORR_NODISCARD constexpr PackedT packed() const noexcept { return PackFn::operator()(m_index, m_generation, m_custom_fields); }
 
-        template <pointer_packer_t PackFn = DefaultPacker>
+        template <typename PackFn = DefaultPacker>
+            requires pointer_packer_t<PackFn, HandleT, GenerationT, CustomFields, PackedT>
         FORR_NODISCARD static constexpr PackedT packed(const pointer& pointer_to_pack) noexcept {
             return PackFn::operator()(pointer_to_pack.m_index,
                                       pointer_to_pack.m_generation,
                                       pointer_to_pack.m_custom_fields);
         }
 
-        template <pointer_unpacker_t UnpackFn = DefaultUnpacker>
+        template <typename UnpackFn = DefaultUnpacker>
+            requires pointer_unpacker_t<UnpackFn, HandleT, GenerationT, CustomFields, PackedT>
         FORR_NODISCARD static constexpr pointer from_packed(PackedT packed) noexcept {
             const auto unpacked = UnpackFn::operator()(packed);
 
@@ -222,6 +233,9 @@ namespace fe {
             if (!m_free_list.empty()) {
                 index = m_free_list.back();
 
+                // if you're getting an error here, then most likely you are :
+                // - passing wrong arguments to the constructor ( or wrong number of arguments; zero counts )
+                // - forgot 'std::move()' for movable-only objects
                 std::construct_at(get_ptr(index), std::forward<Args>(args)...);
 
                 m_free_list.pop_back();
@@ -376,11 +390,10 @@ namespace fe {
 } // namespace fe
 
 namespace std {
-    template <fe::storable_t T>
-    struct hash<fe::pointer<T>> {
-        constexpr std::size_t operator()(
-            const fe::pointer<T>& p) const noexcept {
-            return std::hash<uint64_t>{}(p.packed());
+    template <typename T, typename HandleT, typename GenerationT, typename PackedT, typename CustomFields>
+    struct hash<fe::pointer<T, HandleT, GenerationT, PackedT, CustomFields>> {
+        constexpr std::size_t operator()(const fe::pointer<T, HandleT, GenerationT, PackedT, CustomFields>& p) const noexcept {
+            return std::hash<PackedT>{}(p.packed());
         }
     };
 } // namespace std

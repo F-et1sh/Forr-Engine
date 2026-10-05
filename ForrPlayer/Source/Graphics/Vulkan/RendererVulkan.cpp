@@ -60,6 +60,19 @@ void fe::RendererVulkan::BindParameter(graphics::ParameterHandle parameter_id) {
 void fe::RendererVulkan::WriteParameter(graphics::ParameterHandle parameter_id, std::span<const std::byte> data) {
 }
 
+void fe::RendererVulkan::DestroyParameter(graphics::ParameterHandle parameter_id) {
+}
+
+FORR_NODISCARD std::expected<fe::graphics::PipelineHandle, fe::graphics::PipelineCreationErrors> fe::RendererVulkan::CreatePipeline(const graphics::PipelineDesc& pipeline_desc) {
+    return {};
+}
+
+void fe::RendererVulkan::BindPipeline(graphics::PipelineHandle pipeline_id) {
+}
+
+void fe::RendererVulkan::DestroyPipeline(graphics::PipelineHandle pipeline_id) {
+}
+
 void fe::RendererVulkan::BeginFrame() {
     std::array<VkFence, 1> fences{ m_FrameData[m_CurrentFrame].wait_fence };
 
