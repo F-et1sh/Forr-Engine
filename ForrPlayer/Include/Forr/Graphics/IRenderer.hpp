@@ -20,7 +20,7 @@
 #include "RenderGraph.hpp"
 
 namespace fe {
-    struct FORR_API RendererDesc {
+    struct RendererDesc {
         PlatformBackend platform_backend{};
         GraphicsBackend graphics_backend{};
 
@@ -33,7 +33,7 @@ namespace fe {
         ~RendererDesc() = default;
     };
 
-    struct FORR_API DrawCommand {
+    struct DrawCommand {
         uint32_t index_count{};
         uint32_t index_offset{};
         uint32_t instance_index{};
@@ -49,7 +49,7 @@ namespace fe {
     };
 
     // TODO : remove this
-    struct FORR_API RenderPacket {
+    struct RenderPacket {
         std::vector<glm::mat4>   object_transforms{};
         std::vector<DrawCommand> draw_commands{};
         std::vector<GPULight>    lights{};
@@ -66,7 +66,7 @@ namespace fe {
 
     // if you want to add some variable here, use static method IRenderer::Create()
     // the member should be appended to the devired class, not here
-    class FORR_API IRenderer {
+    class IRenderer {
     public:
         virtual ~IRenderer() = default;
 

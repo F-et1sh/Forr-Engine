@@ -2,9 +2,9 @@
 
 ## 06.10.2026
 ### Goal
-    rewrite ShaderImporter
-    provide entry points' reflection
     remove PCH from most of the files
+    place FORR_API macros
+    provide reflection
 
 ### Done
     -
@@ -31,6 +31,7 @@
     std::optional<T&> fe::ResourceManager::GetResource() --> ( temporarily ) T* fe::ResourceManager::GetResource()
     the project finally compiled
     reflections and rewriting ShaderImporter in progress
+    dllexport/dllimport problem solving in progress
 
 ### Problem
     -

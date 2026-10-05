@@ -25,7 +25,7 @@
 #include "ECS/Systems/RenderSystem.hpp" // temp
 
 namespace fe {
-    struct FORR_API ApplicationDesc {
+    struct ApplicationDesc {
         bool validation_enabled = true;
 
         GraphicsBackend graphics_backend{};
@@ -40,7 +40,7 @@ namespace fe {
         ~ApplicationDesc() = default;
     };
 
-    class FORR_API Application { // TODO : move all logic of 'fe::Application' to 'main.cpp' of the game
+    class Application { // TODO : move all logic of 'fe::Application' to 'main.cpp' of the game
     public:
         Application(const ApplicationDesc& desc);
         ~Application() = default;

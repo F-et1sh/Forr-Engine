@@ -24,7 +24,7 @@ namespace fe {
     //  ignoring others. And after collecting them, continue ECS calculation for frame N+1, while renderer
     //  is working on frame N
     template <typename... Components>
-    struct FORR_API RenderGraphCollector {
+    struct RenderGraphCollector {
     private:
         entt::registry render_registry{};
 
@@ -55,7 +55,7 @@ namespace fe {
     };
 
     // a proxy to gather render commands from render pass
-    struct FORR_API RenderGraphContext {
+    struct RenderGraphContext {
         render_graph::CommandList command_list{};
         const entt::registry&     render_registry{};
 
@@ -122,7 +122,7 @@ namespace fe {
     };
 
     // a proxy to gather setup commands from render pass
-    struct FORR_API RenderGraphBuilder {
+    struct RenderGraphBuilder {
         ResourceManager& resource_manager;
         IRenderer&       renderer;
 
@@ -220,7 +220,7 @@ namespace fe {
 
     // this structure is needed for the 'fe::RenderGraph::Compile()'
     //  it is used by the renderer to create all resources
-    struct FORR_API RenderGraphCompileResult {
+    struct RenderGraphCompileResult {
         std::vector<render_graph::ImageDesc>  image_descs{};
         std::vector<render_graph::BufferDesc> buffer_descs{};
 
@@ -232,7 +232,7 @@ namespace fe {
     };
 
     // this structure is needed for the 'fe::RenderGraph::SetupResourceBindings()'
-    struct FORR_API RenderGraphBindings {
+    struct RenderGraphBindings {
         std::unordered_map<size_t, graphics::TextureHandle> image_bindings{};
         std::unordered_map<size_t, graphics::BufferHandle> buffer_bindings{};
 
@@ -292,7 +292,7 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(RenderPassHandle)
     };
 
-    class FORR_API RenderGraph {
+    class RenderGraph {
     public:
         // this structure is used to access resources in a map
         // different versions of the same resource cannot be accessed

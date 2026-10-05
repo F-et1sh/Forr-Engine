@@ -16,7 +16,7 @@
 #include "ResourceManagement/Resources.hpp"
 
 namespace fe {
-    struct FORR_API TransformComponent {
+    struct TransformComponent {
         glm::mat4 transform{}; // temp
 
         TransformComponent(const glm::mat4& transform)
@@ -25,7 +25,7 @@ namespace fe {
         TransformComponent()  = default;
     };
 
-    struct FORR_API LightComponent {
+    struct LightComponent {
         bool      is_static{};
         float     intensity = 1.0f;
         glm::vec3 color{ 1.0f, 1.0f, 1.0f };

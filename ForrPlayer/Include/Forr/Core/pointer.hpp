@@ -21,6 +21,7 @@
 #include <utility>
 
 #include "attributes.hpp"
+#include "logging.hpp"
 
 namespace fe {
     using default_handle_t     = uint32_t;

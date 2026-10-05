@@ -14,7 +14,7 @@
 #include "Core/attributes.hpp"
 
 namespace fe {
-    class FORR_API ILayer {
+    class ILayer {
     public:
         ILayer()          = default;
         virtual ~ILayer() = default;
