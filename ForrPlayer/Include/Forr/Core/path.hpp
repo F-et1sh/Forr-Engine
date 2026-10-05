@@ -11,7 +11,11 @@
 ===============================================*/
 
 #pragma once
+#include <string>
+#include <string_view>
 #include <filesystem>
+
+#include "attributes.hpp"
 
 namespace fe {
     class PathManager {

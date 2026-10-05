@@ -22,7 +22,7 @@ namespace fe {
         GLFW
     };
 
-    struct FORR_API PlatformSystemDesc {
+    struct PlatformSystemDesc {
         PlatformBackend platform_backend{};
         GraphicsBackend graphics_backend{};
 
@@ -30,7 +30,7 @@ namespace fe {
         ~PlatformSystemDesc() = default;
     };
 
-    class FORR_NODISCARD FORR_API IPlatformSystem {
+    class IPlatformSystem {
     public:
         virtual ~IPlatformSystem() = default;
 

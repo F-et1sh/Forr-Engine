@@ -20,7 +20,7 @@
 #include "Core/string.hpp"
 
 namespace fe::shader {
-    enum class FORR_API DescriptorType : std::uint8_t {
+    enum class DescriptorType : std::uint8_t {
         UNIFORM_BUFFER,
         STORAGE_BUFFER,
 
@@ -37,7 +37,7 @@ namespace fe::shader {
     };
 
     // clang-format off
-    enum class FORR_API ValueType : std::uint8_t {
+    enum class ValueType : std::uint8_t {
         VOID,
     
         BOOL,
@@ -69,7 +69,7 @@ namespace fe::shader {
     struct ReflectedMember; // forward declaration
 
     // base struct for reflection
-    struct FORR_API ReflectedDataNode {
+    struct ReflectedDataNode {
         ValueType type{ ValueType::UNKNOWN };
 
         uint32_t array_size{ 1 };
@@ -89,13 +89,13 @@ namespace fe::shader {
     };
 
     // may be a field of a shader struct
-    struct FORR_API ReflectedMember : public ReflectedDataNode {
+    struct ReflectedMember : public ReflectedDataNode {
         uint32_t offset{};
 
         bool operator==(const ReflectedMember&) const noexcept = default;
     };
 
-    struct FORR_API ReflectedDescriptor : public ReflectedDataNode {
+    struct ReflectedDescriptor : public ReflectedDataNode {
         DescriptorType descriptor_type{ DescriptorType::UNKNOWN };
 
         uint32_t set{};
@@ -112,7 +112,7 @@ namespace fe::shader {
         bool operator==(const ReflectedDescriptor&) const noexcept = default;
     };
 
-    struct FORR_API ReflectedPushConstants : public ReflectedDataNode {
+    struct ReflectedPushConstants : public ReflectedDataNode {
         uint8_t stage_flags{};
 
         ReflectedPushConstants() = default;
@@ -122,7 +122,7 @@ namespace fe::shader {
         bool operator==(const ReflectedPushConstants&) const noexcept = default;
     };
 
-    struct FORR_API ReflectedStructureLayout {
+    struct ReflectedStructureLayout {
         uint32_t                             size{};
         std::vector<shader::ReflectedMember> members{};
         fe::hashed_string                    name{};
@@ -134,7 +134,7 @@ namespace fe::shader {
         bool operator==(const ReflectedStructureLayout&) const noexcept = default;
     };
 
-    enum class FORR_API StageBits : std::uint8_t {
+    enum class StageBits : std::uint8_t {
         NONE     = 0,
         VERTEX   = 1 << 0,
         GEOMETRY = 1 << 1,
@@ -142,7 +142,7 @@ namespace fe::shader {
         COMPUTE  = 1 << 3,
     };
 
-    struct FORR_API ReflectedEntryPoint {
+    struct ReflectedEntryPoint {
         StageBits stage_flag{};
 
         std::vector<fe::hashed_string> arguments{};
@@ -166,21 +166,21 @@ namespace fe::shader {
                                              float,
                                              double>;
 
-    struct FORR_API SpecializationArgument {
+    struct SpecializationArgument {
         fe::hashed_string   name{};
         SpecializationValue value;
 
         bool operator==(const SpecializationArgument&) const noexcept = default;
     };
 
-    struct FORR_API EntryPointSpecialization {
+    struct EntryPointSpecialization {
         fe::hashed_string                   name{};
         std::vector<SpecializationArgument> arguments{};
 
         bool operator==(const EntryPointSpecialization&) const noexcept = default;
     };
 
-    struct FORR_API ProgramSpecialization {
+    struct ProgramSpecialization {
         std::vector<SpecializationArgument>   global_arguments{};
         std::vector<EntryPointSpecialization> entry_points{};
 

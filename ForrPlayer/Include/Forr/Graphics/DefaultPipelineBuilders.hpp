@@ -25,7 +25,7 @@ namespace fe {
         FAILED_TO_CREATE_PIPELINE,
     };
 
-    struct FORR_API PBRPipelineError {
+    struct PBRPipelineError {
         using DetailedMessageVariants = std::variant<graphics::PipelineCreationErrors,
                                                      graphics::ParameterCreationErrors,
                                                      fe::hashed_string>;
@@ -39,7 +39,7 @@ namespace fe {
             : error_code(error_code), detailed_message(std::move(detailed_message)) {}
     };
 
-    class FORR_API PBRPipelineBuilder {
+    class PBRPipelineBuilder {
     public:
         static std::expected<fe::graphics::PipelineHandle, PBRPipelineError> Build(fe::pointer<resource::ShaderFileData> shader_file_data_ptr,
                                                                                    fe::pointer<resource::Material>       material_ptr,
@@ -157,7 +157,7 @@ namespace fe {
         FAILED_TO_CREATE_PIPELINE,
     };
 
-    struct FORR_API SolidColorPipelineError {
+    struct SolidColorPipelineError {
         using DetailedMessageVariants = std::variant<SolidColorPipelineErrorCodes,
                                                      graphics::ParameterCreationErrors,
                                                      fe::hashed_string>;
@@ -171,7 +171,7 @@ namespace fe {
             : error_code(error_code), detailed_message(std::move(detailed_message)) {}
     };
 
-    class FORR_API SolidColorPipelineBuilder {
+    class SolidColorPipelineBuilder {
         static std::expected<fe::graphics::PipelineHandle, SolidColorPipelineError> Build(fe::pointer<resource::ShaderFileData> shader_file_data_ptr,
                                                                                           ResourceManager&                      resource_manager,
                                                                                           IRenderer&                            renderer) {

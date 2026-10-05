@@ -34,7 +34,7 @@ namespace fe::resource {
     FORR_CLASS_MOVABLE(T)     \
     GUID guid{}; // for future serialization. TODO : move this to ResourceManager
 
-    struct FORR_API Texture {
+    struct Texture {
         enum class ColorSpace : std::uint8_t {
             LINEAR,
             SRGB
@@ -116,7 +116,7 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(Texture)
     };
 
-    struct FORR_API Material {
+    struct Material {
     public:
         struct MaterialLayoutKey {
             fe::pointer<resource::ShaderFileData> shader_file_data{};
@@ -156,7 +156,7 @@ namespace fe::resource {
     };
 
     // this is a basic structure, created by 'fe::ShaderImporter', while importing a file
-    struct FORR_API ShaderFileData {
+    struct ShaderFileData {
     public:
         // initial resources
         std::vector<shader::ReflectedDescriptor>      descriptor_layouts{};
@@ -175,7 +175,7 @@ namespace fe::resource {
         FORR_RESOURCE_BODY(ShaderFileData)
     };
 
-    struct FORR_API Model {
+    struct Model {
         struct Mesh {
             struct Primitive {
                 fe::pointer<Material> material_ptr{};

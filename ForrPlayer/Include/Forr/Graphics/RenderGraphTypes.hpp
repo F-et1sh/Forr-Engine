@@ -16,13 +16,13 @@
 #include "GPUTypes.hpp"
 
 namespace fe::render_graph {
-    enum class FORR_API ImageType : uint8_t {
+    enum class ImageType : uint8_t {
         IMAGE_TYPE_1D,
         IMAGE_TYPE_2D,
         IMAGE_TYPE_3D,
     };
 
-    enum class FORR_API Format : uint32_t {
+    enum class Format : uint32_t {
         UNDEFINED,
 
         RGBA8_UNORM,
@@ -41,7 +41,7 @@ namespace fe::render_graph {
         D32_SFLOAT_S8_UINT
     };
 
-    enum class FORR_API ImageUsageBits : uint32_t {
+    enum class ImageUsageBits : uint32_t {
         NONE             = 0,
         RENDER_TARGET    = 1 << 0,
         DEPTH_STENCIL    = 1 << 1,
@@ -51,12 +51,12 @@ namespace fe::render_graph {
         COPY_DST         = 1 << 5
     };
 
-    enum class FORR_API BufferUsageBits : uint32_t {
+    enum class BufferUsageBits : uint32_t {
         NONE = 0,
         // ...
     };
 
-    struct FORR_API Rect2D {
+    struct Rect2D {
         glm::ivec2 offset{};
         glm::ivec2 extent{};
     };
@@ -71,7 +71,7 @@ namespace fe::render_graph {
 
     // this needs for 'RenderGraph ( and user interface ) <-> GPU resource manager' connection
     template <ResourceHandleSeparator IDType>
-    struct FORR_API ResourceHandle {
+    struct ResourceHandle {
         // hashed name - used for user interface ( fe::string_hash("ShadowMap") )
         fe::StringHash hashed_name{};
 
@@ -98,7 +98,7 @@ namespace fe::render_graph {
 
     // creation commands aka resource descs ( this commands must not be in 'FORR_RENDER_COMMANDS_LIST' )
 
-    struct FORR_API ImageDesc {
+    struct ImageDesc {
         ImageHandle handle{};
 
         ImageType      type{};
@@ -110,7 +110,7 @@ namespace fe::render_graph {
         bool operator==(const ImageDesc& other) const noexcept = default;
     };
 
-    struct FORR_API BufferDesc {
+    struct BufferDesc {
         BufferHandle handle{};
 
         size_t          size_in_bytes{};
@@ -125,7 +125,7 @@ namespace fe::render_graph {
     // render commands ( this commands must be in 'FORR_RENDER_COMMANDS_LIST' below )
 
     template <ResourceHandleSeparator IDType>
-    struct FORR_API ResourceBarrier {
+    struct ResourceBarrier {
         ResourceHandle<IDType> handle{};
         ResourceState          old_state{};
         ResourceState          new_state{};
@@ -140,7 +140,7 @@ namespace fe::render_graph {
     using ImageBarrier  = ResourceBarrier<graphics::TextureHandle>;
     using BufferBarrier = ResourceBarrier<graphics::BufferHandle>;
 
-    struct FORR_API BeginRenderPass {
+    struct BeginRenderPass {
         bool is_to_screen{};
         bool is_clears_color{};
         bool is_clears_depth{};
@@ -172,11 +172,11 @@ namespace fe::render_graph {
         return seed;
     }
 
-    struct FORR_API EndRenderPass {
+    struct EndRenderPass {
         // this is empty for now
     };
 
-    struct FORR_API DrawIndexed {
+    struct DrawIndexed {
         uint32_t index_count{};
         uint32_t instance_count{};
         uint32_t first_index{};
@@ -184,12 +184,12 @@ namespace fe::render_graph {
         uint32_t first_instance{};
     };
 
-    struct FORR_API BindPipeline {
+    struct BindPipeline {
         graphics::PipelineHandle pipeline_id{};
     };
 
     // temp
-    struct FORR_API DrawModel {
+    struct DrawModel {
         fe::pointer<resource::Model> model_ptr{};
         uint32_t                     first_instance{};
 
@@ -198,11 +198,11 @@ namespace fe::render_graph {
             : model_ptr(model_ptr), first_instance(first_instance) {}
     };
 
-    struct FORR_API BindBuffer {
+    struct BindBuffer {
         graphics::ParameterHandle parameter_id{};
     };
 
-    struct FORR_API WriteBuffer {
+    struct WriteBuffer {
         graphics::ParameterHandle  parameter_id{};
         std::span<const std::byte> data{};
 
@@ -235,7 +235,7 @@ namespace fe::render_graph {
 
 #define GENERATE_TRAITS(COMMAND_NAME)                                       \
     template <>                                                             \
-    struct FORR_API CommandTraits<COMMAND_NAME> {                           \
+    struct CommandTraits<COMMAND_NAME> {                           \
         static constexpr CommandType      Type = CommandType::COMMAND_NAME; \
         static constexpr std::string_view Name = #COMMAND_NAME;             \
     };
@@ -243,7 +243,7 @@ namespace fe::render_graph {
     FORR_RENDER_COMMANDS_LIST(GENERATE_TRAITS)
 #undef GENERATE_TRAITS
 
-    class FORR_API CommandList {
+    class CommandList {
     public:
         CommandList()  = default;
         ~CommandList() = default;

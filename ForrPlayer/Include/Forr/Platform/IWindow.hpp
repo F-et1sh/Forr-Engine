@@ -15,7 +15,7 @@
 #include "Core/attributes.hpp"
 
 namespace fe {
-    struct FORR_API WindowDesc {
+    struct WindowDesc {
         int         width{ ~0 };
         int         height{ ~0 };
         std::string name{};
@@ -27,7 +27,7 @@ namespace fe {
         ~WindowDesc() = default;
     };
 
-    class FORR_API IWindow {
+    class IWindow {
     public:
         IWindow()          = default;
         virtual ~IWindow() = default;

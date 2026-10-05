@@ -37,7 +37,7 @@ namespace fe {
     };
 
     //#pragma pack(push, 1) // disabled for now
-    struct FORR_API Vertex {
+    struct Vertex {
         glm::vec3 position{};
         glm::vec3 normal{};
         glm::vec2 texture_coord{};
@@ -53,7 +53,7 @@ namespace fe {
     };
 
     // TODO : remove
-    struct alignas(16) FORR_API GPULight {
+    struct alignas(16) GPULight {
         //uint32_t type{};
 
         //float range{};
@@ -68,7 +68,7 @@ namespace fe {
     // TODO : remove
     // this structure only helps to calculate offsets while loading glTF model
     // you don't have to create structures like this, if you want to create your own material
-    struct alignas(16) FORR_API GPUPBRMaterial {
+    struct alignas(16) GPUPBRMaterial {
         std::uint64_t base_color_texture_handle{};
     };
 
@@ -88,13 +88,13 @@ namespace fe {
 
     inline static constexpr size_t MAX_COLOR_ATTACHMENTS = 16;
 
-    enum class FORR_API RenderIndexType : uint8_t {
+    enum class RenderIndexType : uint8_t {
         UNSIGNED_BYTE,
         UNSIGNED_SHORT,
         UNSIGNED_INT,
     };
 
-    enum class FORR_API ResourceState : uint8_t {
+    enum class ResourceState : uint8_t {
         UNDEFINED,
 
         // image only
@@ -115,7 +115,7 @@ namespace fe {
         COPY_DST
     };
 
-    enum class FORR_API RenderMode : uint8_t {
+    enum class RenderMode : uint8_t {
         POINTS,
         LINES,
         LINE_LOOP,
@@ -125,7 +125,7 @@ namespace fe {
         TRIANGLE_FAN,
     };
 
-    enum class FORR_API DepthMode : uint8_t {
+    enum class DepthMode : uint8_t {
         NEVER,
         LESS,
         EQUAL,
@@ -136,14 +136,14 @@ namespace fe {
         ALWAYS
     };
 
-    enum class FORR_API CullMode : uint8_t {
+    enum class CullMode : uint8_t {
         NONE,
         FRONT,
         BACK,
         FRONT_AND_BACK
     };
 
-    struct FORR_API PipelineFlags {
+    struct PipelineFlags {
         RenderMode render_mode{ RenderMode::TRIANGLES };
 
         bool      depth_test_enable{ true };
@@ -153,7 +153,7 @@ namespace fe {
         CullMode cull_mode{ CullMode::FRONT_AND_BACK };
     };
 
-    struct FORR_API VertexLayout {
+    struct VertexLayout {
         // TODO : there is nothing yet. I don't know what to do with this.
         // There are a few options :
         // - create some 'unified' vertex layout - I don't like this idea
@@ -172,7 +172,7 @@ namespace fe {
     } // namespace render_graph
 
     namespace graphics {
-        struct FORR_API ParameterDesc {
+        struct ParameterDesc {
             shader::DescriptorType descriptor_type{ shader::DescriptorType::UNKNOWN };
             uint8_t                stage_flags{};
             bool                   is_bindless{};
@@ -198,12 +198,12 @@ namespace fe {
             MAPPED_MEMORY_WAS_NULLPTR
         };
 
-        struct FORR_API ParameterHandleFields {
+        struct ParameterHandleFields {
             uint8_t set{ std::numeric_limits<uint8_t>::max() };
             uint8_t binding{ std::numeric_limits<uint8_t>::max() };
         };
 
-        struct FORR_API ParameterHandlePacker {
+        struct ParameterHandlePacker {
             // [index 4 bytes] [generation 2 bytes] [set 1 byte] [binding 1 byte] -> 8 byte together
             FORR_NODISCARD static constexpr uint64_t operator()(uint32_t index, uint16_t generation, ParameterHandleFields fields) noexcept {
                 return (static_cast<uint64_t>(index) << 32) |
@@ -213,7 +213,7 @@ namespace fe {
             }
         };
 
-        struct FORR_API ParameterHandleUnpacker {
+        struct ParameterHandleUnpacker {
             // 8 byte together --> [index 4 bytes] [generation 2 bytes] [set 1 byte] [binding 1 byte]
             FORR_NODISCARD static constexpr std::tuple<uint32_t, uint16_t, ParameterHandleFields> operator()(uint64_t packed) noexcept {
                 uint32_t index      = static_cast<uint32_t>(packed >> 32);
@@ -233,7 +233,7 @@ namespace fe {
                                             uint64_t,               // packed aka all together ( 64 bytes )
                                             ParameterHandleFields>; //                         ( 16 bytes )
 
-        struct FORR_API PipelineDesc {
+        struct PipelineDesc {
             fe::PipelineFlags pipeline_flags{};
 
             std::vector<fe::pointer<resource::ShaderFileData>> shader_file_data_ptrs{};
