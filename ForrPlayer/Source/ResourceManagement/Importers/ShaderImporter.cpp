@@ -16,7 +16,16 @@
 #include "Graphics/Slang/SlangParser.hpp"
 
 fe::pointer<fe::resource::ShaderFileData> fe::ShaderImporter::Import(ResourceStorage& storage, const std::filesystem::path& resource_full_path) {
-    //resource::ShaderFileData shader_file_data{};
+    SlangParser slang_parser{};
+    auto        shader_file_data_expected = slang_parser.BuildShaderFileData(resource_full_path, storage);
+
+    if (!shader_file_data_expected.has_value()) {
+        fe::logging::error("Slang -> Unified. Failed to load a shader\nPath : %s", resource_full_path.generic_string().c_str());
+        return {};
+    }
+
+    auto ptr = storage.CreateResource(std::move(shader_file_data_expected.value()));
+    return ptr;
 
     //SlangParser parser{};
     //if (!parser.LoadFromFile(resource_full_path)) {

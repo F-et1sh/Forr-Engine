@@ -25,19 +25,18 @@ namespace fe {
 } // namespace fe
 
 fe::SlangParser::SlangParser(std::span<const char*> full_search_paths) {
-    static Slang::ComPtr<slang::IGlobalSession> global_session{};
-    if (!global_session) {
-        if (SLANG_FAILED(slang::createGlobalSession(global_session.writeRef()))) {
-            fe::logging::error("Slang -> Unified. Failed to create global session");
-            return;
-        }
+    if (m_GlobalSession && m_Session) return;
+
+    if (SLANG_FAILED(slang::createGlobalSession(m_GlobalSession.writeRef()))) {
+        fe::logging::error("Slang -> Unified. Failed to create global session");
+        return;
     }
 
     slang::SessionDesc session_desc{};
     slang::TargetDesc  target_desc{};
 
     target_desc.format  = SLANG_SPIRV;
-    target_desc.profile = global_session->findProfile("spirv_1_5");
+    target_desc.profile = m_GlobalSession->findProfile("spirv_1_5");
     target_desc.flags   = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
 
     target_desc.flags |= SLANG_TARGET_FLAG_GENERATE_WHOLE_PROGRAM;
@@ -57,13 +56,14 @@ fe::SlangParser::SlangParser(std::span<const char*> full_search_paths) {
         session_desc.searchPaths     = full_search_paths.data();
     }
 
-    if (SLANG_FAILED(global_session->createSession(session_desc, m_Session.writeRef()))) {
+    if (SLANG_FAILED(m_GlobalSession->createSession(session_desc, m_Session.writeRef()))) {
         fe::logging::error("Slang -> Unified. Failed to create a session");
         return;
     }
 }
 
-std::expected<fe::shader::ProgramSources, fe::SlangParser::ShaderBuildErrors> fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc, ResourceManager& resource_manager) {
+std::expected<fe::shader::ProgramSources, fe::SlangParser::ShaderBuildErrors>
+fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc, const ResourceManager& resource_manager) {
     std::vector<Slang::ComPtr<slang::IModule>> loaded_modules{};
 
     loaded_modules.reserve(pipeline_desc.shader_file_data_ptrs.size());
@@ -370,4 +370,80 @@ std::expected<fe::shader::ProgramSources, fe::SlangParser::ShaderBuildErrors> fe
     }
 
     return source_codes;
+}
+
+std::expected<fe::resource::ShaderFileData, fe::SlangParser::ShaderFileDataErrors>
+fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_path, const ResourceStorage& storage) {
+    resource::ShaderFileData shader_file_data{};
+    shader_file_data.full_path = resource_full_path.generic_string().c_str();
+
+    // load module
+
+    Slang::ComPtr<slang::IModule> slang_module{};
+
+    Slang::ComPtr<slang::IBlob> load_diagnostics{};
+    slang_module = m_Session->loadModule(resource_full_path.generic_string().c_str(), load_diagnostics.writeRef());
+    if (!slang_module) {
+        fe::logging::error("Slang -> Unified. Failed to load a slang module\n%s",
+                           (const char*) load_diagnostics->getBufferPointer());
+        return std::unexpected{ SlangParser::ShaderFileDataErrors::FAILED_TO_LOAD_SLANG_MODULE };
+    }
+
+    // extract serialized
+
+    Slang::ComPtr<ISlangBlob> serialized_blob{};
+    if (SLANG_FAILED(slang_module->serialize(serialized_blob.writeRef()))) {
+        fe::logging::error("Slang -> Unified. Failed to get serialized data from Slang");
+        return std::unexpected{ SlangParser::ShaderFileDataErrors::FAILED_TO_GET_SERIALIZED_DATA };
+    }
+
+    const uint8_t* buffer_data = (const uint8_t*) serialized_blob->getBufferPointer();
+    size_t         buffer_size = serialized_blob->getBufferSize();
+
+    // we store this data to compile the shader later
+    shader_file_data.slang_serialized_data.assign(buffer_data, buffer_data + buffer_size);
+
+    // reflect
+
+    Slang::ComPtr<slang::IComponentType> composed_program{};
+
+    // there is no need to search for entry points here
+    std::vector<slang::IComponentType*> component_types{};
+
+    uint32_t dependency_count = slang_module->getDependencyFileCount();
+    component_types.reserve(dependency_count);
+    for (uint32_t i = 0; i < dependency_count; i++) { // starting with '0' here adds 'slang_module' itself too
+        const char* dependency_file = slang_module->getDependencyFilePath(i);
+
+        Slang::ComPtr<slang::IBlob> load_diagnostics{};
+        slang::IModule*             imported_module = m_Session->loadModule(dependency_file, load_diagnostics.writeRef());
+        if (imported_module) {
+            int parameters_count = imported_module->getSpecializationParamCount();
+            component_types.emplace_back(imported_module);
+        }
+        else {
+            fe::logging::error("Slang -> Unified. Failed to load a slang dependency module. Continuing loading\n%s",
+                               (const char*) load_diagnostics->getBufferPointer());
+        }
+    }
+
+    Slang::ComPtr<slang::IBlob> composition_diagnostics{};
+    SlangResult                 result = m_Session->createCompositeComponentType(component_types.data(),
+                                                                                 component_types.size(),
+                                                                                 composed_program.writeRef(),
+                                                                                 composition_diagnostics.writeRef());
+    if (SLANG_FAILED(result)) {
+        fe::logging::error("Slang -> Unified. Failed to create a composed program\n%s",
+                           (const char*) composition_diagnostics->getBufferPointer());
+        return std::unexpected{ SlangParser::ShaderFileDataErrors::FAILED_TO_CREATE_COMPOSED_PROGRAM };
+    }
+
+    slang::ProgramLayout* layout = composed_program->getLayout();
+    for (size_t i = 0; i < layout->getEntryPointCount(); i++) {
+        slang::EntryPointReflection* entry_point_reflection = layout->getEntryPointByIndex(i);
+        std::string entry_point_name = entry_point_reflection->getName();
+        fe::logging::debug("Loaded entry point name : %s", entry_point_name.c_str());
+    }
+
+    return shader_file_data;
 }

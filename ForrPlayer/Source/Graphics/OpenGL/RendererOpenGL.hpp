@@ -15,13 +15,9 @@
 
 #include "Graphics/IRenderer.hpp"
 #include "Graphics/Camera.hpp"
-
 #include "OpenGLTypes.hpp"
-
 #include <GLFW/glfw3.h>
-
 #include "Tools.hpp"
-
 #include "Graphics/Slang/SlangParser.hpp"
 
 namespace fe {

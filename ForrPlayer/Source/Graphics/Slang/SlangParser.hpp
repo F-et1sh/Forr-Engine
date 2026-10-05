@@ -25,8 +25,13 @@ namespace fe {
     class SlangParser {
     public:
         enum class ShaderBuildErrors : uint8_t {
-            ERROR,
             COMPOSITION_FAILED
+        };
+
+        enum class ShaderFileDataErrors : uint8_t {
+            FAILED_TO_LOAD_SLANG_MODULE,
+            FAILED_TO_GET_SERIALIZED_DATA,
+            FAILED_TO_CREATE_COMPOSED_PROGRAM
         };
 
     public:
@@ -38,9 +43,13 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(SlangParser)
 
         // TODO : firstly pass whole 'fe::PipelineDesc', then collapse this function, making the class more modular
-        std::expected<shader::ProgramSources, ShaderBuildErrors> BuildShaderSources(const graphics::PipelineDesc& pipeline_desc, ResourceManager& resource_manager);
+        std::expected<shader::ProgramSources, ShaderBuildErrors> BuildShaderSources(const graphics::PipelineDesc& pipeline_desc, const ResourceManager& resource_manager);
+
+        // TODO : return whole 'resource::ShaderFileData', then collapse this function, making the class more modular
+        std::expected<resource::ShaderFileData, ShaderFileDataErrors> BuildShaderFileData(const std::filesystem::path& resource_full_path, const ResourceStorage& storage);
 
     private:
-        Slang::ComPtr<slang::ISession> m_Session{};
+        inline static Slang::ComPtr<slang::IGlobalSession> m_GlobalSession{};
+        inline static Slang::ComPtr<slang::ISession>       m_Session{};
     };
 } // namespace fe
