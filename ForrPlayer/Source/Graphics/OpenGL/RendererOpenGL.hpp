@@ -43,7 +43,7 @@ namespace fe {
                        ResourceManager&    resource_manager);
         ~RendererOpenGL();
 
-        RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) override;
+        RenderGraphBindings CreateRenderGraphResources(const RenderGraphCompileResult& compile_result) override;
 
         std::expected<graphics::ParameterHandle, graphics::ParameterCreationErrors> CreateParameter(const graphics::ParameterDesc& parameter_desc) override;
         void                                                                        BindParameter(graphics::ParameterHandle parameter_id) override;
@@ -64,6 +64,9 @@ namespace fe {
     private:
         void   bindPipeline(const OpenGLPipeline& pipeline);
         GLuint createShaderProgramRaw(const shader::ProgramSources& program_sources);
+
+        graphics::TextureHandle createRenderGraphImage(const render_graph::ImageDesc& image_desc);
+        graphics::BufferHandle  createRenderGraphBuffer(const render_graph::BufferDesc& buffer_desc);
 
     private:
         void handleCommand(const render_graph::ImageBarrier& command);
@@ -92,6 +95,7 @@ namespace fe {
 
         fe::typed_pointer_storage<OpenGLMesh, graphics::MeshHandle>                     m_Meshes{};
         fe::typed_pointer_storage<OpenGLTexture, graphics::TextureHandle>               m_Textures{};
+        fe::typed_pointer_storage<OpenGLBuffer, graphics::BufferHandle>                 m_Buffers{};
         fe::typed_pointer_storage<OpenGLShaderParameterRing, graphics::ParameterHandle> m_Parameters{};
         fe::typed_pointer_storage<OpenGLPipeline, graphics::PipelineHandle>             m_Pipelines{};
     };

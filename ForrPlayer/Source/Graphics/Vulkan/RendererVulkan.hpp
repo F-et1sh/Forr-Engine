@@ -40,7 +40,7 @@ namespace fe {
                        ResourceManager&    resource_manager);
         ~RendererVulkan();
 
-        RenderGraphBindings CreateGPUResources(const RenderGraphCompileResult& compile_result) override;
+        RenderGraphBindings CreateRenderGraphResources(const RenderGraphCompileResult& compile_result) override;
 
         std::expected<ParameterHandle, ParameterCreationErrors> CreateParameter(const ParameterDesc& parameter_desc) override;
 

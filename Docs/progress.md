@@ -1,5 +1,18 @@
 ﻿# Forr-Engine Devlog
 
+## 05.10.2026
+### Goal
+    provide entry points' reflection
+    move GPU resource manager's logic into its renderer ( remove it )
+    translate old system of GPU resource manager to the new one ( updated 'fe::typed_pointer_storage' )
+    remove PCH from most of the files
+
+### Done
+    fe::IRenderer::CreateGPUResources() --> fe::IRenderer::CreateRenderGraphResources(). RenderGraph buffers creation provided for OpenGL
+
+### Problem
+    -
+
 ## 04.10.2026
 ### Goal
     provide entry points' reflection

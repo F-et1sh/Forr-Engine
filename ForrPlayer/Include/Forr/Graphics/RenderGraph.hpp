@@ -233,8 +233,8 @@ namespace fe {
 
     // this structure is needed for the 'fe::RenderGraph::SetupResourceBindings()'
     struct FORR_API RenderGraphBindings {
-        std::unordered_map<size_t, size_t> image_bindings{};
-        std::unordered_map<size_t, size_t> buffer_bindings{};
+        std::unordered_map<size_t, graphics::TextureHandle> image_bindings{};
+        std::unordered_map<size_t, graphics::BufferHandle>  buffer_bindings{};
 
         RenderGraphBindings()  = default;
         ~RenderGraphBindings() = default;

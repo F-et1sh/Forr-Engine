@@ -30,6 +30,15 @@ namespace fe {
         FORR_RESOURCE_BODY(OpenGLTexture)
     };
 
+    struct OpenGLBuffer {
+        size_t         size{};
+        fe::gl::Buffer buffer{};
+
+        OpenGLBuffer() = default;
+        
+        FORR_RESOURCE_BODY(OpenGLBuffer)
+    };
+
     struct OpenGLShaderParameter {
         size_t                 size{};
         std::byte*             mapped{};

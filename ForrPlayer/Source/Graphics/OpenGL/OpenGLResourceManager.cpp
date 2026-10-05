@@ -46,7 +46,7 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
         case Texture::MinFilter::NEAREST_MIPMAP_LINEAR : min_filter = GL_NEAREST_MIPMAP_LINEAR ; break;
         case Texture::MinFilter::LINEAR_MIPMAP_LINEAR  : min_filter = GL_LINEAR_MIPMAP_LINEAR  ; break;
         default:
-            fe::logging::error("Unified -> OpenGL. Unsupported min filter %i. Using GL_LINEAR as default", texture.min_filter);
+            fe::logging::warning("Unified -> OpenGL. Unsupported min filter %i. Using GL_LINEAR as default", texture.min_filter);
             min_filter = GL_LINEAR;
     }
 
@@ -55,7 +55,7 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
         case Texture::MagFilter::NEAREST: mag_filter = GL_NEAREST; break;
         case Texture::MagFilter::LINEAR : mag_filter = GL_LINEAR ; break;
         default:
-            fe::logging::error("Unified -> OpenGL. Unsupported mag filter %i. Using GL_LINEAR as default", texture.mag_filter);
+            fe::logging::warning("Unified -> OpenGL. Unsupported mag filter %i. Using GL_LINEAR as default", texture.mag_filter);
             mag_filter = GL_LINEAR;
     }
     // clang-format on
@@ -66,7 +66,7 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
         case Texture::Wrap::MIRRORED_REPEAT: wrap_s = GL_MIRRORED_REPEAT; break;
         case Texture::Wrap::REPEAT         : wrap_s = GL_REPEAT         ; break;
         default:
-            fe::logging::error("Unified -> OpenGL. Unsupported wrap s %i. Using GL_REPEAT as default", texture.wrap_s);
+            fe::logging::warning("Unified -> OpenGL. Unsupported wrap s %i. Using GL_REPEAT as default", texture.wrap_s);
             wrap_s = GL_REPEAT;
     }
     // clang-format on
@@ -77,7 +77,7 @@ void fe::OpenGLResourceManager::CreateResource(Texture& texture) {
         case Texture::Wrap::MIRRORED_REPEAT: wrap_t = GL_MIRRORED_REPEAT; break;
         case Texture::Wrap::REPEAT         : wrap_t = GL_REPEAT         ; break;
         default:
-            fe::logging::error("Unified -> OpenGL. Unsupported wrap t %i. Using GL_REPEAT as default", texture.wrap_t);
+            fe::logging::warning("Unified -> OpenGL. Unsupported wrap t %i. Using GL_REPEAT as default", texture.wrap_t);
             wrap_t = GL_REPEAT;
     }
     // clang-format on

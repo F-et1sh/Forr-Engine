@@ -46,7 +46,7 @@ fe::RendererVulkan::~RendererVulkan() {
     vkDeviceWaitIdle(m_Device);
 }
 
-fe::RenderGraphBindings fe::RendererVulkan::CreateGPUResources(const RenderGraphCompileResult& compile_result) {
+fe::RenderGraphBindings fe::RendererVulkan::CreateRenderGraphResources(const RenderGraphCompileResult& compile_result) {
     return {};
 }
 
