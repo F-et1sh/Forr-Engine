@@ -16,7 +16,7 @@
 #include "Graphics/IRenderer.hpp"
 #include "Graphics/Camera.hpp"
 
-#include "OpenGLResourceManager.hpp"
+#include "OpenGLTypes.hpp"
 
 #include <GLFW/glfw3.h>
 

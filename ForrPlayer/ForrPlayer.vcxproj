@@ -130,7 +130,6 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     <ClInclude Include="Include\Forr\ResourceManagement\Resources.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceStorage.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLRAII.hpp" />
-    <ClInclude Include="Source\Graphics\OpenGL\OpenGLResourceManager.hpp" />
     <ClInclude Include="Include\Forr\Graphics\GPUTypes.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\OpenGLTypes.hpp" />
     <ClInclude Include="Source\Graphics\OpenGL\RendererOpenGL.hpp" />
@@ -192,7 +191,6 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     <ClCompile Include="Source\Graphics\Camera.cpp" />
     <ClCompile Include="Source\Application.cpp" />
     <ClCompile Include="Source\Graphics\IRenderer.cpp" />
-    <ClCompile Include="Source\Graphics\OpenGL\OpenGLResourceManager.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\RendererOpenGL.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanResourceManager.cpp" />
