@@ -10,6 +10,7 @@
 ### Done
     GLM added to PCH
     FORR_API now only in needed classes
+    ExternalSources.lib added. Project compilation, when changing one file now is ~5 seconds
 
 ### Problem
     -

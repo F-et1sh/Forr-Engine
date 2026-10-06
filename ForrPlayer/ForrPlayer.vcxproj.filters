@@ -57,26 +57,19 @@
     <ClCompile Include="Source\Platform\GLFW\PlatformSystemGLFW.cpp" />
     <ClCompile Include="Source\Platform\GLFW\WindowGLFW.cpp" />
     <ClCompile Include="Source\Graphics\IRenderer.cpp" />
-    <ClCompile Include="..\ThirdParty\glad\src\gl.c" />
     <ClCompile Include="Source\path.cpp" />
     <ClCompile Include="Source\Graphics\Camera.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceManager.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceImporter.cpp" />
-    <ClCompile Include="..\ThirdParty\stb\src\stb_image.cpp" />
-    <ClCompile Include="..\ThirdParty\tinygltf\src\tiny_gltf.cpp" />
-    <ClCompile Include="..\ThirdParty\stb\src\stb_image_write.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\TextureImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\GLTFImporter.cpp" />
-    <ClCompile Include="..\ThirdParty\MikkTSpace\src\mikktspace.c" />
     <ClCompile Include="Source\Graphics\OpenGL\RendererOpenGL.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\MaterialImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceCreator.cpp" />
-    <ClCompile Include="..\ThirdParty\SPIRV-Reflect\src\spirv_reflect.c" />
     <ClCompile Include="Source\ResourceManagement\Importers\ShaderImporter.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="Source\ECS\Systems\RenderSystem.cpp" />
-    <ClCompile Include="..\ThirdParty\VulkanMemoryAllocator\src\vk_mem_alloc.cpp" />
     <ClCompile Include="Source\Graphics\RenderGraph.cpp" />
     <ClCompile Include="Source\Graphics\Slang\SlangParser.cpp" />
   </ItemGroup>

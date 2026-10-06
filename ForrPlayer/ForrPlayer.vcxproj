@@ -57,20 +57,20 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\SPIRV-Reflect\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <AdditionalOptions>/Zc:__cplusplus
  /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
-      <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <ShowIncludes>false</ShowIncludes>
-      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>x64\Debug\pch.pch</PrecompiledHeaderOutputFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(ProjectDir)..\ThirdParty\glfw\win64_debug;$(ProjectDir)..\ThirdParty\slang\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;volk.lib;slang.lib;slang-glsl-module.lib;slang-compiler.lib;slang-glslang.lib;shaderc_combinedd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;volk.lib;slang.lib;slang-glsl-module.lib;slang-compiler.lib;slang-glslang.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>call "$(ProjectDir)..\Scripts\collect_licenses.bat" $(TargetDir) "$(ProjectDir)..\"
@@ -87,20 +87,20 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_debug.bat" $(Targe
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\SPIRV-Reflect\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <AdditionalOptions>/Zc:__cplusplus
  /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
-      <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <ShowIncludes>false</ShowIncludes>
-      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>x64\Release\pch.pch</PrecompiledHeaderOutputFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(ProjectDir)..\ThirdParty\glfw\win64_release;$(ProjectDir)..\ThirdParty\slang\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;volk.lib;slang.lib;slang-glsl-module.lib;slang-compiler.lib;slang-glslang.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;volk.lib;slang.lib;slang-glsl-module.lib;slang-compiler.lib;slang-glslang.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>call "$(ProjectDir)..\Scripts\collect_licenses.bat" $(TargetDir) "$(ProjectDir)..\"
@@ -156,43 +156,6 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     <ClInclude Include="Source\Tools.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\ThirdParty\glad\src\gl.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Speed</FavorSizeOrSpeed>
-    </ClCompile>
-    <ClCompile Include="..\ThirdParty\MikkTSpace\src\mikktspace.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Speed</FavorSizeOrSpeed>
-    </ClCompile>
-    <ClCompile Include="..\ThirdParty\SPIRV-Reflect\src\spirv_reflect.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);FORRENGINE_EXPORTS</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);FORRENGINE_EXPORTS</PreprocessorDefinitions>
-      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Speed</FavorSizeOrSpeed>
-    </ClCompile>
-    <ClCompile Include="..\ThirdParty\stb\src\stb_image.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Speed</FavorSizeOrSpeed>
-    </ClCompile>
-    <ClCompile Include="..\ThirdParty\stb\src\stb_image_write.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Speed</FavorSizeOrSpeed>
-    </ClCompile>
-    <ClCompile Include="..\ThirdParty\tinygltf\src\tiny_gltf.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Speed</FavorSizeOrSpeed>
-    </ClCompile>
-    <ClCompile Include="..\ThirdParty\VulkanMemoryAllocator\src\vk_mem_alloc.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Speed</FavorSizeOrSpeed>
-    </ClCompile>
     <ClCompile Include="Source\ECS\Systems\RenderSystem.cpp" />
     <ClCompile Include="Source\Graphics\RenderGraph.cpp" />
     <ClCompile Include="Source\Graphics\Slang\SlangParser.cpp" />
@@ -219,6 +182,11 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     <ClCompile Include="Source\ResourceManagement\Importers\TextureImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceManager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExternalSources\ExternalSources.vcxproj">
+      <Project>{01d21346-d014-4447-9557-58b721c77d2f}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
