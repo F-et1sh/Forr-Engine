@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <span>
 #include <cassert>
 #include <type_traits>
 #include <memory>

@@ -10,9 +10,8 @@
 
 ===============================================*/
 
-#include <span>
-
 #include "Forr/Application.hpp"
+#include "Forr/Core/path.hpp"
 
 int main(int argc, char* argv[]) {
     fe::ApplicationDesc desc{};
@@ -20,8 +19,8 @@ int main(int argc, char* argv[]) {
     fe::GraphicsBackend selected_backend = fe::GraphicsBackend::OpenGL;
 
     for (const char* arg : std::span(argv, argc)) {
-      desc.args.emplace_back(arg);
-    
+        desc.args.emplace_back(arg);
+
         if (arg == "-OpenGL" || arg == "-opengl") {
             selected_backend = fe::GraphicsBackend::OpenGL;
         }
@@ -39,7 +38,7 @@ int main(int argc, char* argv[]) {
     desc.platform_backend                  = fe::PlatformBackend::GLFW;
     desc.graphics_backend                  = selected_backend;
 
-    fe::Application app{ desc }; // first error
+    fe::Application app{ desc };
     app.Run();
 
     return 0;

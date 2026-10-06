@@ -62,7 +62,9 @@
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <AdditionalOptions>/Zc:__cplusplus
  /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <ShowIncludes>false</ShowIncludes>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -90,7 +92,9 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_debug.bat" $(Targe
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <AdditionalOptions>/Zc:__cplusplus
  /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <ShowIncludes>false</ShowIncludes>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -155,36 +159,41 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     <ClCompile Include="..\ThirdParty\glad\src\gl.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Speed</FavorSizeOrSpeed>
     </ClCompile>
     <ClCompile Include="..\ThirdParty\MikkTSpace\src\mikktspace.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Speed</FavorSizeOrSpeed>
     </ClCompile>
     <ClCompile Include="..\ThirdParty\SPIRV-Reflect\src\spirv_reflect.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);FORRENGINE_EXPORTS</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SPIRV_REFLECT_USE_SYSTEM_SPIRV_H;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);FORRENGINE_EXPORTS</PreprocessorDefinitions>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Speed</FavorSizeOrSpeed>
     </ClCompile>
     <ClCompile Include="..\ThirdParty\stb\src\stb_image.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Speed</FavorSizeOrSpeed>
     </ClCompile>
     <ClCompile Include="..\ThirdParty\stb\src\stb_image_write.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Speed</FavorSizeOrSpeed>
     </ClCompile>
     <ClCompile Include="..\ThirdParty\tinygltf\src\tiny_gltf.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Speed</FavorSizeOrSpeed>
     </ClCompile>
     <ClCompile Include="..\ThirdParty\VulkanMemoryAllocator\src\vk_mem_alloc.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Speed</FavorSizeOrSpeed>
     </ClCompile>
     <ClCompile Include="Source\ECS\Systems\RenderSystem.cpp" />
-    <ClCompile Include="Source\Graphics\DefaultPipelineBuilders.cpp" />
-    <ClCompile Include="Source\Graphics\DefaultRenderPasses.cpp" />
     <ClCompile Include="Source\Graphics\RenderGraph.cpp" />
     <ClCompile Include="Source\Graphics\Slang\SlangParser.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\ShaderImporter.cpp" />

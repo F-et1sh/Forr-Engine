@@ -627,15 +627,15 @@ fe::pointer<Material> fe::GLTFImporter::createMaterial(GLTFImportContext& contex
 
     // std::size_t offset{};
 
-    const auto& resource_management_context = context.storage.GetContext();
-    const auto& default_pbr_material        = *context.storage.GetResource(resource_management_context.default_pbr_material_ptr);
+    //const auto& resource_management_context = context.storage.GetContext();
+    //const auto& default_pbr_material        = *context.storage.GetResource(resource_management_context.default_pbr_material_ptr);
 
-    this_material.pipeline_flags_override = default_pbr_material.pipeline_flags_override;
-    this_material.layout_key              = default_pbr_material.layout_key;
-    this_material.buffer                  = default_pbr_material.buffer;
+    //this_material.pipeline_flags_override = default_pbr_material.pipeline_flags_override;
+    //this_material.layout_key              = default_pbr_material.layout_key;
+    //this_material.buffer                  = default_pbr_material.buffer;
 
-    auto ptr = context.storage.CreateResource<Material>(std::move(this_material));
-    return ptr;
+    //auto ptr = context.storage.CreateResource<Material>(std::move(this_material));
+    return {};
 }
 
 void fe::GLTFImporter::readVector(glm::vec2& dst, const std::vector<double>& src) {

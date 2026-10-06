@@ -25,7 +25,7 @@ namespace fe {
         ~ResourceManagerDesc() = default;
     };
 
-    class ResourceManager {
+    class FORR_API ResourceManager {
     public:
         ResourceManager(const ResourceManagerDesc& desc);
         ~ResourceManager() = default;

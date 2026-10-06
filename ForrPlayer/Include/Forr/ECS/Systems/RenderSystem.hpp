@@ -31,7 +31,7 @@ namespace fe {
         ~RenderMeshEntry() = default;
     };
 
-    class RenderSystem {
+    class FORR_API RenderSystem {
     public:
         RenderSystem(ResourceManager& resource_manager, entt::registry& registry, IRenderer& renderer, RenderPacket& render_packet);
         ~RenderSystem();

@@ -23,7 +23,7 @@
 #include <fstream>
 
 namespace fe {
-    class ResourceCreator {
+    class FORR_API ResourceCreator {
     public:
         ResourceCreator(ResourceManagementContext& context, ResourceStorage& storage, ResourceImporter& importer)
             : m_Context(context), m_Storage(storage), m_Importer(importer) {}

@@ -13,6 +13,8 @@
 #include "pch.hpp"
 #include "WindowGLFW.hpp"
 
+#include "Core/logging.hpp"
+
 void fe::WindowGLFW::Initialize(const WindowDesc& desc) {
     m_Description = desc;
 

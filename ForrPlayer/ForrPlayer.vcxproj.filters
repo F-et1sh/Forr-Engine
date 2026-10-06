@@ -79,7 +79,5 @@
     <ClCompile Include="..\ThirdParty\VulkanMemoryAllocator\src\vk_mem_alloc.cpp" />
     <ClCompile Include="Source\Graphics\RenderGraph.cpp" />
     <ClCompile Include="Source\Graphics\Slang\SlangParser.cpp" />
-    <ClCompile Include="Source\Graphics\DefaultRenderPasses.cpp" />
-    <ClCompile Include="Source\Graphics\DefaultPipelineBuilders.cpp" />
   </ItemGroup>
 </Project>

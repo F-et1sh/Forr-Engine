@@ -292,7 +292,7 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(RenderPassHandle)
     };
 
-    class RenderGraph {
+    class FORR_API RenderGraph {
     public:
         // this structure is used to access resources in a map
         // different versions of the same resource cannot be accessed
