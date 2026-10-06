@@ -10,26 +10,34 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\ThirdParty\glad\src\gl.c" />
+    <ClCompile Include="..\ThirdParty\MikkTSpace\src\mikktspace.c" />
+    <ClCompile Include="..\ThirdParty\stb\src\stb_image.cpp" />
+    <ClCompile Include="..\ThirdParty\stb\src\stb_image_write.cpp" />
+    <ClCompile Include="..\ThirdParty\tinygltf\src\tiny_gltf.cpp" />
+    <ClCompile Include="..\ThirdParty\VulkanMemoryAllocator\src\vk_mem_alloc.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>17.0</VCProjectVersion>
+    <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{38ca8431-599d-4927-9871-b0acd6085b88}</ProjectGuid>
-    <RootNamespace>ForrGame</RootNamespace>
+    <ProjectGuid>{01d21346-d014-4447-9557-58b721c77d2f}</ProjectGuid>
+    <RootNamespace>ExternalSources</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -43,29 +51,24 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ExcludePath>$(SolutionDir)External;$(SolutionDir)ThirdParty;$(ExcludePath)</ExcludePath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ExcludePath>$(SolutionDir)External;$(SolutionDir)ThirdParty;$(ExcludePath)</ExcludePath>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)ForrPlayer\Include;$(SolutionDir)ThirdParty\glm\include;$(SolutionDir)ThirdParty\entt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalOptions>/Zc:__cplusplus
- /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Manifest>
+      <EnableSegmentHeap>true</EnableSegmentHeap>
+    </Manifest>
+    <Lib />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -75,26 +78,19 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)ForrPlayer\Include;$(SolutionDir)ThirdParty\glm\include;$(SolutionDir)ThirdParty\entt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalOptions>/Zc:__cplusplus
- /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Manifest>
+      <EnableSegmentHeap>true</EnableSegmentHeap>
+    </Manifest>
+    <Lib />
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ForrPlayer\ForrPlayer.vcxproj">
-      <Project>{e1d09905-8eff-479a-8be3-56f4e0f7aced}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Code\main.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
