@@ -18,6 +18,8 @@
 #include "Importers/ShaderImporter.hpp"
 #include "Importers/MaterialImporter.hpp"
 
+#include "Core/path.hpp"
+
 #define IMPORTER_INSTANCE(T, T_IMPORTER)                                                                   \
     template <>                                                                                            \
     fe::pointer<T> fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_full_path) { \

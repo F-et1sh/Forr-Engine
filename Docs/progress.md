@@ -2,12 +2,14 @@
 
 ## 06.10.2026
 ### Goal
+    create ExternalSources.lib project and move all external sources into it
     remove PCH from most of the files
     place FORR_API macros
     provide reflection
 
 ### Done
-    -
+    GLM added to PCH
+    FORR_API now only in needed classes
 
 ### Problem
     -

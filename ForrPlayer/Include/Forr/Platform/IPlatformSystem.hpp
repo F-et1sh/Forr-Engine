@@ -30,7 +30,7 @@ namespace fe {
         ~PlatformSystemDesc() = default;
     };
 
-    class IPlatformSystem {
+    class FORR_API IPlatformSystem {
     public:
         virtual ~IPlatformSystem() = default;
 

@@ -66,7 +66,7 @@ namespace fe {
 
     // if you want to add some variable here, use static method IRenderer::Create()
     // the member should be appended to the devired class, not here
-    class IRenderer {
+    class FORR_API IRenderer {
     public:
         virtual ~IRenderer() = default;
 

@@ -16,14 +16,17 @@
 #include "Core/string.hpp"
 #include "Core/logging.hpp"
 
+#include "ShaderReflection.hpp"
+
 #define GLM_ENABLE_EXPERIMENTAL
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vector_angle.hpp>
-
-#include "ShaderReflection.hpp"
 
 namespace fe {
     enum class GraphicsBackend {
@@ -32,7 +35,7 @@ namespace fe {
     };
 
     // TODO : move this into Core
-    static constexpr void hash_combine(std::size_t& seed, std::size_t value) noexcept {
+    inline static constexpr void hash_combine(std::size_t& seed, std::size_t value) noexcept {
         seed ^= value + 0x9e3779b97f4a7c15 + (seed << 6) + (seed >> 2);
     };
 

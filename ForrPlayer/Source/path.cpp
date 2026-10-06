@@ -13,6 +13,8 @@
 #include "pch.hpp"
 #include "Core/path.hpp"
 
+#include "Core/logging.hpp"
+
 void fe::PathManager::init(std::string_view executable_path, bool is_editor) {
     if (executable_path.empty() || executable_path.data() == nullptr) {
         fe::logging::error("Failed to initialize PathManager. No arguments");

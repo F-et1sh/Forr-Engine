@@ -15,7 +15,7 @@
 #include "ResourceStorage.hpp"
 
 namespace fe {
-    class ResourceImporter {
+    class FORR_API ResourceImporter {
     public:
         ResourceImporter(ResourceManagementContext& context, ResourceStorage& storage) 
             : m_Context(context), m_Storage(storage) {}
