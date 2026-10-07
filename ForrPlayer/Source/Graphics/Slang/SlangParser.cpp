@@ -410,6 +410,8 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
     // there is no need to search for entry points here
     std::vector<slang::IComponentType*> component_types{};
 
+    std::vector<Slang::ComPtr<slang::IEntryPoint>> entry_points{};
+
     uint32_t dependency_count = slang_module->getDependencyFileCount();
     component_types.reserve(dependency_count);
     for (uint32_t i = 0; i < dependency_count; i++) { // starting with '0' here adds 'slang_module' itself too
@@ -418,7 +420,80 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
         Slang::ComPtr<slang::IBlob> load_diagnostics{};
         slang::IModule*             imported_module = m_Session->loadModule(dependency_file, load_diagnostics.writeRef());
         if (imported_module) {
-            int parameters_count = imported_module->getSpecializationParamCount();
+            slang::ShaderReflection* module_reflection = imported_module->getLayout();
+
+            // fun though all defined entry points and collect information about them
+            size_t defined_entry_point_count = imported_module->getDefinedEntryPointCount();
+            shader_file_data.entry_points.reserve(defined_entry_point_count);
+            for (size_t defined_entry_point_i = 0; defined_entry_point_i < defined_entry_point_count; defined_entry_point_i++) {
+
+                Slang::ComPtr<slang::IEntryPoint> entry_point{};
+                if (SLANG_FAILED(imported_module->getDefinedEntryPoint(defined_entry_point_i, entry_point.writeRef()))) {
+                    fe::logging::error("Slang -> Unified. Failed to get defined entry point\nEntry point index : %i", defined_entry_point_i);
+                    continue;
+                }
+
+                // TODO : collect parameters of entry point
+
+                slang::FunctionReflection* function_reflection = entry_point->getFunctionReflection();
+                if (!function_reflection) {
+                    fe::logging::error("Slang -> Unified. Failed to get function reflection\nEntry point index : %i", defined_entry_point_i);
+                    continue;
+                }
+
+                auto functoin_name_raw = function_reflection->getName();
+
+                auto& this_entry_point = shader_file_data.entry_points.emplace_back();
+
+                // I'm not sure that I would need arguments
+                //
+                //size_t function_parameter_count = function_reflection->getParameterCount();
+                //this_entry_point.arguments.reserve(function_parameter_count);
+                //for (size_t function_parameter_i = 0; function_parameter_i < function_parameter_count; function_parameter_i++) {
+                //    slang::VariableReflection* variable_reflection = function_reflection->getParameterByIndex(function_parameter_i);
+                //    if (!variable_reflection) {
+                //        fe::logging::error("Slang -> Unified. Failed to a parameter of function\nName : %s\nEntry point index : %i",
+                //                           this_entry_point.name.c_str(),
+                //                           defined_entry_point_i);
+                //        continue;
+                //    }
+
+                //    auto& argument = this_entry_point.arguments.emplace_back();
+                //    argument
+
+                //    //slang::TypeReflection* type_reflection = variable_reflection->getType();
+                //}
+
+                // collect generic arguments
+                slang::GenericReflection* generic_reflection = function_reflection->getGenericContainer();
+
+                size_t type_parameter_count = generic_reflection->getTypeParameterCount();
+                this_entry_point.generic_arguments.reserve(type_parameter_count);
+                for (size_t type_parameter_i = 0; type_parameter_i < type_parameter_count; type_parameter_i++) {
+
+                    slang::VariableReflection* variable_reflection = generic_reflection->getTypeParameter(type_parameter_i);
+
+                    auto& constraints = this_entry_point.generic_arguments.emplace_back();
+
+                    size_t constraint_count = generic_reflection->getTypeParameterConstraintCount(variable_reflection);
+                    constraints.reserve(constraint_count);
+                    for (size_t constraint_i = 0; constraint_i < constraint_count; constraint_i++) {
+
+                        slang::TypeReflection* type_reflection = generic_reflection->getTypeParameterConstraintType(variable_reflection, constraint_i);
+                        auto                   type_name_raw   = type_reflection->getName();
+                        std::string            name            = type_name_raw ? type_name_raw : "[UNKNOWN]";
+
+                        constraints.emplace_back(name);
+                    }
+                }
+
+                this_entry_point.name = functoin_name_raw ? functoin_name_raw : "[UNKNOWN]";
+
+                // TODO : provide stage detection
+                //
+                //this_entry_point.stage_flag
+            }
+
             component_types.emplace_back(imported_module);
         }
         else {
@@ -439,9 +514,30 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
     }
 
     slang::ProgramLayout* layout = composed_program->getLayout();
+
+    slang::EntryPointReflection* entry_point_reflection = layout->findEntryPointByName("vertexMain");
+
+    if (entry_point_reflection) {
+        std::string entry_point_name0 = entry_point_reflection->getName();
+        std::string entry_point_name1 = entry_point_reflection->getTypeLayout()->getName();
+    }
+
+    slang::EntryPointReflection* entry_point_reflection0 = layout->findEntryPointByName("vertexMain");
+
+    if (entry_point_reflection0) {
+        std::string entry_point_name00 = entry_point_reflection0->getName();
+        std::string entry_point_name01 = entry_point_reflection0->getTypeLayout()->getName();
+    }
+
+    for (size_t i = 0; i < layout->getParameterCount(); i++) {
+        slang::VariableLayoutReflection* variable_layout_reflection = layout->getParameterByIndex(i);
+        std::string                      variable_layout_name       = variable_layout_reflection->getName();
+        fe::logging::debug("Loaded parameter's name : %s", variable_layout_name.c_str());
+    }
+
     for (size_t i = 0; i < layout->getEntryPointCount(); i++) {
         slang::EntryPointReflection* entry_point_reflection = layout->getEntryPointByIndex(i);
-        std::string entry_point_name = entry_point_reflection->getName();
+        std::string                  entry_point_name       = entry_point_reflection->getName();
         fe::logging::debug("Loaded entry point name : %s", entry_point_name.c_str());
     }
 

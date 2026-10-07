@@ -145,14 +145,23 @@ namespace fe::shader {
     struct ReflectedEntryPoint {
         StageBits stage_flag{};
 
-        std::vector<fe::hashed_string> arguments{};
-        std::vector<fe::hashed_string> generic_arguments{};
+        // sometimes a generic can be specialized by a lot of types, not only one
+        // Example :
+        // '<M : IMaterial, ISomeOtherType>' --> '{ "IMaterial", "ISomeOtherType" }'
+        // there 'M' can be 'IMaterial' or 'ISomeOtherType'
+        using Constraints = std::vector<fe::hashed_string>;
+        
+        // there are generic arguments : <M : IMaterial, O : IPostProcess, bool UseShadows>
+        // every generic argument has it's constraints, which declare what types you can
+        // use to specialize this argument. Look at 'fe::ReflectedEntryPoint::Constraints' comment for examples
+        std::vector<Constraints> generic_arguments{};
+        //std::vector<fe::hashed_string> arguments{}; I'm not sure that I really need it
 
         fe::hashed_string name{};
 
         ReflectedEntryPoint() = default;
-        ReflectedEntryPoint(StageBits stage_flag, std::vector<fe::hashed_string> arguments, std::vector<fe::hashed_string> generic_arguments, fe::hashed_string name)
-            : stage_flag(stage_flag), arguments(std::move(arguments)), generic_arguments(std::move(generic_arguments)), name(std::move(name)) {}
+        ReflectedEntryPoint(StageBits stage_flag /*, std::vector<fe::hashed_string> arguments*/, std::vector<Constraints> generic_arguments, fe::hashed_string name)
+            : stage_flag(stage_flag), /*arguments(std::move(arguments)),*/ generic_arguments(std::move(generic_arguments)), name(std::move(name)) {}
 
         bool operator==(const ReflectedEntryPoint&) const noexcept = default;
     };
