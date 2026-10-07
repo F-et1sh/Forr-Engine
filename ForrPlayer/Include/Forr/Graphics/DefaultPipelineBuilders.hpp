@@ -21,6 +21,8 @@ namespace fe {
         MATERIAL_LAYOUT_STRUCTURE_INDEX_WAS_INVALID,
         VERTEX_ENTRY_POINT_ABSENT,
         FRAGMENT_ENTRY_POINT_ABSENT,
+        WRONG_NUMBER_OF_GENERIC_ARGUMENTS,
+        NO_MATERIAL_INTERFACE_IN_GENERIC_ARGUMENT_CONSTRAINTS,
         UNKNOWN_GRAPHICS_BACKEND,
         FAILED_TO_CREATE_PIPELINE,
     };
@@ -28,7 +30,7 @@ namespace fe {
     struct PBRPipelineError {
         using DetailedMessageVariants = std::variant<graphics::PipelineCreationErrors,
                                                      graphics::ParameterCreationErrors,
-                                                     fe::hashed_string>;
+                                                     std::string>;
 
         PBRPipelineErrorCodes                  error_code{};
         std::optional<DetailedMessageVariants> detailed_message{}; // used only in specific cases
@@ -56,6 +58,8 @@ namespace fe {
             const static fe::hashed_string unspecialized_buffer_name{ "TBuffer" };
             const static fe::hashed_string opengl_buffer_name{ "OpenGLBuffer" };
             const static fe::hashed_string vulkan_buffer_name{ "VulkanBuffer" };
+
+            constexpr static size_t entry_point_generic_argument_count = 1;
 
             // load shader file data and check for error
             auto shader_file_data_raw_pointer = resource_manager.GetResource(shader_file_data_ptr);
@@ -108,18 +112,51 @@ namespace fe {
             // find what generic arguments every entry point need and fill up the 'specialization'
             specialization.entry_points.reserve(pipeline_desc.entry_points.size());
             for (const auto& entry_point : pipeline_desc.entry_points) {
-                auto it = std::ranges::find_if(shader_file_data.entry_points, [&entry_point](const auto& e) -> bool {
+                // make sure that 'shader_file_data' contains declarated entry points
+                auto entry_point_it = std::ranges::find_if(shader_file_data.entry_points, [&entry_point](const auto& e) -> bool {
                     return e.name == entry_point;
                 });
 
-                if (it == shader_file_data.entry_points.end()) {
+                if (entry_point_it == shader_file_data.entry_points.end()) {
                     return std::unexpected{ entry_point == vertex_entry_point_name ? PBRPipelineErrorCodes::VERTEX_ENTRY_POINT_ABSENT
                                                                                    : PBRPipelineErrorCodes::FRAGMENT_ENTRY_POINT_ABSENT };
                 }
+                
+                // make sure that this entry point has only one generic argument to specialize
+                size_t generic_arguments_count = entry_point_it->generic_arguments.size();
+                if (generic_arguments_count != entry_point_generic_argument_count) {
+                    std::string error_message{};
+                    error_message.reserve(50 + entry_point_it->name.size());
+                    error_message = std::string{ "Entry point name : " } + entry_point_it->name.c_str() +
+                                    std::string{ "\nArguments count : " } + std::to_string(generic_arguments_count);
 
-                specialization.entry_points.emplace_back(shader::EntryPointSpecialization{ .name      = entry_point,
-                                                                                           .arguments = { shader::SpecializationArgument{ .name  = material_interface_name,
-                                                                                                                                          .value = material_structure_layout.name } } });
+                    return std::unexpected{ PBRPipelineError{ PBRPipelineErrorCodes::WRONG_NUMBER_OF_GENERIC_ARGUMENTS, error_message } };
+                }
+
+                // make sure that this generic argument can be specialized with 'material_interface_name'
+                const auto& generic_argument = entry_point_it->generic_arguments.back();
+                auto        constaint_it     = std::ranges::find_if(generic_argument, [](const auto& e) -> bool {
+                    return e == material_interface_name;
+                });
+
+                if (constaint_it == generic_argument.end()) {
+                    std::string error_message{};
+                    error_message.reserve(10 * generic_argument.size() + 50 + entry_point_it->name.size());
+                    error_message = std::string{ "Entry point name : " } + entry_point_it->name.c_str() +
+                                    std::string{ "\nConstaints : " };
+
+                    for (const auto& constraints : generic_argument) {
+                        error_message.append_range(std::string{ "\n" + constraints });
+                    }
+
+                    return std::unexpected{ PBRPipelineError{ PBRPipelineErrorCodes::NO_MATERIAL_INTERFACE_IN_GENERIC_ARGUMENT_CONSTRAINTS, error_message } };
+                }
+
+                specialization.entry_points.emplace_back(shader::EntryPointSpecialization{
+                    .name      = entry_point,
+                    .arguments = { shader::SpecializationArgument{
+                        .name  = material_interface_name,
+                        .value = material_structure_layout.name } } });
             }
 
             std::reference_wrapper<const fe::hashed_string> buffer_specialization_name{ opengl_buffer_name };

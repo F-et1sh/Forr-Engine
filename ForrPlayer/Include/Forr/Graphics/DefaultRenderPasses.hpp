@@ -49,8 +49,13 @@ namespace fe {
 
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
 
+            resource::Material pbr_material{};
+            pbr_material.layout_key = { .shader_file_data = shader_file_data_ptr, .structure_layout_storage_index = 0 };
+
+            fe::pointer<resource::Material> pbr_material_ptr = builder.resource_manager.CreateResource(std::move(pbr_material));
+
             auto pipeline_result = PBRPipelineBuilder::Build(shader_file_data_ptr,
-                                                             builder.resource_manager.GetContext().default_pbr_material_ptr,
+                                                             pbr_material_ptr,
                                                              builder.resource_manager,
                                                              builder.renderer);
             if (pipeline_result.has_value()) {
@@ -59,7 +64,7 @@ namespace fe {
             else {
                 const auto& error             = pipeline_result.error();
                 std::string error_code_string = std::to_string(static_cast<const uint8_t>(error.error_code));
-                std::string error_string      = "Failed to create PBR effect material via default PBR material ptr from resource manager\nError code : " + error_code_string;
+                std::string error_string      = "Failed to create PBR effect material\nError code : " + error_code_string;
 
                 if (error.detailed_message.has_value()) {
                     error_string += "\nAdditional message : ";
@@ -73,8 +78,8 @@ namespace fe {
                         const auto& value = std::get<graphics::ParameterCreationErrors>(detailed_message);
                         error_string += std::to_string(static_cast<const uint8_t>(value));
                     }
-                    else if (std::holds_alternative<fe::hashed_string>(detailed_message)) {
-                        const auto& value = std::get<fe::hashed_string>(detailed_message);
+                    else if (std::holds_alternative<std::string>(detailed_message)) {
+                        const auto& value = std::get<std::string>(detailed_message);
                         error_string += value;
                     }
                 }
@@ -83,7 +88,7 @@ namespace fe {
                 return;
             }
 
-            pass_data.default_material_ptr = builder.resource_manager.GetContext().default_pbr_material_ptr;
+            pass_data.default_material_ptr = pbr_material_ptr;
             if (!pass_data.test_model_ptr) {
                 pass_data.test_model_ptr = builder.resource_manager.ImportResource<resource::Model>(PATH.getModelsPath() / "TatarSuzanne\\TatarSuzanne.gltf");
             }

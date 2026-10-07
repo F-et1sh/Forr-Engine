@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 07.10.2026
+### Goal
+    provide reflection
+
+### Done
+    reflection in progress : entry point reflection provided
+
+### Problem
+    -
+
 ## 06.10.2026
 ### Goal
     create ExternalSources.lib project and move all external sources into it
