@@ -405,16 +405,15 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
 
     // reflect
 
-    Slang::ComPtr<slang::IComponentType> composed_program{};
-
     // there is no need to search for entry points here
     std::vector<slang::IComponentType*> component_types{};
 
     std::vector<Slang::ComPtr<slang::IEntryPoint>> entry_points{};
 
-    uint32_t dependency_count = slang_module->getDependencyFileCount();
+    // load all dependencies and reflect entry points
+    size_t dependency_count = slang_module->getDependencyFileCount();
     component_types.reserve(dependency_count);
-    for (uint32_t i = 0; i < dependency_count; i++) { // starting with '0' here adds 'slang_module' itself too
+    for (size_t i = 0; i < dependency_count; i++) { // starting with '0' here adds 'slang_module' itself too
         const char* dependency_file = slang_module->getDependencyFilePath(i);
 
         Slang::ComPtr<slang::IBlob> load_diagnostics{};
@@ -433,36 +432,17 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
                     continue;
                 }
 
-                // TODO : collect parameters of entry point
-
                 slang::FunctionReflection* function_reflection = entry_point->getFunctionReflection();
                 if (!function_reflection) {
                     fe::logging::error("Slang -> Unified. Failed to get function reflection\nEntry point index : %i", defined_entry_point_i);
                     continue;
                 }
 
-                auto functoin_name_raw = function_reflection->getName();
-
                 auto& this_entry_point = shader_file_data.entry_points.emplace_back();
 
-                // I'm not sure that I would need arguments
-                //
-                //size_t function_parameter_count = function_reflection->getParameterCount();
-                //this_entry_point.arguments.reserve(function_parameter_count);
-                //for (size_t function_parameter_i = 0; function_parameter_i < function_parameter_count; function_parameter_i++) {
-                //    slang::VariableReflection* variable_reflection = function_reflection->getParameterByIndex(function_parameter_i);
-                //    if (!variable_reflection) {
-                //        fe::logging::error("Slang -> Unified. Failed to a parameter of function\nName : %s\nEntry point index : %i",
-                //                           this_entry_point.name.c_str(),
-                //                           defined_entry_point_i);
-                //        continue;
-                //    }
-
-                //    auto& argument = this_entry_point.arguments.emplace_back();
-                //    argument
-
-                //    //slang::TypeReflection* type_reflection = variable_reflection->getType();
-                //}
+                // collect name
+                auto functoin_name_raw = function_reflection->getName();
+                this_entry_point.name  = functoin_name_raw ? functoin_name_raw : "[UNKNOWN]";
 
                 // collect generic arguments
                 slang::GenericReflection* generic_reflection = function_reflection->getGenericContainer();
@@ -487,8 +467,6 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
                     }
                 }
 
-                this_entry_point.name = functoin_name_raw ? functoin_name_raw : "[UNKNOWN]";
-
                 // TODO : provide stage detection
                 //
                 //this_entry_point.stage_flag
@@ -502,6 +480,8 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
         }
     }
 
+    Slang::ComPtr<slang::IComponentType> composed_program{};
+
     Slang::ComPtr<slang::IBlob> composition_diagnostics{};
     SlangResult                 result = m_Session->createCompositeComponentType(component_types.data(),
                                                                                  component_types.size(),
@@ -513,33 +493,9 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
         return std::unexpected{ SlangParser::ShaderFileDataErrors::FAILED_TO_CREATE_COMPOSED_PROGRAM };
     }
 
-    slang::ProgramLayout* layout = composed_program->getLayout();
-
-    slang::EntryPointReflection* entry_point_reflection = layout->findEntryPointByName("vertexMain");
-
-    if (entry_point_reflection) {
-        std::string entry_point_name0 = entry_point_reflection->getName();
-        std::string entry_point_name1 = entry_point_reflection->getTypeLayout()->getName();
-    }
-
-    slang::EntryPointReflection* entry_point_reflection0 = layout->findEntryPointByName("vertexMain");
-
-    if (entry_point_reflection0) {
-        std::string entry_point_name00 = entry_point_reflection0->getName();
-        std::string entry_point_name01 = entry_point_reflection0->getTypeLayout()->getName();
-    }
-
-    for (size_t i = 0; i < layout->getParameterCount(); i++) {
-        slang::VariableLayoutReflection* variable_layout_reflection = layout->getParameterByIndex(i);
-        std::string                      variable_layout_name       = variable_layout_reflection->getName();
-        fe::logging::debug("Loaded parameter's name : %s", variable_layout_name.c_str());
-    }
-
-    for (size_t i = 0; i < layout->getEntryPointCount(); i++) {
-        slang::EntryPointReflection* entry_point_reflection = layout->getEntryPointByIndex(i);
-        std::string                  entry_point_name       = entry_point_reflection->getName();
-        fe::logging::debug("Loaded entry point name : %s", entry_point_name.c_str());
-    }
+    // TODO :
+    // 
+    // reflect descriptors, push constants and structures
 
     return shader_file_data;
 }
