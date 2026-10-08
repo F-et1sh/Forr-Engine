@@ -102,10 +102,17 @@ namespace fe {
             }
         };
 
-        using HandleType     = HandleT;
-        using GenerationType = GenerationT;
+        using HandleType       = HandleT;
+        using GenerationType   = GenerationT;
+        using CustomFieldsType = CustomFields;
 
     public:
+        constexpr pointer(HandleT      index,
+                          GenerationT  generation,
+                          CustomFields custom_fields) noexcept
+            requires(!std::same_as<CustomFields, empty_custom_fields_t>)
+            : m_index(index), m_generation(generation), m_custom_fields(std::move(custom_fields)) {}
+
         constexpr pointer(HandleT index, GenerationT generation) noexcept
             : m_index(index), m_generation(generation) {}
         ~pointer() = default;

@@ -48,6 +48,68 @@ namespace fe {
             builder.writeToScreen(true);
 
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
+            resource::ShaderFileData&             shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
+
+            {
+                auto it = std::ranges::find_if(shader_file_data.descriptor_layouts, [](const auto& e) -> bool {
+                    return e.name == "g_ModelMatrices";
+                });
+
+                if (it == shader_file_data.descriptor_layouts.end()) {
+                    builder.assertFatal("Failed to find parameter for g_ModelMatrices");
+                    return;
+                }
+
+                auto model_matrices_parameter_expected = builder.renderer.CreateParameter(*it);
+                if (!model_matrices_parameter_expected.has_value()) {
+                    builder.assertFatal("Failed to create parameter for g_ModelMatrices");
+                    return;
+                }
+                pass_data.model_matrices_parameter_id = model_matrices_parameter_expected.value();
+            }
+            {
+                auto it = std::ranges::find_if(shader_file_data.descriptor_layouts, [](const auto& e) -> bool {
+                    return e.name == "g_MaterialsRawData";
+                });
+
+                if (it == shader_file_data.descriptor_layouts.end()) {
+                    builder.assertFatal("Failed to find parameter for g_MaterialsRawData");
+                    return;
+                }
+
+                // TODO :
+                //
+                //builder.renderer.SpecializeParameter(*it, "OpenGLBuffer");
+
+                shader::ReflectedDescriptor specialized_parameter{ *it };
+                specialized_parameter.descriptor_type = shader::DescriptorType::STORAGE_BUFFER;
+                specialized_parameter.array_size      = 0;
+                specialized_parameter.size            = 0;
+
+                auto model_matrices_parameter_expected = builder.renderer.CreateParameter(specialized_parameter);
+                if (!model_matrices_parameter_expected.has_value()) {
+                    builder.assertFatal("Failed to create parameter for g_MaterialsRawData");
+                    return;
+                }
+                pass_data.materials_parameter_id = model_matrices_parameter_expected.value();
+            }
+            {
+                auto it = std::ranges::find_if(shader_file_data.descriptor_layouts, [](const auto& e) -> bool {
+                    return e.name == "g_GlobalData";
+                });
+
+                if (it == shader_file_data.descriptor_layouts.end()) {
+                    builder.assertFatal("Failed to find parameter for g_GlobalData");
+                    return;
+                }
+
+                auto model_matrices_parameter_expected = builder.renderer.CreateParameter(*it);
+                if (!model_matrices_parameter_expected.has_value()) {
+                    builder.assertFatal("Failed to create parameter for g_GlobalData");
+                    return;
+                }
+                pass_data.global_data_parameter_id = model_matrices_parameter_expected.value();
+            }
 
             resource::Material pbr_material{};
             pbr_material.layout_key = { .shader_file_data = shader_file_data_ptr, .structure_layout_storage_index = 0 };
@@ -67,7 +129,7 @@ namespace fe {
                 std::string error_string      = "Failed to create PBR effect material\nError code : " + error_code_string;
 
                 if (error.detailed_message.has_value()) {
-                    error_string += "\nAdditional message : ";
+                    error_string += "\nAdditional message :\n";
 
                     const auto& detailed_message = error.detailed_message.value();
                     if (std::holds_alternative<graphics::PipelineCreationErrors>(detailed_message)) {
@@ -139,13 +201,14 @@ namespace fe {
 
             pass_data.data[1] = model2;
 
+            context.BindPipeline(pass_data.pipeline_id);
+
             context.BindBuffer(pass_data.model_matrices_parameter_id);
-            context.WriteBuffer(pass_data.model_matrices_parameter_id, pass_data.data);
-
-            context.BindBuffer(pass_data.materials_parameter_id);
-            context.WriteBuffer(pass_data.materials_parameter_id, pass_data.materials_data);
-
             context.BindBuffer(pass_data.global_data_parameter_id);
+            context.BindBuffer(pass_data.materials_parameter_id);
+
+            context.WriteBuffer(pass_data.model_matrices_parameter_id, pass_data.data);
+            context.WriteBuffer(pass_data.materials_parameter_id, pass_data.materials_data);
             context.WriteBuffer(pass_data.global_data_parameter_id, pass_data.global_data_as_bytes);
 
             context.DrawModel(pass_data.test_model_ptr, 0);

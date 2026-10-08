@@ -197,7 +197,7 @@ namespace fe {
 
         enum class ParameterCreationErrors {
             FORGOT_TO_SPECIALIZE_GENERIC_DESCRIPTOR,
-            UNSUPPORTED_MEMORY_TYPE,
+            UNSUPPORTED_DESCRIPTOR_TYPE,
             MAPPED_MEMORY_WAS_NULLPTR
         };
 

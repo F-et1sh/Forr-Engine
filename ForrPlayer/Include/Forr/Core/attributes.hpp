@@ -25,7 +25,7 @@
 
 #if __cplusplus >= 202002L // C++20
 #define FORR_LIKELY [[likely]]
-#define FORR_UNLIKELY [[unlikely]]  
+#define FORR_UNLIKELY [[unlikely]]
 #define FORR_CONSTEVAL consteval
 #define FORR_CONSTINIT constinit
 #define FORR_NO_UNIQUE_ADDRESS [[no_unique_address]]
@@ -100,6 +100,10 @@
     T(T&&) noexcept            = default; \
     T& operator=(T&&) noexcept = default;
 
-#define FORR_CLASS_NONMOVABLE(T)    \
+#define FORR_CLASS_NONMOVABLE(T)         \
     T(T&&) noexcept            = delete; \
     T& operator=(T&&) noexcept = delete;
+
+#define FORR_CLASS_MOVABLEONLY(T) \
+    FORR_CLASS_NONCOPYABLE(T)     \
+    FORR_CLASS_MOVABLE(T)\

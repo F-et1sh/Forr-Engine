@@ -6,6 +6,8 @@
 
 ### Done
     descriptors and push constants parsing provided
+    FORR_MOVABLEONLY provided
+    reflection is done / two objects rendered correctly
 
 ### Problem
     -

@@ -103,17 +103,14 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
             continue;
         }
 
-        loaded_modules.emplace_back(loaded_module_raw);
-
         uint32_t dependency_count = loaded_module_raw->getDependencyFileCount();
         loaded_modules.reserve(loaded_modules.size() + dependency_count);
-        for (uint32_t i = 0; i < dependency_count; i++) {
+        for (uint32_t i = 0; i < dependency_count; i++) { // starting with '0', because it's already contains the main file
             const char* dependency_file = loaded_module_raw->getDependencyFilePath(i);
 
             Slang::ComPtr<slang::IBlob> load_diagnostics{};
             slang::IModule*             imported_module_raw = m_Session->loadModule(dependency_file, load_diagnostics.writeRef());
             if (imported_module_raw) {
-                int parameters_count = imported_module_raw->getSpecializationParamCount();
                 loaded_modules.emplace_back(imported_module_raw);
             }
             else {
@@ -128,17 +125,15 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
     // add all loaded modules
     component_types.append_range(loaded_modules);
 
-    // TODO : provide descriptors and push constants checking
-
     struct EntryPoint {
-        Slang::ComPtr<slang::IEntryPoint> entry_point{};
-        ShaderType                        shader_type{};
-        std::string_view                  entry_point_name{};
+        Slang::ComPtr<slang::IComponentType> entry_point{};
+        ShaderType                           shader_type{};
+        std::string_view                     entry_point_name{};
 
         EntryPoint() = default;
-        EntryPoint(slang::IEntryPoint* entry_point,
-                   ShaderType          shader_type,
-                   std::string_view    entry_point_name)
+        EntryPoint(slang::IComponentType* entry_point,
+                   ShaderType             shader_type,
+                   std::string_view       entry_point_name)
             : entry_point(entry_point),
               shader_type(shader_type),
               entry_point_name(entry_point_name) {}
@@ -149,6 +144,7 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
 
     std::vector<EntryPoint> entry_points{};
 
+    // collect all entry points
     entry_points.reserve(pipeline_desc.entry_points.size());
     for (const fe::hashed_string& entry_point_name : pipeline_desc.entry_points) {
 
@@ -157,20 +153,11 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
 
         // find the module
         for (slang::IModule* loaded_module : loaded_modules) {
+            // search for this entry point in shader's module
+            SlangResult result = loaded_module->findEntryPointByName(entry_point_name.c_str(), found_entry_point.writeRef());
 
-            // TODO : remove
-            fe::logging::debug("Searching entry point %s in module %s", entry_point_name.c_str(), loaded_module->getName());
-
-            Slang::ComPtr<slang::IEntryPoint> entry_point{};
-            SlangResult                       result = loaded_module->findEntryPointByName(entry_point_name.c_str(), entry_point.writeRef()); // find this entry point in shader's module
-
-            if (SLANG_SUCCEEDED(result)) {
-                if (found_entry_point) {
-                    fe::logging::warning("Found another declaration of entry point %s", entry_point_name.c_str());
-                    continue;
-                }
-                found_entry_point.attach(entry_point.detach());
-            }
+            // leave the loop if found successfully
+            if (SLANG_SUCCEEDED(result)) break;
         }
 
         if (!found_entry_point) {
@@ -231,21 +218,18 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
 
         // check if Slang and Unified match each other
         if (slang_specialization_parameters_count != it->arguments.size()) {
-            fe::logging::error("Failed to specialize an entry point. Slang specialization parameters count was %i, while you passed %i argument(s)",
+            fe::logging::error("Failed to specialize an entry point. Slang specialization parameters count was %i, while there was %i argument(s)",
                                slang_specialization_parameters_count,
                                it->arguments.size());
             continue;
         }
 
         std::vector<slang::SpecializationArg> specialization_arguments{};
-        specialization_arguments.resize(it->arguments.size());
+        specialization_arguments.resize(it->arguments.size(), {});
 
         // this is needed because 'const char*' in 'slang::SpecializationArg::expr' must live till
         // calling the 'slang::IComponentType::specialize()' function
         std::vector<std::string> string_pool{};
-
-        // this is needed to find a type by name for specialization
-        Slang::ComPtr<slang::IComponentType> composed_program{};
 
         // collect specialization arguments
         string_pool.reserve(it->arguments.size());
@@ -254,34 +238,23 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
             auto&       slang_argument = specialization_arguments[i];
 
             if (std::holds_alternative<fe::hashed_string>(argument.value)) {
-                // initialize 'composed_program'
-                if (!composed_program) {
-                    Slang::ComPtr<slang::IBlob> composition_diagnostics{};
-                    SlangResult                 composition_result = m_Session->createCompositeComponentType(component_types.data(),
-                                                                                                             component_types.size(),
-                                                                                                             composed_program.writeRef(),
-                                                                                                             composition_diagnostics.writeRef());
-                    if (SLANG_FAILED(composition_result)) {
-                        fe::logging::error("Failed to create a composed program for specialization for entry point %s\n%s",
-                                           entry_point_name.c_str(),
-                                           (const char*) composition_diagnostics->getBufferPointer());
-                        continue;
+                fe::hashed_string type_name = std::get<fe::hashed_string>(argument.value);
+
+                for (slang::IComponentType* component_type : component_types) {
+                    slang::ProgramLayout*  module_layout   = component_type->getLayout();
+                    slang::TypeReflection* type_reflection = module_layout->findTypeByName(type_name.c_str());
+
+                    if (type_reflection) {
+                        slang_argument = slang::SpecializationArg::fromType(type_reflection);
                     }
                 }
 
-                fe::hashed_string type_name = std::get<fe::hashed_string>(argument.value);
-
-                slang::ProgramLayout*  program_layout  = composed_program->getLayout();
-                slang::TypeReflection* type_reflection = program_layout->findTypeByName(type_name.c_str());
-
-                if (!type_reflection) {
-                    fe::logging::error("Failed find %s by name for specialization for entry point %s",
+                if (!slang_argument.type) {
+                    fe::logging::error("Failed to find %s by name for specialization of entry point %s",
                                        type_name.c_str(),
                                        entry_point_name.c_str());
                     continue;
                 }
-
-                slang_argument = slang::SpecializationArg::fromType(type_reflection);
             }
             else {
                 auto& expr_string = string_pool.emplace_back();
@@ -306,12 +279,12 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
         }
 
         // specialize the entry point
-        slang::IComponentType*      component_type_raw{};
-        Slang::ComPtr<slang::IBlob> specialization_diagnostics{};
+        Slang::ComPtr<slang::IComponentType> specialized_entry_point{};
+        Slang::ComPtr<slang::IBlob>          specialization_diagnostics{};
 
         SlangResult result = found_entry_point->specialize(specialization_arguments.data(),
                                                            specialization_arguments.size(),
-                                                           &component_type_raw,
+                                                           specialized_entry_point.writeRef(),
                                                            specialization_diagnostics.writeRef());
         if (SLANG_FAILED(result)) {
             fe::logging::error("Failed to specialize an entry point %s\n%s",
@@ -321,7 +294,7 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
         }
 
         // add completed entry point
-        entry_points.emplace_back(EntryPoint{ found_entry_point.detach(), shader_type, entry_point_name });
+        entry_points.emplace_back(EntryPoint{ specialized_entry_point.detach(), shader_type, entry_point_name });
     }
 
     // add all entry points
@@ -330,7 +303,7 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
         component_types.emplace_back(entry_point.entry_point);
     }
 
-    // create final composite to extract the sources
+    // create final composite
     Slang::ComPtr<slang::IComponentType> composed_program{};
 
     Slang::ComPtr<slang::IBlob> composition_diagnostics{};
@@ -344,6 +317,13 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
         return std::unexpected{ ShaderBuildErrors::COMPOSITION_FAILED };
     }
 
+    // specialize global parameters
+    Slang::ComPtr<slang::IComponentType> specialized_program = SlangParser::specialize(pipeline_desc, composed_program, component_types);
+    if (!specialized_program) {
+        return std::unexpected{ ShaderBuildErrors::FAILED_TO_SPECIALIZE_GLOBAL_PARAMETERS };
+    }
+
+    // extract source codes
     shader::ProgramSources source_codes{};
 
     for (size_t i = 0; i < entry_points.size(); i++) {
@@ -352,10 +332,10 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
         Slang::ComPtr<slang::IBlob> spirv_code{};
 
         Slang::ComPtr<slang::IBlob> entry_point_code_diagnostics{};
-        SlangResult                 result = composed_program->getEntryPointCode(i, 0, spirv_code.writeRef(), entry_point_code_diagnostics.writeRef());
+        SlangResult                 result = specialized_program->getEntryPointCode(i, 0, spirv_code.writeRef(), entry_point_code_diagnostics.writeRef());
         if (SLANG_FAILED(result)) {
             fe::logging::error("Failed to get the %s entry point source code\n%s",
-                               entry_point.entry_point_name,
+                               entry_point.entry_point_name.data(),
                                (const char*) entry_point_code_diagnostics->getBufferPointer());
             continue;
         }
@@ -463,13 +443,15 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
                         auto                   type_name_raw   = type_reflection->getName();
                         std::string            name            = type_name_raw ? type_name_raw : m_UnknownVariableName;
 
-                        constraints.emplace_back(name);
+                        constraints.emplace_back(std::move(name.c_str()));
                     }
                 }
 
                 // TODO : provide stage detection
-                //
-                //this_entry_point.stage_flag
+                this_entry_point.stage_flags |= static_cast<uint32_t>(ShaderType::VERTEX);
+                this_entry_point.stage_flags |= static_cast<uint32_t>(ShaderType::FRAGMENT);
+                this_entry_point.stage_flags |= static_cast<uint32_t>(ShaderType::COMPUTE);
+                this_entry_point.stage_flags |= static_cast<uint32_t>(ShaderType::GEOMETRY);
             }
 
             component_types.emplace_back(imported_module);
@@ -493,6 +475,7 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
         return std::unexpected{ SlangParser::ShaderFileDataErrors::FAILED_TO_CREATE_COMPOSED_PROGRAM };
     }
 
+    // reflect descriptors and push constants
     slang::ProgramLayout* layout          = composed_program->getLayout();
     unsigned int          parameter_count = layout->getParameterCount();
 
@@ -515,11 +498,133 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
         }
     }
 
-    // TODO :
-    //
     // reflect structures
+    slang::DeclReflection* module_reflection = slang_module->getModuleReflection();
+
+    size_t children_count = module_reflection->getChildrenCount();
+    shader_file_data.structure_layouts.reserve(children_count);
+
+    // unwrap first module - it always exists, even if the file is empty
+    auto list = module_reflection->getChildren();
+    for (auto child : list) {
+
+        SlangDeclKind kind = child->getKind();
+
+        // there can be only 'Struct'
+        if (kind != SlangDeclKind::Struct) continue;
+
+        shader::ReflectedStructureLayout& material_layout = shader_file_data.structure_layouts.emplace_back();
+
+        slang::TypeReflection*       type        = child->getType();
+        slang::TypeLayoutReflection* type_layout = layout->getTypeLayout(type);
+
+        material_layout.name = type_layout->getName();
+        material_layout.size = type_layout->getSize();
+
+        unsigned int field_count = type_layout->getFieldCount();
+        material_layout.members.reserve(field_count);
+        for (unsigned int i = 0; i < field_count; i++) {
+            slang::VariableLayoutReflection* variable_layout = type_layout->getFieldByIndex(i);
+            auto&                            member          = material_layout.members.emplace_back();
+
+            SlangParser::parseMemberRecursive(variable_layout, static_cast<shader::ReflectedDataNode*>(&member));
+        }
+    }
 
     return shader_file_data;
+}
+
+FORR_NODISCARD Slang::ComPtr<slang::IComponentType> fe::SlangParser::specialize(const graphics::PipelineDesc&        pipeline_desc,
+                                                                                slang::IComponentType*               composed_program,
+                                                                                std::vector<slang::IComponentType*>& component_types) {
+    // return if there is nothing to specialize
+    if (!pipeline_desc.specialization.has_value()) return nullptr;
+
+    if (!composed_program) {
+        fe::logging::error("Failed to specialize global parameters. composed_program was nullptr");
+        return nullptr;
+    }
+
+    const auto& specialization = pipeline_desc.specialization.value();
+
+    uint32_t slang_specialization_parameters_count = composed_program->getSpecializationParamCount();
+
+    // check if Slang and Unified match each other
+    if (slang_specialization_parameters_count != specialization.global_arguments.size()) {
+        fe::logging::error("Failed to specialize global parameters. Slang specialization parameters count was %i, while there was %i argument(s)",
+                           slang_specialization_parameters_count,
+                           specialization.global_arguments.size());
+        return nullptr;
+    }
+
+    std::vector<slang::SpecializationArg> specialization_arguments{};
+    specialization_arguments.resize(specialization.global_arguments.size(), {});
+
+    // this is needed because 'const char*' in 'slang::SpecializationArg::expr' must live till
+    // calling the 'slang::IComponentType::specialize()' function
+    std::vector<std::string> string_pool{};
+
+    // collect specialization arguments
+    string_pool.reserve(specialization.global_arguments.size());
+    for (size_t i = 0; i < specialization.global_arguments.size(); i++) {
+        const auto& argument       = specialization.global_arguments[i];
+        auto&       slang_argument = specialization_arguments[i];
+
+        if (std::holds_alternative<fe::hashed_string>(argument.value)) {
+            fe::hashed_string type_name = std::get<fe::hashed_string>(argument.value);
+
+            for (slang::IComponentType* component_type : component_types) {
+                slang::ProgramLayout*  module_layout   = component_type->getLayout();
+                slang::TypeReflection* type_reflection = module_layout->findTypeByName(type_name.c_str());
+
+                if (type_reflection) {
+                    slang_argument = slang::SpecializationArg::fromType(type_reflection);
+                }
+            }
+
+            if (!slang_argument.type) {
+                fe::logging::error("Failed to find %s by name for specialization of global parameters",
+                                   type_name.c_str());
+                continue;
+            }
+        }
+        else {
+            auto& expr_string = string_pool.emplace_back();
+
+            std::visit([&](auto&& arg) {
+                using T = std::decay_t<decltype(arg)>;
+                if constexpr (std::is_same_v<T, bool>) {
+                    expr_string = arg ? "true" : "false";
+                }
+                else if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t> ||
+                                   std::is_same_v<T, int64_t> || std::is_same_v<T, uint64_t>) {
+                    expr_string = std::to_string(arg);
+                }
+                else if constexpr (std::is_same_v<T, float> || std::is_same_v<T, double>) {
+                    expr_string = std::to_string(arg) + "f";
+                }
+            },
+                       argument.value);
+
+            slang_argument = slang::SpecializationArg::fromExpr(expr_string.c_str());
+        }
+    }
+
+    // specialize the composed program
+    Slang::ComPtr<slang::IComponentType> specialized_program{};
+    Slang::ComPtr<slang::IBlob>          specialization_diagnostics{};
+
+    SlangResult result = composed_program->specialize(specialization_arguments.data(),
+                                                      specialization_arguments.size(),
+                                                      specialized_program.writeRef(),
+                                                      specialization_diagnostics.writeRef());
+    if (SLANG_FAILED(result)) {
+        fe::logging::error("Failed to specialize global parameters\n%s",
+                           (const char*) specialization_diagnostics->getBufferPointer());
+        return nullptr;
+    }
+
+    return specialized_program;
 }
 
 void fe::SlangParser::parseVariableRecursive(slang::VariableLayoutReflection*             variable_layout,
@@ -543,21 +648,43 @@ void fe::SlangParser::parseVariableRecursive(slang::VariableLayoutReflection*   
             SlangParser::parsePushConstants(variable_layout, push_constants);
         } break;
 
-        case SlangCategory::GenericResource: {
-            auto& descriptor_layout = descriptor_layouts.emplace_back();
+            //case SlangCategory::GenericResource: {
+            //    auto& descriptor_layout = descriptor_layouts.emplace_back();
 
-            const char*      name_raw = variable_layout->getName();
-            std::string_view name     = name_raw ? name_raw : m_UnknownVariableName;
+            //    slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
 
-            descriptor_layout.name            = name;
-            descriptor_layout.descriptor_type = ShaderDescriptor::GENERIC;
-        } break;
+            //    const char* type_name_raw = type_layout->getName();
+            //    const char* name_raw      = variable_layout->getName();
+
+            //    descriptor_layout.name            = name_raw ? name_raw : (type_name_raw ? type_name_raw : m_UnknownVariableName);
+            //    descriptor_layout.descriptor_type = ShaderDescriptor::GENERIC;
+
+            //    descriptor_layout.stage_flags |= static_cast<uint32_t>(ShaderType::VERTEX);
+            //    descriptor_layout.stage_flags |= static_cast<uint32_t>(ShaderType::FRAGMENT);
+            //    descriptor_layout.stage_flags |= static_cast<uint32_t>(ShaderType::COMPUTE);
+            //    descriptor_layout.stage_flags |= static_cast<uint32_t>(ShaderType::GEOMETRY);
+            //} break;
 
         case SlangCategory::SubElementRegisterSpace: {
+            // TODO : rewrite this if needed
+
             auto                             type_layout             = variable_layout->getTypeLayout();
             slang::VariableLayoutReflection* element_variable_layout = type_layout->getElementVarLayout();
+            slang::TypeLayoutReflection*     element_type_layout     = type_layout->getElementTypeLayout();
 
-            SlangParser::parseVariableRecursive(variable_layout, descriptor_layouts, push_constants_layouts);
+            auto& descriptor_layout = descriptor_layouts.emplace_back();
+
+            const char* name_raw = variable_layout->getName();
+
+            descriptor_layout.name            = name_raw ? name_raw : m_UnknownVariableName;
+            descriptor_layout.descriptor_type = ShaderDescriptor::GENERIC;
+
+            descriptor_layout.stage_flags |= static_cast<uint32_t>(ShaderType::VERTEX);
+            descriptor_layout.stage_flags |= static_cast<uint32_t>(ShaderType::FRAGMENT);
+            descriptor_layout.stage_flags |= static_cast<uint32_t>(ShaderType::COMPUTE);
+            descriptor_layout.stage_flags |= static_cast<uint32_t>(ShaderType::GEOMETRY);
+
+            //SlangParser::parseVariableRecursive(element_variable_layout, descriptor_layouts, push_constants_layouts);
         } break;
 
         default: {
@@ -583,14 +710,6 @@ void fe::SlangParser::parseDescriptorTable(slang::VariableLayoutReflection* vari
     dst_descriptor.set         = variable_layout->getBindingSpace(slang::ParameterCategory::DescriptorTableSlot);
     dst_descriptor.array_size  = 1;
     dst_descriptor.stage_flags = static_cast<uint32_t>(ShaderType::NONE);
-
-    // this doesn't work
-    //SlangStage stage = variable_layout->getStage();
-    //dst_descriptor.stage_flags =
-    //    ((stage & SLANG_STAGE_VERTEX) ? static_cast<uint32_t>(ShaderType::VERTEX) : 0) |
-    //    ((stage & SLANG_STAGE_FRAGMENT) ? static_cast<uint32_t>(ShaderType::FRAGMENT) : 0) |
-    //    ((stage & SLANG_STAGE_COMPUTE) ? static_cast<uint32_t>(ShaderType::COMPUTE) : 0) |
-    //    ((stage & SLANG_STAGE_GEOMETRY) ? static_cast<uint32_t>(ShaderType::GEOMETRY) : 0);
 
     dst_descriptor.stage_flags |= static_cast<uint32_t>(ShaderType::VERTEX);
     dst_descriptor.stage_flags |= static_cast<uint32_t>(ShaderType::FRAGMENT);
@@ -728,18 +847,10 @@ void fe::SlangParser::parsePushConstants(slang::VariableLayoutReflection* variab
     dst_push_constants.array_size  = 1;
     dst_push_constants.stage_flags = static_cast<uint32_t>(ShaderType::NONE);
 
-    // this doesn't work
-    //SlangStage stage = variable_layout->getStage();
-    //dst_push_constants.stage_flags =
-    //    ((stage & SLANG_STAGE_VERTEX) ? static_cast<uint32_t>(ShaderType::VERTEX) : 0) |
-    //    ((stage & SLANG_STAGE_FRAGMENT) ? static_cast<uint32_t>(ShaderType::FRAGMENT) : 0) |
-    //    ((stage & SLANG_STAGE_COMPUTE) ? static_cast<uint32_t>(ShaderType::COMPUTE) : 0) |
-    //    ((stage & SLANG_STAGE_GEOMETRY) ? static_cast<uint32_t>(ShaderType::GEOMETRY) : 0);
-
-    dst_push_constants.stage_flags |= static_cast<uint32_t>(ShaderType::VERTEX);
-    dst_push_constants.stage_flags |= static_cast<uint32_t>(ShaderType::FRAGMENT);
-    dst_push_constants.stage_flags |= static_cast<uint32_t>(ShaderType::COMPUTE);
-    dst_push_constants.stage_flags |= static_cast<uint32_t>(ShaderType::GEOMETRY);
+    dst_push_constants.stage_flags |= static_cast<uint8_t>(ShaderType::VERTEX);
+    dst_push_constants.stage_flags |= static_cast<uint8_t>(ShaderType::FRAGMENT);
+    dst_push_constants.stage_flags |= static_cast<uint8_t>(ShaderType::COMPUTE);
+    dst_push_constants.stage_flags |= static_cast<uint8_t>(ShaderType::GEOMETRY);
 
     slang::TypeLayoutReflection* type_layout = variable_layout->getTypeLayout();
     SlangKind                    kind        = type_layout->getKind();
@@ -801,8 +912,9 @@ void fe::SlangParser::parseMemberRecursive(slang::VariableLayoutReflection* vari
 
     dst_reflected_data_node->name = variable_layout->getName() ? variable_layout->getName() : type_layout->getName();
 
-    shader::ReflectedMember* member = static_cast<shader::ReflectedMember*>(dst_reflected_data_node);
-    member->offset                  = variable_layout->getOffset();
+    if (auto* member = dynamic_cast<shader::ReflectedMember*>(dst_reflected_data_node)) {
+        member->offset = variable_layout->getOffset();
+    }
 
     SlangParser::parseMemberRecursive(type_layout, dst_reflected_data_node);
 }
@@ -825,7 +937,7 @@ void fe::SlangParser::parseMemberRecursive(slang::TypeLayoutReflection* type_lay
         uint32_t field_count = type_layout->getFieldCount();
         dst_members.reserve(field_count);
         for (uint32_t i = 0; i < field_count; i++) {
-            shader::ReflectedMember& member = dst_members.emplace_back();
+            auto& member = dst_members.emplace_back();
             parseMemberRecursive(type_layout->getFieldByIndex(i), static_cast<shader::ReflectedDataNode*>(&member));
         }
     };

@@ -91,7 +91,7 @@ std::expected<fe::graphics::ParameterHandle, fe::graphics::ParameterCreationErro
         }
         else {
             glDeleteBuffers(1, &buffer_raw);
-            return std::unexpected{ graphics::ParameterCreationErrors::UNSUPPORTED_MEMORY_TYPE };
+            return std::unexpected{ graphics::ParameterCreationErrors::UNSUPPORTED_DESCRIPTOR_TYPE };
         }
 
         if (!descriptor.mapped) {
@@ -104,7 +104,11 @@ std::expected<fe::graphics::ParameterHandle, fe::graphics::ParameterCreationErro
         descriptor.type = parameter_desc.descriptor_type;
     }
 
-    return m_Parameters.emplace(std::move(descriptor_ring));
+    // TODO : provide something like a creation creation func template for this
+    graphics::ParameterHandle parameter_handle = m_Parameters.emplace(std::move(descriptor_ring));
+    parameter_handle.custom_fields().set       = parameter_desc.set;
+    parameter_handle.custom_fields().binding   = parameter_desc.binding;
+    return parameter_handle;
 }
 
 void fe::RendererOpenGL::BindParameter(fe::graphics::ParameterHandle parameter_id) {
@@ -815,32 +819,33 @@ void fe::RendererOpenGL::handleCommand(const render_graph::DrawIndexed& command)
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::BindPipeline& command) {
-    //m_BoundShaderProgramPtr = command.shader_program_ptr;
+    this->BindPipeline(command.pipeline_id);
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::DrawModel& command) {
-    //const resource::Model& model = *m_ResourceManager.GetResource(command.model_ptr);
+    const resource::Model& model = *m_ResourceManager.GetResource(command.model_ptr);
 
-    //for (const auto& mesh : model.meshes) {
-    //    const auto& opengl_mesh = m_OpenGLResourceManager.GetResource(mesh.gpu_handle);
-    //    glBindVertexArray(opengl_mesh.vao);
+    for (const auto& mesh : model.meshes) {
+        auto* opengl_mesh = m_Meshes.get(mesh.gpu_handle);
+        if (!opengl_mesh) assert(false);
+        glBindVertexArray(opengl_mesh->vao);
 
-    //    for (const auto& primitive : opengl_mesh.primitives) {
-    //        glDrawElementsInstancedBaseVertexBaseInstance(m_CurrentRenderMode,
-    //                                                      primitive.index_count,
-    //                                                      GL_UNSIGNED_INT,
-    //                                                      (void*) primitive.index_offset,
-    //                                                      1,
-    //                                                      0,
-    //                                                      command.first_instance);
-    //    }
-    //}
+        for (const auto& primitive : opengl_mesh->primitives) {
+            glDrawElementsInstancedBaseVertexBaseInstance(GL_TRIANGLES,
+                                                          primitive.index_count,
+                                                          GL_UNSIGNED_INT,
+                                                          (void*) primitive.index_offset,
+                                                          1,
+                                                          0,
+                                                          command.first_instance);
+        }
+    }
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::BindBuffer& command) {
-    //this->BindBuffer(command.parameter_id);
+    this->BindParameter(command.parameter_id);
 }
 
 void fe::RendererOpenGL::handleCommand(const render_graph::WriteBuffer& command) {
-    //this->WriteBuffer(command.parameter_id, command.data);
+    this->WriteParameter(command.parameter_id, command.data);
 }

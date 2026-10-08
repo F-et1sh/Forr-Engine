@@ -84,6 +84,7 @@ namespace fe::shader {
         ReflectedDataNode() = default;
         ReflectedDataNode(ValueType type, uint32_t array_size, uint32_t size, std::vector<ReflectedMember> members, std::string name)
             : type(type), array_size(array_size), size(size), members(std::move(members)), name(std::move(name)) {}
+        virtual ~ReflectedDataNode() = default;
 
         bool operator==(const ReflectedDataNode&) const noexcept = default;
     };
@@ -143,14 +144,14 @@ namespace fe::shader {
     };
 
     struct ReflectedEntryPoint {
-        StageBits stage_flag{};
+        uint8_t stage_flags{};
 
         // sometimes a generic can be specialized by a lot of types, not only one
         // Example :
         // '<M : IMaterial, ISomeOtherType>' --> '{ "IMaterial", "ISomeOtherType" }'
         // there 'M' can be 'IMaterial' or 'ISomeOtherType'
         using Constraints = std::vector<fe::hashed_string>;
-        
+
         // there are generic arguments : <M : IMaterial, O : IPostProcess, bool UseShadows>
         // every generic argument has it's constraints, which declare what types you can
         // use to specialize this argument. Look at 'fe::ReflectedEntryPoint::Constraints' comment for examples
@@ -163,8 +164,8 @@ namespace fe::shader {
         fe::hashed_string name{};
 
         ReflectedEntryPoint() = default;
-        ReflectedEntryPoint(StageBits stage_flag /*, std::vector<fe::hashed_string> arguments*/, std::vector<Constraints> generic_arguments, fe::hashed_string name)
-            : stage_flag(stage_flag), /*arguments(std::move(arguments)),*/ generic_arguments(std::move(generic_arguments)), name(std::move(name)) {}
+        ReflectedEntryPoint(uint8_t stage_flags /*, std::vector<fe::hashed_string> arguments*/, std::vector<Constraints> generic_arguments, fe::hashed_string name)
+            : stage_flags(stage_flags), /*arguments(std::move(arguments)),*/ generic_arguments(std::move(generic_arguments)), name(std::move(name)) {}
 
         bool operator==(const ReflectedEntryPoint&) const noexcept = default;
     };
