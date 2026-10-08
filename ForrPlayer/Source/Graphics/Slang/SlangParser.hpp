@@ -43,13 +43,31 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(SlangParser)
 
         // TODO : firstly pass whole 'fe::PipelineDesc', then collapse this function, making the class more modular
-        std::expected<shader::ProgramSources, ShaderBuildErrors> BuildShaderSources(const graphics::PipelineDesc& pipeline_desc, const ResourceManager& resource_manager);
+        static std::expected<shader::ProgramSources, ShaderBuildErrors> BuildShaderSources(const graphics::PipelineDesc& pipeline_desc, const ResourceManager& resource_manager);
 
         // TODO : return whole 'resource::ShaderFileData', then collapse this function, making the class more modular
-        std::expected<resource::ShaderFileData, ShaderFileDataErrors> BuildShaderFileData(const std::filesystem::path& resource_full_path, const ResourceStorage& storage);
+        static std::expected<resource::ShaderFileData, ShaderFileDataErrors> BuildShaderFileData(const std::filesystem::path& resource_full_path, const ResourceStorage& storage);
+
+    private:
+        // this reflects descriptors and push constants
+        static void parseVariableRecursive(slang::VariableLayoutReflection*             variable_layout,
+                                           std::vector<shader::ReflectedDescriptor>&    descriptor_layouts,
+                                           std::vector<shader::ReflectedPushConstants>& push_constants_layouts);
+
+        static void parseDescriptorTable(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDescriptor& dst_descriptor);
+        static void parsePushConstants(slang::VariableLayoutReflection* variable_layout, shader::ReflectedPushConstants& dst_push_constants);
+
+        static void parseMemberRecursive(slang::VariableLayoutReflection* variable_layout, shader::ReflectedDataNode* dst_reflected_data_node);
+        static void parseMemberRecursive(slang::TypeLayoutReflection* type_layout, shader::ReflectedDataNode* dst_reflected_data_node);
+
+        static void mapMatrix(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
+        static void mapVector(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
+        static void mapScalar(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
 
     private:
         inline static Slang::ComPtr<slang::IGlobalSession> m_GlobalSession{};
         inline static Slang::ComPtr<slang::ISession>       m_Session{};
+
+        inline static fe::hashed_string m_UnknownVariableName{ "[UNKNOWN]" };
     };
 } // namespace fe
