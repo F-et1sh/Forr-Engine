@@ -248,6 +248,16 @@ namespace fe {
             std::optional<shader::ProgramSpecialization> specialization{};
         };
 
+        struct ParameterHandleFields {
+            uint8_t set{};
+            uint8_t binding{};
+
+            static constexpr ParameterHandleFields from(const ParameterDesc& desc) noexcept {
+                return { static_cast<uint8_t>(desc.set),
+                         static_cast<uint8_t>(desc.binding) };
+            }
+        };
+
         enum class PipelineCreationErrors {
             ERROR,
             // TODO : fill this up

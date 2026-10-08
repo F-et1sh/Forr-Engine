@@ -106,8 +106,8 @@ std::expected<fe::graphics::ParameterHandle, fe::graphics::ParameterCreationErro
 
     // TODO : provide something like a creation creation func template for this
     graphics::ParameterHandle parameter_handle = m_Parameters.emplace(std::move(descriptor_ring));
-    parameter_handle.custom_fields().set       = parameter_desc.set;
-    parameter_handle.custom_fields().binding   = parameter_desc.binding;
+    parameter_handle.custom_fields().set       = parameter_desc.set;     // I forgot to set this and it just became 255
+    parameter_handle.custom_fields().binding   = parameter_desc.binding; // I forgot to set this and it just became 255
     return parameter_handle;
 }
 
