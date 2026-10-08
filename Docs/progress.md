@@ -5,7 +5,7 @@
     provide reflection
 
 ### Done
-    -
+    descriptors and push constants parsing provided
 
 ### Problem
     -

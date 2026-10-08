@@ -1,5 +1,8 @@
 # Forr-Engine Not now, but :
 
+# Added 08.10.2026
+- provide some 'fe::expected<>', which can store not only *value* and *error*, but also *value + warning*
+
 # Added 26.09.2026
 - create render context to store parameters ( in fe::IRenderer )
 - rewrite 'fe::MeshComponent'
