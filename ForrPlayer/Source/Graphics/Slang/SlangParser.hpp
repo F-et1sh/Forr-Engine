@@ -25,7 +25,8 @@ namespace fe {
     class SlangParser {
     public:
         enum class ShaderBuildErrors : uint8_t {
-            COMPOSITION_FAILED
+            COMPOSITION_FAILED,
+            FAILED_TO_SPECIALIZE_GLOBAL_PARAMETERS
         };
 
         enum class ShaderFileDataErrors : uint8_t {
@@ -43,12 +44,16 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(SlangParser)
 
         // TODO : firstly pass whole 'fe::PipelineDesc', then collapse this function, making the class more modular
-        static std::expected<shader::ProgramSources, ShaderBuildErrors> BuildShaderSources(const graphics::PipelineDesc& pipeline_desc, const ResourceManager& resource_manager);
+        static FORR_NODISCARD std::expected<shader::ProgramSources, ShaderBuildErrors> BuildShaderSources(const graphics::PipelineDesc& pipeline_desc, const ResourceManager& resource_manager);
 
         // TODO : return whole 'resource::ShaderFileData', then collapse this function, making the class more modular
-        static std::expected<resource::ShaderFileData, ShaderFileDataErrors> BuildShaderFileData(const std::filesystem::path& resource_full_path, const ResourceStorage& storage);
+        static FORR_NODISCARD std::expected<resource::ShaderFileData, ShaderFileDataErrors> BuildShaderFileData(const std::filesystem::path& resource_full_path, const ResourceStorage& storage);
 
     private:
+        static FORR_NODISCARD Slang::ComPtr<slang::IComponentType> specialize(const graphics::PipelineDesc&        pipeline_desc,
+                                                                              slang::IComponentType*               composed_program,
+                                                                              std::vector<slang::IComponentType*>& component_types);
+
         // this reflects descriptors and push constants
         static void parseVariableRecursive(slang::VariableLayoutReflection*             variable_layout,
                                            std::vector<shader::ReflectedDescriptor>&    descriptor_layouts,
@@ -68,6 +73,6 @@ namespace fe {
         inline static Slang::ComPtr<slang::IGlobalSession> m_GlobalSession{};
         inline static Slang::ComPtr<slang::ISession>       m_Session{};
 
-        inline static fe::hashed_string m_UnknownVariableName{ "[UNKNOWN]" };
+        inline static std::string m_UnknownVariableName{ "[UNKNOWN]" };
     };
 } // namespace fe

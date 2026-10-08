@@ -88,14 +88,15 @@ namespace fe {
             return this->WriteBuffer(parameter_id, std::span{ range });
         }
 
-        //RenderGraphContext& BindShaderProgram(const render_graph::BindShaderProgram& command) {
-        //    command_list.enqueue(command);
-        //    return *this;
-        //}
+        RenderGraphContext& BindPipeline(const render_graph::BindPipeline& command) {
+            command_list.enqueue(command);
+            return *this;
+        }
 
-        //RenderGraphContext& BindShaderProgram(fe::pointer<resource::ShaderProgram> shader_program_ptr) {
-        //    return this->BindShaderProgram(render_graph::BindShaderProgram{ shader_program_ptr });
-        //}
+        RenderGraphContext& BindPipeline(const graphics::PipelineHandle& pipeline_handle) {
+            command_list.enqueue(render_graph::BindPipeline{ pipeline_handle });
+            return *this;
+        }
 
         // temp
         RenderGraphContext& DrawModel(fe::pointer<resource::Model> model_ptr, uint32_t first_instance) {
