@@ -155,7 +155,10 @@ namespace fe::shader {
         // every generic argument has it's constraints, which declare what types you can
         // use to specialize this argument. Look at 'fe::ReflectedEntryPoint::Constraints' comment for examples
         std::vector<Constraints> generic_arguments{};
-        //std::vector<fe::hashed_string> arguments{}; I'm not sure that I really need it
+
+        /* I'm not sure that I really need it */
+        //std::vector<fe::hashed_string> arguments{};
+        //fe::hashed_string return_value{};
 
         fe::hashed_string name{};
 
