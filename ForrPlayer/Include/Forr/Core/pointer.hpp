@@ -197,11 +197,20 @@ namespace fe {
     };
 
     template <typename T,
-              typename HandleT     = default_handle_t,
-              typename GenerationT = default_generation_t,
-              typename PackedT     = default_packed_t,
-              typename PackFn      = pointer<T, HandleT, GenerationT, PackedT>::DefaultPacker,
-              typename UnpackFn    = pointer<T, HandleT, GenerationT, PackedT>::DefaultUnpacker>
+              typename HandleT,
+              typename GenerationT,
+              typename PackedT,
+              typename CustomFields,
+              typename PackFn   = typename pointer<T,
+                                                   HandleT,
+                                                   GenerationT,
+                                                   PackedT,
+                                                   CustomFields>::DefaultPacker,
+              typename UnpackFn = typename pointer<T,
+                                                   HandleT,
+                                                   GenerationT,
+                                                   PackedT,
+                                                   CustomFields>::DefaultUnpacker>
     struct pointer_hash {
         constexpr std::size_t operator()(const pointer<T, HandleT, GenerationT, PackedT>& p) const noexcept {
             return std::hash<PackedT>{}(p.packed<PackFn>());

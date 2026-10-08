@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 09.10.2026
+### Goal
+    provide 'fe::pointer_creator_t'
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 08.10.2026
 ### Goal
     provide reflection
