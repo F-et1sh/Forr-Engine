@@ -40,10 +40,12 @@ namespace fe {
         !std::is_function_v<T> &&
         std::destructible<T>;
 
+    // this is pointer concept without custom fields
     template <typename T>
-    concept pointer_t = requires(T t) {
+    concept base_pointer_t = requires(T t) {
         typename T::HandleType;
         typename T::GenerationType;
+        typename T::CustomType; // but this must be here anyway
 
         { T{} };
 
@@ -54,31 +56,61 @@ namespace fe {
         { t.generation() } -> std::same_as<typename T::GenerationType>;
     };
 
-    template <typename T,
-              typename HandleT,
-              typename GenerationT,
-              typename CustomFields,
-              typename PackedT>
-    concept pointer_packer_t = requires(HandleT      index,
-                                        GenerationT  generation,
-                                        CustomFields fields) {
-        { T::operator()(index, generation, fields) } -> std::same_as<PackedT>;
+    // this includes custom fields checking
+    template <typename T>
+    concept pointer_t = base_pointer_t<T> &&
+                        (std::is_same_v<typename T::CustomType, empty_custom_fields_t> ||
+                         requires {
+                             { T(std::declval<typename T::HandleType>(),
+                                 std::declval<typename T::GenerationType>(),
+                                 std::declval<typename T::CustomType>()) };
+                         });
+
+    template <typename T>
+    struct custom_fields_traits {
+    private:
+        template <typename C>
+        static auto test(int) -> decltype(&C::operator(), std::true_type{});
+
+        template <typename C>
+        static auto test(...) -> std::false_type;
+
+    public:
+        static constexpr bool value = decltype(test<T>(0))::value;
     };
+
+    template <typename T>
+    concept custom_fields_t = std::same_as<T, empty_custom_fields_t> || custom_fields_traits<T>::value;
 
     template <typename T,
               typename HandleT,
               typename GenerationT,
               typename CustomFields,
               typename PackedT>
-    concept pointer_unpacker_t = requires(PackedT packed) {
-        { T::operator()(packed) } -> std::same_as<std::tuple<HandleT, GenerationT, CustomFields>>;
-    };
+    concept pointer_packer_t =
+        custom_fields_t<CustomFields> &&
+        requires(HandleT      index,
+                 GenerationT  generation,
+                 CustomFields fields) {
+            { T::operator()(index, generation, fields) } -> std::same_as<PackedT>;
+        };
 
     template <typename T,
-              typename HandleT      = default_handle_t,
-              typename GenerationT  = default_generation_t,
-              typename PackedT      = default_packed_t,
-              typename CustomFields = empty_custom_fields_t>
+              typename HandleT,
+              typename GenerationT,
+              typename CustomFields,
+              typename PackedT>
+    concept pointer_unpacker_t =
+        custom_fields_t<CustomFields> &&
+        requires(PackedT packed) {
+            { T::operator()(packed) } -> std::same_as<std::tuple<HandleT, GenerationT, CustomFields>>;
+        };
+
+    template <typename T,
+              typename HandleT             = default_handle_t,
+              typename GenerationT         = default_generation_t,
+              typename PackedT             = default_packed_t,
+              custom_fields_t CustomFields = empty_custom_fields_t>
     class FORR_NODISCARD pointer {
     public:
         inline constexpr static PackedT PACKING_SHIFT = sizeof(GenerationT) * 8;
@@ -200,7 +232,7 @@ namespace fe {
               typename HandleT,
               typename GenerationT,
               typename PackedT,
-              typename CustomFields,
+              custom_fields_t CustomFields,
               typename PackFn   = typename pointer<T,
                                                    HandleT,
                                                    GenerationT,
@@ -283,7 +315,12 @@ namespace fe {
                 }
             }
 
-            return PointerT(index, m_slots_generation[index]);
+            if constexpr (std::is_same_v<typename PointerT::CustomFields, empty_custom_fields_t>) {
+                return PointerT(index, m_slots_generation[index]);
+            }
+            else {
+                return PointerT(index, m_slots_generation[index], typename PointerT::CustomFields::operator(std::forward<Args>(args)...));
+            }
         }
 
         void destroy(PointerT handle) {
@@ -407,7 +444,7 @@ namespace fe {
 } // namespace fe
 
 namespace std {
-    template <typename T, typename HandleT, typename GenerationT, typename PackedT, typename CustomFields>
+    template <typename T, typename HandleT, typename GenerationT, typename PackedT, fe::custom_fields_t CustomFields>
     struct hash<fe::pointer<T, HandleT, GenerationT, PackedT, CustomFields>> {
         constexpr std::size_t operator()(const fe::pointer<T, HandleT, GenerationT, PackedT, CustomFields>& p) const noexcept {
             return std::hash<PackedT>{}(p.packed());

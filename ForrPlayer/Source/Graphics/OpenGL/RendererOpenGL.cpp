@@ -104,11 +104,7 @@ std::expected<fe::graphics::ParameterHandle, fe::graphics::ParameterCreationErro
         descriptor.type = parameter_desc.descriptor_type;
     }
 
-    // TODO : provide something like a creation creation func template for this
-    graphics::ParameterHandle parameter_handle = m_Parameters.emplace(std::move(descriptor_ring));
-    parameter_handle.custom_fields().set       = parameter_desc.set;     // I forgot to set this and it just became 255
-    parameter_handle.custom_fields().binding   = parameter_desc.binding; // I forgot to set this and it just became 255
-    return parameter_handle;
+    return m_Parameters.emplace(std::move(descriptor_ring));
 }
 
 void fe::RendererOpenGL::BindParameter(fe::graphics::ParameterHandle parameter_id) {
