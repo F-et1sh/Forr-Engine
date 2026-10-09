@@ -104,7 +104,7 @@ std::expected<fe::graphics::ParameterHandle, fe::graphics::ParameterCreationErro
         descriptor.type = parameter_desc.descriptor_type;
     }
 
-    return m_Parameters.emplace(std::move(descriptor_ring));
+    return m_Parameters.emplace(parameter_desc, std::move(descriptor_ring));
 }
 
 void fe::RendererOpenGL::BindParameter(fe::graphics::ParameterHandle parameter_id) {

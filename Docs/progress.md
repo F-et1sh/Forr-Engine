@@ -6,9 +6,10 @@
 
 ### Done
     operator() for custom fields of 'fe::pointer<>' in progress
+    custom fields somehow provided
 
 ### Problem
-    -
+    Inattention and crazy SFINAE
 
 ## 08.10.2026
 ### Goal
