@@ -5,7 +5,7 @@
     provide 'fe::pointer_creator_t'
 
 ### Done
-    -
+    operator() for custom fields of 'fe::pointer<>' in progress
 
 ### Problem
     -

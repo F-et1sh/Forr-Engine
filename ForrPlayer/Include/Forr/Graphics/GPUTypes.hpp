@@ -204,6 +204,11 @@ namespace fe {
         struct ParameterHandleFields {
             uint8_t set{ std::numeric_limits<uint8_t>::max() };
             uint8_t binding{ std::numeric_limits<uint8_t>::max() };
+
+            FORR_NODISCARD static constexpr ParameterHandleFields operator()(const ParameterDesc& desc) noexcept {
+                return { static_cast<uint8_t>(desc.set),
+                         static_cast<uint8_t>(desc.binding) };
+            }
         };
 
         struct ParameterHandlePacker {
@@ -223,8 +228,8 @@ namespace fe {
                 uint16_t generation = static_cast<uint16_t>((packed >> 16) & 0xFFFF);
 
                 ParameterHandleFields fields{};
-                fields.set     = static_cast<uint8_t>((packed >> 8) & 0xFFFF);
-                fields.binding = static_cast<uint8_t>(packed & 0xFFFF);
+                fields.set     = static_cast<uint8_t>((packed >> 8) & 0xFF);
+                fields.binding = static_cast<uint8_t>(packed & 0xFF);
 
                 return { index, generation, fields };
             }
@@ -246,16 +251,6 @@ namespace fe {
             std::optional<fe::hashed_string> push_constants{};
 
             std::optional<shader::ProgramSpecialization> specialization{};
-        };
-
-        struct ParameterHandleFields {
-            uint8_t set{};
-            uint8_t binding{};
-
-            static constexpr ParameterHandleFields from(const ParameterDesc& desc) noexcept {
-                return { static_cast<uint8_t>(desc.set),
-                         static_cast<uint8_t>(desc.binding) };
-            }
         };
 
         enum class PipelineCreationErrors {
