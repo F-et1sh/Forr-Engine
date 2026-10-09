@@ -45,12 +45,9 @@ namespace fe {
     concept base_pointer_t = requires(T t) {
         typename T::HandleType;
         typename T::GenerationType;
-        typename T::CustomType; // but this must be here anyway
+        typename T::CustomFieldsType; // but this must be here anyway
 
         { T{} };
-
-        { T(std::declval<typename T::HandleType>(),
-            std::declval<typename T::GenerationType>()) };
 
         { t.index() } -> std::same_as<typename T::HandleType>;
         { t.generation() } -> std::same_as<typename T::GenerationType>;
@@ -58,12 +55,20 @@ namespace fe {
 
     // this includes custom fields checking
     template <typename T>
-    concept pointer_t = base_pointer_t<T> &&
-                        (std::is_same_v<typename T::CustomType, empty_custom_fields_t> ||
-                         requires {
+    concept pointer_t = base_pointer_t<T> && // base
+                        // without custom fields
+                        ((std::is_same_v<typename T::CustomFieldsType, empty_custom_fields_t> &&
+                          requires {
+                              { T(std::declval<typename T::HandleType>(),
+                                  std::declval<typename T::GenerationType>()) };
+                          }) ||
+                         // with custom fields
+                         requires(T t) {
                              { T(std::declval<typename T::HandleType>(),
                                  std::declval<typename T::GenerationType>(),
-                                 std::declval<typename T::CustomType>()) };
+                                 std::declval<typename T::CustomFieldsType>()) };
+
+                             { t.custom_fields() } -> std::same_as<typename T::CustomFieldsType&>;
                          });
 
     template <typename T>
@@ -87,24 +92,22 @@ namespace fe {
               typename GenerationT,
               typename CustomFields,
               typename PackedT>
-    concept pointer_packer_t =
-        custom_fields_t<CustomFields> &&
-        requires(HandleT      index,
-                 GenerationT  generation,
-                 CustomFields fields) {
-            { T::operator()(index, generation, fields) } -> std::same_as<PackedT>;
-        };
+    concept pointer_packer_t = requires(HandleT      index,
+                                        GenerationT  generation,
+                                        CustomFields fields) {
+        custom_fields_t<CustomFields>;
+        { T::operator()(index, generation, fields) } -> std::same_as<PackedT>;
+    };
 
     template <typename T,
               typename HandleT,
               typename GenerationT,
               typename CustomFields,
               typename PackedT>
-    concept pointer_unpacker_t =
-        custom_fields_t<CustomFields> &&
-        requires(PackedT packed) {
-            { T::operator()(packed) } -> std::same_as<std::tuple<HandleT, GenerationT, CustomFields>>;
-        };
+    concept pointer_unpacker_t = requires(PackedT packed) {
+        custom_fields_t<CustomFields>;
+        { T::operator()(packed) } -> std::same_as<std::tuple<HandleT, GenerationT, CustomFields>>;
+    };
 
     template <typename T,
               typename HandleT             = default_handle_t,
@@ -232,7 +235,7 @@ namespace fe {
               typename HandleT,
               typename GenerationT,
               typename PackedT,
-              custom_fields_t CustomFields,
+              typename CustomFields,
               typename PackFn   = typename pointer<T,
                                                    HandleT,
                                                    GenerationT,
@@ -266,8 +269,27 @@ namespace fe {
         // TEMORARY
         FORR_CLASS_NONMOVABLE(typed_pointer_storage)
 
-        FORR_NODISCARD PointerT create(const T& value) { return emplace(value); }
-        FORR_NODISCARD PointerT create(T&& value) { return emplace(std::move(value)); }
+        template <typename... Args>
+            requires std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t> && std::constructible_from<T, Args...>
+        FORR_NODISCARD PointerT create(const T& value) {
+            return emplace(value);
+        }
+        template <typename... Args>
+            requires std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t> && std::constructible_from<T, Args...>
+        FORR_NODISCARD PointerT create(T&& value) {
+            return emplace(std::move(value));
+        }
+
+        template <typename CustomFieldArgs>
+            requires(!std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t> && std::constructible_from<T, Args...>)
+        FORR_NODISCARD PointerT create(const CustomFieldArgs& custom_fields_args, const T& value) {
+            return emplace(custom_fields_args, value);
+        }
+        template <typename CustomFieldArgs>
+            requires(!std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t> && std::constructible_from<T, Args...>)
+        FORR_NODISCARD PointerT create(const CustomFieldArgs& custom_fields_args, T&& value) {
+            return emplace(custom_fields_args, std::move(value));
+        }
 
         FORR_NODISCARD PointerT create()
             requires std::default_initializable<T>
@@ -276,51 +298,19 @@ namespace fe {
         }
 
         template <typename... Args>
+            requires std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t> && std::constructible_from<T, Args...>
         FORR_NODISCARD PointerT emplace(Args&&... args) {
-            typename PointerT::HandleType index{};
+            auto result = this->allocate_slot(std::forward<Args>(args)...);
+            return PointerT(result.first, result.second);
+        }
 
-            if (!m_free_list.empty()) {
-                index = m_free_list.back();
-
-                // if you're getting an error here, then most likely you are :
-                // - passing wrong arguments to the constructor ( or wrong number of arguments; zero counts )
-                // - forgot 'std::move()' for movable-only objects
-                std::construct_at(get_ptr(index), std::forward<Args>(args)...);
-
-                m_free_list.pop_back();
-                m_slots_alive[index] = true;
-                m_slots_generation[index]++;
-            }
-            else {
-                if (m_slots_generation.size() >= std::numeric_limits<typename PointerT::HandleType>::max()) {
-                    fe::logging::fatal("Handle overflow");
-                }
-
-                index = static_cast<typename PointerT::HandleType>(m_slots_generation.size());
-
-                m_slots_object.emplace_back();
-                m_slots_generation.emplace_back(0);
-                m_slots_alive.emplace_back(false);
-
-                try {
-                    std::construct_at(get_ptr(index), std::forward<Args>(args)...);
-                    m_slots_alive[index] = true;
-                }
-                catch (...) {
-                    m_slots_alive.pop_back();
-                    m_slots_generation.pop_back();
-                    m_slots_object.pop_back();
-
-                    fe::logging::fatal("Failed to create an object in fe::typed_pointer_storage::emplace()");
-                }
-            }
-
-            if constexpr (std::is_same_v<typename PointerT::CustomFields, empty_custom_fields_t>) {
-                return PointerT(index, m_slots_generation[index]);
-            }
-            else {
-                return PointerT(index, m_slots_generation[index], typename PointerT::CustomFields::operator(std::forward<Args>(args)...));
-            }
+        template <typename... Args, typename CustomFieldArgs>
+            requires(!std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t>) && std::constructible_from<T, Args...>
+        FORR_NODISCARD PointerT emplace(const CustomFieldArgs& custom_fields_args, Args&&... args) {
+            auto result = this->allocate_slot(std::forward<Args>(args)...);
+            // if you're getting an error here and it's written "Cannot convert something...", then you most likely
+            // forgot passing your custom fields arguments
+            return PointerT(result.first, result.second, PointerT::CustomFieldsType::operator()(custom_fields_args));
         }
 
         void destroy(PointerT handle) {
@@ -432,6 +422,52 @@ namespace fe {
             return std::launder(reinterpret_cast<const T*>(m_slots_object[index].storage.data()));
         }
 
+        template <typename... Args>
+        std::pair<typename PointerT::HandleType, typename PointerT::GenerationType> allocate_slot(Args&&... args) {
+            typename PointerT::HandleType index{};
+
+            if (!m_free_list.empty()) {
+                index = m_free_list.back();
+
+                // if you're getting an error here, then most likely you are :
+                // - passing wrong arguments to the constructor ( or wrong number of arguments; zero counts )
+                // - forgot 'std::move()' for movable-only objects
+                std::construct_at(get_ptr(index), std::forward<Args>(args)...);
+
+                m_free_list.pop_back();
+                m_slots_alive[index] = true;
+                m_slots_generation[index]++;
+            }
+            else {
+                if (m_slots_generation.size() >= std::numeric_limits<typename PointerT::HandleType>::max()) {
+                    fe::logging::fatal("Handle overflow");
+                }
+
+                index = static_cast<typename PointerT::HandleType>(m_slots_generation.size());
+
+                m_slots_object.emplace_back();
+                m_slots_generation.emplace_back(0);
+                m_slots_alive.emplace_back(false);
+
+                try {
+                    // if you're getting an error here, then most likely you are :
+                    // - passing wrong arguments to the constructor ( or wrong number of arguments; zero counts )
+                    // - forgot 'std::move()' for movable-only objects
+                    std::construct_at(get_ptr(index), std::forward<Args>(args)...);
+                    m_slots_alive[index] = true;
+                }
+                catch (...) {
+                    m_slots_alive.pop_back();
+                    m_slots_generation.pop_back();
+                    m_slots_object.pop_back();
+
+                    fe::logging::fatal("Failed to create an object in fe::typed_pointer_storage::emplace()");
+                }
+            }
+
+            return { index, m_slots_generation[index] };
+        }
+
         // devided to be more cache friendly
         std::vector<Slot>                              m_slots_object;
         std::vector<typename PointerT::GenerationType> m_slots_generation;
@@ -444,7 +480,7 @@ namespace fe {
 } // namespace fe
 
 namespace std {
-    template <typename T, typename HandleT, typename GenerationT, typename PackedT, fe::custom_fields_t CustomFields>
+    template <typename T, typename HandleT, typename GenerationT, typename PackedT, typename CustomFields>
     struct hash<fe::pointer<T, HandleT, GenerationT, PackedT, CustomFields>> {
         constexpr std::size_t operator()(const fe::pointer<T, HandleT, GenerationT, PackedT, CustomFields>& p) const noexcept {
             return std::hash<PackedT>{}(p.packed());
