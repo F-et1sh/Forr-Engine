@@ -11,7 +11,7 @@
 ===============================================*/
 
 #include "pch.hpp"
-#include "ResourceManagement/ResourceManager.hpp"
+#include "Forr/ResourceManagement/ResourceManager.hpp"
 
 fe::ResourceManager::ResourceManager(const ResourceManagerDesc& desc) {
     m_Context.graphics_backend = desc.graphics_backend;

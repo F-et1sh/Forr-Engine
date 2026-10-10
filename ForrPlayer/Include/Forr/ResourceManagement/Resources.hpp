@@ -22,9 +22,9 @@
 #pragma once
 #include <vector>
 #include <span>
-#include "Core/guid.hpp"
+#include "Forr/Core/guid.hpp"
 
-#include "Graphics/GPUTypes.hpp"
+#include "Forr/Graphics/GPUTypes.hpp"
 
 // namespace fe::resource:: means that the class is a
 //  DOD structure, not a high level resource

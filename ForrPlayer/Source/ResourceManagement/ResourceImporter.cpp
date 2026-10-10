@@ -11,14 +11,14 @@
 ===============================================*/
 
 #include "pch.hpp"
-#include "ResourceManagement/ResourceImporter.hpp"
+#include "Forr/ResourceManagement/ResourceImporter.hpp"
 
 #include "Importers/TextureImporter.hpp"
 #include "Importers/GLTFImporter.hpp"
 #include "Importers/ShaderImporter.hpp"
 #include "Importers/MaterialImporter.hpp"
 
-#include "Core/path.hpp"
+#include "Forr/Core/path.hpp"
 
 #define IMPORTER_INSTANCE(T, T_IMPORTER)                                                                   \
     template <>                                                                                            \

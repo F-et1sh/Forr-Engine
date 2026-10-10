@@ -12,8 +12,8 @@
 ===============================================*/
 
 #pragma once
-#include "Core/pointer.hpp"
-#include "ResourceManagement/Resources.hpp"
+#include "Forr/Core/pointer.hpp"
+#include "Forr/ResourceManagement/Resources.hpp"
 #include "OpenGLRAII.hpp"
 
 namespace fe {

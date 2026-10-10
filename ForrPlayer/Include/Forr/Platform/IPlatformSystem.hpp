@@ -14,7 +14,8 @@
 #include <vector>
 #include <memory>
 
-#include "Graphics/GPUTypes.hpp"
+#include "Forr/Core/attributes.hpp"
+#include "Forr/Graphics/GPUTypes.hpp"
 #include "IWindow.hpp"
 
 namespace fe {

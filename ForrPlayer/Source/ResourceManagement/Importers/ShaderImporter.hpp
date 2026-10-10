@@ -11,7 +11,7 @@
 ===============================================*/
 
 #pragma once
-#include "ResourceManagement/ResourceStorage.hpp"
+#include "Forr/ResourceManagement/ResourceStorage.hpp"
 
 #include "slang.h"
 #include "slang-com-ptr.h"

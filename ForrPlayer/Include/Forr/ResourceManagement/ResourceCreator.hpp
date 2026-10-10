@@ -13,8 +13,8 @@
 ===============================================*/
 
 #pragma once
-#include "Core/logging.hpp"
-#include "Core/path.hpp"
+#include "Forr/Core/logging.hpp"
+#include "Forr/Core/path.hpp"
 
 #include "ResourceManagementContext.hpp"
 #include "ResourceStorage.hpp"

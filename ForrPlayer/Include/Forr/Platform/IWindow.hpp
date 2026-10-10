@@ -12,7 +12,7 @@
 
 #pragma once
 #include <string>
-#include "Core/attributes.hpp"
+#include "Forr/Core/attributes.hpp"
 
 namespace fe {
     struct WindowDesc {

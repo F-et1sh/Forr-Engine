@@ -11,8 +11,8 @@
 ===============================================*/
 
 #pragma once
-#include "ECS/Components.hpp"
-#include "Graphics/IRenderer.hpp"
+#include "Forr/ECS/Components.hpp"
+#include "Forr/Graphics/IRenderer.hpp"
 
 #include "entt/fwd.hpp"
 

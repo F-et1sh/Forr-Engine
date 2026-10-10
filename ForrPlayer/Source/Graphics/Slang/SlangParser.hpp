@@ -19,7 +19,7 @@
 #include "slang-com-ptr.h"
 #include "slang-com-helper.h"
 
-#include "ResourceManagement/ResourceManager.hpp"
+#include "Forr/ResourceManagement/ResourceManager.hpp"
 
 namespace fe {
     class SlangParser {

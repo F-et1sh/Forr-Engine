@@ -57,7 +57,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <AdditionalOptions>/Zc:__cplusplus
@@ -87,7 +87,7 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_debug.bat" $(Targe
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\Forr;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <AdditionalOptions>/Zc:__cplusplus
