@@ -12,7 +12,7 @@
 
 #pragma once
 #include <array>
-#include "Graphics/IRenderer.hpp"
+#include "Forr/Graphics/IRenderer.hpp"
 
 #define VK_NO_PROTOTYPES
 #define GLFW_INCLUDE_VULKAN
@@ -20,7 +20,7 @@
 
 #include "Volk/volk.h"
 
-#include "Graphics/GPUTypes.hpp"
+#include "Forr/Graphics/GPUTypes.hpp"
 #include "VulkanRAII.hpp"
 
 #include "VulkanContext.hpp"
@@ -28,7 +28,7 @@
 #include "VKTools.hpp"
 #include "VulkanTypes.hpp"
 
-#include "Graphics/Camera.hpp"
+#include "Forr/Graphics/Camera.hpp"
 
 namespace fe {
     class RendererVulkan : public IRenderer {

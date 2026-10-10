@@ -13,9 +13,9 @@
 #pragma once
 #include <expected>
 #include <string>
-#include "Platform/IPlatformSystem.hpp"
+#include "Forr/Platform/IPlatformSystem.hpp"
 
-#include "ResourceManagement/ResourceManager.hpp"
+#include "Forr/ResourceManagement/ResourceManager.hpp"
 
 #include "RenderGraph.hpp"
 

@@ -14,15 +14,15 @@
 #include <memory>
 #include <vector>
 
-#include "Platform/IPlatformSystem.hpp"
-#include "Graphics/IRenderer.hpp"
-#include "Graphics/RenderGraph.hpp"
-#include "ResourceManagement/ResourceManager.hpp"
+#include "Forr/Platform/IPlatformSystem.hpp"
+#include "Forr/Graphics/IRenderer.hpp"
+#include "Forr/Graphics/RenderGraph.hpp"
+#include "Forr/ResourceManagement/ResourceManager.hpp"
 
-#include "Graphics/DefaultRenderPasses.hpp"
+#include "Forr/Graphics/DefaultRenderPasses.hpp"
 
-#include "ECS/Components.hpp"           // temp
-#include "ECS/Systems/RenderSystem.hpp" // temp
+#include "Forr/ECS/Components.hpp"           // temp
+#include "Forr/ECS/Systems/RenderSystem.hpp" // temp
 
 namespace fe {
     struct ApplicationDesc {

@@ -16,8 +16,8 @@
 #include <unordered_map>
 #include <variant>
 
-#include "Core/attributes.hpp"
-#include "Core/string.hpp"
+#include "Forr/Core/attributes.hpp"
+#include "Forr/Core/string.hpp"
 
 namespace fe::shader {
     enum class DescriptorType : std::uint8_t {

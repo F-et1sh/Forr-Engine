@@ -11,10 +11,10 @@
 ===============================================*/
 
 #pragma once
-#include "Core/custom_allocators.hpp"
-#include "Core/pointer.hpp"
-#include "Core/string.hpp"
-#include "Core/logging.hpp"
+#include "Forr/Core/custom_allocators.hpp"
+#include "Forr/Core/pointer.hpp"
+#include "Forr/Core/string.hpp"
+#include "Forr/Core/logging.hpp"
 
 #include "ShaderReflection.hpp"
 

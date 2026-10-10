@@ -13,9 +13,9 @@
 
 #pragma once
 
-#include "Core/pointer.hpp"
+#include "Forr/Core/pointer.hpp"
 #include "VulkanRAII.hpp"
-#include "ResourceManagement/Resources.hpp"
+#include "Forr/ResourceManagement/Resources.hpp"
 
 namespace fe {
     struct VulkanImage {

@@ -17,10 +17,10 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include "Platform/IWindow.hpp"
+#include "Forr/Platform/IWindow.hpp"
 #include "VulkanRAII.hpp"
 #include "VulkanContext.hpp"
-#include "Graphics/IRenderer.hpp"
+#include "Forr/Graphics/IRenderer.hpp"
 
 #include "Tools.hpp"
 

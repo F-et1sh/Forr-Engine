@@ -11,8 +11,8 @@
 ===============================================*/
 
 #pragma once
-#include "ResourceManagement/ResourceStorage.hpp"
-#include "ResourceManagement/Resources.hpp"
+#include "Forr/ResourceManagement/ResourceStorage.hpp"
+#include "Forr/ResourceManagement/Resources.hpp"
 
 #include "tiny_gltf.h"
 

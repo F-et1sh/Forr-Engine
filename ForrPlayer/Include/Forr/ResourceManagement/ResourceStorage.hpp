@@ -13,8 +13,8 @@
 ===============================================*/
 
 #pragma once
-#include "Core/pointer.hpp"
-#include "Core/custom_allocators.hpp"
+#include "Forr/Core/pointer.hpp"
+#include "Forr/Core/custom_allocators.hpp"
 #include "Resources.hpp"
 
 #include "ResourceManagementContext.hpp"
