@@ -845,3 +845,7 @@ void fe::RendererOpenGL::handleCommand(const render_graph::BindBuffer& command) 
 void fe::RendererOpenGL::handleCommand(const render_graph::WriteBuffer& command) {
     this->WriteParameter(command.parameter_id, command.data);
 }
+
+void fe::RendererOpenGL::handleCommand(const render_graph::EmptyDraw& command) {
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+}

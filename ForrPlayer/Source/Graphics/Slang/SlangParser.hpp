@@ -35,6 +35,13 @@ namespace fe {
             FAILED_TO_CREATE_COMPOSED_PROGRAM
         };
 
+        enum class ShaderSpecializationErrors : uint8_t {
+            NOTHING_TO_SPECIALIZE,
+            COMPOSED_PROGRAM_WAS_NULLPTR,
+            WRONG_NUMBER_OF_SPECIALIZATION_PARAMETERS,
+            FAILED_TO_SPECIALIZE
+        };
+
     public:
         // this will use 'PATH.getShadersPath().generic_string().c_str()' if you leave the argument 'search_paths' as default
         SlangParser(std::span<const char*> full_search_paths = {});
@@ -50,9 +57,9 @@ namespace fe {
         static FORR_NODISCARD std::expected<resource::ShaderFileData, ShaderFileDataErrors> BuildShaderFileData(const std::filesystem::path& resource_full_path, const ResourceStorage& storage);
 
     private:
-        static FORR_NODISCARD Slang::ComPtr<slang::IComponentType> specialize(const graphics::PipelineDesc&        pipeline_desc,
-                                                                              slang::IComponentType*               composed_program,
-                                                                              std::vector<slang::IComponentType*>& component_types);
+        static FORR_NODISCARD std::expected<Slang::ComPtr<slang::IComponentType>,
+                                            ShaderSpecializationErrors>
+                              specialize(const graphics::PipelineDesc& pipeline_desc, slang::IComponentType* composed_program, std::vector<slang::IComponentType*>& component_types);
 
         // this reflects descriptors and push constants
         static void parseVariableRecursive(slang::VariableLayoutReflection*             variable_layout,

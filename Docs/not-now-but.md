@@ -1,5 +1,8 @@
 # Forr-Engine Not now, but :
 
+# Added 11.10.2026
+- provide console parser. For example, to choose the graphics backend ( -vulkan/-opengl )
+
 # Added 08.10.2026
 - provide some 'fe::expected<>', which can store not only *value* and *error*, but also *value + warning*
 

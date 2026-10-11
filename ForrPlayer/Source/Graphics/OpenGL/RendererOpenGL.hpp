@@ -77,6 +77,7 @@ namespace fe {
         void handleCommand(const render_graph::DrawModel& command);
         void handleCommand(const render_graph::BindBuffer& command);
         void handleCommand(const render_graph::WriteBuffer& command);
+        void handleCommand(const render_graph::EmptyDraw& command);
 
     private:
         ResourceManager& m_ResourceManager;

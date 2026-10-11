@@ -211,6 +211,10 @@ namespace fe::render_graph {
             : parameter_id(parameter_id), data(data) {}
     };
 
+    // temp
+    struct EmptyDraw {
+    };
+
     // To add a command write its structure and add it here
 // render commands - theys are used every frame by RenderGraph(fe::RenderGraph::Execute())
 #define FORR_RENDER_COMMANDS_LIST(X) \
@@ -222,7 +226,8 @@ namespace fe::render_graph {
     X(BindPipeline)                  \
     X(DrawModel)                     \
     X(BindBuffer)                    \
-    X(WriteBuffer)
+    X(WriteBuffer)                   \
+    X(EmptyDraw)
 
     enum class CommandType : uint8_t {
 #define GENERATE_ENUM(COMMAND_NAME) COMMAND_NAME,
@@ -235,7 +240,7 @@ namespace fe::render_graph {
 
 #define GENERATE_TRAITS(COMMAND_NAME)                                       \
     template <>                                                             \
-    struct CommandTraits<COMMAND_NAME> {                           \
+    struct CommandTraits<COMMAND_NAME> {                                    \
         static constexpr CommandType      Type = CommandType::COMMAND_NAME; \
         static constexpr std::string_view Name = #COMMAND_NAME;             \
     };

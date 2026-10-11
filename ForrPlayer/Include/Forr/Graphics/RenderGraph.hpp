@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 #include "Forr/ResourceManagement/ResourceManager.hpp"
 #include "RenderGraphTypes.hpp"
 
@@ -57,7 +59,7 @@ namespace fe {
     // a proxy to gather render commands from render pass
     struct RenderGraphContext {
         render_graph::CommandList command_list{};
-        const entt::registry&     render_registry{};
+        const entt::registry&     render_registry{}; // TODO : provide logic with this or remove
 
         RenderGraphContext& BindBuffer(const render_graph::BindBuffer& command) {
             command_list.enqueue(command);
@@ -111,6 +113,12 @@ namespace fe {
         }
 
         RenderGraphContext& DrawIndexed(const render_graph::DrawIndexed& command) {
+            command_list.enqueue(command);
+            return *this;
+        }
+
+        template <typename Command>
+        RenderGraphContext& AddCommand(const Command& command) {
             command_list.enqueue(command);
             return *this;
         }
@@ -235,7 +243,7 @@ namespace fe {
     // this structure is needed for the 'fe::RenderGraph::SetupResourceBindings()'
     struct RenderGraphBindings {
         std::unordered_map<size_t, graphics::TextureHandle> image_bindings{};
-        std::unordered_map<size_t, graphics::BufferHandle> buffer_bindings{};
+        std::unordered_map<size_t, graphics::BufferHandle>  buffer_bindings{};
 
         RenderGraphBindings()  = default;
         ~RenderGraphBindings() = default;
@@ -244,10 +252,49 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(RenderGraphBindings)
     };
 
-    template <typename T, typename DataT>
-    concept RenderPassTraits = requires(RenderGraphBuilder& builder,
-                                        RenderGraphContext& context,
-                                        DataT&              render_pass_data) {
+    template <typename... T>
+    struct GarbageType;
+
+    struct EmptyRenderPassDataT {};
+
+    // Context here is 'fe::RenderGraphBuilder' or 'fe::RenderGraphContext'
+    template <typename Context, typename... Args>
+    struct ExtractRenderPassDataTypeTraits {
+        template <typename T>
+        constexpr static bool is_context = std::is_same_v<std::decay_t<T>, Context>;
+
+        using RenderPassDataT = std::conditional_t<sizeof...(Args) == 1,
+                                                   EmptyRenderPassDataT,
+                                                   std::tuple_element_t<1, std::tuple<Args...>>>;
+    };
+
+    template <typename T>
+    struct RenderPassFnTraits;
+
+    template <typename ReturnType, typename... Args>
+    struct RenderPassFnTraits<ReturnType (*)(Args...)> {
+        using RenderPassDataT_Setup   = typename ExtractRenderPassDataTypeTraits<RenderGraphBuilder, std::decay_t<Args>...>::RenderPassDataT;
+        using RenderPassDataT_Execute = typename ExtractRenderPassDataTypeTraits<RenderGraphContext, std::decay_t<Args>...>::RenderPassDataT;
+
+        static_assert((sizeof...(Args) == 1) || (sizeof...(Args) == 2), "Wrong number of arguments");
+    };
+
+    template <typename RenderPass>
+    struct RenderPassTraits {
+    private:
+        using RenderPassDataT_Setup   = typename RenderPassFnTraits<decltype(&RenderPass::Setup)>::RenderPassDataT_Setup;
+        using RenderPassDataT_Execute = typename RenderPassFnTraits<decltype(&RenderPass::Execute)>::RenderPassDataT_Execute;
+
+        static_assert(std::is_same_v<RenderPassDataT_Setup, RenderPassDataT_Execute>, "RenderPass::Setup() and RenderPass::Execute() accept different render pass data types");
+
+    public:
+        using RenderPassDataT = RenderPassDataT_Setup;
+    };
+
+    template <typename T>
+    concept RenderPassConcept = requires(RenderGraphBuilder&                   builder,
+                                         RenderGraphContext&                   context,
+                                         RenderPassTraits<T>::RenderPassDataT& render_pass_data) {
         { T::Setup(builder, render_pass_data) } -> std::same_as<void>;
         { T::Execute(context, render_pass_data) } -> std::same_as<void>;
     };
@@ -279,9 +326,11 @@ namespace fe {
 
     // this is the structure you get in 'fe::RenderGraph::AddPass<>' to
     //  access your mapped data and render pass' index in the array
-    template <typename RenderPassData>
+    template <RenderPassConcept RenderPass>
     struct RenderPassHandle {
-        RenderPassData* mapped_data{};
+        using RenderPassDataT = RenderPassTraits<RenderPass>::RenderPassDataT;
+
+        RenderPassDataT* mapped_data{};
         // render pass's index in 'fe::RenderGraph::m_RenderPasses'
         uint32_t               render_pass_index{};
         fe::hashed_string_view render_pass_name{};
@@ -382,23 +431,36 @@ namespace fe {
         FORR_CLASS_MOVABLE(RenderGraph)
         FORR_CLASS_NONCOPYABLE(RenderGraph)
 
-        template <typename RenderPassData, RenderPassTraits<RenderPassData> RenderPass>
-        FORR_NODISCARD RenderPassHandle<RenderPassData> AddPass(const fe::fixed_string<32>& name) {
+        template <RenderPassConcept RenderPass>
+        FORR_NODISCARD RenderPassHandle<RenderPass> AddPass(const fe::fixed_string<32>& name) {
+            using RenderPassDataT = RenderPassTraits<RenderPass>::RenderPassDataT;
+
             auto& render_pass = m_RenderPasses.emplace_back();
+            render_pass.name  = name;
 
-            std::byte*      mapped_data_raw = m_RenderPassesData.allocate(sizeof(std::decay_t<RenderPassData>), alignof(RenderPassData));
-            RenderPassData* mapped_data     = new (mapped_data_raw) RenderPassData();
-
-            render_pass.name             = name;
-            render_pass.mapped_data      = mapped_data;
-            render_pass.setup_function   = [](RenderGraphBuilder& builder, void* render_pass_data) { RenderPass::Setup(builder, *reinterpret_cast<RenderPassData*>(render_pass_data)); };
-            render_pass.execute_function = [](RenderGraphContext& context, void* render_pass_data) { RenderPass::Execute(context, *reinterpret_cast<RenderPassData*>(render_pass_data)); };
-            render_pass.destroy_function = [](void* render_pass_data) { std::destroy_at(reinterpret_cast<RenderPassData*>(render_pass_data)); };
-
-            RenderPassHandle<RenderPassData> render_pass_handle{};
-            render_pass_handle.mapped_data       = mapped_data;
+            RenderPassHandle<RenderPass> render_pass_handle{};
             render_pass_handle.render_pass_index = m_RenderPasses.size() - 1;
             render_pass_handle.render_pass_name  = name;
+
+            if constexpr (!std::is_same_v<RenderPassDataT, EmptyRenderPassDataT>) {
+                std::byte*       mapped_data_raw = m_RenderPassesData.allocate(sizeof(std::decay_t<RenderPassDataT>), alignof(RenderPassDataT));
+                RenderPassDataT* mapped_data     = new (mapped_data_raw) RenderPassDataT();
+
+                render_pass.mapped_data        = mapped_data;
+                render_pass_handle.mapped_data = mapped_data;
+
+                render_pass.setup_function   = [](RenderGraphBuilder& builder, void* render_pass_data) { RenderPass::Setup(builder, *reinterpret_cast<RenderPassDataT*>(render_pass_data)); };
+                render_pass.execute_function = [](RenderGraphContext& context, void* render_pass_data) { RenderPass::Execute(context, *reinterpret_cast<RenderPassDataT*>(render_pass_data)); };
+                render_pass.destroy_function = [](void* render_pass_data) { std::destroy_at(reinterpret_cast<RenderPassDataT*>(render_pass_data)); };
+            }
+            else {
+                render_pass.mapped_data        = nullptr;
+                render_pass_handle.mapped_data = nullptr;
+
+                render_pass.setup_function   = [](RenderGraphBuilder& builder, void* render_pass_data) { RenderPass::Setup(builder); };
+                render_pass.execute_function = [](RenderGraphContext& context, void* render_pass_data) { RenderPass::Execute(context); };
+                render_pass.destroy_function = [](void* render_pass_data) {};
+            }
 
             return render_pass_handle;
         }

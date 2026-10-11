@@ -317,10 +317,20 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
         return std::unexpected{ ShaderBuildErrors::COMPOSITION_FAILED };
     }
 
+    Slang::ComPtr<slang::IComponentType> specialized_program{};
+
     // specialize global parameters
-    Slang::ComPtr<slang::IComponentType> specialized_program = SlangParser::specialize(pipeline_desc, composed_program, component_types);
-    if (!specialized_program) {
-        return std::unexpected{ ShaderBuildErrors::FAILED_TO_SPECIALIZE_GLOBAL_PARAMETERS };
+    auto specialization_expected = SlangParser::specialize(pipeline_desc, composed_program, component_types);
+    if (!specialization_expected.has_value()) {
+
+        if (specialization_expected.error() != ShaderSpecializationErrors::NOTHING_TO_SPECIALIZE)
+            return std::unexpected{ ShaderBuildErrors::FAILED_TO_SPECIALIZE_GLOBAL_PARAMETERS };
+        else {
+            specialized_program = composed_program.detach();
+        }
+    }
+    else {
+        specialized_program = specialization_expected.value();
     }
 
     // extract source codes
@@ -534,15 +544,15 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
     return shader_file_data;
 }
 
-FORR_NODISCARD Slang::ComPtr<slang::IComponentType> fe::SlangParser::specialize(const graphics::PipelineDesc&        pipeline_desc,
-                                                                                slang::IComponentType*               composed_program,
-                                                                                std::vector<slang::IComponentType*>& component_types) {
+FORR_NODISCARD std::expected<Slang::ComPtr<slang::IComponentType>, fe::SlangParser::ShaderSpecializationErrors> fe::SlangParser::specialize(const graphics::PipelineDesc&        pipeline_desc,
+                                                                                                                                            slang::IComponentType*               composed_program,
+                                                                                                                                            std::vector<slang::IComponentType*>& component_types) {
     // return if there is nothing to specialize
-    if (!pipeline_desc.specialization.has_value()) return nullptr;
+    if (!pipeline_desc.specialization.has_value()) return std::unexpected{ ShaderSpecializationErrors::NOTHING_TO_SPECIALIZE };
 
     if (!composed_program) {
         fe::logging::error("Failed to specialize global parameters. composed_program was nullptr");
-        return nullptr;
+        return std::unexpected{ ShaderSpecializationErrors::COMPOSED_PROGRAM_WAS_NULLPTR };
     }
 
     const auto& specialization = pipeline_desc.specialization.value();
@@ -554,7 +564,7 @@ FORR_NODISCARD Slang::ComPtr<slang::IComponentType> fe::SlangParser::specialize(
         fe::logging::error("Failed to specialize global parameters. Slang specialization parameters count was %i, while there was %i argument(s)",
                            slang_specialization_parameters_count,
                            specialization.global_arguments.size());
-        return nullptr;
+        return std::unexpected{ ShaderSpecializationErrors::WRONG_NUMBER_OF_SPECIALIZATION_PARAMETERS };
     }
 
     std::vector<slang::SpecializationArg> specialization_arguments{};
@@ -621,7 +631,7 @@ FORR_NODISCARD Slang::ComPtr<slang::IComponentType> fe::SlangParser::specialize(
     if (SLANG_FAILED(result)) {
         fe::logging::error("Failed to specialize global parameters\n%s",
                            (const char*) specialization_diagnostics->getBufferPointer());
-        return nullptr;
+        return std::unexpected{ ShaderSpecializationErrors::FAILED_TO_SPECIALIZE };
     }
 
     return specialized_program;

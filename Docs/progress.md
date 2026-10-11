@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 11.10.2026
+### Goal
+    -
+
+### Done
+    PostProcessPass added. fe::RenderPassTraits --> fe::RenderPassConcept. 'fe::SlangParser::specialize()' fixed
+
+### Problem
+    -
+
 ## 10.10.2026
 ### Goal
     -
@@ -15,7 +25,7 @@
     provide 'fe::pointer_creator_t'
 
 ### Done
-    operator() for custom fields of 'fe::pointer<>' in progress
+    fe::pointer_creator_t --> fe::pointer<>::CustomFields::operator() / in progress
     custom fields somehow provided
 
 ### Problem

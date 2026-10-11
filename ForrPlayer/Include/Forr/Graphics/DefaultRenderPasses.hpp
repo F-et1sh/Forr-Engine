@@ -221,4 +221,35 @@ namespace fe {
         ~ForwardPass() = default;
     };
 
+    struct PostProcessPassData {
+        graphics::PipelineHandle pipeline_handle{};
+    };
+
+    struct PostProcessPass {
+        static void Setup(RenderGraphBuilder& builder, PostProcessPassData& pass_data) {
+            builder.writeToScreen(true);
+            
+            fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "PostProcess" / "PostProcess.slang");
+            
+            graphics::PipelineDesc pipeline_desc{};
+            pipeline_desc.entry_points.emplace_back("vertexMain");
+            pipeline_desc.entry_points.emplace_back("fragmentMain");
+            pipeline_desc.shader_file_data_ptrs.emplace_back(shader_file_data_ptr);
+
+            auto pipeline_expected = builder.renderer.CreatePipeline(pipeline_desc);
+            if (!pipeline_expected) {
+                builder.assertFatal("Failed to create");
+                return;
+            }
+
+            pass_data.pipeline_handle = pipeline_expected.value();
+        }
+
+        static void Execute(RenderGraphContext& context, PostProcessPassData& pass_data) {
+            context.BindPipeline(pass_data.pipeline_handle);
+            context.AddCommand(render_graph::EmptyDraw{});
+
+        }
+    };
+
 } // namespace fe
