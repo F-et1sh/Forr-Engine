@@ -6,9 +6,10 @@
 
 ### Done
     fe::string_hash() --> fe::make_string_hash(). fe::wstring_hash() --> fe::make_wstring_hash()
+    PostProcessing fixed
 
 ### Problem
-    -
+    Bad RenderGraph. Willing to rewrite RenderGraph
 
 ## 11.10.2026
 ### Goal

@@ -105,7 +105,7 @@ namespace fe::render_graph {
         Format         format{};
         glm::ivec3     extent{};
         uint32_t       mip_levels{};
-        ImageUsageBits usage{};
+        ImageUsageBits usage{}; // TODO : use this
 
         bool operator==(const ImageDesc& other) const noexcept = default;
     };

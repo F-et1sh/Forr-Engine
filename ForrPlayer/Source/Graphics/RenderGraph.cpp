@@ -259,13 +259,14 @@ fe::render_graph::CommandList fe::RenderGraph::Execute(const entt::registry& ren
         RenderGraphContext context{ render_data };
         render_pass.execute_function(context, render_pass.mapped_data);
 
+        render_command_list.enqueue(render_pass.compiled_begin_command);
+
         for (const auto& barrier : render_pass.compiled_image_barriers)
             render_command_list.enqueue(barrier);
 
         for (const auto& barrier : render_pass.compiled_buffer_barriers)
             render_command_list.enqueue(barrier);
 
-        render_command_list.enqueue(render_pass.compiled_begin_command);
         render_command_list.append_command_list(context.command_list);
         render_command_list.enqueue(render_pass.compiled_end_command);
     }

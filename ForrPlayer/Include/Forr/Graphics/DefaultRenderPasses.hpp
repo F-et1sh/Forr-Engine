@@ -49,11 +49,21 @@ namespace fe {
             builder.createImage(render_graph::ImageDesc{
                 .handle     = fe::make_string_hash("RenderTarget"),
                 .type       = render_graph::ImageType::IMAGE_TYPE_2D,
-                .format     = render_graph::Format::RGBA16_SFLOAT,
+                .format     = render_graph::Format::RGBA8_UNORM,
                 .extent     = glm::ivec3{ 1920, 1080, 1 },
                 .mip_levels = 1,
                 .usage      = render_graph::ImageUsageBits::RENDER_TARGET });
+
+            builder.createImage(render_graph::ImageDesc{
+                .handle     = fe::make_string_hash("Depth"),
+                .type       = render_graph::ImageType::IMAGE_TYPE_2D,
+                .format     = render_graph::Format::D32_SFLOAT,
+                .extent     = glm::ivec3{ 1920, 1080, 1 },
+                .mip_levels = 1,
+                .usage      = render_graph::ImageUsageBits::DEPTH_STENCIL });
+
             builder.writeImage(fe::make_string_hash("RenderTarget"), ResourceState::RENDER_TARGET);
+            builder.writeImage(fe::make_string_hash("Depth"), ResourceState::DEPTH_WRITE);
 
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
             resource::ShaderFileData&             shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
@@ -171,10 +181,10 @@ namespace fe {
             pass_data.data[1] = glm::mat4{ 1.0f };
 
             std::vector<ForwardPassData::PBRMaterialData> all_materials(2);
-            all_materials[0].base_color_texture_handle = 4294969856;
+            all_materials[0].base_color_texture_handle = 4294969858;
             all_materials[0].base_color_factor         = glm::vec4(1.0f);
 
-            all_materials[1].base_color_texture_handle = 4294969857;
+            all_materials[1].base_color_texture_handle = 4294969870;
             all_materials[1].base_color_factor         = glm::vec4(1.0f);
 
             pass_data.materials_data.resize(sizeof(ForwardPassData::PBRMaterialData) * all_materials.size());
@@ -230,13 +240,17 @@ namespace fe {
     };
 
     struct PostProcessPassData {
-        graphics::PipelineHandle pipeline_handle{};
+        graphics::PipelineHandle  pipeline_handle{};
+        graphics::ParameterHandle time_parameter_handle{};
+
+        float time{};
     };
 
     struct PostProcessPass {
         static void Setup(RenderGraphBuilder& builder, PostProcessPassData& pass_data) {
-            builder.readImage(fe::make_string_hash("RenderTarget"), ResourceState::SHADER_READ_ONLY);
             builder.writeToScreen(true);
+            builder.readImage(fe::make_string_hash("RenderTarget"), ResourceState::SHADER_READ_ONLY);
+            builder.readImage(fe::make_string_hash("Depth"), ResourceState::DEPTH_READ);
 
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "PostProcess" / "PostProcess.slang");
 
@@ -252,10 +266,19 @@ namespace fe {
             }
 
             pass_data.pipeline_handle = pipeline_expected.value();
+
+            resource::ShaderFileData& shader_file_data = *builder.resource_manager.GetResource(shader_file_data_ptr);
+            pass_data.time_parameter_handle            = *builder.renderer.CreateParameter(graphics::ParameterDesc{ shader_file_data.descriptor_layouts[0] });
         }
 
         static void Execute(RenderGraphContext& context, PostProcessPassData& pass_data) {
+            pass_data.time++;
+
+            context.BindBuffer(pass_data.time_parameter_handle);
+            context.WriteBuffer(pass_data.time_parameter_handle, std::as_bytes(std::span(&pass_data.time, 1)));
+
             context.BindPipeline(pass_data.pipeline_handle);
+
             context.AddCommand(render_graph::EmptyDraw{});
         }
     };

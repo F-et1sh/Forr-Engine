@@ -86,7 +86,7 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
     m_RenderGraph = std::make_unique<RenderGraph>(*m_ResourceManager, *m_Renderer);
     //auto shadow_pass_data_mapped  = m_RenderGraph->AddPass<ShadowPassData, ShadowPass>("Shadow Pass");  // TODO : make a storage for this mapped data
     auto forward_pass_data_mapped      = m_RenderGraph->AddPass<ForwardPass>("Forward Pass");          // TODO : make a storage for this mapped data
-    //auto post_process_pass_data_mapped = m_RenderGraph->AddPass<PostProcessPass>("Post Process Pass"); // TODO : make a storage for this mapped data
+    auto post_process_pass_data_mapped = m_RenderGraph->AddPass<PostProcessPass>("Post Process Pass"); // TODO : make a storage for this mapped data
 
     auto create_command_list = std::move(m_RenderGraph->Compile());
     auto mapping_result      = std::move(m_Renderer->CreateRenderGraphResources(create_command_list));

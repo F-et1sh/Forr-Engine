@@ -47,33 +47,33 @@ VertexStageOutput vertexMain<M : IMaterial>(VertexInput input) {
 float4 fragmentMain<M : IMaterial>(VertexStageOutput input) : SV_Target { // temp lighting
     M material = g_MaterialsRawData.Load<M>(input.index * 32);
     float4 base_color = material.GetSurfaceData(input.texture_coord);
-
+    
     SpotLight lights[2];
     
     lights[0].position = float3(-3.0f, 3.0f, 6.0f);
     lights[0].direction = normalize(float3(0.0f, 0.0f, 0.0f) - lights[0].position);
     lights[0].color = float3(1.2f, 1.2f, 1.2f);
     lights[0].cone_angles = float2(cos(3.1415 / 12.0), cos(3.1415 / 8.0));
-
+    
     lights[1].position = float3(4.0f, 2.0f, 5.0f);
     lights[1].direction = normalize(float3(0.0f, 0.0f, 0.0f) - lights[1].position);
     lights[1].color = float3(0.9f, 0.9f, 0.9f);
     lights[1].cone_angles = float2(cos(3.1415 / 10.0), cos(3.1415 / 6.0));
-
+    
     float3 accumulated_light = float3(0.15f);
-
+    
     for (int i = 0; i < 2; i++) {
         float3 light_dir = lights[i].position - input.world_position;
         light_dir = normalize(light_dir);
-
+    
         float theta = dot(light_dir, -lights[i].direction);
         
         float epsilon = lights[i].cone_angles.x - lights[i].cone_angles.y;
         float intensity = clamp((theta - lights[i].cone_angles.y) / epsilon, 0.0f, 1.0f);
-
+    
         accumulated_light += lights[i].color * intensity;
     }
-
+    
     float3 final_color = base_color.rgb * accumulated_light;
     return float4(clamp(final_color, 0.0f, 1.0f), base_color.a);
 }
