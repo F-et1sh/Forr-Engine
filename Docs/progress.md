@@ -9,6 +9,7 @@
     PostProcessing fixed
     classes with no FORR_API fixed
     ThirdParty added to .gitignore
+    ThirdParty removed from the history
 
 ### Problem
     Bad RenderGraph. Willing to rewrite RenderGraph
