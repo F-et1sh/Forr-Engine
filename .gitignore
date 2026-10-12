@@ -6,6 +6,13 @@
 # Forr-Engine
 ThirdParty/
 
+*.dll
+*.exe
+*.pdb
+
+External/Slang/bin/
+External/Slang/build/
+
 # User-specific files
 *.rsuser
 *.suo
