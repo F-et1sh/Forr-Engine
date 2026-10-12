@@ -18,7 +18,7 @@
 #include "attributes.hpp"
 
 namespace fe {
-    class PathManager {
+    class FORR_API PathManager {
     public:
         FORR_CLASS_NONCOPYABLE(PathManager)
 
