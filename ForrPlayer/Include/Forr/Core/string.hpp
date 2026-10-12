@@ -23,7 +23,7 @@
 namespace fe {
     using StringHash = uint64_t; // TODO : I don't like this name
 
-    FORR_NODISCARD constexpr StringHash string_hash(std::string_view str) noexcept {
+    FORR_NODISCARD constexpr StringHash make_string_hash(std::string_view str) noexcept {
         std::uint64_t hash = 14695981039346656037ULL;
         for (const char c : str) {
             hash ^= static_cast<std::uint64_t>(static_cast<unsigned char>(c));
@@ -32,7 +32,7 @@ namespace fe {
         return hash;
     }
 
-    FORR_NODISCARD constexpr StringHash wstring_hash(std::wstring_view str) noexcept {
+    FORR_NODISCARD constexpr StringHash make_wstring_hash(std::wstring_view str) noexcept {
         std::uint64_t hash = 14695981039346656037ULL;
         for (const wchar_t c : str) {
             hash ^= static_cast<std::uint64_t>(static_cast<std::make_unsigned_t<wchar_t>>(c));
@@ -49,9 +49,9 @@ namespace fe {
         hashed_string_base()  = default;
         ~hashed_string_base() = default;
 
-        constexpr hashed_string_base(const char* str) : m_string(str), m_hash(fe::string_hash(str)) {}
-        constexpr explicit hashed_string_base(std::string string) : m_string(std::move(string)), m_hash(fe::string_hash(string)) {}
-        constexpr explicit hashed_string_base(std::string_view string_view) : m_string(string_view), m_hash(fe::string_hash(string_view)) {}
+        constexpr hashed_string_base(const char* str) : m_string(str), m_hash(fe::make_string_hash(str)) {}
+        constexpr explicit hashed_string_base(std::string string) : m_string(std::move(string)), m_hash(fe::make_string_hash(string)) {}
+        constexpr explicit hashed_string_base(std::string_view string_view) : m_string(string_view), m_hash(fe::make_string_hash(string_view)) {}
 
         FORR_NODISCARD operator std::string_view() const noexcept { return { m_string.data(), size() }; }
         FORR_NODISCARD operator std::string() const noexcept { return m_string; }
@@ -85,19 +85,19 @@ namespace fe {
 
         hashed_string_base& operator=(const char* str) noexcept {
             m_string = str;
-            m_hash   = fe::string_hash(str);
+            m_hash   = fe::make_string_hash(str);
             return *this;
         }
 
         hashed_string_base& operator=(std::string_view string_view) noexcept {
             m_string = string_view;
-            m_hash   = fe::string_hash(string_view.data());
+            m_hash   = fe::make_string_hash(string_view.data());
             return *this;
         }
 
         hashed_string_base& operator=(const std::string& string) noexcept {
             m_string = string;
-            m_hash   = fe::string_hash(string);
+            m_hash   = fe::make_string_hash(string);
             return *this;
         }
 
@@ -163,10 +163,10 @@ namespace fe {
         ~fixed_hashed_string() = default;
 
         constexpr fixed_hashed_string(const char (&str)[N]) noexcept
-            : string(str), hash(fe::string_hash(std::string_view(str))) {}
+            : string(str), hash(fe::make_string_hash(std::string_view(str))) {}
 
         constexpr fixed_hashed_string(std::string_view str) noexcept
-            : string(str), hash(fe::string_hash(str)) {}
+            : string(str), hash(fe::make_string_hash(str)) {}
 
         FORR_NODISCARD constexpr                operator std::string_view() const noexcept { return { string.data_ptr(), size() }; }
         FORR_NODISCARD constexpr fe::StringHash get_hash() const noexcept { return hash; }
@@ -178,7 +178,7 @@ namespace fe {
 
         fixed_hashed_string& operator=(std::string_view other_string) noexcept {
             string = other_string;
-            hash   = fe::string_hash(other_string);
+            hash   = fe::make_string_hash(other_string);
             return *this;
         }
 

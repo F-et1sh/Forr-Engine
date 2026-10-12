@@ -846,6 +846,33 @@ void fe::RendererOpenGL::handleCommand(const render_graph::WriteBuffer& command)
     this->WriteParameter(command.parameter_id, command.data);
 }
 
+GLuint blankVAO    = 0;
+GLuint positionVBO = 0;
+
 void fe::RendererOpenGL::handleCommand(const render_graph::EmptyDraw& command) {
+    if (!blankVAO) {
+        glCreateVertexArrays(1, &blankVAO);
+        glBindVertexArray(blankVAO);
+
+        // clang-format off
+        float vertices[] = {
+            -1.0f, -1.0f, 
+             3.0f, -1.0f,
+            -1.0f,  3.0f
+        };
+        // clang-format on
+
+        glGenBuffers(1, &positionVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, positionVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*) 0);
+
+        glBindVertexArray(0);
+    }
+
+    glBindVertexArray(blankVAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray(0);
 }

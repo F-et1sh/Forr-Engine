@@ -45,7 +45,15 @@ namespace fe {
     };
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) { // setup can be called twice
-            builder.writeToScreen(true);
+            //builder.writeToScreen(true);
+            builder.createImage(render_graph::ImageDesc{
+                .handle     = fe::make_string_hash("RenderTarget"),
+                .type       = render_graph::ImageType::IMAGE_TYPE_2D,
+                .format     = render_graph::Format::RGBA16_SFLOAT,
+                .extent     = glm::ivec3{ 1920, 1080, 1 },
+                .mip_levels = 1,
+                .usage      = render_graph::ImageUsageBits::RENDER_TARGET });
+            builder.writeImage(fe::make_string_hash("RenderTarget"), ResourceState::RENDER_TARGET);
 
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
             resource::ShaderFileData&             shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
@@ -227,10 +235,11 @@ namespace fe {
 
     struct PostProcessPass {
         static void Setup(RenderGraphBuilder& builder, PostProcessPassData& pass_data) {
+            builder.readImage(fe::make_string_hash("RenderTarget"), ResourceState::SHADER_READ_ONLY);
             builder.writeToScreen(true);
-            
+
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "PostProcess" / "PostProcess.slang");
-            
+
             graphics::PipelineDesc pipeline_desc{};
             pipeline_desc.entry_points.emplace_back("vertexMain");
             pipeline_desc.entry_points.emplace_back("fragmentMain");
@@ -248,7 +257,6 @@ namespace fe {
         static void Execute(RenderGraphContext& context, PostProcessPassData& pass_data) {
             context.BindPipeline(pass_data.pipeline_handle);
             context.AddCommand(render_graph::EmptyDraw{});
-
         }
     };
 

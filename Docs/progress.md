@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 12.10.2026
+### Goal
+    -
+
+### Done
+    fe::string_hash() --> fe::make_string_hash(). fe::wstring_hash() --> fe::make_wstring_hash()
+
+### Problem
+    -
+
 ## 11.10.2026
 ### Goal
     -

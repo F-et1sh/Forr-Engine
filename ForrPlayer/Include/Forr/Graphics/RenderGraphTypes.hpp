@@ -72,7 +72,7 @@ namespace fe::render_graph {
     // this needs for 'RenderGraph ( and user interface ) <-> GPU resource manager' connection
     template <ResourceHandleSeparator IDType>
     struct ResourceHandle {
-        // hashed name - used for user interface ( fe::string_hash("ShadowMap") )
+        // hashed name - used for user interface ( fe::make_string_hash("ShadowMap") )
         fe::StringHash hashed_name{};
 
         // index in GPU resource manager's strage - used when render passes are already compiled
