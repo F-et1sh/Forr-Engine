@@ -8,6 +8,7 @@
     fe::string_hash() --> fe::make_string_hash(). fe::wstring_hash() --> fe::make_wstring_hash()
     PostProcessing fixed
     classes with no FORR_API fixed
+    ThirdParty added to .gitignore
 
 ### Problem
     Bad RenderGraph. Willing to rewrite RenderGraph
