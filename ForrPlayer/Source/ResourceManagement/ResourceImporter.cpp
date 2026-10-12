@@ -25,7 +25,7 @@
     fe::pointer<T> fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_full_path) { \
         return T_IMPORTER::Import(m_Storage, resource_full_path);                                          \
     }                                                                                                      \
-    template fe::pointer<T> fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_full_path);
+    template FORR_API fe::pointer<T> fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_full_path);
 
 void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_full_path) {
     std::filesystem::path extension = resource_full_path.extension();
@@ -33,16 +33,16 @@ void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_
     // TODO : add metadata parsing ( .forr_meta )
 
     if (extension == ".png") {
-        TextureImporter::Import(m_Storage, resource_full_path);
+        std::ignore = TextureImporter::Import(m_Storage, resource_full_path);
     }
     else if (extension == ".gltf" || extension == ".glb") {
-        GLTFImporter::Import(m_Storage, resource_full_path);
+        std::ignore = GLTFImporter::Import(m_Storage, resource_full_path);
     }
-    else if (extension == PATH.getMaterialExtension()) {
-        MaterialImporter::Import(m_Storage, resource_full_path);
+    else if (extension.generic_wstring() == PATH.getMaterialExtension()) {
+        std::ignore = MaterialImporter::Import(m_Storage, resource_full_path);
     }
-    else if (extension == PATH.getShaderExtension()) {
-        ShaderImporter::Import(m_Storage, resource_full_path);
+    else if (extension.generic_wstring() == PATH.getShaderExtension()) {
+        std::ignore = ShaderImporter::Import(m_Storage, resource_full_path);
     }
 }
 
