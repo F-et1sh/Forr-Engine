@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 15.10.2026
+### Goal
+    provide helper functions for descriptors creation
+
+### Done
+    fe::typed_pointer_storage<>::create() bug fixed
+
+### Problem
+    -
+
 ## 12.10.2026
 ### Goal
     -

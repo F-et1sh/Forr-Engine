@@ -79,7 +79,11 @@ namespace fe {
 
         // create a buffer ( SSBO/UBO ) via its reflected data
         // @returns fe::ParameterHandle is a variable that can be used in fe::IRenderer::BindBuffer() or fe::IRenderer::WriteParameter()
-        virtual FORR_NODISCARD std::expected<graphics::ParameterHandle, graphics::ParameterCreationErrors> CreateParameter(const graphics::ParameterDesc& parameter_desc) = 0;
+        virtual FORR_NODISCARD std::expected<graphics::ParameterHandle, graphics::ParameterCreationErrors> CreateParameter(const graphics::ParameterDesc& parameter_desc)                                                              = 0;
+        virtual FORR_NODISCARD std::expected<graphics::ParameterHandle, graphics::ParameterCreationErrors> CreateParameter(const shader::ReflectedDescriptor& descriptor_layout)                                                       = 0;
+        virtual FORR_NODISCARD std::expected<graphics::ParameterHandle, graphics::ParameterCreationErrors> CreateParameter(fe::hashed_string_view descriptor_name, const resource::ShaderFileData& shader_file_data)                   = 0;
+        virtual FORR_NODISCARD std::expected<graphics::ParameterHandle, graphics::ParameterCreationErrors> CreateParameter(fe::hashed_string_view descriptor_name, const std::vector<shader::ReflectedDescriptor>& descriptor_layouts) = 0;
+        virtual FORR_NODISCARD std::expected<graphics::ParameterHandle, graphics::ParameterCreationErrors> CreateParameter(fe::hashed_string_view descriptor_name, fe::pointer<resource::ShaderFileData> shader_file_data_ptr)         = 0;
         // bind SSBO or UBO
         virtual void BindParameter(graphics::ParameterHandle parameter_id) = 0;
         // write to SSBO or UBO

@@ -3,8 +3,12 @@
 # Added 11.10.2026
 - provide console parser. For example, to choose the graphics backend ( -vulkan/-opengl )
 
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
+
 # Added 08.10.2026
 - provide some 'fe::expected<>', which can store not only *value* and *error*, but also *value + warning*
+
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
 
 # Added 26.09.2026
 - create render context to store parameters ( in fe::IRenderer )

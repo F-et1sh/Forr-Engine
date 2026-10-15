@@ -71,7 +71,8 @@ namespace fe {
         FORR_NODISCARD fe::StringHash get_hash() const noexcept { return m_hash; }
 
         // this compares only hash
-        FORR_NODISCARD bool operator==(const hashed_string_base& other) const noexcept { return m_hash == other.m_hash; }
+        template<typename T>
+        FORR_NODISCARD bool operator==(const hashed_string_base<T>& other) const noexcept { return m_hash == other.m_hash; }
 
         FORR_NODISCARD bool operator==(const std::string& string) const noexcept { return m_string == string; }
         FORR_NODISCARD bool operator==(const char* str) const noexcept { return m_string == str; }

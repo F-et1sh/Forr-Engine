@@ -104,7 +104,7 @@ std::expected<fe::graphics::ParameterHandle, fe::graphics::ParameterCreationErro
         descriptor.type = parameter_desc.descriptor_type;
     }
 
-    return m_Parameters.emplace(parameter_desc, std::move(descriptor_ring));
+    return m_Parameters.create(parameter_desc, std::move(descriptor_ring));
 }
 
 void fe::RendererOpenGL::BindParameter(fe::graphics::ParameterHandle parameter_id) {
@@ -233,7 +233,7 @@ FORR_NODISCARD std::expected<fe::graphics::PipelineHandle, fe::graphics::Pipelin
     }
     // clang-format on
 
-    return m_Pipelines.emplace(std::move(opengl_pipeline));
+    return m_Pipelines.create(std::move(opengl_pipeline));
 }
 
 void fe::RendererOpenGL::BindPipeline(graphics::PipelineHandle pipeline_id) {
@@ -489,7 +489,7 @@ fe::graphics::BufferHandle fe::RendererOpenGL::createRenderGraphBuffer(const ren
     opengl_buffer.buffer.attach(buffer_raw);
     opengl_buffer.size = buffer_desc.size_in_bytes;
 
-    return m_Buffers.emplace(std::move(opengl_buffer));
+    return m_Buffers.create(std::move(opengl_buffer));
 }
 
 fe::graphics::TextureHandle fe::RendererOpenGL::createTexture(const resource::Texture& texture) {

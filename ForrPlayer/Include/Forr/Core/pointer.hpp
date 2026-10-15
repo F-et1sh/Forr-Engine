@@ -269,24 +269,25 @@ namespace fe {
         // TEMORARY
         FORR_CLASS_NONMOVABLE(typed_pointer_storage)
 
-        template <typename... Args>
-            requires std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t> && std::constructible_from<T, Args...>
-        FORR_NODISCARD PointerT create(const T& value) {
+        FORR_NODISCARD PointerT create(const T& value)
+            requires std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t>
+        {
             return emplace(value);
         }
-        template <typename... Args>
-            requires std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t> && std::constructible_from<T, Args...>
-        FORR_NODISCARD PointerT create(T&& value) {
+
+        FORR_NODISCARD PointerT create(T&& value)
+            requires std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t>
+        {
             return emplace(std::move(value));
         }
 
         template <typename CustomFieldArgs>
-            requires(!std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t> && std::constructible_from<T, Args...>)
+            requires(!std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t>)
         FORR_NODISCARD PointerT create(const CustomFieldArgs& custom_fields_args, const T& value) {
             return emplace(custom_fields_args, value);
         }
         template <typename CustomFieldArgs>
-            requires(!std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t> && std::constructible_from<T, Args...>)
+            requires(!std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t>)
         FORR_NODISCARD PointerT create(const CustomFieldArgs& custom_fields_args, T&& value) {
             return emplace(custom_fields_args, std::move(value));
         }
@@ -305,7 +306,7 @@ namespace fe {
         }
 
         template <typename... Args, typename CustomFieldArgs>
-            requires(!std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t>) && std::constructible_from<T, Args...>
+            requires(!std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t> && std::constructible_from<T, Args...>)
         FORR_NODISCARD PointerT emplace(const CustomFieldArgs& custom_fields_args, Args&&... args) {
             auto result = this->allocate_slot(std::forward<Args>(args)...);
             // if you're getting an error here and it's written "Cannot convert something...", then you most likely
