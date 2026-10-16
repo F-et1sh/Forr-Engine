@@ -17,3 +17,5 @@ xcopy /y /i /s "..\\..\\External\\SPIRV-Reflect\\include" "..\\..\\ThirdParty\\S
 
 xcopy /y /i /s "..\\..\\External\\SPIRV-Reflect\\spirv_reflect.h" "..\\..\\ThirdParty\\SPIRV-Reflect\\include\\" >nul
 xcopy /y /i /s "..\\..\\External\\SPIRV-Reflect\\spirv_reflect.c" "..\\..\\ThirdParty\\SPIRV-Reflect\\src\\" >nul
+
+copy "..\\..\\External\\SPIRV-Reflect\\LICENSE" "..\\..\\ThirdParty\\SPIRV-Reflect\\SPIRV_REFLECT_LICENSE" >nul

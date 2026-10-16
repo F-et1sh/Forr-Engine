@@ -92,8 +92,8 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
         blob.attach(blob_raw);
 
         Slang::ComPtr<slang::IBlob> load_diagnostics{};
-        slang::IModule*             loaded_module_raw = m_Session->loadModuleFromIRBlob(shader_file_data.full_path.c_str(),
-                                                                                        shader_file_data.full_path.c_str(),
+        slang::IModule*             loaded_module_raw = m_Session->loadModuleFromIRBlob(shader_file_data.full_path.generic_string().c_str(),
+                                                                                        shader_file_data.full_path.generic_string().c_str(),
                                                                                         blob_raw,
                                                                                         load_diagnostics.writeRef());
 
@@ -365,7 +365,7 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
 std::expected<fe::resource::ShaderFileData, fe::SlangParser::ShaderFileDataErrors>
 fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_path, const ResourceStorage& storage) {
     resource::ShaderFileData shader_file_data{};
-    shader_file_data.full_path = resource_full_path.generic_string().c_str();
+    shader_file_data.full_path = resource_full_path;
 
     // load module
 

@@ -2,11 +2,14 @@
 
 ## 16.10.2026
 ### Goal
+    fix glad
+    fix file paths
     provide helper functions for descriptors creation
 
 ### Done
     helpers in progress. fe::hashed_string_view<> error fixed
     shadows provided
+    spirv-reflect license copying fixed
 
 ### Problem
     RenderGraph architecture
