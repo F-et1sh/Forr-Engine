@@ -10,6 +10,7 @@
     helpers in progress. fe::hashed_string_view<> error fixed
     shadows provided
     spirv-reflect license copying fixed
+    glad submodule added
 
 ### Problem
     RenderGraph architecture
