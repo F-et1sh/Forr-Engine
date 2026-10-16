@@ -6,6 +6,7 @@
 
 ### Done
     helpers in progress. fe::hashed_string_view<> error fixed
+    shadows provided
 
 ### Problem
     RenderGraph architecture

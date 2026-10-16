@@ -50,6 +50,9 @@ namespace fe {
         //glm::vec4    weights{};
         //glm::vec4    tangent{};
 
+        Vertex(const glm::vec3& position)
+            : position(position) {}
+        
         Vertex(const glm::vec3& position, const glm::vec3& normal)
             : position(position), normal(normal) {}
 

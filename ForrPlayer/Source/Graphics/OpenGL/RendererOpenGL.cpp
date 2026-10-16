@@ -473,6 +473,10 @@ fe::graphics::TextureHandle fe::RendererOpenGL::createRenderGraphImage(const ren
     opengl_texture.resident_id = glGetTextureHandleARB(opengl_texture_raw);
     opengl_texture.texture.attach(opengl_texture_raw);
 
+    fe::logging::debug("Render Graph Image : %s\nFormat : %i",
+                       std::to_string(opengl_texture.resident_id).c_str(),
+                       size_t(image_desc.format)); // TODO : remove
+
     return m_Textures.create(std::move(opengl_texture));
 }
 

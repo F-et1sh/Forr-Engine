@@ -1,6 +1,8 @@
 import "../../Context/GlobalContext.slang";
 import "shader2.slang";
 
+public ConstantBuffer<float4x4> g_LightProjection;
+
 public struct PBRMaterial : IMaterial {
     public uint2  base_color_texture_handle;
     public float4 base_color_factor;
@@ -38,6 +40,8 @@ VertexStageOutput vertexMain<M : IMaterial>(VertexInput input) {
     output.texture_coord  = input.texture_coord;
     output.world_position = world_position.xyz;
 
+    output.light_position = mul(world_position, g_LightProjection);
+
     output.index = input.index;
 
     return output;
@@ -45,9 +49,15 @@ VertexStageOutput vertexMain<M : IMaterial>(VertexInput input) {
 
 [shader("fragment")]
 float4 fragmentMain<M : IMaterial>(VertexStageOutput input) : SV_Target { // temp lighting
-    M material = g_MaterialsRawData.Load<M>(input.index * 32);
-    float4 base_color = material.GetSurfaceData(input.texture_coord);
-    
+    float4 base_color = float4(0.0f);
+    if (input.index != 2) {
+        M material = g_MaterialsRawData.Load<M>(input.index * 32);
+        base_color = material.GetSurfaceData(input.texture_coord);
+    }
+    else {
+        base_color = float4(float3(0.75f), 1.0f);
+    }
+
     SpotLight lights[2];
     
     lights[0].position = float3(-3.0f, 3.0f, 6.0f);
@@ -73,7 +83,22 @@ float4 fragmentMain<M : IMaterial>(VertexStageOutput input) : SV_Target { // tem
     
         accumulated_light += lights[i].color * intensity;
     }
-    
-    float3 final_color = base_color.rgb * accumulated_light;
+
+    Sampler2D texture = reinterpret<Sampler2D>(4294969856);
+    float shadow = 0.0f;
+    float3 light_coords = input.light_position.xyz / input.light_position.w;
+    if (light_coords.z <= 1.0f) {
+        light_coords = (light_coords + 1.0f) / 2.0f;
+
+        float closest_depth = texture.Sample(light_coords.xy).r;
+        float current_depth = light_coords.z;
+
+        float bias = 0.0002f;
+        if (current_depth > closest_depth + bias) {
+            shadow = 0.75f;
+        }
+    }
+
+    float3 final_color = base_color.rgb * (1.0f - shadow);
     return float4(clamp(final_color, 0.0f, 1.0f), base_color.a);
 }

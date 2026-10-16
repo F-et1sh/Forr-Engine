@@ -22,15 +22,22 @@ namespace fe {
         TransformComponent(const glm::mat4& transform)
             : transform(transform) {}
 
-        TransformComponent()  = default;
+        TransformComponent() = default;
     };
 
     struct LightComponent {
-        bool      is_static{};
-        float     intensity = 1.0f;
-        glm::vec3 color{ 1.0f, 1.0f, 1.0f };
-        glm::vec3 direction{};
+        glm::mat4 transform{}; // temp
 
-        LightComponent()  = default;
+        LightComponent(const glm::mat4& transform)
+            : transform(transform) {}
+
+        LightComponent() = default;
+    };
+
+    struct ModelComponent {
+        fe::pointer<resource::Model> model_ptr{};
+
+        ModelComponent(fe::pointer<resource::Model> model_ptr) : model_ptr(model_ptr) {}
+        ModelComponent() = default;
     };
 } // namespace fe

@@ -13,6 +13,7 @@ public struct VertexStageOutput {
     public [[vk::location(1)]] float3 normal         : NORMAL;
     public [[vk::location(2)]] float2 texture_coord  : TEXCOORD;
     public [[vk::location(3)]] float3 world_position : WorldPosition;
+    public [[vk::location(4)]] float4 light_position;
 
-    public [[vk::location(4)]] int index;
+    public [[vk::location(5)]] int index;
 };

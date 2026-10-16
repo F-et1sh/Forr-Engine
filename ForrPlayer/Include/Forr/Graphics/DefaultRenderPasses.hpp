@@ -15,13 +15,151 @@
 #include "DefaultPipelineBuilders.hpp"
 
 namespace fe {
+    struct ShadowPassData {
+        graphics::PipelineHandle pipeline_handle{};
+
+        graphics::ParameterHandle model_matrices_parameter_id{};
+        std::vector<glm::mat4>    data{};
+
+        graphics::ParameterHandle light_projection_parameter{};
+    };
+
+    struct ShadowPass {
+        static void Setup(RenderGraphBuilder& builder, ShadowPassData& pass_data) {
+            builder.createImage(render_graph::ImageDesc{
+                .handle     = fe::make_string_hash("ShadowMap"),
+                .type       = render_graph::ImageType::IMAGE_TYPE_2D,
+                .format     = render_graph::Format::D32_SFLOAT,
+                .extent     = glm::ivec3{ 4096, 4096, 1 },
+                .mip_levels = 1,
+                .usage      = render_graph::ImageUsageBits::DEPTH_STENCIL });
+
+            builder.writeImage(fe::make_string_hash("ShadowMap"), ResourceState::DEPTH_WRITE);
+
+            fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Shadow\\Shadow.slang");
+            resource::ShaderFileData&             shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
+
+            { // model matrices
+                auto parameter_desc_expected = graphics::ParameterDesc::from("g_ModelMatrices", shader_file_data.descriptor_layouts);
+                if (!parameter_desc_expected.has_value()) {
+                    switch (parameter_desc_expected.error()) {
+                        case graphics::ParameterDesc::ConversionErrors::FAILED_TO_FIND_DESCRIPTOR:
+                            builder.assertError("Failed to find descriptor");
+                            break;
+                        case graphics::ParameterDesc::ConversionErrors::FAILED_TO_GET_SHADER_FILE_DATA_RESOURCE:
+                            builder.assertError("Failed to find shader file data resource");
+                            break;
+                        default:
+                            builder.assertFatal("Unknown error");
+                            return;
+                    }
+                }
+                auto parameter_expected = builder.renderer.CreateParameter(parameter_desc_expected.value());
+                if (!parameter_expected.has_value()) {
+                    switch (parameter_expected.error()) {
+                        case graphics::ParameterCreationErrors::FORGOT_TO_SPECIALIZE_GENERIC_DESCRIPTOR:
+                            builder.assertError("Forgot to specialize a generic descriptor");
+                            break;
+                        case graphics::ParameterCreationErrors::MAPPED_MEMORY_WAS_NULLPTR:
+                            builder.assertError("Mapped memory was nullptr");
+                            break;
+                        case graphics::ParameterCreationErrors::UNSUPPORTED_DESCRIPTOR_TYPE:
+                            builder.assertError("Unsupported descriptor type");
+                            break;
+                        default:
+                            builder.assertFatal("Unknown error");
+                            return;
+                    }
+                }
+                pass_data.model_matrices_parameter_id = parameter_expected.value();
+            }
+            { // light projection
+                auto parameter_desc_expected = graphics::ParameterDesc::from("g_LightProjection", shader_file_data.descriptor_layouts);
+                if (!parameter_desc_expected.has_value()) {
+                    switch (parameter_desc_expected.error()) {
+                        case graphics::ParameterDesc::ConversionErrors::FAILED_TO_FIND_DESCRIPTOR:
+                            builder.assertError("Failed to find descriptor");
+                            break;
+                        case graphics::ParameterDesc::ConversionErrors::FAILED_TO_GET_SHADER_FILE_DATA_RESOURCE:
+                            builder.assertError("Failed to find shader file data resource");
+                            break;
+                        default:
+                            builder.assertFatal("Unknown error");
+                            return;
+                    }
+                }
+                auto parameter_expected = builder.renderer.CreateParameter(parameter_desc_expected.value());
+                if (!parameter_expected.has_value()) {
+                    switch (parameter_expected.error()) {
+                        case graphics::ParameterCreationErrors::FORGOT_TO_SPECIALIZE_GENERIC_DESCRIPTOR:
+                            builder.assertError("Forgot to specialize a generic descriptor");
+                            break;
+                        case graphics::ParameterCreationErrors::MAPPED_MEMORY_WAS_NULLPTR:
+                            builder.assertError("Mapped memory was nullptr");
+                            break;
+                        case graphics::ParameterCreationErrors::UNSUPPORTED_DESCRIPTOR_TYPE:
+                            builder.assertError("Unsupported descriptor type");
+                            break;
+                        default:
+                            builder.assertFatal("Unknown error");
+                            return;
+                    }
+                }
+                pass_data.light_projection_parameter = parameter_expected.value();
+            }
+
+            graphics::PipelineDesc pipeline_desc{};
+            pipeline_desc.entry_points.emplace_back("vertexMain");
+            pipeline_desc.entry_points.emplace_back("fragmentMain");
+            pipeline_desc.shader_file_data_ptrs.emplace_back(shader_file_data_ptr);
+
+            auto pipeline_expected = builder.renderer.CreatePipeline(pipeline_desc);
+            if (!pipeline_expected) {
+                builder.assertFatal("Failed to create");
+                return;
+            }
+
+            pass_data.pipeline_handle = pipeline_expected.value();
+
+            pass_data.data.resize(256);
+            pass_data.data[0] = glm::mat4{ 1.0f };
+            pass_data.data[1] = glm::mat4{ 1.0f };
+            pass_data.data[2] = glm::mat4{ 1.0f };
+        }
+
+        static void Execute(RenderGraphContext& context, ShadowPassData& pass_data) {
+            auto transform_view = context.render_registry.view<TransformComponent>();
+            transform_view.each([&pass_data, i = 0](const TransformComponent& transform_component) mutable {
+                pass_data.data[i] = transform_component.transform;
+                i                 = (i + 1) % 3;
+            });
+
+            context.BindPipeline(pass_data.pipeline_handle);
+
+            context.BindBuffer(pass_data.model_matrices_parameter_id);
+            context.BindBuffer(pass_data.light_projection_parameter);
+
+            context.WriteBuffer(pass_data.model_matrices_parameter_id, pass_data.data);
+
+            auto  light_entity    = context.render_registry.view<LightComponent>().back();
+            auto& light_component = context.render_registry.get<LightComponent>(light_entity);
+
+            context.WriteBuffer(pass_data.light_projection_parameter, std::as_bytes(std::span{ &light_component.transform, 1 }));
+
+            auto models_view = context.render_registry.view<ModelComponent>();
+            models_view.each([&context, i = 0](const ModelComponent& model_component) mutable {
+                context.DrawModel(model_component.model_ptr, i);
+                i = (i + 1) % 3;
+            });
+        }
+    };
+
     struct ForwardPassData { // everything is temp
         graphics::PipelineHandle pipeline_id{};
 
         fe::pointer<resource::Material> default_material_ptr{};
-        fe::pointer<resource::Model>    test_model_ptr{};
-        fe::pointer<resource::Model>    test_model2_ptr{};
 
+        graphics::ParameterHandle light_projection_parameter{};
         graphics::ParameterHandle model_matrices_parameter_id{};
         std::vector<glm::mat4>    data{};
 
@@ -40,8 +178,6 @@ namespace fe {
         };
         graphics::ParameterHandle global_data_parameter_id{};
         std::vector<std::byte>    global_data_as_bytes{};
-
-        float time{};
     };
     struct ForwardPass {
         static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) { // setup can be called twice
@@ -64,6 +200,7 @@ namespace fe {
 
             builder.writeImage(fe::make_string_hash("RenderTarget"), ResourceState::RENDER_TARGET);
             builder.writeImage(fe::make_string_hash("Depth"), ResourceState::DEPTH_WRITE);
+            builder.readImage(fe::make_string_hash("ShadowMap"), ResourceState::SHADER_READ_ONLY);
 
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
             resource::ShaderFileData&             shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
@@ -143,6 +280,40 @@ namespace fe {
                 }
                 pass_data.global_data_parameter_id = model_matrices_parameter_expected.value();
             }
+            { // light projection
+                auto parameter_desc_expected = graphics::ParameterDesc::from("g_LightProjection", shader_file_data.descriptor_layouts);
+                if (!parameter_desc_expected.has_value()) {
+                    switch (parameter_desc_expected.error()) {
+                        case graphics::ParameterDesc::ConversionErrors::FAILED_TO_FIND_DESCRIPTOR:
+                            builder.assertError("Failed to find descriptor");
+                            break;
+                        case graphics::ParameterDesc::ConversionErrors::FAILED_TO_GET_SHADER_FILE_DATA_RESOURCE:
+                            builder.assertError("Failed to find shader file data resource");
+                            break;
+                        default:
+                            builder.assertFatal("Unknown error");
+                            return;
+                    }
+                }
+                auto parameter_expected = builder.renderer.CreateParameter(parameter_desc_expected.value());
+                if (!parameter_expected.has_value()) {
+                    switch (parameter_expected.error()) {
+                        case graphics::ParameterCreationErrors::FORGOT_TO_SPECIALIZE_GENERIC_DESCRIPTOR:
+                            builder.assertError("Forgot to specialize a generic descriptor");
+                            break;
+                        case graphics::ParameterCreationErrors::MAPPED_MEMORY_WAS_NULLPTR:
+                            builder.assertError("Mapped memory was nullptr");
+                            break;
+                        case graphics::ParameterCreationErrors::UNSUPPORTED_DESCRIPTOR_TYPE:
+                            builder.assertError("Unsupported descriptor type");
+                            break;
+                        default:
+                            builder.assertFatal("Unknown error");
+                            return;
+                    }
+                }
+                pass_data.light_projection_parameter = parameter_expected.value();
+            }
 
             resource::Material pbr_material{};
             pbr_material.layout_key = { .shader_file_data = shader_file_data_ptr, .structure_layout_storage_index = 0 };
@@ -184,30 +355,31 @@ namespace fe {
             }
 
             pass_data.default_material_ptr = pbr_material_ptr;
-            if (!pass_data.test_model_ptr) {
-                pass_data.test_model_ptr = builder.resource_manager.ImportResource<resource::Model>(PATH.getModelsPath() / "TatarSuzanne\\TatarSuzanne.gltf");
-            }
-            if (!pass_data.test_model2_ptr) {
-                pass_data.test_model2_ptr = builder.resource_manager.ImportResource<resource::Model>(PATH.getModelsPath() / "FlightHelmet\\FlightHelmet.gltf");
-            }
 
             pass_data.data.resize(256);
             pass_data.data[0] = glm::mat4{ 1.0f };
             pass_data.data[1] = glm::mat4{ 1.0f };
+            pass_data.data[2] = glm::mat4{ 1.0f };
 
-            std::vector<ForwardPassData::PBRMaterialData> all_materials(2);
-            all_materials[0].base_color_texture_handle = 4294969858;
+            std::vector<ForwardPassData::PBRMaterialData> all_materials(3);
+            all_materials[0].base_color_texture_handle = 4294969866 + 2;
             all_materials[0].base_color_factor         = glm::vec4(1.0f);
 
-            all_materials[1].base_color_texture_handle = 4294969870;
+            all_materials[1].base_color_texture_handle = 4294969865 + 2;
             all_materials[1].base_color_factor         = glm::vec4(1.0f);
+
+            all_materials[2].base_color_texture_handle = 4294969867 + 2;
+            all_materials[2].base_color_factor         = glm::vec4(1.0f);
 
             pass_data.materials_data.resize(sizeof(ForwardPassData::PBRMaterialData) * all_materials.size());
             memcpy(&pass_data.materials_data[0], all_materials.data(), sizeof(ForwardPassData::PBRMaterialData) * all_materials.size());
 
+            //glm::mat4 proj = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.001f, 1000.0f);
+            //glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 2.0f, -2.0f), glm::vec3{}, glm::vec3(0.0f, 1.0f, 0.0f));
+
             ForwardPassData::GlobalData global_data{};
-            global_data.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f),
-                                           glm::vec3(0.0f, 0.0f, 0.0f),
+            global_data.view = glm::lookAt(glm::vec3(8.0f, 3.0f, 5.0f),
+                                           glm::vec3(-1.0f, -1.0f, 0.0f),
                                            glm::vec3(0.0f, 1.0f, 0.0f));
 
             global_data.projection = glm::perspective(glm::radians(45.0f),
@@ -220,34 +392,33 @@ namespace fe {
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
-            glm::mat4 model = glm::mat4(1.0f);
-            model           = glm::translate(model, glm::vec3(-1.5f, 0.0f, 0.0f));
-            model           = glm::rotate(model, pass_data.time, glm::vec3(0, 1, 0));
-            model           = glm::scale(model, glm::vec3(0.7f));
-
-            pass_data.data[0] = model;
-
-            glm::mat4 model2 = glm::mat4(1.0f);
-            model2           = glm::translate(model2, glm::vec3(1.5f, -0.5f, 0.0f));
-            model2           = glm::rotate(model2, pass_data.time, glm::vec3(0, 1, 0));
-            model2           = glm::scale(model2, glm::vec3(2.0f));
-
-            pass_data.data[1] = model2;
+            auto transform_view = context.render_registry.view<TransformComponent>();
+            transform_view.each([&pass_data, i = 0](const TransformComponent& transform_component) mutable {
+                pass_data.data[i] = transform_component.transform;
+                i                 = (i + 1) % 3;
+            });
 
             context.BindPipeline(pass_data.pipeline_id);
 
             context.BindBuffer(pass_data.model_matrices_parameter_id);
             context.BindBuffer(pass_data.global_data_parameter_id);
             context.BindBuffer(pass_data.materials_parameter_id);
+            context.BindBuffer(pass_data.light_projection_parameter);
 
             context.WriteBuffer(pass_data.model_matrices_parameter_id, pass_data.data);
             context.WriteBuffer(pass_data.materials_parameter_id, pass_data.materials_data);
             context.WriteBuffer(pass_data.global_data_parameter_id, pass_data.global_data_as_bytes);
 
-            context.DrawModel(pass_data.test_model_ptr, 0);
-            context.DrawModel(pass_data.test_model2_ptr, 1);
+            auto  light_entity    = context.render_registry.view<LightComponent>().back();
+            auto& light_component = context.render_registry.get<LightComponent>(light_entity);
 
-            pass_data.time += 0.01f;
+            context.WriteBuffer(pass_data.light_projection_parameter, std::as_bytes(std::span{ &light_component.transform, 1 }));
+
+            auto models_view = context.render_registry.view<ModelComponent>();
+            models_view.each([&context, i = 0](const ModelComponent& model_component) mutable {
+                context.DrawModel(model_component.model_ptr, i);
+                i = (i + 1) % 3;
+            });
         }
 
         ForwardPass()  = default;
@@ -265,6 +436,7 @@ namespace fe {
         static void Setup(RenderGraphBuilder& builder, PostProcessPassData& pass_data) {
             builder.writeToScreen(true);
             builder.readImage(fe::make_string_hash("RenderTarget"), ResourceState::SHADER_READ_ONLY);
+            builder.readImage(fe::make_string_hash("ShadowMap"), ResourceState::SHADER_READ_ONLY);
             builder.readImage(fe::make_string_hash("Depth"), ResourceState::DEPTH_READ);
 
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "PostProcess" / "PostProcess.slang");
