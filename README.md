@@ -27,6 +27,10 @@ Underneath this scene is a lot of work with :
 - **Bindless textures** : The engine uses only bindless texture for now. I'm thinking about adding the default ones in some "Legacy OpenGL" backend in the future. See [not-now-but.md](Docs/not-now-but.md)
 - **AZDO** : As a default method of rendering.
 
+**16.10.2026 Update**
+- Shadows added
+<img width="1919" height="1075" alt="image" src="https://github.com/user-attachments/assets/05b617eb-d821-4f51-a5ec-9649af4e6d71" />
+
 ## Licenses
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
