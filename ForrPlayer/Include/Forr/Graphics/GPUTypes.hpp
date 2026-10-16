@@ -11,6 +11,8 @@
 ===============================================*/
 
 #pragma once
+#include <expected>
+
 #include "Forr/Core/custom_allocators.hpp"
 #include "Forr/Core/pointer.hpp"
 #include "Forr/Core/string.hpp"
@@ -184,15 +186,36 @@ namespace fe {
             uint32_t               set{};
             uint32_t               binding{};
 
-            ParameterDesc() = default;
-            ParameterDesc(const shader::ReflectedDescriptor& descriptor_layout)
-                : descriptor_type(descriptor_layout.descriptor_type),
-                  stage_flags(descriptor_layout.stage_flags),
-                  is_bindless(descriptor_layout.is_bindless),
-                  array_size(descriptor_layout.array_size),
-                  size(descriptor_layout.size),
-                  set(descriptor_layout.set),
-                  binding(descriptor_layout.binding) {}
+            enum class ConversionErrors {
+                FAILED_TO_FIND_DESCRIPTOR,
+                FAILED_TO_GET_SHADER_FILE_DATA_RESOURCE
+            };
+
+            constexpr static ParameterDesc from(const shader::ReflectedDescriptor& descriptor_layout) {
+                ParameterDesc desc{};
+
+                desc.descriptor_type = descriptor_layout.descriptor_type;
+                desc.stage_flags     = descriptor_layout.stage_flags;
+                desc.is_bindless     = descriptor_layout.is_bindless;
+                desc.array_size      = descriptor_layout.array_size;
+                desc.size            = descriptor_layout.size;
+                desc.set             = descriptor_layout.set;
+                desc.binding         = descriptor_layout.binding;
+
+                return desc;
+            }
+
+            constexpr static std::expected<ParameterDesc, ConversionErrors> from(fe::hashed_string_view                          descriptor_name,
+                                                                                 const std::vector<shader::ReflectedDescriptor>& descriptor_layouts) {
+                auto it = std::ranges::find_if(descriptor_layouts, [descriptor_name](const auto& e) -> bool {
+                    return e.name == descriptor_name;
+                });
+                if (it == descriptor_layouts.end()) {
+                    return std::unexpected{ ConversionErrors::FAILED_TO_FIND_DESCRIPTOR };
+                }
+
+                return ParameterDesc::from(*it);
+            }
         };
 
         enum class ParameterCreationErrors {

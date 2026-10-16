@@ -148,13 +148,19 @@ namespace fe {
         std::vector<std::string> errors{};
         std::vector<std::string> fatals{};
 
-        bool is_writes_to_screen{};
+        bool is_writes_to_screen{}; // TODO : this should work other way
 
-        // TODO : this should work other way : check TODOs in 'RenderGraph.cpp'
+        // TODO : this should work other way
         RenderGraphBuilder& writeToScreen(bool is_writes_to_screen) noexcept {
             this->is_writes_to_screen = is_writes_to_screen;
             return *this;
         }
+
+        enum class ParameterCreationErrors {
+
+        };
+
+        std::expected<graphics::ParameterHandle, ParameterCreationErrors> createParameter();
 
         // this render pass will still be in render graph without changes
         RenderGraphBuilder& assertWarning(const std::string& message) {

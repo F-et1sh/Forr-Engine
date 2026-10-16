@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 16.10.2026
+### Goal
+    provide helper functions for descriptors creation
+
+### Done
+    helpers in progress. fe::hashed_string_view<> error fixed
+
+### Problem
+    RenderGraph architecture
+
 ## 15.10.2026
 ### Goal
     provide helper functions for descriptors creation

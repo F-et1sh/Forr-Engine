@@ -68,23 +68,38 @@ namespace fe {
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
             resource::ShaderFileData&             shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
 
-            {
-                auto it = std::ranges::find_if(shader_file_data.descriptor_layouts, [](const auto& e) -> bool {
-                    return e.name == "g_ModelMatrices";
-                });
-
-                if (it == shader_file_data.descriptor_layouts.end()) {
-                    builder.assertFatal("Failed to find parameter for g_ModelMatrices");
-                    return;
+            auto parameter_desc_expected = graphics::ParameterDesc::from("g_ModelMatrices", shader_file_data.descriptor_layouts);
+            if (!parameter_desc_expected.has_value()) {
+                switch (parameter_desc_expected.error()) {
+                    case graphics::ParameterDesc::ConversionErrors::FAILED_TO_FIND_DESCRIPTOR:
+                        builder.assertError("Failed to find descriptor");
+                        break;
+                    case graphics::ParameterDesc::ConversionErrors::FAILED_TO_GET_SHADER_FILE_DATA_RESOURCE:
+                        builder.assertError("Failed to find shader file data resource");
+                        break;
+                    default:
+                        builder.assertFatal("Unknown error");
+                        return;
                 }
-
-                auto model_matrices_parameter_expected = builder.renderer.CreateParameter(*it);
-                if (!model_matrices_parameter_expected.has_value()) {
-                    builder.assertFatal("Failed to create parameter for g_ModelMatrices");
-                    return;
-                }
-                pass_data.model_matrices_parameter_id = model_matrices_parameter_expected.value();
             }
+            auto parameter_expected = builder.renderer.CreateParameter(parameter_desc_expected.value());
+            if (!parameter_expected.has_value()) {
+                switch (parameter_expected.error()) {
+                    case graphics::ParameterCreationErrors::FORGOT_TO_SPECIALIZE_GENERIC_DESCRIPTOR:
+                        builder.assertError("Forgot to specialize a generic descriptor");
+                        break;
+                    case graphics::ParameterCreationErrors::MAPPED_MEMORY_WAS_NULLPTR:
+                        builder.assertError("Mapped memory was nullptr");
+                        break;
+                    case graphics::ParameterCreationErrors::UNSUPPORTED_DESCRIPTOR_TYPE:
+                        builder.assertError("Unsupported descriptor type");
+                        break;
+                    default:
+                        builder.assertFatal("Unknown error");
+                        return;
+                }
+            }
+            pass_data.model_matrices_parameter_id = parameter_expected.value();
             {
                 auto it = std::ranges::find_if(shader_file_data.descriptor_layouts, [](const auto& e) -> bool {
                     return e.name == "g_MaterialsRawData";
@@ -104,7 +119,7 @@ namespace fe {
                 specialized_parameter.array_size      = 0;
                 specialized_parameter.size            = 0;
 
-                auto model_matrices_parameter_expected = builder.renderer.CreateParameter(specialized_parameter);
+                auto model_matrices_parameter_expected = builder.renderer.CreateParameter(graphics::ParameterDesc::from(specialized_parameter));
                 if (!model_matrices_parameter_expected.has_value()) {
                     builder.assertFatal("Failed to create parameter for g_MaterialsRawData");
                     return;
@@ -121,7 +136,7 @@ namespace fe {
                     return;
                 }
 
-                auto model_matrices_parameter_expected = builder.renderer.CreateParameter(*it);
+                auto model_matrices_parameter_expected = builder.renderer.CreateParameter(graphics::ParameterDesc::from(*it));
                 if (!model_matrices_parameter_expected.has_value()) {
                     builder.assertFatal("Failed to create parameter for g_GlobalData");
                     return;
@@ -268,7 +283,7 @@ namespace fe {
             pass_data.pipeline_handle = pipeline_expected.value();
 
             resource::ShaderFileData& shader_file_data = *builder.resource_manager.GetResource(shader_file_data_ptr);
-            pass_data.time_parameter_handle            = *builder.renderer.CreateParameter(graphics::ParameterDesc{ shader_file_data.descriptor_layouts[0] });
+            pass_data.time_parameter_handle            = *builder.renderer.CreateParameter(graphics::ParameterDesc{ graphics::ParameterDesc::from(shader_file_data.descriptor_layouts[0]) });
         }
 
         static void Execute(RenderGraphContext& context, PostProcessPassData& pass_data) {

@@ -1,5 +1,11 @@
 # Forr-Engine Not now, but :
 
+# Added 16.10.2026
+- rewrite RenderGraph : remove IRenderer& and ResourceManager& from RenderGraphBuilder and 
+  use attachments instead of name hashes
+
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
+
 # Added 11.10.2026
 - provide console parser. For example, to choose the graphics backend ( -vulkan/-opengl )
 

@@ -60,19 +60,21 @@ namespace fe {
         FORR_NODISCARD std::size_t size() const noexcept { return m_string.size(); }
         FORR_NODISCARD bool        empty() const noexcept { return size() == 0; }
 
-        FORR_NODISCARD const char* c_str() const noexcept {
-            if constexpr (std::is_same_v<T, std::string>)
-                return m_string.c_str();
-            else if constexpr (std::is_same_v<T, std::string_view>) {
-                return m_string.data();
-            }
+        FORR_NODISCARD const char* c_str() const noexcept
+            requires std::is_same_v<T, std::string>
+        {
+            return m_string.c_str();
+        }
+
+        FORR_NODISCARD const char* data() const noexcept {
+            return m_string.data();
         }
 
         FORR_NODISCARD fe::StringHash get_hash() const noexcept { return m_hash; }
 
         // this compares only hash
-        template<typename T>
-        FORR_NODISCARD bool operator==(const hashed_string_base<T>& other) const noexcept { return m_hash == other.m_hash; }
+        template <typename U>
+        FORR_NODISCARD bool operator==(const hashed_string_base<U>& other) const noexcept { return m_hash == other.m_hash; }
 
         FORR_NODISCARD bool operator==(const std::string& string) const noexcept { return m_string == string; }
         FORR_NODISCARD bool operator==(const char* str) const noexcept { return m_string == str; }
@@ -105,6 +107,8 @@ namespace fe {
     private:
         T              m_string{};
         fe::StringHash m_hash{};
+
+        friend class hashed_string_base;
     };
 
     using hashed_string      = hashed_string_base<std::string>;
