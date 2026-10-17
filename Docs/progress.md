@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 17.10.2026
+### Goal
+    -
+
+### Done
+    'Camera.hpp' GLM include fixed
+
+### Problem
+    -
+
 ## 16.10.2026
 ### Goal
     fix glad
@@ -9,6 +19,7 @@
 ### Done
     helpers in progress. fe::hashed_string_view<> error fixed
     shadows provided
+    fix file paths
     spirv-reflect license copying fixed
     glad submodule added
 

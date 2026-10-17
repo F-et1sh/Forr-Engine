@@ -11,6 +11,7 @@
 ===============================================*/
 
 #include "Forr/Core/attributes.hpp"
+#include "Forr/Graphics/GPUTypes.hpp"
 
 #pragma once
 
