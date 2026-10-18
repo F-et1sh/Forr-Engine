@@ -5,7 +5,7 @@
     -
 
 ### Done
-    -
+    cull mode provided for OpenGL
 
 ### Problem
     Slang Reflection API VS UNICODE file paths

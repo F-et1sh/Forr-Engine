@@ -255,16 +255,14 @@ void fe::RendererOpenGL::BindPipeline(graphics::PipelineHandle pipeline_id) {
         glDisable(GL_DEPTH_TEST);
     }
 
-    // TODO : enable this
-    //
-    ////if (pipeline.cull_enable) {
-    //glEnable(GL_CULL_FACE);
-    //glCullFace(GL_BACK);
-    //glFrontFace(GL_CCW);
-    ////}
-    ////else {
-    ////glDisable(GL_CULL_FACE);
-    ////}
+    if (pipeline->cull_enable) {
+        glEnable(GL_CULL_FACE);
+        glCullFace(pipeline->cull_mode);
+        glFrontFace(GL_CCW);
+    }
+    else {
+        glDisable(GL_CULL_FACE);
+    }
 }
 
 void fe::RendererOpenGL::DestroyPipeline(graphics::PipelineHandle pipeline_id) {
