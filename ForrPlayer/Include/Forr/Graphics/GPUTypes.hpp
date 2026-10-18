@@ -158,7 +158,7 @@ namespace fe {
         DepthMode depth_mode{ DepthMode::LESS };
 
         bool     cull_enable{ true };
-        CullMode cull_mode{ CullMode::FRONT_AND_BACK };
+        CullMode cull_mode{ CullMode::BACK };
     };
 
     struct VertexLayout {

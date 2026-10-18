@@ -63,7 +63,7 @@ namespace fe {
         GLenum depth_mode{ GL_LESS };
 
         bool   cull_enable{ true };
-        GLenum cull_mode{ GL_ALWAYS };
+        GLenum cull_mode{ GL_BACK };
 
         OpenGLPipeline() = default;
 
