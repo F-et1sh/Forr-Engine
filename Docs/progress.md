@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 18.10.2026
+### Goal
+    -
+
+### Done
+    -
+
+### Problem
+    Slang Reflection API VS UNICODE file paths
+
 ## 17.10.2026
 ### Goal
     -
