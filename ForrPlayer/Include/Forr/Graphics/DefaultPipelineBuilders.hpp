@@ -43,6 +43,16 @@ namespace fe {
 
     class PBRPipelineBuilder {
     public:
+        // @brief builds a pipeline for PBR materials
+        // 
+        // @param shader_file_data_ptr shader file data resource pointer that contains everything needed
+        // @param material_ptr material resource pointer that you want to combine the shader with ( specialize )
+        //  by the way, if you want to change pipeline flags, then you can change pipeline flags in the material, which's pointer you're passing
+        //  because they're overrieded
+        // @param resource_manager actual resource manager of the application
+        // @param renderer actual renderer of the application
+        // 
+        // @returns done pipeline handle or an error
         static std::expected<fe::graphics::PipelineHandle, PBRPipelineError> Build(fe::pointer<resource::ShaderFileData> shader_file_data_ptr,
                                                                                    fe::pointer<resource::Material>       material_ptr,
                                                                                    ResourceManager&                      resource_manager,
@@ -59,6 +69,8 @@ namespace fe {
             const static fe::hashed_string opengl_buffer_name{ "OpenGLBuffer" };
             const static fe::hashed_string vulkan_buffer_name{ "VulkanBuffer" };
 
+            // how many generic parameters are required for the entry point
+            // applied to both entry points
             constexpr static size_t entry_point_generic_argument_count = 1;
 
             // load shader file data and check for error
@@ -76,7 +88,7 @@ namespace fe {
             auto& material         = *material_raw_pointer;
 
             // pre-create pipeline desc
-            graphics::PipelineDesc pipeline_desc{
+              graphics::PipelineDesc pipeline_desc{
                 .pipeline_flags        = material.pipeline_flags_override,
                 .shader_file_data_ptrs = { shader_file_data_ptr },
                 .entry_points          = { vertex_entry_point_name, fragment_entry_point_name },
@@ -121,7 +133,7 @@ namespace fe {
                     return std::unexpected{ entry_point == vertex_entry_point_name ? PBRPipelineErrorCodes::VERTEX_ENTRY_POINT_ABSENT
                                                                                    : PBRPipelineErrorCodes::FRAGMENT_ENTRY_POINT_ABSENT };
                 }
-                
+
                 // make sure that this entry point has only one generic argument to specialize
                 size_t generic_arguments_count = entry_point_it->generic_arguments.size();
                 if (generic_arguments_count != entry_point_generic_argument_count) {
