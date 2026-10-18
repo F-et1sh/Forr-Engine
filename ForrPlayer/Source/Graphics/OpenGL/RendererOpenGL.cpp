@@ -227,9 +227,9 @@ FORR_NODISCARD std::expected<fe::graphics::PipelineHandle, fe::graphics::Pipelin
         case CullMode::BACK          : opengl_pipeline.cull_mode = GL_BACK          ; break;
         case CullMode::FRONT_AND_BACK: opengl_pipeline.cull_mode = GL_FRONT_AND_BACK; break;
             default:
-                fe::logging::warning("Unified -> OpenGL. Unsupported cull mode %i. Using GL_NONE as default",
+                fe::logging::warning("Unified -> OpenGL. Unsupported cull mode %i. Using GL_BACK as default",
                     pipeline_desc.pipeline_flags.cull_mode);
-            opengl_pipeline.cull_mode = GL_NONE;
+            opengl_pipeline.cull_mode = GL_BACK;
     }
     // clang-format on
 
@@ -255,10 +255,11 @@ void fe::RendererOpenGL::BindPipeline(graphics::PipelineHandle pipeline_id) {
         glDisable(GL_DEPTH_TEST);
     }
 
+    glFrontFace(GL_CCW);
+
     if (pipeline->cull_enable) {
         glEnable(GL_CULL_FACE);
         glCullFace(pipeline->cull_mode);
-        glFrontFace(GL_CCW);
     }
     else {
         glDisable(GL_CULL_FACE);
