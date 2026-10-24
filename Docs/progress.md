@@ -5,7 +5,8 @@
     Event System
 
 ### Done
-    EventBus created. #include "pch.hpp" --> #include "Forr/PCH/pch.hpp"
+    EventBus added. #include "pch.hpp" --> #include "Forr/PCH/pch.hpp"
+    EventBus::TypeRegistry added. fe::render_graph::CommandList fixed
 
 ### Problem
     School & lack of sleep
