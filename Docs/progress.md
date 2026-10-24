@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 24.10.2026
+### Goal
+    Event System
+
+### Done
+    EventBus created. #include "pch.hpp" --> #include "Forr/PCH/pch.hpp"
+
+### Problem
+    School & lack of sleep
+
 ## 18.10.2026
 ### Goal
     -

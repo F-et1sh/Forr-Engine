@@ -10,7 +10,7 @@
 
 ===============================================*/
 
-#include "pch.hpp"
+#include "Forr/PCH/pch.hpp"
 #include "SlangParser.hpp"
 
 namespace fe {

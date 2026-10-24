@@ -47,6 +47,7 @@
     <ClInclude Include="Include\Forr\Graphics\DefaultPipelineBuilders.hpp" />
     <ClInclude Include="Include\Forr\Graphics\ShaderReflection.hpp" />
     <ClInclude Include="Include\Forr\Graphics\RenderGraphTypes.hpp" />
+    <ClInclude Include="Include\Forr\Core\Events\EventBus.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />

@@ -10,7 +10,7 @@
 
 ===============================================*/
 
-#include "pch.hpp"
+#include "Forr/PCH/pch.hpp"
 #include "Forr/ResourceManagement/ResourceManager.hpp"
 
 fe::ResourceManager::ResourceManager(const ResourceManagerDesc& desc) {

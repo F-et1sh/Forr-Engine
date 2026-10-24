@@ -45,9 +45,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ExcludePath>$(SolutionDir)External;$(SolutionDir)ThirdParty;$(ExcludePath)</ExcludePath>
+    <IncludePath>$(ProjectDir)Include;$(ProjectDir)Source;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ExcludePath>$(SolutionDir)External;$(SolutionDir)ThirdParty;$(ExcludePath)</ExcludePath>
+    <IncludePath>$(ProjectDir)Include;$(ProjectDir)Source;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -57,9 +59,9 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include;$(ProjectDir)Source;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>Forr/PCH/pch.hpp</PrecompiledHeaderFile>
       <AdditionalOptions>/Zc:__cplusplus
  /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
       <ShowIncludes>false</ShowIncludes>
@@ -87,9 +89,9 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_debug.bat" $(Targe
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include;$(ProjectDir)Source;$(ProjectDir)Include\Forr\PCH;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include;$(ProjectDir)Source;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>Forr/PCH/pch.hpp</PrecompiledHeaderFile>
       <AdditionalOptions>/Zc:__cplusplus
  /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
       <ShowIncludes>false</ShowIncludes>
@@ -111,6 +113,7 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     <ClInclude Include="Include\Forr\Application.hpp" />
     <ClInclude Include="Include\Forr\Core\attributes.hpp" />
     <ClInclude Include="Include\Forr\Core\custom_allocators.hpp" />
+    <ClInclude Include="Include\Forr\Core\Events\EventBus.hpp" />
     <ClInclude Include="Include\Forr\Core\guid.hpp" />
     <ClInclude Include="Include\Forr\Core\logging.hpp" />
     <ClInclude Include="Include\Forr\Core\path.hpp" />
