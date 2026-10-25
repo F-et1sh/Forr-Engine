@@ -23,16 +23,25 @@
 namespace fe {
     class EventBus {
     private:
-        // get unique id for every event
+        // get unique id for every event's structure
         struct TypeRegistry {
             template <typename T>
             static size_t get_id() noexcept {
-                static const size_t id = s_counter.fetch_add(1, std::memory_order_relaxed);
-                return id;
+                static const size_t index = S_COUNTER.fetch_add(1, std::memory_order_relaxed);
+                return index;
             }
 
         private:
-            inline static std::atomic<size_t> s_counter{};
+            inline static std::atomic<size_t> S_COUNTER{};
         };
+
+    public:
+        EventBus()  = default;
+        ~EventBus() = default;
+
+        FORR_CLASS_MOVABLE(EventBus)
+        FORR_CLASS_NONCOPYABLE(EventBus)
+
+    private:
     };
 } // namespace fe

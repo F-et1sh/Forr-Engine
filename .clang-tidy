@@ -1,6 +1,7 @@
 Checks: >
   readability-*,
   -readability-redundant-access-specifiers
+  -readability-identifier-naming
   performance-*
   bugprone-*
   modernize-use-nullptr

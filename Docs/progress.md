@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 25.10.2026
+### Goal
+    Event System
+
+### Done
+    MS Visual Studio finally fixed after long time
+
+### Problem
+    -
+
 ## 24.10.2026
 ### Goal
     Event System
