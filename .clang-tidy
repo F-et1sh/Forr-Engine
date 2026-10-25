@@ -1,11 +1,14 @@
 Checks: >
   readability-*,
-  -readability-redundant-access-specifiers
-  -readability-identifier-naming
-  performance-*
-  bugprone-*
-  modernize-use-nullptr
-  modernize-use-override
+  -readability-redundant-member-init,
+  -readability-redundant-access-specifiers,
+  -readability-identifier-naming,
+  -readability-braces-around-statements,
+  -readability-identifier-length,
+  performance-*,
+  bugprone-*,
+  modernize-use-nullptr,
+  modernize-use-override,
   modernize-use-equals-default
 
 CheckOptions:

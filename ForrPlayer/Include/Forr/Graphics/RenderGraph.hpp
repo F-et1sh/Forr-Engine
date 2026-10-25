@@ -258,9 +258,6 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(RenderGraphBindings)
     };
 
-    template <typename... T>
-    struct GarbageType;
-
     struct EmptyRenderPassDataT {};
 
     // Context here is 'fe::RenderGraphBuilder' or 'fe::RenderGraphContext'

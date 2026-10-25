@@ -23,6 +23,14 @@ namespace fe {
     static inline constexpr size_t align_up(size_t alignment, size_t offset) noexcept {
         return (offset + alignment - 1) & ~(alignment - 1);
     }
+    
+    template <typename T>
+    static inline constexpr uintptr_t get_aligned_offset(const uint8_t* buffer, size_t offset) noexcept {
+        uintptr_t current_address = reinterpret_cast<uintptr_t>(buffer) + offset;
+        uintptr_t aligned_address = fe::align_up(alignof(T), current_address);
+        size_t    aligned_offset  = aligned_address - reinterpret_cast<uintptr_t>(buffer);
+        return aligned_offset;
+    }
 
     struct ArenaMarker {
         size_t offset{};

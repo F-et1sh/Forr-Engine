@@ -13,6 +13,7 @@
 #pragma once
 #include <span>
 
+#include "Forr/Core/custom_allocators.hpp"
 #include "GPUTypes.hpp"
 
 namespace fe::render_graph {
@@ -259,16 +260,17 @@ namespace fe::render_graph {
         template <typename Command>
             requires std::is_trivially_copyable_v<Command> && std::is_trivially_destructible_v<Command>
         void enqueue(const Command& command) {
-            using CommandTypeT          = CommandTraits<Command>::Type;
-            constexpr CommandTypeT type = CommandTraits<Command>::Type;
+            constexpr CommandType type = CommandTraits<Command>::Type;
 
-            size_t type_offset = this->get_aligned_offset<CommandTypeT>(m_storage.data(), m_storage.size());
-            m_storage.resize(type_offset + sizeof(CommandTypeT));
-            new (&m_storage[type_offset]) CommandTypeT{ type };
+            size_t storage_size                     = m_storage.size();
+            size_t aligned_command_type_offset      = fe::align_up(alignof(CommandType), storage_size);
+            size_t aligned_command_offset           = fe::align_up(alignof(Command), aligned_command_type_offset + sizeof(CommandType));
+            size_t aligned_next_command_type_offset = fe::align_up(alignof(CommandType), aligned_command_offset + sizeof(Command));
 
-            uintptr_t command_offset = this->get_aligned_offset<Command>(m_storage.data(), m_storage.size());
-            m_storage.resize(command_offset + sizeof(Command));
-            new (&m_storage[command_offset]) Command{ command };
+            m_storage.resize(aligned_next_command_type_offset);
+
+            std::memcpy(&m_storage[aligned_command_type_offset], &type, sizeof(CommandType));
+            std::memcpy(&m_storage[aligned_command_offset], &command, sizeof(Command));
         }
 
         template <typename Func>
@@ -280,22 +282,17 @@ namespace fe::render_graph {
             size_t       offset     = 0;
 
             while (offset < total_size) {
-                offset = this->get_aligned_offset<render_graph::CommandType>(buffer, offset);
-
-                if (offset >= total_size) break;
-
                 render_graph::CommandType type = *std::launder(reinterpret_cast<render_graph::CommandType*>(&buffer[offset]));
-                offset += sizeof(render_graph::CommandType);
 
                 switch (type) {
-#define GENERATE_CASE(COMMAND_NAME)                                                           \
-    case render_graph::CommandType::COMMAND_NAME: {                                           \
-        offset        = this->get_aligned_offset<render_graph::COMMAND_NAME>(buffer, offset); \
-        auto* ptr     = reinterpret_cast<render_graph::COMMAND_NAME*>(&buffer[offset]);       \
-        auto* command = std::launder(ptr);                                                    \
-        func(*command);                                                                       \
-        offset += sizeof(render_graph::COMMAND_NAME);                                         \
-        break;                                                                                \
+#define GENERATE_CASE(COMMAND_NAME)                                                                                            \
+    case render_graph::CommandType::COMMAND_NAME: {                                                                            \
+        size_t command_offset = fe::align_up(alignof(render_graph::COMMAND_NAME), offset + sizeof(render_graph::CommandType)); \
+        auto*  ptr            = reinterpret_cast<render_graph::COMMAND_NAME*>(&buffer[command_offset]);                        \
+        auto*  command        = std::launder(ptr);                                                                             \
+        func(*command);                                                                                                        \
+        offset = fe::align_up(alignof(render_graph::CommandType), command_offset + sizeof(render_graph::COMMAND_NAME));        \
+        break;                                                                                                                 \
     }
 
                     FORR_RENDER_COMMANDS_LIST(GENERATE_CASE)
@@ -316,22 +313,17 @@ namespace fe::render_graph {
             size_t         offset     = 0;
 
             while (offset < total_size) {
-                offset = this->get_aligned_offset<render_graph::CommandType>(buffer, offset);
-
-                if (offset >= total_size) break;
-
                 render_graph::CommandType type = *std::launder(reinterpret_cast<const render_graph::CommandType*>(&buffer[offset]));
-                offset += sizeof(render_graph::CommandType);
 
                 switch (type) {
-#define GENERATE_CASE(COMMAND_NAME)                                                                 \
-    case render_graph::CommandType::COMMAND_NAME: {                                                 \
-        offset              = this->get_aligned_offset<render_graph::COMMAND_NAME>(buffer, offset); \
-        const auto* ptr     = reinterpret_cast<const render_graph::COMMAND_NAME*>(&buffer[offset]); \
-        const auto* command = std::launder(ptr);                                                    \
-        func(*command);                                                                             \
-        offset += sizeof(render_graph::COMMAND_NAME);                                               \
-        break;                                                                                      \
+#define GENERATE_CASE(COMMAND_NAME)                                                                                                 \
+    case render_graph::CommandType::COMMAND_NAME: {                                                                                 \
+        size_t      command_offset = fe::align_up(alignof(render_graph::COMMAND_NAME), offset + sizeof(render_graph::CommandType)); \
+        const auto* ptr            = reinterpret_cast<const render_graph::COMMAND_NAME*>(&buffer[command_offset]);                  \
+        const auto* command        = std::launder(ptr);                                                                             \
+        func(*command);                                                                                                             \
+        offset = fe::align_up(alignof(render_graph::CommandType), command_offset + sizeof(render_graph::COMMAND_NAME));             \
+        break;                                                                                                                      \
     }
 
                     FORR_RENDER_COMMANDS_LIST(GENERATE_CASE)
@@ -377,14 +369,6 @@ namespace fe::render_graph {
         }
 
     private:
-        template <typename T>
-        uintptr_t get_aligned_offset(const uint8_t* buffer, size_t offset) const noexcept {
-            uintptr_t current_address = reinterpret_cast<uintptr_t>(buffer) + offset;
-            uintptr_t aligned_address = fe::align_up(alignof(T), current_address);
-            size_t    aligned_offset  = aligned_address - reinterpret_cast<uintptr_t>(buffer);
-            return aligned_offset;
-        }
-
         std::vector<uint8_t> m_storage{};
     };
 
