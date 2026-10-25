@@ -256,7 +256,7 @@ namespace fe::vk {
     // destroy structure's operator() must have the same signature as in 'TraitsFromDestroyFn<ReturnType (ClassType::*)(Args...) const noexcept'
     // don't forget 'const noexcept'
     template <typename DestroyFn>
-    using MakeVulkanHandle = typename TraitsFromDestroyFn<decltype(&DestroyFn::operator())>::template HandleType<DestroyFn>;
+    using MakeVulkanHandle = TraitsFromDestroyFn<decltype(&DestroyFn::operator())>::template HandleType<DestroyFn>;
 
     using Device              = MakeVulkanHandle<DeviceDestroy>;
     using Instance            = MakeVulkanHandle<InstanceDestroy>;

@@ -285,8 +285,8 @@ namespace fe {
     template <typename RenderPass>
     struct RenderPassTraits {
     private:
-        using RenderPassDataT_Setup   = typename RenderPassFnTraits<decltype(&RenderPass::Setup)>::RenderPassDataT_Setup;
-        using RenderPassDataT_Execute = typename RenderPassFnTraits<decltype(&RenderPass::Execute)>::RenderPassDataT_Execute;
+        using RenderPassDataT_Setup   = RenderPassFnTraits<decltype(&RenderPass::Setup)>::RenderPassDataT_Setup;
+        using RenderPassDataT_Execute = RenderPassFnTraits<decltype(&RenderPass::Execute)>::RenderPassDataT_Execute;
 
         static_assert(std::is_same_v<RenderPassDataT_Setup, RenderPassDataT_Execute>, "RenderPass::Setup() and RenderPass::Execute() accept different render pass data types");
 

@@ -44,14 +44,68 @@ namespace fe {
         };
 
         struct Listener {
-            void* object{};
-            void (*callback)(const void*);
+            using Callback       = void (*)(void*, const void*);
+            using DestructorFunc = void (*)(void*);
+
+            void*          instance{};
+            Callback       callback{};
+            DestructorFunc destructor{};
         };
         using Listeners = std::vector<Listener>;
 
+        template <typename T>
+        struct ListenerCallbackTraitsFn {
+            using Traits = ListenerCallbackTraitsFn<decltype(&T::operator())>; // for lambdas
+            using ClassT = T;
+            using EventT = Traits::EventT;
+        };
+
+        template <typename ClassType, typename ReturnType, typename... Args>
+        struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...)> {
+            static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
+
+            using ClassT = ClassType;
+            using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
+        };
+
+        template <typename ClassType, typename ReturnType, typename... Args>
+        struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...) const> {
+            static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
+
+            using ClassT = ClassType;
+            using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
+        };
+
+        template <typename ClassType, typename ReturnType, typename... Args>
+        struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...) noexcept> {
+            static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
+
+            using ClassT = ClassType;
+            using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
+        };
+
+        template <typename ClassType, typename ReturnType, typename... Args>
+        struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...) const noexcept> {
+            static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
+
+            using ClassT = ClassType;
+            using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
+        };
+
     public:
-        EventBus()  = default;
-        ~EventBus() = default;
+        EventBus() = default;
+        ~EventBus() {
+            for (auto& event_listeners : m_listeners) {
+                for (auto& listener : event_listeners) {
+                    
+                    if (listener.destructor) {
+
+                        listener.destructor(listener.instance);
+                        ::operator delete(listener.instance);
+                    }
+                }
+            }
+        }
 
         FORR_CLASS_MOVABLE(EventBus)
         FORR_CLASS_NONCOPYABLE(EventBus)
@@ -78,16 +132,57 @@ namespace fe {
             std::memcpy(&m_storage[aligned_event_offset], &event, sizeof(Event));
         }
 
-        template <typename T, typename Func>
-        void subscribe(Func&& callback) {
-            uint32_t type_id = TypeRegistry::get_id<T>();
+        template <auto Func>
+        void subscribe(ListenerCallbackTraitsFn<decltype(Func)>::ClassT& instance) {
+            using Traits = ListenerCallbackTraitsFn<decltype(Func)>;
+            using ClassT = Traits::ClassT;
+            using EventT = Traits::EventT;
+
+            size_t type_id = TypeRegistry::get_id<EventT>();
+
             if (type_id >= m_listeners.size()) {
                 m_listeners.resize(type_id + 1);
             }
-            Listener wrapper = [this_callback = std::forward<Func>(callback)](const void* data) {
-                this_callback(*reinterpret_cast<const T*>(data));
+
+            Listener listener{
+                .instance = &instance,
+                .callback = [](void* instance, const void* event_data) {
+                    auto*       object = static_cast<ClassT*>(instance);
+                    const auto* event  = static_cast<const EventT*>(event_data);
+                    (object->*Func)(*event);
+                },
+                .destructor = nullptr
             };
-            m_listeners[type_id].push_back(wrapper);
+
+            m_listeners[type_id].push_back(listener);
+        }
+
+        template <typename LambdaT>
+        void subscribe(LambdaT&& lambda) {
+            using Traits = ListenerCallbackTraitsFn<std::decay_t<LambdaT>>;
+            using ClassT = Traits::ClassT;
+            using EventT = Traits::EventT;
+
+            size_t type_id = TypeRegistry::get_id<EventT>();
+
+            if (type_id >= m_listeners.size()) {
+                m_listeners.resize(type_id + 1);
+            }
+
+            using CleanLambdaT             = std::decay_t<LambdaT>;
+            void*         allocated_lambda = ::operator new(sizeof(CleanLambdaT));
+            CleanLambdaT* lambda_ptr       = new (allocated_lambda) CleanLambdaT(std::forward<LambdaT>(lambda));
+
+            Listener listener{
+                .instance   = lambda_ptr,
+                .callback   = [](void* instance, const void* event_data) {
+                    auto*       lambda = static_cast<ClassT*>(instance);
+                    const auto* event  = static_cast<const EventT*>(event_data);
+                    (*lambda)(*event); },
+                .destructor = [](void* instance) { std::destroy_at(static_cast<ClassT*>(instance)); }
+            };
+
+            m_listeners[type_id].push_back(listener);
         }
 
         void dispatch_all() const {
@@ -103,8 +198,8 @@ namespace fe {
                 if (header.event_type_id < m_listeners.size()) {
 
                     const void* event = &buffer[header.event_structure_offset];
-                    for (const auto& handler : m_listeners[header.event_type_id]) {
-                        handler.callback(std::launder(event));
+                    for (const auto& listener : m_listeners[header.event_type_id]) {
+                        listener.callback(listener.instance, std::launder(event));
                     }
                 }
 
