@@ -46,10 +46,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ExcludePath>$(SolutionDir)External;$(SolutionDir)ThirdParty;$(ExcludePath)</ExcludePath>
     <IncludePath>$(ProjectDir)Include;$(ProjectDir)Source;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories);$(IncludePath)</IncludePath>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ExcludePath>$(SolutionDir)External;$(SolutionDir)ThirdParty;$(ExcludePath)</ExcludePath>
     <IncludePath>$(ProjectDir)Include;$(ProjectDir)Source;$(ProjectDir)..\ThirdParty\glfw\include;$(ProjectDir)..\ThirdParty\glad\include;$(ProjectDir)..\ThirdParty\glm\include;$(ProjectDir)..\ThirdParty\stb\include;$(ProjectDir)..\ThirdParty\tinygltf\include;$(ProjectDir)..\ThirdParty\MikkTSpace\include;$(ProjectDir)..\ThirdParty\entt\include;$(ProjectDir)..\ThirdParty\VulkanMemoryAllocator\include;$(ProjectDir)..\ThirdParty\slang\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories);$(IncludePath)</IncludePath>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
