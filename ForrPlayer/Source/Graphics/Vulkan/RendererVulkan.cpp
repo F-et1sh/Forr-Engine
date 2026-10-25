@@ -232,7 +232,7 @@ void fe::RendererVulkan::handleRenderQueue(const RenderPacket& render_packet) {
 
     //    float speed = 0.025f;
 
-    //    if (glfwGetKey(glfw_window, GLFW_KEY_A))
+        //if (glfwGetKey(glfw_window, GLFW_KEY_A))
     //        m_Camera.translate(glm::vec3(speed, 0.0f, 0.0f));
     //    else if (glfwGetKey(glfw_window, GLFW_KEY_D))
     //        m_Camera.translate(glm::vec3(-speed, 0.0f, 0.0f));
