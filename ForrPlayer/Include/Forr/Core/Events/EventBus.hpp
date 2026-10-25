@@ -224,7 +224,7 @@ namespace fe {
 
                     const void* event = &buffer[header.event_structure_offset];
                     for (const auto& listener : m_listeners[header.event_type_id]) {
-                        listener.callback(listener.instance, std::launder(event));
+                        listener.callback(listener.instance, event);
                     }
                 }
 

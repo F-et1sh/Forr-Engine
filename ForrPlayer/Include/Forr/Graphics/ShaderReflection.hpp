@@ -86,6 +86,9 @@ namespace fe::shader {
             : type(type), array_size(array_size), size(size), members(std::move(members)), name(std::move(name)) {}
         virtual ~ReflectedDataNode() = default;
 
+        // TODO : provide this, there is an error
+        //FORR_CLASS_MOVABLE(ReflectedDataNode)
+
         bool operator==(const ReflectedDataNode&) const noexcept = default;
     };
 
