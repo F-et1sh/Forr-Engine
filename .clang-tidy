@@ -5,6 +5,7 @@ Checks: >
   -readability-identifier-naming,
   -readability-braces-around-statements,
   -readability-identifier-length,
+  -readability-implicit-bool-conversion,
   performance-*,
   bugprone-*,
   modernize-use-nullptr,

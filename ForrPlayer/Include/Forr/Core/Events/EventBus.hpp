@@ -44,8 +44,11 @@ namespace fe {
         };
 
         struct Listener {
+            using SubscriptionID = size_t;
             using Callback       = void (*)(void*, const void*);
             using DestructorFunc = void (*)(void*);
+
+            SubscriptionID subscription_id{};
 
             void*          instance{};
             Callback       callback{};
@@ -97,7 +100,7 @@ namespace fe {
         ~EventBus() {
             for (auto& event_listeners : m_listeners) {
                 for (auto& listener : event_listeners) {
-                    
+
                     if (listener.destructor) {
 
                         listener.destructor(listener.instance);
@@ -133,7 +136,7 @@ namespace fe {
         }
 
         template <auto Func>
-        void subscribe(ListenerCallbackTraitsFn<decltype(Func)>::ClassT& instance) {
+        Listener::SubscriptionID subscribe(ListenerCallbackTraitsFn<decltype(Func)>::ClassT& instance) {
             using Traits = ListenerCallbackTraitsFn<decltype(Func)>;
             using ClassT = Traits::ClassT;
             using EventT = Traits::EventT;
@@ -155,10 +158,12 @@ namespace fe {
             };
 
             m_listeners[type_id].push_back(listener);
+
+            return S_SUBSCRIPTION_COUNTER.fetch_add(1, std::memory_order_relaxed);
         }
 
         template <typename LambdaT>
-        void subscribe(LambdaT&& lambda) {
+        Listener::SubscriptionID subscribe(LambdaT&& lambda) {
             using Traits = ListenerCallbackTraitsFn<std::decay_t<LambdaT>>;
             using ClassT = Traits::ClassT;
             using EventT = Traits::EventT;
@@ -183,6 +188,26 @@ namespace fe {
             };
 
             m_listeners[type_id].push_back(listener);
+
+            return S_SUBSCRIPTION_COUNTER.fetch_add(1, std::memory_order_relaxed);
+        }
+
+        void unsubscribe(Listener::SubscriptionID subscription_id) {
+            for (auto& event_listeners : m_listeners) {
+                for (auto it = event_listeners.begin(); it != event_listeners.end(); it++) {
+                    
+                    if (it->subscription_id == subscription_id) {
+
+                        if (it->destructor) {
+                            it->destructor(it->instance);
+                            ::operator delete(it->instance);
+                        }
+
+                        event_listeners.erase(it);
+                        return;
+                    }
+                }
+            }
         }
 
         void dispatch_all() const {
@@ -212,5 +237,7 @@ namespace fe {
     private:
         std::vector<uint8_t>   m_storage{};
         std::vector<Listeners> m_listeners{};
+
+        inline static std::atomic<Listener::SubscriptionID> S_SUBSCRIPTION_COUNTER{};
     };
 } // namespace fe

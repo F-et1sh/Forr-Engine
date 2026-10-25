@@ -24,6 +24,8 @@
 #include "Forr/ECS/Components.hpp"           // temp
 #include "Forr/ECS/Systems/RenderSystem.hpp" // temp
 
+#include "Forr/Core/Events/EventBus.hpp"
+
 namespace fe {
     struct ApplicationDesc {
         bool validation_enabled = true;
@@ -58,6 +60,7 @@ namespace fe {
         std::unique_ptr<IRenderer>       m_Renderer{};
         std::unique_ptr<RenderGraph>     m_RenderGraph{};
         std::unique_ptr<ResourceManager> m_ResourceManager{};
+        std::unique_ptr<EventBus>        m_EventBus{};
 
         size_t   m_PrimaryWindowID{};
         IWindow* m_PrimaryWindow{};

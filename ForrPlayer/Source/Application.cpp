@@ -38,6 +38,11 @@ fe::Application::Application(const ApplicationDesc& desc) {
 
 void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
+        m_PrimaryWindow->PollEvents();
+
+        m_EventBus->dispatch_all();
+        m_EventBus->clear();
+
         m_Renderer->BeginFrame();
 
         auto& transform_component     = m_Registry.get<TransformComponent>(m_Entities[0]);
@@ -62,8 +67,6 @@ void fe::Application::Run() {
         auto render_command_list = m_RenderGraph->Execute(collector.getRegistry());
 
         m_Renderer->EndFrame(render_command_list);
-
-        m_PrimaryWindow->PollEvents();
 
         m_Time += 0.0025f;
     }
