@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 26.10.2026
+### Goal
+    Event System
+
+### Done
+    GLFWTranslators.hpp added
+
+### Problem
+    -
+
 ## 25.10.2026
 ### Goal
     Event System

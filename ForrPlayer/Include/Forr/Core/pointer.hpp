@@ -37,7 +37,7 @@ namespace fe {
         !std::is_const_v<T> &&
         !std::is_volatile_v<T> &&
         !std::is_array_v<T> &&
-        !std::is_function_v<T> &&
+        !std::isFunction_v<T> &&
         std::destructible<T>;
 
     // this is pointer concept without custom fields
@@ -236,16 +236,16 @@ namespace fe {
               typename GenerationT,
               typename PackedT,
               typename CustomFields,
-              typename PackFn   = typename pointer<T,
-                                                   HandleT,
-                                                   GenerationT,
-                                                   PackedT,
-                                                   CustomFields>::DefaultPacker,
-              typename UnpackFn = typename pointer<T,
-                                                   HandleT,
-                                                   GenerationT,
-                                                   PackedT,
-                                                   CustomFields>::DefaultUnpacker>
+              typename PackFn   = pointer<T,
+                                          HandleT,
+                                          GenerationT,
+                                          PackedT,
+                                          CustomFields>::DefaultPacker,
+              typename UnpackFn = pointer<T,
+                                          HandleT,
+                                          GenerationT,
+                                          PackedT,
+                                          CustomFields>::DefaultUnpacker>
     struct pointer_hash {
         constexpr std::size_t operator()(const pointer<T, HandleT, GenerationT, PackedT>& p) const noexcept {
             return std::hash<PackedT>{}(p.packed<PackFn>());
@@ -351,24 +351,24 @@ namespace fe {
         // [](const T&, fe::pointer<T>) -> void {}
         // [](fe::pointer<T>, const T&) -> void {}
         // [](const T&) -> void {}
-        template <typename _Func>
-        void for_each(_Func&& func) {
+        template <typename Func>
+        void for_each(Func&& func) {
             for (size_t i = 0; i < m_slots_object.size(); i++) {
                 if (!m_slots_alive[i]) continue;
 
                 T&       object = *get_ptr(i);
                 PointerT ptr(i, m_slots_generation[i]);
 
-                if constexpr (std::is_invocable_v<_Func, T&, PointerT>) {
+                if constexpr (std::is_invocable_v<Func, T&, PointerT>) {
                     func(object, ptr);
                 }
-                else if constexpr (std::is_invocable_v<_Func, PointerT, T&>) {
+                else if constexpr (std::is_invocable_v<Func, PointerT, T&>) {
                     func(ptr, object);
                 }
-                else if constexpr (std::is_invocable_v<_Func, T&>) {
+                else if constexpr (std::is_invocable_v<Func, T&>) {
                     func(object);
                 }
-                else if constexpr (std::is_invocable_v<_Func, PointerT>) {
+                else if constexpr (std::is_invocable_v<Func, PointerT>) {
                     func(ptr);
                 }
                 else {
@@ -383,24 +383,24 @@ namespace fe {
         // [](const T&, fe::pointer<T>) -> void {}
         // [](fe::pointer<T>, const T&) -> void {}
         // [](const T&) -> void {}
-        template <typename _Func>
-        void for_each(_Func&& func) const {
+        template <typename Func>
+        void for_each(Func&& func) const {
             for (size_t i = 0; i < m_slots_object.size(); i++) {
                 if (!m_slots_alive[i]) continue;
 
                 const T& object = *get_ptr(i);
                 PointerT ptr(i, m_slots_generation[i]);
 
-                if constexpr (std::is_invocable_v<_Func, const T&, PointerT>) {
+                if constexpr (std::is_invocable_v<Func, const T&, PointerT>) {
                     func(object, ptr);
                 }
-                else if constexpr (std::is_invocable_v<_Func, PointerT, const T&>) {
+                else if constexpr (std::is_invocable_v<Func, PointerT, const T&>) {
                     func(ptr, object);
                 }
-                else if constexpr (std::is_invocable_v<_Func, const T&>) {
+                else if constexpr (std::is_invocable_v<Func, const T&>) {
                     func(object);
                 }
-                else if constexpr (std::is_invocable_v<_Func, PointerT>) {
+                else if constexpr (std::is_invocable_v<Func, PointerT>) {
                     func(ptr);
                 }
                 else {
@@ -444,7 +444,7 @@ namespace fe {
                     fe::logging::fatal("Handle overflow");
                 }
 
-                index = static_cast<typename PointerT::HandleType>(m_slots_generation.size());
+                index = static_cast<PointerT::HandleType>(m_slots_generation.size());
 
                 m_slots_object.emplace_back();
                 m_slots_generation.emplace_back(0);

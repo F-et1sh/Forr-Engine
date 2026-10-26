@@ -195,7 +195,7 @@ namespace fe {
         void unsubscribe(Listener::SubscriptionID subscription_id) {
             for (auto& event_listeners : m_listeners) {
                 for (auto it = event_listeners.begin(); it != event_listeners.end(); it++) {
-                    
+
                     if (it->subscription_id == subscription_id) {
 
                         if (it->destructor) {
