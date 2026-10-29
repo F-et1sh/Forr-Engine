@@ -2,7 +2,7 @@
 
     Forr Engine
 
-    File : inputs.hpp
+    File : input.hpp
     Role : enum classes of keys, mouse etc
 
     Copyright (C) 2026 Farrakh
@@ -13,7 +13,7 @@
 #pragma once
 #include <cinttypes>
 
-namespace fe::inputs {
+namespace fe::input {
     enum class KeyCode : uint8_t {
         UNKNOWN = 0,
 
@@ -170,7 +170,7 @@ namespace fe::inputs {
         MOUSE_BUTTON_MIDDLE = MOUSE_BUTTON_3
     };
 
-    enum class InputAction : uint8_t {
+    enum class Action : uint8_t {
         UNKNOWN = 0,
 
         PRESS   = 1 + 0,
@@ -234,4 +234,4 @@ namespace fe::inputs {
         GAMEPAD_AXIS_LEFT_TRIGGER  = 1 + 4,
         GAMEPAD_AXIS_RIGHT_TRIGGER = 1 + 5,
     };
-} // namespace fe::inputs
+} // namespace fe::input

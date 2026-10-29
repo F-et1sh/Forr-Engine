@@ -1,5 +1,20 @@
 ﻿# Forr-Engine Devlog
 
+## 29.10.2026
+### Goal
+    Event System
+
+### Done
+    'fe::event::KeyEvent' --> 'fe::event::KeyButtonEvent'
+    'fe::inputs::InputAction' --> 'fe::inputs::Action'
+    'fe::inputs::*' --> 'fe::input::*'
+    'fe::event::KeyButtonEvent' --> 'fe::event::KeyButton'
+    'fe::event::MouseButtonEvent' --> 'fe::event::MouseButton'
+    scan code in progress
+
+### Problem
+    School & lack of sleep
+
 ## 26.10.2026
 ### Goal
     Event System

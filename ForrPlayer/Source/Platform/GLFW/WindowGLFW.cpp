@@ -53,6 +53,8 @@ void fe::WindowGLFW::Initialize(const WindowDesc& desc) {
     glfwSetWindowUserPointer(m_GLFWwindow, this);
     glfwSetWindowSizeCallback(m_GLFWwindow, windowSizeCallback);
 
+    //glfwSetKeyCallback(m_GLFWwindow, )
+
     this->centralizeWindow();
 }
 

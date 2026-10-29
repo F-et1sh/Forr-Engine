@@ -16,33 +16,34 @@
 #include <cinttypes>
 
 #include "Forr/Core/attributes.hpp"
-#include "Forr/Core/inputs.hpp"
+#include "Forr/Core/input.hpp"
 
 namespace fe::events {
-    struct KeyEvent {
-        fe::inputs::KeyCode     key{};
-        fe::inputs::InputAction action{};
-        uint8_t                 mods{};
+    struct KeyButton {
+        fe::input::KeyCode key{};
+        fe::input::Action  action{};
+        uint8_t            mods{};
+        uint16_t           scan_code{}; // TODO : provide scan codes logic
 
-        FORR_NODISCARD constexpr inline bool has_shift() const noexcept { return mods & static_cast<uint8_t>(fe::inputs::KeyMods::MOD_SHIFT); }
-        FORR_NODISCARD constexpr inline bool has_ctrl() const noexcept { return mods & static_cast<uint8_t>(fe::inputs::KeyMods::MOD_CONTROL); }
-        FORR_NODISCARD constexpr inline bool has_alt() const noexcept { return mods & static_cast<uint8_t>(fe::inputs::KeyMods::MOD_ALT); }
-        FORR_NODISCARD constexpr inline bool has_super() const noexcept { return mods & static_cast<uint8_t>(fe::inputs::KeyMods::MOD_SUPER); }
-        FORR_NODISCARD constexpr inline bool has_caps_lock() const noexcept { return mods & static_cast<uint8_t>(fe::inputs::KeyMods::MOD_CAPS_LOCK); }
-        FORR_NODISCARD constexpr inline bool has_num_lock() const noexcept { return mods & static_cast<uint8_t>(fe::inputs::KeyMods::MOD_NUM_LOCK); }
+        FORR_NODISCARD constexpr inline bool has_shift() const noexcept { return mods & static_cast<uint8_t>(fe::input::KeyMods::MOD_SHIFT); }
+        FORR_NODISCARD constexpr inline bool has_ctrl() const noexcept { return mods & static_cast<uint8_t>(fe::input::KeyMods::MOD_CONTROL); }
+        FORR_NODISCARD constexpr inline bool has_alt() const noexcept { return mods & static_cast<uint8_t>(fe::input::KeyMods::MOD_ALT); }
+        FORR_NODISCARD constexpr inline bool has_super() const noexcept { return mods & static_cast<uint8_t>(fe::input::KeyMods::MOD_SUPER); }
+        FORR_NODISCARD constexpr inline bool has_caps_lock() const noexcept { return mods & static_cast<uint8_t>(fe::input::KeyMods::MOD_CAPS_LOCK); }
+        FORR_NODISCARD constexpr inline bool has_num_lock() const noexcept { return mods & static_cast<uint8_t>(fe::input::KeyMods::MOD_NUM_LOCK); }
     };
 
-    struct MouseButtonEvent {
-        fe::inputs::MouseButton button{};
-        fe::inputs::InputAction action{};
-        uint8_t                 mods{};
+    struct MouseButton {
+        fe::input::MouseButton button{};
+        fe::input::Action      action{};
+        uint8_t                mods{};
 
-        FORR_NODISCARD constexpr inline bool has_shift() const noexcept { return mods & static_cast<uint8_t>(fe::inputs::KeyMods::MOD_SHIFT); }
-        FORR_NODISCARD constexpr inline bool has_ctrl() const noexcept { return mods & static_cast<uint8_t>(fe::inputs::KeyMods::MOD_CONTROL); }
-        FORR_NODISCARD constexpr inline bool has_alt() const noexcept { return mods & static_cast<uint8_t>(fe::inputs::KeyMods::MOD_ALT); }
-        FORR_NODISCARD constexpr inline bool has_super() const noexcept { return mods & static_cast<uint8_t>(fe::inputs::KeyMods::MOD_SUPER); }
-        FORR_NODISCARD constexpr inline bool has_caps_lock() const noexcept { return mods & static_cast<uint8_t>(fe::inputs::KeyMods::MOD_CAPS_LOCK); }
-        FORR_NODISCARD constexpr inline bool has_num_lock() const noexcept { return mods & static_cast<uint8_t>(fe::inputs::KeyMods::MOD_NUM_LOCK); }
+        FORR_NODISCARD constexpr inline bool has_shift() const noexcept { return mods & static_cast<uint8_t>(fe::input::KeyMods::MOD_SHIFT); }
+        FORR_NODISCARD constexpr inline bool has_ctrl() const noexcept { return mods & static_cast<uint8_t>(fe::input::KeyMods::MOD_CONTROL); }
+        FORR_NODISCARD constexpr inline bool has_alt() const noexcept { return mods & static_cast<uint8_t>(fe::input::KeyMods::MOD_ALT); }
+        FORR_NODISCARD constexpr inline bool has_super() const noexcept { return mods & static_cast<uint8_t>(fe::input::KeyMods::MOD_SUPER); }
+        FORR_NODISCARD constexpr inline bool has_caps_lock() const noexcept { return mods & static_cast<uint8_t>(fe::input::KeyMods::MOD_CAPS_LOCK); }
+        FORR_NODISCARD constexpr inline bool has_num_lock() const noexcept { return mods & static_cast<uint8_t>(fe::input::KeyMods::MOD_NUM_LOCK); }
     };
 
     struct MouseMovedEvent {
