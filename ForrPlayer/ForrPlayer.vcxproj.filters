@@ -50,7 +50,7 @@
     <ClInclude Include="Include\Forr\Core\Events\EventBus.hpp" />
     <ClInclude Include="Include\Forr\Core\Events\Events.hpp" />
     <ClInclude Include="Source\Platform\GLFW\GLFWTranslators.hpp" />
-    <ClInclude Include="Include\Forr\Core\inputs.hpp" />
+    <ClInclude Include="Include\Forr\Core\input.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
