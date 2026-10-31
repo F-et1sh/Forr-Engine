@@ -177,10 +177,10 @@ namespace fe {
     constexpr static input::Action translate_action(int glfw_action) {
         switch (glfw_action) {
                 // clang-format off
-            case GLFW_RELEASE:return input::Action::RELEASE; break;
-            case GLFW_PRESS  :return input::Action::PRESS  ; break;
-            case GLFW_REPEAT :return input::Action::REPEAT ; break;
-            default          :return input::Action::UNKNOWN; break;
+            case GLFW_RELEASE: return input::Action::RELEASE; break;
+            case GLFW_PRESS  : return input::Action::PRESS  ; break;
+            case GLFW_REPEAT : return input::Action::REPEAT ; break;
+            default          : return input::Action::UNKNOWN; break;
                 // clang-format on
         }
     }

@@ -20,12 +20,12 @@
 #include "attributes.hpp"
 
 namespace fe {
-    static inline constexpr size_t align_up(size_t alignment, size_t offset) noexcept {
+    static constexpr size_t align_up(size_t alignment, size_t offset) noexcept {
         return (offset + alignment - 1) & ~(alignment - 1);
     }
     
     template <typename T>
-    static inline constexpr uintptr_t get_aligned_offset(const uint8_t* buffer, size_t offset) noexcept {
+    static constexpr uintptr_t get_aligned_offset(const uint8_t* buffer, size_t offset) noexcept {
         uintptr_t current_address = reinterpret_cast<uintptr_t>(buffer) + offset;
         uintptr_t aligned_address = fe::align_up(alignof(T), current_address);
         size_t    aligned_offset  = aligned_address - reinterpret_cast<uintptr_t>(buffer);
@@ -125,7 +125,7 @@ namespace fe {
         size_t     m_offset   = 0;
     };
 
-    template <typename _Ty>
+    template <typename T>
     class Pool {
         struct FreeNode {
             FreeNode* next = nullptr;
@@ -133,31 +133,31 @@ namespace fe {
 
     public:
         explicit Pool(size_t count) {
-            static_assert(sizeof(_Ty) >= sizeof(FreeNode*), "Object too small for pool");
+            static_assert(sizeof(T) >= sizeof(FreeNode*), "Object too small for pool");
 
             m_capacity = count;
-            m_buffer   = ::operator new(count * sizeof(_Ty), std::align_val_t{ alignof(_Ty) });
+            m_buffer   = ::operator new(count * sizeof(T), std::align_val_t{ alignof(T) });
 
             for (size_t i = 0; i < count; i++) {
-                auto* node  = reinterpret_cast<FreeNode*>(m_buffer + i * sizeof(_Ty));
+                auto* node  = reinterpret_cast<FreeNode*>(m_buffer + i * sizeof(T));
                 node->next  = m_free_list;
                 m_free_list = node;
             }
         }
 
-        ~Pool() { ::operator delete(m_buffer, std::align_val_t{ alignof(_Ty) }); }
+        ~Pool() { ::operator delete(m_buffer, std::align_val_t{ alignof(T) }); }
 
         FORR_CLASS_NONCOPYABLE(Pool)
 
-        FORR_NODISCARD _Ty* allocate() {
+        FORR_NODISCARD T* allocate() {
             if (!m_free_list) return nullptr;
 
             std::byte* ptr = m_free_list;
             m_free_list    = m_free_list->next;
-            return static_cast<_Ty*>(ptr);
+            return static_cast<T*>(ptr);
         }
 
-        void deallocate(_Ty* ptr) {
+        void deallocate(T* ptr) {
             auto* node  = reinterpret_cast<FreeNode*>(ptr);
             node->next  = m_free_list;
             m_free_list = node;
@@ -165,13 +165,13 @@ namespace fe {
 
         // don't forget about Pool::destroy()
         template <typename... Args>
-        FORR_NODISCARD _Ty* create(Args&&... args) {
-            _Ty* ptr = allocate();
+        FORR_NODISCARD T* create(Args&&... args) {
+            T* ptr = allocate();
             std::construct_at(ptr, std::forward<Args>(args)...);
             return ptr;
         }
 
-        void destroy(_Ty* ptr) {
+        void destroy(T* ptr) {
             std::destroy_at(ptr);
             deallocate(ptr);
         }

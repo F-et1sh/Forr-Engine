@@ -12,6 +12,7 @@
 
 #pragma once
 #include <cinttypes>
+#include <array>
 
 namespace fe::input {
     enum class KeyCode : uint8_t {
@@ -152,6 +153,13 @@ namespace fe::input {
         MOD_CAPS_LOCK = 1 << 4,
         MOD_NUM_LOCK  = 1 << 5,
     };
+
+    using ScanCode = uint16_t;
+    constexpr static ScanCode get_scan_code(KeyCode key_code) {
+        constexpr static size_t                       SCAN_CODES_COUNT = 512;
+        static std::array<ScanCode, SCAN_CODES_COUNT> scan_codes{};
+        //return scan_codes[];
+    }
 
     enum class MouseButton : uint8_t {
         UNKNOWN = 0,

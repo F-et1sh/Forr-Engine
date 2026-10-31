@@ -6,6 +6,7 @@ Checks: >
   -readability-braces-around-statements,
   -readability-identifier-length,
   -readability-implicit-bool-conversion,
+  -readability-uppercase-literal-suffix
   performance-*,
   bugprone-*,
   modernize-use-nullptr,

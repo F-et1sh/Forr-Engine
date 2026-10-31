@@ -1,5 +1,18 @@
 ﻿# Forr-Engine Devlog
 
+## 31.10.2026
+### Goal
+    provide scan codes logic
+    Event System
+    create some 'fe::ApplicationContext'
+        to not pass every 'fe::ResourceManager&', 'fe::EventBus&', 'fe::IRenderer&' and others one by one
+
+### Done
+    some little fixes. 'fe::ApplicationContext' in progress
+
+### Problem
+    sleep problem, feel very bad after 12 ( +2 during the day ) hours of sleep
+
 ## 29.10.2026
 ### Goal
     Event System

@@ -20,23 +20,11 @@
 #include "Forr/Core/attributes.hpp"
 #include "Forr/Core/custom_allocators.hpp"
 #include "Forr/Core/logging.hpp"
+#include "Forr/Core/guid.hpp"
 
 namespace fe {
     class EventBus {
     private:
-        // get unique id for every event's structure
-        struct TypeRegistry {
-        public:
-            template <typename T>
-            static size_t get_id() noexcept {
-                static const size_t id = S_COUNTER.fetch_add(1, std::memory_order_relaxed);
-                return id;
-            }
-
-        private:
-            inline static std::atomic<size_t> S_COUNTER{};
-        };
-
         struct EventHeader {
             size_t event_type_id{};
             size_t event_structure_offset{}; // starts from std::vector<>::data()

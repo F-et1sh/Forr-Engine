@@ -34,6 +34,12 @@ fe::Application::Application(const ApplicationDesc& desc) {
     this->InitializeRenderer(desc);
 
     m_Renderer->InitializeGPUResources();
+
+    m_Context.Register(m_PlatformSystem);
+    //m_Context.Register(m_Renderer);
+    //m_Context.Register(m_RenderGraph);
+    //m_Context.Register(m_ResourceManager);
+    //m_Context.Register(m_EventBus);
 }
 
 void fe::Application::Run() {

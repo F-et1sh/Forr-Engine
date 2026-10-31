@@ -37,7 +37,7 @@ namespace fe {
         !std::is_const_v<T> &&
         !std::is_volatile_v<T> &&
         !std::is_array_v<T> &&
-        !std::isFunction_v<T> &&
+        !std::is_function_v<T> &&
         std::destructible<T>;
 
     // this is pointer concept without custom fields

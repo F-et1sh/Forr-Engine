@@ -56,6 +56,6 @@ namespace fe::events {
         float offset_y{};
     };
 
-    // TODO : add all needed structures and create translator from GLFW to Unified somewhere in Source/Platform/GLFW
+    // TODO : add more event structures
 
 } // namespace fe::events

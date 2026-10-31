@@ -26,6 +26,8 @@
 
 #include "Forr/Core/Events/EventBus.hpp"
 
+#include "Forr/Core/guid.hpp"
+
 namespace fe {
     struct ApplicationDesc {
         bool validation_enabled = true;
@@ -40,6 +42,32 @@ namespace fe {
 
         ApplicationDesc()  = default;
         ~ApplicationDesc() = default;
+    };
+    
+    class ApplicationContext {
+    public:
+        template <typename T>
+        void Register(T& system) {
+            const TypeRegistry::TypeID type_id = TypeRegistry::get_id<T>();
+            if (m_Types.find(type_id) != m_Types.end()) {
+                fe::logging::fatal("You can't register a type twice. If you want to store some parameter variables, create a propper class-context and register it.\nType index was %llu", type_id);
+            }
+            m_Types[type_id] = static_cast<void*>(&system);
+        }
+
+        template<typename T>
+        T& Get() {
+            const TypeRegistry::TypeID type_id = TypeRegistry::get_id<T>();
+            auto                       it      = m_Types.find(type_id);
+            if (it == m_Types.end()) {
+                fe::logging::fatal("Failed to find a type. Type wasn't registered.\nType index was %llu", type_id);
+            }
+            return *static_cast<T*>(it->second);
+        }
+
+    private:
+        // the context doesn't store the types
+        std::unordered_map<TypeRegistry::TypeID, void*> m_Types{};
     };
 
     class FORR_API Application { // TODO : move all logic of 'fe::Application' to 'main.cpp' of the game
@@ -64,5 +92,7 @@ namespace fe {
 
         size_t   m_PrimaryWindowID{};
         IWindow* m_PrimaryWindow{};
+
+        ApplicationContext m_Context{};
     };
 } // namespace fe

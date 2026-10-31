@@ -49,9 +49,9 @@
 
 // Should always inline no matter what
 #ifndef FORR_ALWAYS_INLINE
-#if defined(__GNUC__)
+#ifdef __GNUC__
 #define FORR_ALWAYS_INLINE __attribute__((always_inline)) inline
-#elif defined(_MSC_VER)
+#elifdef _MSC_VER
 #define FORR_ALWAYS_INLINE __forceinline
 #else
 #define FORR_ALWAYS_INLINE inline
@@ -70,9 +70,9 @@
 
 // Should never inline
 #ifndef FORR_NO_INLINE
-#if defined(__GNUC__)
+#ifdef __GNUC__
 #define FORR_NO_INLINE __attribute__((noinline))
-#elif defined(_MSC_VER)
+#elifdef _MSC_VER
 #define FORR_NO_INLINE __declspec(noinline)
 #else
 #define FORR_NO_INLINE
