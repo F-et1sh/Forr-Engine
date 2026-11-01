@@ -1,5 +1,16 @@
 ﻿# Forr-Engine Devlog
 
+## 02.11.2026
+### Goal
+    provide scan codes logic
+    provide InputManager
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 01.11.2026
 ### Goal
     provide scan codes logic
