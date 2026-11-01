@@ -17,7 +17,9 @@
 
 #include "Tools.hpp"
 
-fe::PlatformSystemGLFW::PlatformSystemGLFW(const PlatformSystemDesc& desc) {
+fe::PlatformSystemGLFW::PlatformSystemGLFW(const PlatformSystemDesc& desc, EventBus& event_bus)
+    : m_EventBus(event_bus) {
+
     GLFW_CHECK_RESULT(glfwInit())
 
     switch (desc.graphics_backend) {
@@ -39,11 +41,8 @@ fe::PlatformSystemGLFW::~PlatformSystemGLFW() {
 }
 
 size_t fe::PlatformSystemGLFW::CreateWindow(const WindowDesc& desc) {
-    std::unique_ptr<IWindow> window = std::make_unique<WindowGLFW>();
-    window->Initialize(desc);
-
+    std::unique_ptr<IWindow> window = std::make_unique<WindowGLFW>(desc, m_EventBus);
     m_WindowList.push_back(std::move(window));
-
     return m_WindowList.size() - 1;
 }
 

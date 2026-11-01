@@ -13,9 +13,14 @@
 #include "Forr/PCH/pch.hpp"
 #include "WindowGLFW.hpp"
 
+#include "Forr/Core/Events/Events.hpp"
 #include "Forr/Core/logging.hpp"
 
-void fe::WindowGLFW::Initialize(const WindowDesc& desc) {
+#include "GLFWTranslators.hpp"
+
+fe::WindowGLFW::WindowGLFW(const WindowDesc& desc, EventBus& event_bus)
+    : m_EventBus(event_bus) {
+
     m_Description = desc;
 
     int           monitor_count{};
@@ -53,9 +58,15 @@ void fe::WindowGLFW::Initialize(const WindowDesc& desc) {
     glfwSetWindowUserPointer(m_GLFWwindow, this);
     glfwSetWindowSizeCallback(m_GLFWwindow, windowSizeCallback);
 
-    //glfwSetKeyCallback(m_GLFWwindow, d)
+    glfwSetKeyCallback(m_GLFWwindow, keyCallback);
+    glfwSetCursorPosCallback(m_GLFWwindow, cursorPosCallback);
 
     this->centralizeWindow();
+}
+
+fe::WindowGLFW::~WindowGLFW() {
+    fe::logging::debug("Window \"%s\" destroyed", m_Description.name.c_str());
+    glfwDestroyWindow(m_GLFWwindow);
 }
 
 bool fe::WindowGLFW::IsOpen() {
@@ -99,7 +110,29 @@ void fe::WindowGLFW::windowSizeCallback(GLFWwindow* window_glfw, int width, int 
     window->m_Description.height = height;
 }
 
-fe::WindowGLFW::~WindowGLFW() {
-    fe::logging::debug("Window \"%s\" destroyed", m_Description.name.c_str());
-    glfwDestroyWindow(m_GLFWwindow);
+void fe::WindowGLFW::keyCallback(GLFWwindow* window_glfw, int key, int scancode, int action, int mods) {
+    if (!window_glfw) return;
+
+    WindowGLFW* window = static_cast<WindowGLFW*>(glfwGetWindowUserPointer(window_glfw));
+    if (!window) {
+        return;
+    }
+
+    EventBus& event_bus = window->m_EventBus.get();
+    event_bus.enqueue(events::KeyButton{ .key    = translate_key(key),
+                                         .action = translate_action(action),
+                                         .mods   = translate_mods(mods),
+                                         /*.scan_code = translate_scancode(scancode)*/ });
+}
+
+void fe::WindowGLFW::cursorPosCallback(GLFWwindow* window_glfw, double xpos, double ypos) {
+    if (!window_glfw) return;
+
+    WindowGLFW* window = static_cast<WindowGLFW*>(glfwGetWindowUserPointer(window_glfw));
+    if (!window) {
+        return;
+    }
+
+    EventBus& event_bus = window->m_EventBus.get();
+    event_bus.enqueue(events::MouseMoved{ .x = xpos, .y = ypos });
 }

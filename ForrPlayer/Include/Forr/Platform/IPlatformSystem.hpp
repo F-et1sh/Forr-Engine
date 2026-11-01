@@ -16,6 +16,7 @@
 
 #include "Forr/Core/attributes.hpp"
 #include "Forr/Graphics/GPUTypes.hpp"
+#include "Forr/Core/Events/EventBus.hpp"
 #include "IWindow.hpp"
 
 namespace fe {
@@ -35,10 +36,9 @@ namespace fe {
 
     class FORR_API IPlatformSystem {
     public:
-        IPlatformSystem()          = default;
         virtual ~IPlatformSystem() = default;
 
-        FORR_NODISCARD static std::unique_ptr<IPlatformSystem> Create(const PlatformSystemDesc& desc);
+        FORR_NODISCARD static std::unique_ptr<IPlatformSystem> Create(const PlatformSystemDesc& desc, EventBus& event_bus);
 
         // returns window index
         FORR_NODISCARD virtual WindowID CreateWindow(const WindowDesc& desc) = 0;

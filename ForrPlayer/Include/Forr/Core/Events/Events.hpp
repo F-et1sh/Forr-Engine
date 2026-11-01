@@ -23,7 +23,7 @@ namespace fe::events {
         fe::input::KeyCode key{};
         fe::input::Action  action{};
         uint8_t            mods{};
-        uint16_t           scan_code{}; // TODO : provide scan codes logic
+        //uint16_t           scan_code{}; // TODO : provide scan codes logic
 
         FORR_NODISCARD constexpr inline bool has_shift() const noexcept { return mods & static_cast<uint8_t>(fe::input::KeyMods::MOD_SHIFT); }
         FORR_NODISCARD constexpr inline bool has_ctrl() const noexcept { return mods & static_cast<uint8_t>(fe::input::KeyMods::MOD_CONTROL); }
@@ -46,12 +46,12 @@ namespace fe::events {
         FORR_NODISCARD constexpr inline bool has_num_lock() const noexcept { return mods & static_cast<uint8_t>(fe::input::KeyMods::MOD_NUM_LOCK); }
     };
 
-    struct MouseMovedEvent {
-        float x{};
-        float y{};
+    struct MouseMoved {
+        double x{};
+        double y{};
     };
 
-    struct MouseScrolledEvent {
+    struct MouseScrolled {
         float offset_x{};
         float offset_y{};
     };

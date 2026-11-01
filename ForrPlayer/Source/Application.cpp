@@ -28,22 +28,25 @@ fe::Application::Application(const ApplicationDesc& desc) {
     else
         PATH.init("", true);
 
+    m_MainEventBus = std::make_unique<EventBus>();
+    m_MainEventBus->subscribe([&](const events::MouseMoved& mouse_moved) {
+        m_Time = mouse_moved.x * 0.01f;
+    });
+
     this->InitializePlatformSystem(desc);
     this->InitializeResourceManager(desc);
     this->InitializePrimaryWindow(desc);
     this->InitializeRenderer(desc);
 
     m_Renderer->InitializeGPUResources();
-
-    m_EventBus = std::make_unique<EventBus>();
 }
 
 void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
         m_PrimaryWindow->PollEvents();
 
-        m_EventBus->dispatch_all();
-        m_EventBus->clear();
+        m_MainEventBus->dispatch_all();
+        m_MainEventBus->clear();
 
         m_Renderer->BeginFrame();
 
@@ -69,8 +72,6 @@ void fe::Application::Run() {
         auto render_command_list = m_RenderGraph->Execute(collector.getRegistry());
 
         m_Renderer->EndFrame(render_command_list);
-
-        m_Time += 0.0025f;
     }
 }
 
@@ -79,7 +80,7 @@ void fe::Application::InitializePlatformSystem(const ApplicationDesc& desc) {
     platform_desc.platform_backend = desc.platform_backend;
     platform_desc.graphics_backend = desc.graphics_backend;
 
-    m_PlatformSystem = IPlatformSystem::Create(platform_desc, *m_EventBus);
+    m_PlatformSystem = IPlatformSystem::Create(platform_desc, *m_MainEventBus);
 }
 
 void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
@@ -129,6 +130,7 @@ void fe::Application::InitializePrimaryWindow(const ApplicationDesc& desc) {
     auto window_result = m_PlatformSystem->getWindow(m_PrimaryWindowID);
     if (!window_result.has_value()) {
         fe::logging::error("Failed to get the primary window.\nWindow index was %llu", m_PrimaryWindowID);
+        return;
     }
     m_PrimaryWindow = &window_result.value().get();
 }
@@ -140,7 +142,6 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
     renderer_desc.application_name    = desc.application_name;
     renderer_desc.primary_window_desc = desc.primary_window_desc;
     renderer_desc.validation_enabled  = desc.validation_enabled;
-    //renderer_desc.
 
     m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, *m_ResourceManager);
 

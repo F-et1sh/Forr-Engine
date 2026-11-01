@@ -34,8 +34,6 @@ namespace fe {
 
         FORR_CLASS_NONCOPYABLE(IWindow)
 
-        virtual void Initialize(const WindowDesc& desc) = 0;
-
         FORR_NODISCARD virtual bool IsOpen()     = 0;
         virtual void                PollEvents() = 0;
 

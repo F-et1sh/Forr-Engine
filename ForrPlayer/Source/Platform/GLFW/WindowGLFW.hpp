@@ -12,16 +12,15 @@
 
 #pragma once
 #include "Forr/Platform/IWindow.hpp"
+#include "Forr/Core/Events/EventBus.hpp"
 
 #include <GLFW/glfw3.h>
 
 namespace fe {
     class WindowGLFW : public IWindow {
     public:
-        WindowGLFW() = default;
-        ~WindowGLFW();
-
-        void Initialize(const WindowDesc& desc) override;
+        WindowGLFW(const WindowDesc& desc, EventBus& event_bus);
+        ~WindowGLFW() override;
 
         FORR_NODISCARD bool IsOpen() override;
         void                PollEvents() override;
@@ -41,9 +40,13 @@ namespace fe {
 
     private:
         static void windowSizeCallback(GLFWwindow* window_glfw, int width, int height);
+        static void keyCallback(GLFWwindow* window_glfw, int key, int scancode, int action, int mods);
+        static void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
 
     private:
         WindowDesc m_Description{};
+
+        std::reference_wrapper<EventBus> m_EventBus;
 
         GLFWwindow*  m_GLFWwindow{};
         GLFWmonitor* m_GLFWmonitor{};

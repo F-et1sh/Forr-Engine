@@ -16,7 +16,7 @@
 namespace fe {
     class PlatformSystemGLFW : public IPlatformSystem {
     public:
-        PlatformSystemGLFW(const PlatformSystemDesc& desc);
+        PlatformSystemGLFW(const PlatformSystemDesc& desc, EventBus& event_bus);
         ~PlatformSystemGLFW() override;
 
         // returns window index
@@ -33,6 +33,7 @@ namespace fe {
         FORR_NODISCARD std::vector<const char*> getSurfaceRequiredExtensions() override;
 
     private:
+        std::reference_wrapper<EventBus>      m_EventBus;
         std::vector<std::unique_ptr<IWindow>> m_WindowList{};
     };
 } // namespace fe

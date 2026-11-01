@@ -3,13 +3,14 @@
 ## 01.11.2026
 ### Goal
     provide scan codes logic
-    use 'fe::ApplicationContext'
+    use 'fe::ApplicationContext' -- idea removed
     Event System
 
 ### Done
     context.hpp added
     guid.hpp -> type_registry.hpp
     'fe::TypeRegistry' --> 'fe::TypeRegistry<typename Category>'
+    events provided and everything's working fine
 
 ### Problem
     end of Anvifen one-month therapy, feeling tired from the morning
