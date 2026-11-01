@@ -22,8 +22,9 @@
 #pragma once
 #include <vector>
 #include <span>
-#include "Forr/Core/guid.hpp"
+#include <filesystem>
 
+#include "Forr/Core/type_registry.hpp"
 #include "Forr/Graphics/GPUTypes.hpp"
 
 // namespace fe::resource:: means that the class is a
@@ -32,7 +33,7 @@ namespace fe::resource {
 #define FORR_RESOURCE_BODY(T) \
     FORR_CLASS_NONCOPYABLE(T) \
     FORR_CLASS_MOVABLE(T)     \
-    GUID guid{}; // for future serialization. TODO : move this to ResourceManager
+    //GUID guid{}; // for future serialization. TODO : move this to ResourceManager. TODO : provide UUID from Boost
 
     struct Texture {
         enum class ColorSpace : std::uint8_t {

@@ -72,7 +72,7 @@ namespace fe {
 
         static std::unique_ptr<IRenderer> Create(const RendererDesc& desc,
                                                  IPlatformSystem&    platform_system,
-                                                 size_t              primary_window_index,
+                                                 WindowID            primary_window_index,
                                                  ResourceManager&    resource_manager);
 
         virtual FORR_NODISCARD RenderGraphBindings CreateRenderGraphResources(const RenderGraphCompileResult& compile_result) = 0;

@@ -20,7 +20,7 @@
 #include "Forr/Core/attributes.hpp"
 #include "Forr/Core/custom_allocators.hpp"
 #include "Forr/Core/logging.hpp"
-#include "Forr/Core/guid.hpp"
+#include "Forr/Core/type_registry.hpp"
 
 namespace fe {
     class EventBus {
@@ -104,7 +104,7 @@ namespace fe {
         template <typename Event>
             requires std::is_trivially_copyable_v<Event> && std::is_trivially_destructible_v<Event>
         void enqueue(const Event& event) {
-            const size_t id = TypeRegistry::get_id<Event>();
+            const TypeRegistry<EventBus>::TypeID id = TypeRegistry<EventBus>::get_id<Event>();
 
             size_t storage_size                  = m_storage.size();
             size_t aligned_header_offset         = fe::align_up(alignof(EventHeader), storage_size);
@@ -129,7 +129,7 @@ namespace fe {
             using ClassT = Traits::ClassT;
             using EventT = Traits::EventT;
 
-            size_t type_id = TypeRegistry::get_id<EventT>();
+            TypeRegistry<EventBus>::TypeID type_id = TypeRegistry<EventBus>::get_id<EventT>();
 
             if (type_id >= m_listeners.size()) {
                 m_listeners.resize(type_id + 1);
@@ -156,7 +156,7 @@ namespace fe {
             using ClassT = Traits::ClassT;
             using EventT = Traits::EventT;
 
-            size_t type_id = TypeRegistry::get_id<EventT>();
+            TypeRegistry<EventBus>::TypeID type_id = TypeRegistry<EventBus>::get_id<EventT>();
 
             if (type_id >= m_listeners.size()) {
                 m_listeners.resize(type_id + 1);

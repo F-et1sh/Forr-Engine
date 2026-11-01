@@ -35,7 +35,7 @@ namespace fe {
     public:
         RendererVulkan(const RendererDesc& desc,
                        IPlatformSystem&    platform_system,
-                       size_t              primary_window_index,
+                       WindowID              primary_window_index,
                        ResourceManager&    resource_manager);
         ~RendererVulkan();
 

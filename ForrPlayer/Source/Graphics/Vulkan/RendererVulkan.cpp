@@ -20,7 +20,7 @@
 
 fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
                                    IPlatformSystem&    platform_system,
-                                   size_t              primary_window_index,
+                                   WindowID              primary_window_index,
                                    ResourceManager&    resource_manager)
     : m_Description(desc),
       m_PlatformSystem(platform_system),

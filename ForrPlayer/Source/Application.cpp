@@ -36,15 +36,16 @@ fe::Application::Application(const ApplicationDesc& desc) {
     m_Renderer->InitializeGPUResources();
 
     m_Context.Register(m_PlatformSystem);
-    //m_Context.Register(m_Renderer);
-    //m_Context.Register(m_RenderGraph);
-    //m_Context.Register(m_ResourceManager);
-    //m_Context.Register(m_EventBus);
+    m_Context.Register(m_Renderer);
+    m_Context.Register(m_RenderGraph);
+    m_Context.Register(m_ResourceManager);
+    m_Context.Register(m_EventBus);
+    m_Context.Register(m_Config);
 }
 
 void fe::Application::Run() {
-    while (m_PrimaryWindow->IsOpen()) {
-        m_PrimaryWindow->PollEvents();
+    while (m_PrimaryWindow.get().IsOpen()) {
+        m_PrimaryWindow.get().PollEvents();
 
         m_EventBus->dispatch_all();
         m_EventBus->clear();
@@ -130,7 +131,12 @@ void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
 
 void fe::Application::InitializePrimaryWindow(const ApplicationDesc& desc) {
     m_PrimaryWindowID = m_PlatformSystem->CreateWindow(desc.primary_window_desc);
-    m_PrimaryWindow   = &m_PlatformSystem->getWindow(m_PrimaryWindowID);
+    auto window_result = m_PlatformSystem->getWindow(m_PrimaryWindowID);
+    if (!window_result.has_value()) {
+        fe::logging::error("Failed to get the primary window.\nWindow index was %llu", m_PrimaryWindowID);
+        return;
+    }
+    m_PrimaryWindow = window_result.value();
 }
 
 void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {

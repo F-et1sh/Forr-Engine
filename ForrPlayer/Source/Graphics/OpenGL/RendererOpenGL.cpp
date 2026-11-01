@@ -15,7 +15,7 @@
 
 fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
                                    IPlatformSystem&    platform_system,
-                                   size_t              primary_window_index,
+                                   WindowID              primary_window_index,
                                    ResourceManager&    resource_manager)
     : m_PlatformSystem(platform_system),
       m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index)),

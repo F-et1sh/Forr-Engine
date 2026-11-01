@@ -1,5 +1,19 @@
 ﻿# Forr-Engine Devlog
 
+## 11.11.2026
+### Goal
+    provide scan codes logic
+    use 'fe::ApplicationContext'
+    Event System
+
+### Done
+    context.hpp added
+    guid.hpp -> type_registry.hpp
+    'fe::TypeRegistry' --> 'fe::TypeRegistry<typename Category>'
+
+### Problem
+    -
+
 ## 31.10.2026
 ### Goal
     provide scan codes logic

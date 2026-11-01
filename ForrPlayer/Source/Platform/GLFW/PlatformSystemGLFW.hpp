@@ -17,17 +17,22 @@ namespace fe {
     class PlatformSystemGLFW : public IPlatformSystem {
     public:
         PlatformSystemGLFW(const PlatformSystemDesc& desc);
-        ~PlatformSystemGLFW();
+        ~PlatformSystemGLFW() override;
 
         // returns window index
-        FORR_NODISCARD size_t CreateWindow(const WindowDesc& desc) override;
+        FORR_NODISCARD WindowID CreateWindow(const WindowDesc& desc) override;
 
-        FORR_NODISCARD size_t   getWindowCount() override { return m_WindowList.size(); }
-        FORR_NODISCARD IWindow& getWindow(size_t index) override { return *m_WindowList[index]; }
+        FORR_NODISCARD WindowID getWindowCount() override { return m_WindowList.size(); }
+        FORR_NODISCARD std::optional<std::reference_wrapper<IWindow>> getWindow(WindowID index) override {
+            if (index >= m_WindowList.size() || m_WindowList[index] == nullptr) {
+                return std::nullopt;
+            }
+            return *m_WindowList[index];
+        }
 
         FORR_NODISCARD std::vector<const char*> getSurfaceRequiredExtensions() override;
 
     private:
-        std::vector<std::unique_ptr<IWindow>> m_WindowList;
+        std::vector<std::unique_ptr<IWindow>> m_WindowList{};
     };
 } // namespace fe

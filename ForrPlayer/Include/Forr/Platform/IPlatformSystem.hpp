@@ -31,17 +31,20 @@ namespace fe {
         ~PlatformSystemDesc() = default;
     };
 
+    using WindowID = size_t;
+
     class FORR_API IPlatformSystem {
     public:
+        IPlatformSystem()          = default;
         virtual ~IPlatformSystem() = default;
 
         FORR_NODISCARD static std::unique_ptr<IPlatformSystem> Create(const PlatformSystemDesc& desc);
 
         // returns window index
-        FORR_NODISCARD virtual size_t CreateWindow(const WindowDesc& desc) = 0;
+        FORR_NODISCARD virtual WindowID CreateWindow(const WindowDesc& desc) = 0;
 
-        FORR_NODISCARD virtual size_t getWindowCount()        = 0;
-        virtual IWindow&              getWindow(size_t index) = 0;
+        FORR_NODISCARD virtual WindowID                        getWindowCount()          = 0;
+        virtual std::optional<std::reference_wrapper<IWindow>> getWindow(WindowID index) = 0;
 
         FORR_NODISCARD virtual std::vector<const char*> getSurfaceRequiredExtensions() = 0;
     };
