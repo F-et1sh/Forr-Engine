@@ -18,15 +18,12 @@
 #include "Forr/Graphics/IRenderer.hpp"
 #include "Forr/Graphics/RenderGraph.hpp"
 #include "Forr/ResourceManagement/ResourceManager.hpp"
-
 #include "Forr/Graphics/DefaultRenderPasses.hpp"
-
-#include "Forr/ECS/Components.hpp"           // temp
-#include "Forr/ECS/Systems/RenderSystem.hpp" // temp
-
+#include "Forr/ECS/Components.hpp"
+#include "Forr/ECS/Systems/RenderSystem.hpp"
 #include "Forr/Core/Events/EventBus.hpp"
-
 #include "Forr/Core/type_registry.hpp"
+#include "Forr/Core/context.hpp"
 
 namespace fe {
     struct ApplicationDesc {
@@ -43,14 +40,6 @@ namespace fe {
         ApplicationDesc()  = default;
         ~ApplicationDesc() = default;
     };
-
-    struct ApplicationConfig {
-        ApplicationDesc                 desc{};
-        WindowID                        primary_window_id{};
-        std::reference_wrapper<IWindow> primary_window;
-    };
-
-    
 
     class FORR_API Application { // TODO : move all logic of 'fe::Application' to 'main.cpp' of the game
     public:
@@ -72,9 +61,7 @@ namespace fe {
         std::unique_ptr<ResourceManager> m_ResourceManager{};
         std::unique_ptr<EventBus>        m_EventBus{};
 
-        WindowID                        m_PrimaryWindowID{};
-        std::reference_wrapper<IWindow> m_PrimaryWindow;
-
-        ApplicationContext m_Context{};
+        fe::IWindow* m_PrimaryWindow{}; // TODO : change this raw pointer to something else
+        WindowID     m_PrimaryWindowID{};
     };
 } // namespace fe

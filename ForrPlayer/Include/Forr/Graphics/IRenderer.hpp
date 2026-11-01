@@ -13,10 +13,9 @@
 #pragma once
 #include <expected>
 #include <string>
+
 #include "Forr/Platform/IPlatformSystem.hpp"
-
 #include "Forr/ResourceManagement/ResourceManager.hpp"
-
 #include "RenderGraph.hpp"
 
 namespace fe {
@@ -70,10 +69,10 @@ namespace fe {
     public:
         virtual ~IRenderer() = default;
 
-        static std::unique_ptr<IRenderer> Create(const RendererDesc& desc,
-                                                 IPlatformSystem&    platform_system,
-                                                 WindowID            primary_window_index,
-                                                 ResourceManager&    resource_manager);
+        static FORR_NODISCARD std::unique_ptr<IRenderer> Create(const RendererDesc& desc,
+                                                                IPlatformSystem&    platform_system,
+                                                                WindowID            primary_window_index,
+                                                                ResourceManager&    resource_manager);
 
         virtual FORR_NODISCARD RenderGraphBindings CreateRenderGraphResources(const RenderGraphCompileResult& compile_result) = 0;
 

@@ -19,7 +19,7 @@
 #include "IWindow.hpp"
 
 namespace fe {
-    enum class PlatformBackend {
+    enum class PlatformBackend : uint8_t {
         GLFW
     };
 

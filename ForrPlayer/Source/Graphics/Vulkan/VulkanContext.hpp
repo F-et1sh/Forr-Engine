@@ -14,6 +14,9 @@
 
 #include <vector>
 #include <string>
+
+#include "Forr/Graphics/IRenderer.hpp"
+
 #include "Volk/volk.h"
 #include "vk_mem_alloc.h"
 
@@ -73,10 +76,10 @@ namespace fe {
 
         VkClearColorValue clear_color = { { 0.025f, 0.025f, 0.025f, 1.0f } };
 
-        constexpr static uint32_t api_version           = VK_API_VERSION_1_3; // hardcoded for now
-        constexpr static bool     requires_stencil{ false };                  // hardcoded for now
-        constexpr static bool     use_dynamic_rendering{ false };             // hardcoded for now
-        constexpr static size_t   default_fence_timeout = 100000000000;       // hardcoded for now ( nanoseconds )
+        constexpr static uint32_t api_version = VK_API_VERSION_1_3;     // hardcoded for now
+        constexpr static bool     requires_stencil{ false };            // hardcoded for now
+        constexpr static bool     use_dynamic_rendering{ false };       // hardcoded for now
+        constexpr static size_t   default_fence_timeout = 100000000000; // hardcoded for now ( nanoseconds )
 
         VkPhysicalDeviceDynamicRenderingFeatures base_dynamic_rendering_features{
             .sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
@@ -92,6 +95,10 @@ namespace fe {
         VkDescriptorSetLayout global_descriptor_set_layout{};
 
         VmaAllocator allocator{};
+
+        bool            validation_enabled{};
+        std::string     application_name{};
+        PlatformBackend platform_backend{};
 
         VulkanContext()  = default;
         ~VulkanContext() = default;

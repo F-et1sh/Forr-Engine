@@ -82,8 +82,8 @@ namespace fe {
     private:
         ResourceManager& m_ResourceManager;
 
-        IPlatformSystem& m_PlatformSystem;
-        IWindow&         m_PrimaryWindow;
+        IPlatformSystem&                m_PlatformSystem;
+        std::reference_wrapper<IWindow> m_PrimaryWindow;
 
         GLFWwindow* m_GLFWwindow = nullptr;
 

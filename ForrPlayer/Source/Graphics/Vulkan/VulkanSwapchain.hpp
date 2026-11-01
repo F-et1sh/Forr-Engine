@@ -27,8 +27,8 @@
 namespace fe {
     class VulkanSwapchain {
     public:
-        VulkanSwapchain(const RendererDesc& renderer_description, VulkanContext& context, IWindow& primary_window)
-            : m_RendererDescription(renderer_description), m_Context(context), m_PrimaryWindow(primary_window) {}
+        VulkanSwapchain(VulkanContext& context, IWindow& primary_window)
+            : m_Context(context), m_PrimaryWindow(primary_window) {}
         ~VulkanSwapchain() = default;
 
         void CreateSurface();
@@ -39,9 +39,8 @@ namespace fe {
         FORR_NODISCARD const std::vector<fe::vk::ImageView>& getImageViews() const { return m_ImageViews; }
 
     private:
-        const RendererDesc& m_RendererDescription;
-        VulkanContext&      m_Context;
-        IWindow&            m_PrimaryWindow;
+        VulkanContext& m_Context;
+        IWindow&       m_PrimaryWindow;
 
         fe::vk::Surface   m_Surface{};
         fe::vk::Swapchain m_Swapchain{};

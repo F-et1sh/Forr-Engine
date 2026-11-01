@@ -26,14 +26,14 @@ void fe::VulkanSwapchain::CreateSurface() {
         // ===
     };
 
-    switch (m_RendererDescription.platform_backend) {
+    switch (m_Context.platform_backend) {
         case PlatformBackend::GLFW:
 
             create_glfw_surface();
 
             break;
         default:
-            fe::logging::error("Failed to create Vulkan surface. Unknown platform backend %i. Using the default one - GLFW", m_RendererDescription.platform_backend);
+            fe::logging::error("Failed to create Vulkan surface. Unknown platform backend %i. Using the default one - GLFW", m_Context.platform_backend);
 
             create_glfw_surface();
             break;

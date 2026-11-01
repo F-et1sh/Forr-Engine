@@ -35,11 +35,11 @@ namespace fe {
     public:
         RendererVulkan(const RendererDesc& desc,
                        IPlatformSystem&    platform_system,
-                       WindowID              primary_window_index,
+                       WindowID            primary_window_index,
                        ResourceManager&    resource_manager);
-        ~RendererVulkan();
+        ~RendererVulkan()override;
 
-        RenderGraphBindings CreateRenderGraphResources(const RenderGraphCompileResult& compile_result) override;
+        FORR_NODISCARD RenderGraphBindings CreateRenderGraphResources(const RenderGraphCompileResult& compile_result) override;
 
         FORR_NODISCARD std::expected<graphics::ParameterHandle, graphics::ParameterCreationErrors> CreateParameter(const graphics::ParameterDesc& parameter_desc) override;
         void                                                                                       BindParameter(graphics::ParameterHandle parameter_id) override;
@@ -55,7 +55,7 @@ namespace fe {
 
         void InitializeGPUResources() override;
 
-        GraphicsBackend GetCurrentGraphicsBackend() override { return GraphicsBackend::Vulkan; }
+        FORR_NODISCARD GraphicsBackend GetCurrentGraphicsBackend() override { return GraphicsBackend::Vulkan; }
 
     private: // Vulkan initialization queue
         // Create Vulkan base :
@@ -163,9 +163,9 @@ namespace fe {
             ~FrameData() = default;
         };
 
-        IPlatformSystem& m_PlatformSystem;
-        IWindow&         m_PrimaryWindow;
-        ResourceManager& m_ResourceManager;
+        ResourceManager&                m_ResourceManager;
+        IPlatformSystem&                m_PlatformSystem;
+        std::reference_wrapper<IWindow> m_PrimaryWindow;
 
         VkPhysicalDevice m_PhysicalDevice{};
         fe::vk::Instance m_Instance{};
@@ -177,8 +177,7 @@ namespace fe {
 
         VulkanContext m_Context{};
 
-        RendererDesc                     m_Description{};
-        VulkanSwapchain                  m_Swapchain{ m_Description, m_Context, m_PrimaryWindow };
+        VulkanSwapchain                  m_Swapchain{ m_Context, m_PrimaryWindow };
         fe::vk::RenderPass               m_RenderPass{};
         std::vector<fe::vk::Framebuffer> m_Framebuffers{};
         VulkanImage                      m_DepthStencil{};

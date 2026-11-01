@@ -15,13 +15,13 @@
 
 fe::RendererOpenGL::RendererOpenGL(const RendererDesc& desc,
                                    IPlatformSystem&    platform_system,
-                                   WindowID              primary_window_index,
+                                   WindowID            primary_window_index,
                                    ResourceManager&    resource_manager)
     : m_PlatformSystem(platform_system),
-      m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index)),
+      m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index).value()),
       m_ResourceManager(resource_manager) {
 
-    m_GLFWwindow = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
+    m_GLFWwindow = (GLFWwindow*) m_PrimaryWindow.get().getNativeHandle();
 
     glfwMakeContextCurrent(m_GLFWwindow);
 

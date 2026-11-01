@@ -20,12 +20,16 @@
 
 fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
                                    IPlatformSystem&    platform_system,
-                                   WindowID              primary_window_index,
+                                   WindowID            primary_window_index,
                                    ResourceManager&    resource_manager)
-    : m_Description(desc),
-      m_PlatformSystem(platform_system),
-      m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index)),
+    : m_PlatformSystem(platform_system),
+      m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index).value()),
       m_ResourceManager(resource_manager) {
+
+    // === SETUP CONTEXT ===
+    m_Context.validation_enabled = desc.validation_enabled;
+    m_Context.application_name   = desc.application_name;
+    m_Context.platform_backend   = desc.platform_backend;
 
     this->configureCamera();
 
@@ -201,7 +205,7 @@ void fe::RendererVulkan::configureCamera() {
     m_Camera.setFlipY(true);
 
     float fov    = 60.0f;
-    float aspect = (float) m_PrimaryWindow.getWidth() / (float) m_PrimaryWindow.getHeight();
+    float aspect = (float) m_PrimaryWindow.get().getWidth() / (float) m_PrimaryWindow.get().getHeight();
     float znear  = 1.0f;
     float zfar   = 1000.0f;
     m_Camera.setPerspective(fov, aspect, znear, zfar);
@@ -218,8 +222,8 @@ void fe::RendererVulkan::resizeWindow() {
 
     vkDeviceWaitIdle(m_Device);
 
-    int width  = m_PrimaryWindow.getWidth();
-    int height = m_PrimaryWindow.getHeight();
+    int width  = m_PrimaryWindow.get().getWidth();
+    int height = m_PrimaryWindow.get().getHeight();
 
     if ((width > 0.0f) && (height > 0.0f)) {
         m_Camera.updateAspectRatio((float) width / (float) height);
@@ -228,11 +232,11 @@ void fe::RendererVulkan::resizeWindow() {
 
 void fe::RendererVulkan::handleRenderQueue(const RenderPacket& render_packet) {
     //{ // temp
-    //    auto glfw_window = (GLFWwindow*) m_PrimaryWindow.getNativeHandle();
+    //    auto glfw_window = (GLFWwindow*) m_PrimaryWindow.get().getNativeHandle();
 
     //    float speed = 0.025f;
 
-        //if (glfwGetKey(glfw_window, GLFW_KEY_A))
+    //if (glfwGetKey(glfw_window, GLFW_KEY_A))
     //        m_Camera.translate(glm::vec3(speed, 0.0f, 0.0f));
     //    else if (glfwGetKey(glfw_window, GLFW_KEY_D))
     //        m_Camera.translate(glm::vec3(-speed, 0.0f, 0.0f));
@@ -680,7 +684,7 @@ void fe::RendererVulkan::VKCreateInstance() {
 
     VkApplicationInfo application_info{};
     application_info.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-    application_info.pApplicationName   = m_Description.application_name.c_str(),
+    application_info.pApplicationName   = m_Context.application_name.c_str(),
     application_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     application_info.pEngineName        = "Forr Engine";
     application_info.engineVersion      = VK_MAKE_VERSION(1, 0, 0);
@@ -691,7 +695,7 @@ void fe::RendererVulkan::VKCreateInstance() {
     instance_create_info.pApplicationInfo = &application_info;
 
     VkDebugUtilsMessengerCreateInfoEXT debug_utils_messenger_create_info{};
-    if (m_Description.validation_enabled) {
+    if (m_Context.validation_enabled) {
         debug_utils_messenger_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 
         debug_utils_messenger_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
@@ -711,7 +715,7 @@ void fe::RendererVulkan::VKCreateInstance() {
                         m_Context.supported_instance_extensions.end(),
                         VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
-    if (m_Description.validation_enabled || it != m_Context.supported_instance_extensions.end()) {
+    if (m_Context.validation_enabled || it != m_Context.supported_instance_extensions.end()) {
         m_Context.enabled_instance_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 
@@ -727,7 +731,7 @@ void fe::RendererVulkan::VKCreateInstance() {
 
     const char* validation_layer_name = "VK_LAYER_KHRONOS_validation";
 
-    if (m_Description.validation_enabled) {
+    if (m_Context.validation_enabled) {
 
         uint32_t instance_layer_count{};
         vkEnumerateInstanceLayerProperties(&instance_layer_count, nullptr);
@@ -747,8 +751,9 @@ void fe::RendererVulkan::VKCreateInstance() {
             instance_create_info.ppEnabledLayerNames = &validation_layer_name;
             instance_create_info.enabledLayerCount   = 1;
         }
-        else
+        else {
             fe::logging::error("Validation layer %s not present, validation is disabled", validation_layer_name);
+        }
     }
 
     VkLayerSettingsCreateInfoEXT layer_settings_create_info{ .sType = VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT };
