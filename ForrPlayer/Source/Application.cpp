@@ -29,8 +29,15 @@ fe::Application::Application(const ApplicationDesc& desc) {
         PATH.init("", true);
 
     m_MainEventBus = std::make_unique<EventBus>();
-    m_MainEventBus->subscribe([&](const events::MouseMoved& mouse_moved) {
-        m_Time = mouse_moved.x * 0.01f;
+    m_MainEventBus->subscribe([&](const events::KeyButton& event) {
+        if (event.key == input::KeyCode::W &&
+            event.action == input::Action::PRESS) {
+            m_Time += 15.0f;
+        }
+
+        if (input::Joystick::B6) {
+
+        }
     });
 
     this->InitializePlatformSystem(desc);
