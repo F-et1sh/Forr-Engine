@@ -149,7 +149,8 @@ namespace fe::input {
     };
 
     using ScanCode = int;
-
+    using UnicodeChar = unsigned int;
+    
     enum class KeyMods : uint8_t {
         UNKNOWN = 0,
 
@@ -158,15 +159,19 @@ namespace fe::input {
         ALT       = 1 << 2,
         SUPER     = 1 << 3,
         CAPS_LOCK = 1 << 4,
-        NUM_LOCK  = 1 << 5,
+        NUM_LOCK  = 1 << 5
     };
 
     constexpr KeyMods operator|(KeyMods lhs, KeyMods rhs) noexcept {
         return static_cast<KeyMods>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
     }
 
-    constexpr KeyMods operator&(KeyMods lhs, KeyMods rhs) noexcept {
-        return static_cast<KeyMods>(static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs));
+    constexpr KeyMods operator|=(KeyMods& lhs, KeyMods rhs) noexcept {
+        return lhs = lhs | rhs;
+    }
+
+    constexpr bool operator&(KeyMods lhs, KeyMods rhs) noexcept {
+        return static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs);
     }
 
     enum class MouseButton : uint8_t {

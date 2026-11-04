@@ -145,15 +145,15 @@ namespace fe {
         }
     }
 
-    constexpr static uint8_t translate_mods(int glfw_mods) {
-        uint8_t unified_mods = 0;
+    constexpr static input::KeyMods translate_mods(int glfw_mods) {
+        input::KeyMods unified_mods{};
 
-        if (glfw_mods & GLFW_MOD_SHIFT) unified_mods |= static_cast<uint8_t>(input::KeyMods::SHIFT);
-        if (glfw_mods & GLFW_MOD_CONTROL) unified_mods |= static_cast<uint8_t>(input::KeyMods::CONTROL);
-        if (glfw_mods & GLFW_MOD_ALT) unified_mods |= static_cast<uint8_t>(input::KeyMods::ALT);
-        if (glfw_mods & GLFW_MOD_SUPER) unified_mods |= static_cast<uint8_t>(input::KeyMods::SUPER);
-        if (glfw_mods & GLFW_MOD_CAPS_LOCK) unified_mods |= static_cast<uint8_t>(input::KeyMods::CAPS_LOCK);
-        if (glfw_mods & GLFW_MOD_NUM_LOCK) unified_mods |= static_cast<uint8_t>(input::KeyMods::NUM_LOCK);
+        if (glfw_mods & GLFW_MOD_SHIFT) unified_mods |= input::KeyMods::SHIFT;
+        if (glfw_mods & GLFW_MOD_CONTROL) unified_mods |= input::KeyMods::CONTROL;
+        if (glfw_mods & GLFW_MOD_ALT) unified_mods |= input::KeyMods::ALT;
+        if (glfw_mods & GLFW_MOD_SUPER) unified_mods |= input::KeyMods::SUPER;
+        if (glfw_mods & GLFW_MOD_CAPS_LOCK) unified_mods |= input::KeyMods::CAPS_LOCK;
+        if (glfw_mods & GLFW_MOD_NUM_LOCK) unified_mods |= input::KeyMods::NUM_LOCK;
 
         return unified_mods;
     }

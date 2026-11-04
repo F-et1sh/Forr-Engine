@@ -26,9 +26,9 @@ namespace fe {
     class EventBus {
     private:
         struct EventHeader {
-            size_t event_type_id{};
-            size_t event_structure_offset{}; // starts from std::vector<>::data()
-            size_t next_header_offset{};     // starts from std::vector<>::data()
+            TypeRegistry<EventBus>::TypeID event_type_id{};
+            size_t                         event_structure_offset{}; // starts from std::vector<>::data()
+            size_t                         next_header_offset{};     // starts from std::vector<>::data()
         };
 
         struct Listener {
@@ -139,8 +139,9 @@ namespace fe {
             }
 
             Listener listener{
-                .instance = &instance,
-                .callback = [](void* instance, const void* event_data) {
+                .subscription_id = S_SUBSCRIPTION_COUNTER.fetch_add(1, std::memory_order_relaxed),
+                .instance        = &instance,
+                .callback        = [](void* instance, const void* event_data) {
                     auto*       object = static_cast<ClassT*>(instance);
                     const auto* event  = static_cast<const EventT*>(event_data);
                     (object->*Func)(*event);
@@ -150,7 +151,7 @@ namespace fe {
 
             m_Listeners[type_id].push_back(listener);
 
-            return S_SUBSCRIPTION_COUNTER.fetch_add(1, std::memory_order_relaxed);
+            return listener.subscription_id;
         }
 
         // @brief
@@ -173,17 +174,18 @@ namespace fe {
             CleanLambdaT* lambda_ptr       = new (allocated_lambda) CleanLambdaT(std::forward<LambdaT>(lambda));
 
             Listener listener{
-                .instance   = lambda_ptr,
-                .callback   = [](void* instance, const void* event_data) {
-                    auto*       lambda = static_cast<ClassT*>(instance);
+                .subscription_id = S_SUBSCRIPTION_COUNTER.fetch_add(1, std::memory_order_relaxed),
+                .instance        = lambda_ptr,
+                .callback        = [](void* instance, const void* event_data) {
+                    auto*       lambda = static_cast<CleanLambdaT*>(instance);
                     const auto* event  = static_cast<const EventT*>(event_data);
                     (*lambda)(*event); },
-                .destructor = [](void* instance) { std::destroy_at(static_cast<ClassT*>(instance)); }
+                .destructor      = [](void* instance) { std::destroy_at(static_cast<CleanLambdaT*>(instance)); }
             };
 
             m_Listeners[type_id].push_back(listener);
 
-            return S_SUBSCRIPTION_COUNTER.fetch_add(1, std::memory_order_relaxed);
+            return listener.subscription_id;
         }
 
         void Unsubscribe(Listener::SubscriptionID subscription_id) {

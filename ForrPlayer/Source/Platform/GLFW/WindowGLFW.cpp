@@ -59,7 +59,10 @@ fe::WindowGLFW::WindowGLFW(const WindowDesc& desc, EventBus& event_bus)
     glfwSetWindowSizeCallback(m_GLFWwindow, windowSizeCallback);
 
     glfwSetKeyCallback(m_GLFWwindow, keyCallback);
+    glfwSetMouseButtonCallback(m_GLFWwindow, mouseButtonCallback);
     glfwSetCursorPosCallback(m_GLFWwindow, cursorPosCallback);
+    glfwSetScrollCallback(m_GLFWwindow, scrollCallback);
+    glfwSetCharCallback(m_GLFWwindow, charCallback);
 
     this->centralizeWindow();
 }
@@ -119,10 +122,24 @@ void fe::WindowGLFW::keyCallback(GLFWwindow* window_glfw, int key, int scancode,
     }
 
     EventBus& event_bus = window->m_EventBus.get();
-    event_bus.Enqueue(events::KeyButton{ .key    = translate_key(key),
-                                         .action = translate_action(action),
-                                         .mods   = translate_mods(mods),
+    event_bus.Enqueue(events::KeyButton{ .key       = translate_key(key),
+                                         .action    = translate_action(action),
+                                         .mods      = translate_mods(mods),
                                          .scan_code = static_cast<input::ScanCode>(scancode) });
+}
+
+void fe::WindowGLFW::mouseButtonCallback(GLFWwindow* window_glfw, int button, int action, int mods) {
+    if (!window_glfw) return;
+
+    WindowGLFW* window = static_cast<WindowGLFW*>(glfwGetWindowUserPointer(window_glfw));
+    if (!window) {
+        return;
+    }
+
+    EventBus& event_bus = window->m_EventBus.get();
+    event_bus.Enqueue(events::MouseButton{ .button = translate_mouse_button(button),
+                                           .action = translate_action(action),
+                                           .mods   = translate_mods(mods) });
 }
 
 void fe::WindowGLFW::cursorPosCallback(GLFWwindow* window_glfw, double xpos, double ypos) {
@@ -135,4 +152,28 @@ void fe::WindowGLFW::cursorPosCallback(GLFWwindow* window_glfw, double xpos, dou
 
     EventBus& event_bus = window->m_EventBus.get();
     event_bus.Enqueue(events::MouseMoved{ .x = xpos, .y = ypos });
+}
+
+void fe::WindowGLFW::scrollCallback(GLFWwindow* window_glfw, double xoffset, double yoffset) {
+    if (!window_glfw) return;
+
+    WindowGLFW* window = static_cast<WindowGLFW*>(glfwGetWindowUserPointer(window_glfw));
+    if (!window) {
+        return;
+    }
+
+    EventBus& event_bus = window->m_EventBus.get();
+    event_bus.Enqueue(events::MouseScrolled{ .x_offset = xoffset, .y_offset = yoffset });
+}
+
+void fe::WindowGLFW::charCallback(GLFWwindow* window_glfw, unsigned int codepoint) {
+    if (!window_glfw) return;
+
+    WindowGLFW* window = static_cast<WindowGLFW*>(glfwGetWindowUserPointer(window_glfw));
+    if (!window) {
+        return;
+    }
+
+    EventBus& event_bus = window->m_EventBus.get();
+    event_bus.Enqueue(events::UnicodeCharTyped{ .code_point = codepoint });
 }

@@ -21,25 +21,42 @@ namespace fe {
     class FORR_API InputSystem {
     public:
         struct KeyboardAction {
-            //float dead_zone{ 0.5f }; // how many points needed to trigger this action
+            input::KeyCode     key{};
+            input::KeyMods     mods{};
+            input::ScanCode    scan_code{};
+            input::UnicodeChar unicode_char{};
+        };
 
-            input::KeyCode  key{};
-            input::Action   action{};
-            uint8_t         mods{};
-            input::ScanCode scan_code{};
+        struct MouseAction {
+            input::MouseButton button{};
+            input::KeyMods     mods{};
+        };
+
+        struct JoystickAction {
+            input::Joystick button{};
+        };
+
+        struct GamepadButtonAction {
+            float                dead_zone{};
+            input::GamepadButton button{};
+        };
+
+        struct GamepadAxisAction {
+            float              dead_zone{};
+            input::GamepadAxis axis{};
         };
 
     public:
         InputSystem(EventBus& event_bus);
         ~InputSystem() = default;
 
-        void AddAction() {
-        }
+        void AddAction() {}
+        void IsAction();
 
     private:
         std::reference_wrapper<EventBus> m_EventBus;
 
         // action name --> action
-        std::unordered_map<fe::hashed_wstring, KeyboardAction> m_KeyboardActions{};
+        std::unordered_map<fe::hashed_wstring, std::pair<KeyboardAction, input::Action>> m_KeyboardActions{};
     };
 } // namespace fe

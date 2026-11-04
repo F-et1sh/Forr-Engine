@@ -11,6 +11,7 @@
     InputManager added
     InputManager --> InputSystem
     string.hpp now supports std::wstring/std::wstring_view. FORR_CLASS_COPYABLE added. fe::shader::*'s aggregate structures problem solved
+    solving bugs
 
 ### Problem
     -

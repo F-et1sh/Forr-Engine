@@ -13,6 +13,8 @@
 #include "Forr/PCH/pch.hpp"
 #include "Forr/Application.hpp"
 
+#include <iostream>
+
 // TODO : remove this. This should be in 'main.cpp' of the user
 namespace fe {
     static entt::registry                            m_Registry{};        // temp
