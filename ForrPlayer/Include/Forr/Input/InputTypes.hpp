@@ -2,13 +2,18 @@
 
     Forr Engine
 
-    File : input.hpp
-    Role : enum classes of keys, mouse etc
+    File : InputTypes.hpp
+    Role : enum classes of key codes, mouse buttons etc
+
+    Based on GLFW ( zlib License. Copyright (c) 2002-2006 Marcus Geelnard, Copyright (c) 2006-2019 Camilla Lowy )
+                                                                                                            ^ changed the letter, because clang-format doesn't work with non-ASCII
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
 
 ===============================================*/
+
+#pragma once
 
 #pragma once
 #include <cinttypes>
@@ -143,6 +148,8 @@ namespace fe::input {
         MENU,
     };
 
+    using ScanCode = int;
+
     enum class KeyMods : uint8_t {
         UNKNOWN = 0,
 
@@ -161,8 +168,6 @@ namespace fe::input {
     constexpr KeyMods operator&(KeyMods lhs, KeyMods rhs) noexcept {
         return static_cast<KeyMods>(static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs));
     }
-
-    using ScanCode = uint16_t;
 
     enum class MouseButton : uint8_t {
         UNKNOWN = 0,
@@ -249,4 +254,5 @@ namespace fe::input {
         LEFT_TRIGGER,
         RIGHT_TRIGGER,
     };
+
 } // namespace fe::input

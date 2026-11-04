@@ -13,7 +13,7 @@
 #include "Forr/PCH/pch.hpp"
 #include "WindowGLFW.hpp"
 
-#include "Forr/Core/Events/Events.hpp"
+#include "Forr/Events/Events.hpp"
 #include "Forr/Core/logging.hpp"
 
 #include "GLFWTranslators.hpp"
@@ -119,10 +119,10 @@ void fe::WindowGLFW::keyCallback(GLFWwindow* window_glfw, int key, int scancode,
     }
 
     EventBus& event_bus = window->m_EventBus.get();
-    event_bus.enqueue(events::KeyButton{ .key    = translate_key(key),
+    event_bus.Enqueue(events::KeyButton{ .key    = translate_key(key),
                                          .action = translate_action(action),
                                          .mods   = translate_mods(mods),
-                                         /*.scan_code = translate_scancode(scancode)*/ });
+                                         .scan_code = static_cast<input::ScanCode>(scancode) });
 }
 
 void fe::WindowGLFW::cursorPosCallback(GLFWwindow* window_glfw, double xpos, double ypos) {
@@ -134,5 +134,5 @@ void fe::WindowGLFW::cursorPosCallback(GLFWwindow* window_glfw, double xpos, dou
     }
 
     EventBus& event_bus = window->m_EventBus.get();
-    event_bus.enqueue(events::MouseMoved{ .x = xpos, .y = ypos });
+    event_bus.Enqueue(events::MouseMoved{ .x = xpos, .y = ypos });
 }

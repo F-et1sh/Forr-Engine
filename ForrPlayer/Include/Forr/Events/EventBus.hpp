@@ -86,7 +86,7 @@ namespace fe {
     public:
         EventBus() = default;
         ~EventBus() {
-            for (auto& event_listeners : m_listeners) {
+            for (auto& event_listeners : m_Listeners) {
                 for (auto& listener : event_listeners) {
 
                     if (listener.destructor) {
@@ -103,15 +103,15 @@ namespace fe {
 
         template <typename Event>
             requires std::is_trivially_copyable_v<Event> && std::is_trivially_destructible_v<Event>
-        void enqueue(const Event& event) {
+        void Enqueue(const Event& event) {
             const TypeRegistry<EventBus>::TypeID id = TypeRegistry<EventBus>::get_id<Event>();
 
-            size_t storage_size                  = m_storage.size();
+            size_t storage_size                  = m_Storage.size();
             size_t aligned_header_offset         = fe::align_up(alignof(EventHeader), storage_size);
             size_t aligned_event_offset          = fe::align_up(alignof(Event), aligned_header_offset + sizeof(EventHeader));
             size_t aligned_next_structure_offset = fe::align_up(alignof(EventHeader), aligned_event_offset + sizeof(Event));
 
-            m_storage.resize(aligned_next_structure_offset);
+            m_Storage.resize(aligned_next_structure_offset);
 
             EventHeader header{
                 .event_type_id          = id,
@@ -119,20 +119,20 @@ namespace fe {
                 .next_header_offset     = aligned_next_structure_offset
             };
 
-            std::memcpy(&m_storage[aligned_header_offset], &header, sizeof(EventHeader));
-            std::memcpy(&m_storage[aligned_event_offset], &event, sizeof(Event));
+            std::memcpy(&m_Storage[aligned_header_offset], &header, sizeof(EventHeader));
+            std::memcpy(&m_Storage[aligned_event_offset], &event, sizeof(Event));
         }
 
         template <auto Func>
-        Listener::SubscriptionID subscribe(ListenerCallbackTraitsFn<decltype(Func)>::ClassT& instance) {
+        Listener::SubscriptionID Subscribe(ListenerCallbackTraitsFn<decltype(Func)>::ClassT& instance) {
             using Traits = ListenerCallbackTraitsFn<decltype(Func)>;
             using ClassT = Traits::ClassT;
             using EventT = Traits::EventT;
 
             TypeRegistry<EventBus>::TypeID type_id = TypeRegistry<EventBus>::get_id<EventT>();
 
-            if (type_id >= m_listeners.size()) {
-                m_listeners.resize(type_id + 1);
+            if (type_id >= m_Listeners.size()) {
+                m_Listeners.resize(type_id + 1);
             }
 
             Listener listener{
@@ -145,21 +145,21 @@ namespace fe {
                 .destructor = nullptr
             };
 
-            m_listeners[type_id].push_back(listener);
+            m_Listeners[type_id].push_back(listener);
 
             return S_SUBSCRIPTION_COUNTER.fetch_add(1, std::memory_order_relaxed);
         }
 
         template <typename LambdaT>
-        Listener::SubscriptionID subscribe(LambdaT&& lambda) {
+        Listener::SubscriptionID Subscribe(LambdaT&& lambda) {
             using Traits = ListenerCallbackTraitsFn<std::decay_t<LambdaT>>;
             using ClassT = Traits::ClassT;
             using EventT = Traits::EventT;
 
             TypeRegistry<EventBus>::TypeID type_id = TypeRegistry<EventBus>::get_id<EventT>();
 
-            if (type_id >= m_listeners.size()) {
-                m_listeners.resize(type_id + 1);
+            if (type_id >= m_Listeners.size()) {
+                m_Listeners.resize(type_id + 1);
             }
 
             using CleanLambdaT             = std::decay_t<LambdaT>;
@@ -175,13 +175,13 @@ namespace fe {
                 .destructor = [](void* instance) { std::destroy_at(static_cast<ClassT*>(instance)); }
             };
 
-            m_listeners[type_id].push_back(listener);
+            m_Listeners[type_id].push_back(listener);
 
             return S_SUBSCRIPTION_COUNTER.fetch_add(1, std::memory_order_relaxed);
         }
 
-        void unsubscribe(Listener::SubscriptionID subscription_id) {
-            for (auto& event_listeners : m_listeners) {
+        void Unsubscribe(Listener::SubscriptionID subscription_id) {
+            for (auto& event_listeners : m_Listeners) {
                 for (auto it = event_listeners.begin(); it != event_listeners.end(); it++) {
 
                     if (it->subscription_id == subscription_id) {
@@ -198,20 +198,20 @@ namespace fe {
             }
         }
 
-        void dispatch_all() const {
-            if (m_storage.empty()) return;
+        void DispatchAll() const {
+            if (m_Storage.empty()) return;
 
-            const uint8_t* buffer     = m_storage.data();
-            size_t         total_size = m_storage.size();
+            const uint8_t* buffer     = m_Storage.data();
+            size_t         total_size = m_Storage.size();
             size_t         offset     = 0;
 
             while (offset < total_size) {
                 const EventHeader& header = *std::launder(reinterpret_cast<const EventHeader*>(&buffer[offset]));
 
-                if (header.event_type_id < m_listeners.size()) {
+                if (header.event_type_id < m_Listeners.size()) {
 
                     const void* event = &buffer[header.event_structure_offset];
-                    for (const auto& listener : m_listeners[header.event_type_id]) {
+                    for (const auto& listener : m_Listeners[header.event_type_id]) {
                         listener.callback(listener.instance, event);
                     }
                 }
@@ -220,11 +220,11 @@ namespace fe {
             }
         }
 
-        void clear() noexcept { m_storage.clear(); }
+        void Clear() noexcept { m_Storage.clear(); }
 
     private:
-        std::vector<uint8_t>   m_storage{};
-        std::vector<Listeners> m_listeners{};
+        std::vector<uint8_t>   m_Storage{};
+        std::vector<Listeners> m_Listeners{};
 
         inline static std::atomic<Listener::SubscriptionID> S_SUBSCRIPTION_COUNTER{};
     };

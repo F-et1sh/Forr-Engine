@@ -29,16 +29,9 @@ fe::Application::Application(const ApplicationDesc& desc) {
         PATH.init("", true);
 
     m_MainEventBus = std::make_unique<EventBus>();
-    m_MainEventBus->subscribe([&](const events::KeyButton& event) {
-        if (event.key == input::KeyCode::W &&
-            event.action == input::Action::PRESS) {
-            m_Time += 15.0f;
-        }
 
-        if (input::Joystick::B6) {
-
-        }
-    });
+    m_InputManager = std::make_unique<InputManager>(*m_MainEventBus);
+    m_InputManager->AddAction();
 
     this->InitializePlatformSystem(desc);
     this->InitializeResourceManager(desc);
@@ -52,8 +45,8 @@ void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
         m_PrimaryWindow->PollEvents();
 
-        m_MainEventBus->dispatch_all();
-        m_MainEventBus->clear();
+        m_MainEventBus->DispatchAll();
+        m_MainEventBus->Clear();
 
         m_Renderer->BeginFrame();
 

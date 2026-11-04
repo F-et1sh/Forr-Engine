@@ -11,7 +11,7 @@
 ===============================================*/
 
 #pragma once
-#include "Forr/Core/input.hpp"
+#include "Forr/Input/InputTypes.hpp"
 
 #include <GLFW/glfw3.h>
 

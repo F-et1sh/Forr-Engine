@@ -16,7 +16,7 @@
 
 #include "Forr/Core/attributes.hpp"
 #include "Forr/Graphics/GPUTypes.hpp"
-#include "Forr/Core/Events/EventBus.hpp"
+#include "Forr/Events/EventBus.hpp"
 #include "IWindow.hpp"
 
 namespace fe {

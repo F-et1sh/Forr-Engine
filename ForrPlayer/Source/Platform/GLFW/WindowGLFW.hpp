@@ -12,7 +12,7 @@
 
 #pragma once
 #include "Forr/Platform/IWindow.hpp"
-#include "Forr/Core/Events/EventBus.hpp"
+#include "Forr/Events/EventBus.hpp"
 
 #include <GLFW/glfw3.h>
 

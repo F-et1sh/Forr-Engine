@@ -21,10 +21,11 @@
 #include "Forr/Graphics/DefaultRenderPasses.hpp"
 #include "Forr/ECS/Components.hpp"
 #include "Forr/ECS/Systems/RenderSystem.hpp"
-#include "Forr/Core/Events/EventBus.hpp"
-#include "Forr/Core/Events/Events.hpp"
+#include "Forr/Events/EventBus.hpp"
+#include "Forr/Events/Events.hpp"
 #include "Forr/Core/type_registry.hpp"
 #include "Forr/Core/context.hpp"
+#include "Forr/Input/InputManager.hpp"
 
 namespace fe {
     struct ApplicationDesc {
@@ -61,6 +62,7 @@ namespace fe {
         std::unique_ptr<RenderGraph>     m_RenderGraph{};
         std::unique_ptr<ResourceManager> m_ResourceManager{};
         std::unique_ptr<EventBus>        m_MainEventBus{};
+        std::unique_ptr<InputManager>    m_InputManager{};
 
         fe::IWindow* m_PrimaryWindow{}; // TODO : change this raw pointer to something else
         WindowID     m_PrimaryWindowID{};

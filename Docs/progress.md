@@ -1,5 +1,18 @@
 ﻿# Forr-Engine Devlog
 
+## 04.11.2026
+### Goal
+    provide InputManager
+    provide scan codes logic
+
+### Done
+    'Forr/Core/Events' --> 'Forr/Events'
+    'Forr/Core/input.hpp' --> 'Forr/Input/InputTypes.hpp'
+    InputManager added
+
+### Problem
+    -
+
 ## 03.11.2026
 ### Goal
     provide InputManager
