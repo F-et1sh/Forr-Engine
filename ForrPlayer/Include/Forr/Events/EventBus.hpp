@@ -126,11 +126,12 @@ namespace fe {
         // @brief
         // @param instance functor class, which is invoked with 'const EventT&'
         // @returns a subscription index to unsubscribe ( fe::EventBus::Unsubscribe() ) if needed
-        template <auto Func>
-        Listener::SubscriptionID Subscribe(ListenerCallbackTraitsFn<decltype(Func)>::ClassT& instance) {
+        template <auto Func, typename ClassT>
+        Listener::SubscriptionID Subscribe(ClassT& instance) {
             using Traits = ListenerCallbackTraitsFn<decltype(Func)>;
-            using ClassT = Traits::ClassT;
             using EventT = Traits::EventT;
+
+            static_assert(std::is_same_v<typename Traits::ClassT, ClassT>, "The provided instance does not match the class of the function");
 
             TypeRegistry<EventBus>::TypeID type_id = TypeRegistry<EventBus>::get_id<EventT>();
 

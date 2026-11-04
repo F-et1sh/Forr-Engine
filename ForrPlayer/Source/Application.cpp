@@ -33,7 +33,6 @@ fe::Application::Application(const ApplicationDesc& desc) {
     m_MainEventBus = std::make_unique<EventBus>();
 
     m_InputSystem = std::make_unique<InputSystem>(*m_MainEventBus);
-    m_InputSystem->AddAction();
 
     this->InitializePlatformSystem(desc);
     this->InitializeResourceManager(desc);

@@ -146,7 +146,7 @@ namespace fe {
     }
 
     constexpr static input::KeyMods translate_mods(int glfw_mods) {
-        input::KeyMods unified_mods{};
+        input::KeyMods unified_mods{ input::KeyMods::NONE };
 
         if (glfw_mods & GLFW_MOD_SHIFT) unified_mods |= input::KeyMods::SHIFT;
         if (glfw_mods & GLFW_MOD_CONTROL) unified_mods |= input::KeyMods::CONTROL;

@@ -152,7 +152,7 @@ namespace fe::input {
     using UnicodeChar = unsigned int;
     
     enum class KeyMods : uint8_t {
-        UNKNOWN = 0,
+        NONE = 0,
 
         SHIFT     = 1 << 0,
         CONTROL   = 1 << 1,
