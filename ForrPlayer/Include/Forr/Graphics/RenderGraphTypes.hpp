@@ -23,7 +23,7 @@ namespace fe::render_graph {
         IMAGE_TYPE_3D,
     };
 
-    enum class Format : uint32_t {
+    enum class Format : uint8_t {
         UNDEFINED,
 
         RGBA8_UNORM,
@@ -42,7 +42,7 @@ namespace fe::render_graph {
         D32_SFLOAT_S8_UINT
     };
 
-    enum class ImageUsageBits : uint32_t {
+    enum class ImageUsageBits : uint8_t {
         NONE             = 0,
         RENDER_TARGET    = 1 << 0,
         DEPTH_STENCIL    = 1 << 1,
@@ -52,7 +52,7 @@ namespace fe::render_graph {
         COPY_DST         = 1 << 5
     };
 
-    enum class BufferUsageBits : uint32_t {
+    enum class BufferUsageBits : uint8_t {
         NONE = 0,
         // ...
     };
@@ -73,7 +73,7 @@ namespace fe::render_graph {
     // this needs for 'RenderGraph ( and user interface ) <-> GPU resource manager' connection
     template <ResourceHandleSeparator IDType>
     struct ResourceHandle {
-        // hashed name - used for user interface ( fe::make_string_hash("ShadowMap") )
+        // hashed name - used for user interface ( fe::make_hash("ShadowMap") )
         fe::StringHash hashed_name{};
 
         // index in GPU resource manager's strage - used when render passes are already compiled

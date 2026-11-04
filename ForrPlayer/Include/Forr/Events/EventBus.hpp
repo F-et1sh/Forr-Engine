@@ -123,6 +123,9 @@ namespace fe {
             std::memcpy(&m_Storage[aligned_event_offset], &event, sizeof(Event));
         }
 
+        // @brief
+        // @param instance functor class, which is invoked with 'const EventT&'
+        // @returns a subscription index to unsubscribe ( fe::EventBus::Unsubscribe() ) if needed
         template <auto Func>
         Listener::SubscriptionID Subscribe(ListenerCallbackTraitsFn<decltype(Func)>::ClassT& instance) {
             using Traits = ListenerCallbackTraitsFn<decltype(Func)>;
@@ -150,6 +153,9 @@ namespace fe {
             return S_SUBSCRIPTION_COUNTER.fetch_add(1, std::memory_order_relaxed);
         }
 
+        // @brief
+        // @param lambda invoked with 'const EventT&'
+        // @returns a subscription index to unsubscribe ( fe::EventBus::Unsubscribe() ) if needed
         template <typename LambdaT>
         Listener::SubscriptionID Subscribe(LambdaT&& lambda) {
             using Traits = ListenerCallbackTraitsFn<std::decay_t<LambdaT>>;

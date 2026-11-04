@@ -9,6 +9,8 @@
     'Forr/Core/Events' --> 'Forr/Events'
     'Forr/Core/input.hpp' --> 'Forr/Input/InputTypes.hpp'
     InputManager added
+    InputManager --> InputSystem
+    string.hpp now supports std::wstring/std::wstring_view. FORR_CLASS_COPYABLE added. fe::shader::*'s aggregate structures problem solved
 
 ### Problem
     -

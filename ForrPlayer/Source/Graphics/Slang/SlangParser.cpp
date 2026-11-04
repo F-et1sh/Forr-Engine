@@ -323,11 +323,11 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
     auto specialization_expected = SlangParser::specialize(pipeline_desc, composed_program, component_types);
     if (!specialization_expected.has_value()) {
 
-        if (specialization_expected.error() != ShaderSpecializationErrors::NOTHING_TO_SPECIALIZE)
+        if (specialization_expected.error() != ShaderSpecializationErrors::NOTHING_TO_SPECIALIZE) {
             return std::unexpected{ ShaderBuildErrors::FAILED_TO_SPECIALIZE_GLOBAL_PARAMETERS };
-        else {
-            specialized_program = composed_program.detach();
         }
+
+        specialized_program = composed_program.detach();
     }
     else {
         specialized_program = specialization_expected.value();

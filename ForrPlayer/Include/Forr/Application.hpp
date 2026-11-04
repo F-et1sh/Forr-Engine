@@ -25,7 +25,7 @@
 #include "Forr/Events/Events.hpp"
 #include "Forr/Core/type_registry.hpp"
 #include "Forr/Core/context.hpp"
-#include "Forr/Input/InputManager.hpp"
+#include "Forr/Input/InputSystem.hpp"
 
 namespace fe {
     struct ApplicationDesc {
@@ -62,7 +62,7 @@ namespace fe {
         std::unique_ptr<RenderGraph>     m_RenderGraph{};
         std::unique_ptr<ResourceManager> m_ResourceManager{};
         std::unique_ptr<EventBus>        m_MainEventBus{};
-        std::unique_ptr<InputManager>    m_InputManager{};
+        std::unique_ptr<InputSystem>    m_InputSystem{};
 
         fe::IWindow* m_PrimaryWindow{}; // TODO : change this raw pointer to something else
         WindowID     m_PrimaryWindowID{};

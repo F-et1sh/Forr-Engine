@@ -84,10 +84,11 @@ namespace fe::shader {
         ReflectedDataNode() = default;
         ReflectedDataNode(ValueType type, uint32_t array_size, uint32_t size, std::vector<ReflectedMember> members, std::string name)
             : type(type), array_size(array_size), size(size), members(std::move(members)), name(std::move(name)) {}
+
         virtual ~ReflectedDataNode() = default;
 
-        // TODO : provide this, there is an error
-        //FORR_CLASS_MOVABLE(ReflectedDataNode)
+        FORR_CLASS_MOVABLE(ReflectedDataNode)
+        FORR_CLASS_COPYABLE(ReflectedDataNode)
 
         bool operator==(const ReflectedDataNode&) const noexcept = default;
     };
@@ -109,19 +110,11 @@ namespace fe::shader {
 
         bool is_bindless{};
 
-        ReflectedDescriptor() = default;
-        ReflectedDescriptor(ReflectedDataNode data_node, DescriptorType descriptor_type, uint32_t set, uint32_t binding, uint8_t stage_flags, bool is_bindless)
-            : ReflectedDataNode(std::move(data_node)), descriptor_type(descriptor_type), set(set), binding(binding), stage_flags(stage_flags), is_bindless(is_bindless) {}
-
         bool operator==(const ReflectedDescriptor&) const noexcept = default;
     };
 
     struct ReflectedPushConstants : public ReflectedDataNode {
         uint8_t stage_flags{};
-
-        ReflectedPushConstants() = default;
-        ReflectedPushConstants(ReflectedDataNode data_node, uint8_t stage_flags)
-            : ReflectedDataNode(std::move(data_node)), stage_flags(stage_flags) {}
 
         bool operator==(const ReflectedPushConstants&) const noexcept = default;
     };
@@ -130,10 +123,6 @@ namespace fe::shader {
         uint32_t                             size{};
         std::vector<shader::ReflectedMember> members{};
         fe::hashed_string                    name{};
-
-        ReflectedStructureLayout() = default;
-        ReflectedStructureLayout(uint32_t size, std::vector<ReflectedMember> members, fe::hashed_string name)
-            : size(size), members(std::move(members)), name(std::move(name)) {}
 
         bool operator==(const ReflectedStructureLayout&) const noexcept = default;
     };
@@ -165,10 +154,6 @@ namespace fe::shader {
         //fe::hashed_string return_value{};
 
         fe::hashed_string name{};
-
-        ReflectedEntryPoint() = default;
-        ReflectedEntryPoint(uint8_t stage_flags /*, std::vector<fe::hashed_string> arguments*/, std::vector<Constraints> generic_arguments, fe::hashed_string name)
-            : stage_flags(stage_flags), /*arguments(std::move(arguments)),*/ generic_arguments(std::move(generic_arguments)), name(std::move(name)) {}
 
         bool operator==(const ReflectedEntryPoint&) const noexcept = default;
     };

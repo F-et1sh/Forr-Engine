@@ -92,6 +92,10 @@
 #undef MONO_FONT
 #endif
 
+#define FORR_CLASS_COPYABLE(T)        \
+    T(const T&)            = default; \
+    T& operator=(const T&) = default;
+
 #define FORR_CLASS_NONCOPYABLE(T)    \
     T(const T&)            = delete; \
     T& operator=(const T&) = delete;
@@ -106,4 +110,4 @@
 
 #define FORR_CLASS_MOVABLEONLY(T) \
     FORR_CLASS_NONCOPYABLE(T)     \
-    FORR_CLASS_MOVABLE(T)\
+    FORR_CLASS_MOVABLE(T)

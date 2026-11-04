@@ -27,14 +27,14 @@ namespace fe {
     struct ShadowPass {
         static void Setup(RenderGraphBuilder& builder, ShadowPassData& pass_data) {
             builder.createImage(render_graph::ImageDesc{
-                .handle     = fe::make_string_hash("ShadowMap"),
+                .handle     = fe::make_hash("ShadowMap"),
                 .type       = render_graph::ImageType::IMAGE_TYPE_2D,
                 .format     = render_graph::Format::D32_SFLOAT,
                 .extent     = glm::ivec3{ 4096, 4096, 1 },
                 .mip_levels = 1,
                 .usage      = render_graph::ImageUsageBits::DEPTH_STENCIL });
 
-            builder.writeImage(fe::make_string_hash("ShadowMap"), ResourceState::DEPTH_WRITE);
+            builder.writeImage(fe::make_hash("ShadowMap"), ResourceState::DEPTH_WRITE);
 
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Shadow\\Shadow.slang");
             resource::ShaderFileData&             shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
@@ -183,7 +183,7 @@ namespace fe {
         static void Setup(RenderGraphBuilder& builder, ForwardPassData& pass_data) { // setup can be called twice
             //builder.writeToScreen(true);
             builder.createImage(render_graph::ImageDesc{
-                .handle     = fe::make_string_hash("RenderTarget"),
+                .handle     = fe::make_hash("RenderTarget"),
                 .type       = render_graph::ImageType::IMAGE_TYPE_2D,
                 .format     = render_graph::Format::RGBA8_UNORM,
                 .extent     = glm::ivec3{ 1920, 1080, 1 },
@@ -191,16 +191,16 @@ namespace fe {
                 .usage      = render_graph::ImageUsageBits::RENDER_TARGET });
 
             builder.createImage(render_graph::ImageDesc{
-                .handle     = fe::make_string_hash("Depth"),
+                .handle     = fe::make_hash("Depth"),
                 .type       = render_graph::ImageType::IMAGE_TYPE_2D,
                 .format     = render_graph::Format::D32_SFLOAT,
                 .extent     = glm::ivec3{ 1920, 1080, 1 },
                 .mip_levels = 1,
                 .usage      = render_graph::ImageUsageBits::DEPTH_STENCIL });
 
-            builder.writeImage(fe::make_string_hash("RenderTarget"), ResourceState::RENDER_TARGET);
-            builder.writeImage(fe::make_string_hash("Depth"), ResourceState::DEPTH_WRITE);
-            builder.readImage(fe::make_string_hash("ShadowMap"), ResourceState::SHADER_READ_ONLY);
+            builder.writeImage(fe::make_hash("RenderTarget"), ResourceState::RENDER_TARGET);
+            builder.writeImage(fe::make_hash("Depth"), ResourceState::DEPTH_WRITE);
+            builder.readImage(fe::make_hash("ShadowMap"), ResourceState::SHADER_READ_ONLY);
 
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "Default\\PBRMaterial\\PBRMaterial.slang");
             resource::ShaderFileData&             shader_file_data     = *builder.resource_manager.GetResource(shader_file_data_ptr);
@@ -435,9 +435,9 @@ namespace fe {
     struct PostProcessPass {
         static void Setup(RenderGraphBuilder& builder, PostProcessPassData& pass_data) {
             builder.writeToScreen(true);
-            builder.readImage(fe::make_string_hash("RenderTarget"), ResourceState::SHADER_READ_ONLY);
-            builder.readImage(fe::make_string_hash("ShadowMap"), ResourceState::SHADER_READ_ONLY);
-            builder.readImage(fe::make_string_hash("Depth"), ResourceState::DEPTH_READ);
+            builder.readImage(fe::make_hash("RenderTarget"), ResourceState::SHADER_READ_ONLY);
+            builder.readImage(fe::make_hash("ShadowMap"), ResourceState::SHADER_READ_ONLY);
+            builder.readImage(fe::make_hash("Depth"), ResourceState::DEPTH_READ);
 
             fe::pointer<resource::ShaderFileData> shader_file_data_ptr = builder.resource_manager.ImportResource<resource::ShaderFileData>(PATH.getShadersPath() / "PostProcess" / "PostProcess.slang");
 
