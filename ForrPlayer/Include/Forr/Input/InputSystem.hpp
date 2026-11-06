@@ -70,26 +70,22 @@ namespace fe {
             }
         }
 
-        template <fe::wstring_like T>
-        bool IsActionPressed(fe::hashed_string_base<T> action) const {
+        bool IsActionPressed(const fe::hashed_string& action) const {
             auto it = m_Actions.find(action);
             return it != m_Actions.end() ? it->second.is_pressed : false;
         }
 
-        template <fe::wstring_like T>
-        bool IsActionJustPressed(fe::hashed_string_base<T> action) const {
+        bool IsActionJustPressed(const fe::hashed_string& action) const {
             auto it = m_Actions.find(action);
             return it != m_Actions.end() ? it->second.just_pressed : false;
         }
 
-        template <fe::wstring_like T>
-        bool IsActionJustReleased(fe::hashed_string_base<T> action) const {
+        bool IsActionJustReleased(const fe::hashed_string& action) const {
             auto it = m_Actions.find(action);
             return it != m_Actions.end() ? it->second.just_released : false;
         }
 
-        template <fe::wstring_like T>
-        float GetActionValue(fe::hashed_string_base<T> action) const {
+        float GetActionValue(const fe::hashed_string& action) const {
             auto it = m_Actions.find(action);
             return it != m_Actions.end() ? it->second.value : 0.0f;
         }
@@ -101,9 +97,9 @@ namespace fe {
         std::reference_wrapper<EventBus> m_EventBus;
 
         // action name --> is action active
-        std::unordered_map<fe::hashed_wstring,
+        std::unordered_map<fe::hashed_string,
                            ActionState,
-                           fe::hashed_wstring_hasher,
+                           std::hash<fe::hashed_string>,
                            fe::transparent_equal>
             m_Actions{};
     };

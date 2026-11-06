@@ -29,47 +29,47 @@ namespace fe {
             return path_manager;
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD const std::filesystem::path& getExecutablePath() const noexcept {
+        FORR_NODISCARD FORR_FORCE_INLINE const std::filesystem::path& getExecutablePath() const noexcept {
             return m_ExecutablePath;
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD const std::filesystem::path& getAssetsPath() const noexcept {
+        FORR_NODISCARD FORR_FORCE_INLINE const std::filesystem::path& getAssetsPath() const noexcept {
             return m_AssetsPath;
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getEngineAssetsPath() const {
-            return m_AssetsPath / L"Engine";
+        FORR_NODISCARD FORR_FORCE_INLINE std::filesystem::path getEngineAssetsPath() const {
+            return m_AssetsPath / u8"Engine";
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getUserAssetsPath() const {
-            return m_AssetsPath / L"User";
+        FORR_NODISCARD FORR_FORCE_INLINE std::filesystem::path getUserAssetsPath() const {
+            return m_AssetsPath / u8"User";
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getSharedAssetsPath() const {
-            return m_AssetsPath / L"Shared";
+        FORR_NODISCARD FORR_FORCE_INLINE std::filesystem::path getSharedAssetsPath() const {
+            return m_AssetsPath / u8"Shared";
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getEngineResourcesPath() const {
-            return this->getEngineAssetsPath() / L"Resources";
+        FORR_NODISCARD FORR_FORCE_INLINE std::filesystem::path getEngineResourcesPath() const {
+            return this->getEngineAssetsPath() / u8"Resources";
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getModelsPath() const {
-            return this->getEngineResourcesPath() / L"Models";
+        FORR_NODISCARD FORR_FORCE_INLINE std::filesystem::path getModelsPath() const {
+            return this->getEngineResourcesPath() / u8"Models";
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getShadersPath() const {
-            return this->getEngineResourcesPath() / L"Shaders";
+        FORR_NODISCARD FORR_FORCE_INLINE std::filesystem::path getShadersPath() const {
+            return this->getEngineResourcesPath() / u8"Shaders";
         }
 
-        FORR_FORCE_INLINE FORR_NODISCARD std::filesystem::path getDefaultShadersPath() const {
-            return this->getShadersPath() / L"Default";
+        FORR_NODISCARD FORR_FORCE_INLINE std::filesystem::path getDefaultShadersPath() const {
+            return this->getShadersPath() / u8"Default";
         }
 
         //
 
-        FORR_STATIC FORR_NODISCARD FORR_CONSTEVAL std::string_view getMetadataExtension() { return ".forr_meta"; }
-        FORR_STATIC FORR_NODISCARD FORR_CONSTEVAL std::string_view getMaterialExtension() { return ".forr_material"; }
-        FORR_STATIC FORR_NODISCARD FORR_CONSTEVAL std::string_view getShaderExtension() { return ".slang"; }
+        FORR_NODISCARD FORR_STATIC FORR_CONSTEXPR std::u8string_view getMetadataExtension() { return reinterpret_cast<const char8_t*>(u8".forr_meta"); }
+        FORR_NODISCARD FORR_STATIC FORR_CONSTEXPR std::u8string_view getMaterialExtension() { return reinterpret_cast<const char8_t*>(u8".forr_material"); }
+        FORR_NODISCARD FORR_STATIC FORR_CONSTEXPR std::u8string_view getShaderExtension() { return reinterpret_cast<const char8_t*>(u8".slang"); }
 
     private:
         PathManager()  = default;
@@ -77,10 +77,10 @@ namespace fe {
 
         static void copy_if_new(const std::filesystem::path& from, const std::filesystem::path& to);
 
-        std::filesystem::path m_ExecutablePath;
-        std::filesystem::path m_AssetsPath;
+        std::filesystem::path m_ExecutablePath{};
+        std::filesystem::path m_AssetsPath{};
     };
 
-    inline static PathManager& PATH = PathManager::Instance();
+    FORR_INLINE FORR_STATIC PathManager& PATH = PathManager::Instance();
 
 } // namespace fe

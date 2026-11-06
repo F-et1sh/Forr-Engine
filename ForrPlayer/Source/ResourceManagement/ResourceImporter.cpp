@@ -38,10 +38,10 @@ void fe::ResourceImporter::ImportResource(const std::filesystem::path& resource_
     else if (extension == ".gltf" || extension == ".glb") {
         std::ignore = GLTFImporter::Import(m_Storage, resource_full_path);
     }
-    else if (extension.generic_wstring() == PATH.getMaterialExtension()) {
+    else if (extension.generic_u8string() == PATH.getMaterialExtension()) {
         std::ignore = MaterialImporter::Import(m_Storage, resource_full_path);
     }
-    else if (extension.generic_wstring() == PATH.getShaderExtension()) {
+    else if (extension.generic_u8string() == PATH.getShaderExtension()) {
         std::ignore = ShaderImporter::Import(m_Storage, resource_full_path);
     }
 }

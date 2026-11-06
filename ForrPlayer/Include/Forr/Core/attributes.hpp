@@ -13,7 +13,39 @@
 
 #pragma once
 
+// versions
+//
+// C++98/C++03 --> 199711L
+// C++11       --> 201103L
+// C++14       --> 201402L
+// C++17       --> 201703L
+// C++20       --> 202002L
+// C++23       --> 202302L
+// C++26       --> 202603L
+
+#if __cplusplus >= 201103L // C++11
 #define FORR_STATIC static
+#define FORR_CONSTEXPR constexpr
+#else
+#define FORR_STATIC
+#define FORR_CONSTEXPR
+#endif
+
+#if __cplusplus >= 201402L // C++14
+#define FORR_DEPRECATED [[deprecated]]
+#else
+#define FORR_DEPRECATED
+#endif
+
+#if __cplusplus >= 201703L // C++17
+#define FORR_MAYBE_UNUSED [[maybe_unused]]
+#define FORR_NODISCARD [[nodiscard]]
+#define FORR_INLINE inline
+#else
+#define FORR_MAYBE_UNUSED
+#define FORR_NODISCARD
+#define FORR_INLINE
+#endif
 
 #if __cplusplus >= 201703L // C++17
 #define FORR_MAYBE_UNUSED [[maybe_unused]]
@@ -92,21 +124,21 @@
 #undef MONO_FONT
 #endif
 
-#define FORR_CLASS_COPYABLE(T)        \
-    T(const T&)            = default; \
-    T& operator=(const T&) = default;
+#define FORR_CLASS_COPYABLE(T)                                                 \
+    T(const T&)            = default; /* NOLINT(bugprone-macro-parentheses) */ \
+    T& operator=(const T&) = default; /* NOLINT(bugprone-macro-parentheses) */
 
-#define FORR_CLASS_NONCOPYABLE(T)    \
-    T(const T&)            = delete; \
-    T& operator=(const T&) = delete;
+#define FORR_CLASS_NONCOPYABLE(T)                                             \
+    T(const T&)            = delete; /* NOLINT(bugprone-macro-parentheses) */ \
+    T& operator=(const T&) = delete; /* NOLINT(bugprone-macro-parentheses) */
 
-#define FORR_CLASS_MOVABLE(T)             \
-    T(T&&) noexcept            = default; \
-    T& operator=(T&&) noexcept = default;
+#define FORR_CLASS_MOVABLE(T)                                                      \
+    T(T&&) noexcept            = default; /* NOLINT(bugprone-macro-parentheses) */ \
+    T& operator=(T&&) noexcept = default; /* NOLINT(bugprone-macro-parentheses) */
 
-#define FORR_CLASS_NONMOVABLE(T)         \
-    T(T&&) noexcept            = delete; \
-    T& operator=(T&&) noexcept = delete;
+#define FORR_CLASS_NONMOVABLE(T)                                                  \
+    T(T&&) noexcept            = delete; /* NOLINT(bugprone-macro-parentheses) */ \
+    T& operator=(T&&) noexcept = delete; /* NOLINT(bugprone-macro-parentheses) */
 
 #define FORR_CLASS_MOVABLEONLY(T) \
     FORR_CLASS_NONCOPYABLE(T)     \

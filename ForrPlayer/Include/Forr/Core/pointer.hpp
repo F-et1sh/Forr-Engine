@@ -45,7 +45,7 @@ namespace fe {
     concept base_pointer_t = requires(T t) {
         typename T::HandleType;
         typename T::GenerationType;
-        typename T::CustomFieldsType; // but this must be here anyway
+        typename T::CustomFieldsType; // this must be here anyway
 
         { T{} };
 
@@ -116,7 +116,7 @@ namespace fe {
               custom_fields_t CustomFields = empty_custom_fields_t>
     class FORR_NODISCARD pointer {
     public:
-        inline constexpr static PackedT PACKING_SHIFT = sizeof(GenerationT) * 8;
+        constexpr static PackedT PACKING_SHIFT = sizeof(GenerationT) * 8;
 
         static_assert(sizeof(HandleT) * 8 + sizeof(GenerationT) * 8 <= sizeof(PackedT) * 8,
                       "HandleT and GenerationT do not fit into PackedT");

@@ -32,10 +32,10 @@ fe::Application::Application(const ApplicationDesc& desc) {
 
     m_MainEventBus = std::make_unique<EventBus>();
     m_MainEventBus->Subscribe([&](const events::MouseMoved& mouse_moved) {
-        m_Time = mouse_moved.x / 1000.0f;
-        });
+        m_Time = mouse_moved.x / 1000.0;
+    });
 
-    m_InputSystem  = std::make_unique<InputSystem>(*m_MainEventBus);
+    m_InputSystem = std::make_unique<InputSystem>(*m_MainEventBus);
 
     this->InitializePlatformSystem(desc);
     this->InitializeResourceManager(desc);

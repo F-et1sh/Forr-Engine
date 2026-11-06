@@ -46,7 +46,7 @@ void fe::PathManager::init(std::string_view executable_path, bool is_editor) {
         if (std::filesystem::exists(editor_assets_folder_path)) {
 
             std::filesystem::remove_all(application_assets_folder_path);
-            this->copy_if_new(editor_assets_folder_path, application_assets_folder_path);
+            PathManager::copy_if_new(editor_assets_folder_path, application_assets_folder_path);
         }
     }
     catch (const std::exception& e) {
@@ -63,7 +63,7 @@ void fe::PathManager::copy_if_new(const std::filesystem::path& from, const std::
             std::filesystem::create_directories(target_path);
         }
         else if (!std::filesystem::exists(target_path) ||
-                 std::filesystem::last_write_time(entry) > std::filesystem::last_write_time(target_path)) {
+                 std::filesystem::last_write_time(entry) < std::filesystem::last_write_time(target_path)) {
             std::filesystem::copy_file(entry, target_path, std::filesystem::copy_options::overwrite_existing);
         }
     }
