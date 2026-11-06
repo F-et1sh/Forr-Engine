@@ -18,7 +18,7 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
     render_passes.reserve(m_RenderPasses.size());
 
     // resource hash --> { resource version, previous state }
-    std::unordered_map<fe::StringHash, Resource> resources_map{};
+    std::unordered_map<fe::string_hash, Resource> resources_map{};
 
     // run Setup() for every added render pass and collect its required resources via fe::RenderGraphBuilder
     this->collectRenderPasses(render_passes, resources_map);
@@ -41,7 +41,7 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
     m_RenderPasses.clear();
     m_RenderPasses = std::move(used_render_passes);
 
-    std::unordered_map<fe::StringHash, ResourceLifetime> resource_lifetimes{};
+    std::unordered_map<fe::string_hash, ResourceLifetime> resource_lifetimes{};
 
     // setup resource lifetimes
     this->calculateResourceLifetimes(resource_lifetimes);
@@ -84,26 +84,26 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
     };
 
     // hashed name --> resource desc
-    std::unordered_map<fe::StringHash, render_graph::CreationCommand> hashed_to_desc_map{};
+    std::unordered_map<fe::string_hash, render_graph::CreationCommand> hashed_to_desc_map{};
     hashed_to_desc_map.reserve(render_passes.size() * 5);
     for (const auto& render_pass : render_passes) {
         // images
 
         for (const auto& create_request : render_pass.image_create_requests) {
-            fe::StringHash hashed_name      = create_request.handle.hashed_name;
+            fe::string_hash hashed_name      = create_request.handle.hashed_name;
             hashed_to_desc_map[hashed_name] = create_request;
         }
 
         // buffers
 
         for (const auto& create_request : render_pass.buffer_create_requests) {
-            fe::StringHash hashed_name      = create_request.handle.hashed_name;
+            fe::string_hash hashed_name      = create_request.handle.hashed_name;
             hashed_to_desc_map[hashed_name] = create_request;
         }
     }
 
     // hashed name --> virtual storage index
-    std::unordered_map<fe::StringHash, uint64_t> hashed_to_virtual_map{};
+    std::unordered_map<fe::string_hash, uint64_t> hashed_to_virtual_map{};
 
     // set virutal indices in creation commands and barriers to translate them into real indices later
     this->setupVirtualIndices(acquire_resource_labmda,
@@ -120,7 +120,7 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
         // images
 
         for (auto& create_request : render_pass.image_create_requests) {
-            fe::StringHash hashed_name          = create_request.handle.hashed_name;
+            fe::string_hash hashed_name          = create_request.handle.hashed_name;
             create_request.handle.storage_index = graphics::TextureHandle::from_packed(hashed_to_virtual_map[hashed_name]); // be careful : hack
             result.image_descs.emplace_back(create_request);
         }
@@ -128,7 +128,7 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
         // buffers
 
         for (auto& create_request : render_pass.buffer_create_requests) {
-            fe::StringHash hashed_name          = create_request.handle.hashed_name;
+            fe::string_hash hashed_name          = create_request.handle.hashed_name;
             create_request.handle.storage_index = graphics::BufferHandle::from_packed(hashed_to_virtual_map[hashed_name]); // be careful : hack
             result.buffer_descs.emplace_back(create_request);
         }
@@ -285,7 +285,7 @@ void fe::RenderGraph::Clear() {
 }
 
 void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&              render_passes_dst,
-                                          std::unordered_map<fe::StringHash, Resource>& resources_map) {
+                                          std::unordered_map<fe::string_hash, Resource>& resources_map) {
     for (auto& render_pass : m_RenderPasses) {
         RenderGraphBuilder builder{ m_ResourceManager, m_Renderer };
         render_pass.setup_function(builder, render_pass.mapped_data);
@@ -518,7 +518,7 @@ void fe::RenderGraph::sortRenderPasses(std::vector<CompiledRenderPass>& render_p
 }
 
 void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>&              render_passes_dst,
-                                               std::unordered_map<fe::StringHash, Resource>& resources_map) {
+                                               std::unordered_map<fe::string_hash, Resource>& resources_map) {
     if (render_passes_dst.empty()) return;
 
     std::vector<bool>                  is_pass_used(render_passes_dst.size(), false);
@@ -570,7 +570,7 @@ void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>& 
 }
 
 void fe::RenderGraph::translateRenderPasses(std::vector<CompiledRenderPass>&              render_passes,
-                                            std::unordered_map<fe::StringHash, Resource>& resources_map_dst,
+                                            std::unordered_map<fe::string_hash, Resource>& resources_map_dst,
                                             std::vector<RenderPass>&                      used_render_passes_dst) {
     for (const CompiledRenderPass& render_pass : render_passes) {
         // find this render pass in 'fe::RenderGraph::m_RenderPasses'
@@ -630,7 +630,7 @@ void fe::RenderGraph::translateRenderPasses(std::vector<CompiledRenderPass>&    
     }
 }
 
-void fe::RenderGraph::calculateResourceLifetimes(std::unordered_map<fe::StringHash, ResourceLifetime>& resource_lifetimes) {
+void fe::RenderGraph::calculateResourceLifetimes(std::unordered_map<fe::string_hash, ResourceLifetime>& resource_lifetimes) {
     resource_lifetimes.reserve(m_RenderPasses.size() * 5);
     for (size_t i = 0; i < m_RenderPasses.size(); i++) {
         const RenderPass& render_pass = m_RenderPasses[i];

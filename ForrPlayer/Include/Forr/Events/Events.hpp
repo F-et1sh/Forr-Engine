@@ -16,7 +16,7 @@
 #include "Forr/Core/attributes.hpp"
 #include "Forr/Input/InputTypes.hpp"
 
-namespace fe::events {
+namespace fe::event {
     struct KeyButton {
         input::KeyCode  key{};
         input::Action   action{};
@@ -56,8 +56,9 @@ namespace fe::events {
 
     struct UnicodeCharTyped {
         input::UnicodeChar code_point{};
+        input::KeyMods  mods{};
     };
 
     // TODO : add more event structures
 
-} // namespace fe::events
+} // namespace fe::event

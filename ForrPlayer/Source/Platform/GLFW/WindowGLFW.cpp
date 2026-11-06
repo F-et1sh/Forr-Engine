@@ -122,10 +122,10 @@ void fe::WindowGLFW::keyCallback(GLFWwindow* window_glfw, int key, int scancode,
     }
 
     EventBus& event_bus = window->m_EventBus.get();
-    event_bus.Enqueue(events::KeyButton{ .key       = translate_key(key),
-                                         .action    = translate_action(action),
-                                         .mods      = translate_mods(mods),
-                                         .scan_code = static_cast<input::ScanCode>(scancode) });
+    event_bus.Enqueue(event::KeyButton{ .key       = translate_key(key),
+                                        .action    = translate_action(action),
+                                        .mods      = translate_mods(mods),
+                                        .scan_code = static_cast<input::ScanCode>(scancode) });
 }
 
 void fe::WindowGLFW::mouseButtonCallback(GLFWwindow* window_glfw, int button, int action, int mods) {
@@ -137,9 +137,9 @@ void fe::WindowGLFW::mouseButtonCallback(GLFWwindow* window_glfw, int button, in
     }
 
     EventBus& event_bus = window->m_EventBus.get();
-    event_bus.Enqueue(events::MouseButton{ .button = translate_mouse_button(button),
-                                           .action = translate_action(action),
-                                           .mods   = translate_mods(mods) });
+    event_bus.Enqueue(event::MouseButton{ .button = translate_mouse_button(button),
+                                          .action = translate_action(action),
+                                          .mods   = translate_mods(mods) });
 }
 
 void fe::WindowGLFW::cursorPosCallback(GLFWwindow* window_glfw, double xpos, double ypos) {
@@ -151,7 +151,7 @@ void fe::WindowGLFW::cursorPosCallback(GLFWwindow* window_glfw, double xpos, dou
     }
 
     EventBus& event_bus = window->m_EventBus.get();
-    event_bus.Enqueue(events::MouseMoved{ .x = xpos, .y = ypos });
+    event_bus.Enqueue(event::MouseMoved{ .x = xpos, .y = ypos });
 }
 
 void fe::WindowGLFW::scrollCallback(GLFWwindow* window_glfw, double xoffset, double yoffset) {
@@ -163,7 +163,7 @@ void fe::WindowGLFW::scrollCallback(GLFWwindow* window_glfw, double xoffset, dou
     }
 
     EventBus& event_bus = window->m_EventBus.get();
-    event_bus.Enqueue(events::MouseScrolled{ .x_offset = xoffset, .y_offset = yoffset });
+    event_bus.Enqueue(event::MouseScrolled{ .x_offset = xoffset, .y_offset = yoffset });
 }
 
 void fe::WindowGLFW::charCallback(GLFWwindow* window_glfw, unsigned int codepoint) {
@@ -174,6 +174,14 @@ void fe::WindowGLFW::charCallback(GLFWwindow* window_glfw, unsigned int codepoin
         return;
     }
 
+    input::KeyMods mods{};
+    if (glfwGetKey(window_glfw, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(window_glfw, GLFW_KEY_RIGHT_SHIFT)) mods |= input::KeyMods::SHIFT;
+    if (glfwGetKey(window_glfw, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(window_glfw, GLFW_KEY_RIGHT_CONTROL)) mods |= input::KeyMods::CONTROL;
+    if (glfwGetKey(window_glfw, GLFW_KEY_LEFT_ALT) || glfwGetKey(window_glfw, GLFW_KEY_RIGHT_ALT)) mods |= input::KeyMods::ALT;
+    if (glfwGetKey(window_glfw, GLFW_KEY_LEFT_SUPER) || glfwGetKey(window_glfw, GLFW_KEY_RIGHT_SUPER)) mods |= input::KeyMods::SUPER;
+    if (glfwGetKey(window_glfw, GLFW_KEY_CAPS_LOCK)) mods |= input::KeyMods::CAPS_LOCK;
+    if (glfwGetKey(window_glfw, GLFW_KEY_NUM_LOCK)) mods |= input::KeyMods::NUM_LOCK;
+
     EventBus& event_bus = window->m_EventBus.get();
-    event_bus.Enqueue(events::UnicodeCharTyped{ .code_point = codepoint });
+    event_bus.Enqueue(event::UnicodeCharTyped{ .code_point = codepoint, .mods = mods });
 }

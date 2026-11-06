@@ -190,7 +190,7 @@ namespace fe {
             return *this;
         }
 
-        RenderGraphBuilder& readImage(fe::StringHash hash, ResourceState to_state) {
+        RenderGraphBuilder& readImage(fe::string_hash hash, ResourceState to_state) {
             switch (to_state) {
                 case ResourceState::RENDER_TARGET:
                 case ResourceState::DEPTH_WRITE:
@@ -208,7 +208,7 @@ namespace fe {
             return *this;
         }
 
-        RenderGraphBuilder& writeImage(fe::StringHash hash, ResourceState to_state) {
+        RenderGraphBuilder& writeImage(fe::string_hash hash, ResourceState to_state) {
             switch (to_state) {
                 case ResourceState::DEPTH_READ:
                 case ResourceState::SHADER_READ_ONLY:
@@ -276,8 +276,8 @@ namespace fe {
 
     template <typename ReturnType, typename... Args>
     struct RenderPassFnTraits<ReturnType (*)(Args...)> {
-        using RenderPassDataT_Setup   = typename ExtractRenderPassDataTypeTraits<RenderGraphBuilder, std::decay_t<Args>...>::RenderPassDataT;
-        using RenderPassDataT_Execute = typename ExtractRenderPassDataTypeTraits<RenderGraphContext, std::decay_t<Args>...>::RenderPassDataT;
+        using RenderPassDataT_Setup   = ExtractRenderPassDataTypeTraits<RenderGraphBuilder, std::decay_t<Args>...>::RenderPassDataT;
+        using RenderPassDataT_Execute = ExtractRenderPassDataTypeTraits<RenderGraphContext, std::decay_t<Args>...>::RenderPassDataT;
 
         static_assert((sizeof...(Args) == 1) || (sizeof...(Args) == 2), "Wrong number of arguments");
     };
@@ -350,11 +350,11 @@ namespace fe {
         // this structure is used to access resources in a map
         // different versions of the same resource cannot be accessed
         struct ResourceHandle {
-            fe::StringHash hashed_name{};
+            fe::string_hash hashed_name{};
             uint32_t       version{};
 
             ResourceHandle() = default;
-            ResourceHandle(fe::StringHash hashed_name, uint32_t version) : hashed_name(hashed_name), version(version) {}
+            ResourceHandle(fe::string_hash hashed_name, uint32_t version) : hashed_name(hashed_name), version(version) {}
 
             bool operator==(const ResourceHandle& other) const noexcept = default;
         };
@@ -423,16 +423,14 @@ namespace fe {
                   buffer_create_requests(std::move(buffer_create_requests)),
                   is_writes_to_screen(is_writes_to_screen) {}
 
-            FORR_CLASS_MOVABLE(CompiledRenderPass)
-            FORR_CLASS_NONCOPYABLE(CompiledRenderPass)
+            FORR_CLASS_MOVABLEONLY(CompiledRenderPass)
         };
 
     public:
         RenderGraph(ResourceManager& resource_manager, IRenderer& renderer) : m_ResourceManager(resource_manager), m_Renderer(renderer) {}
         ~RenderGraph() { this->Clear(); }
 
-        FORR_CLASS_MOVABLE(RenderGraph)
-        FORR_CLASS_NONCOPYABLE(RenderGraph)
+        FORR_CLASS_MOVABLEONLY(RenderGraph)
 
         template <RenderPassConcept RenderPass>
         FORR_NODISCARD RenderPassHandle<RenderPass> AddPass(const fe::fixed_string<32>& name) {
@@ -481,30 +479,30 @@ namespace fe {
 
     private:
         // run Setup() for every added render pass and collect its required resources via fe::RenderGraphBuilder
-        void collectRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::StringHash, Resource>& resources_map);
+        void collectRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::string_hash, Resource>& resources_map);
 
         // run Kahn's algorithm
         void sortRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst);
 
         // run culling : remove unused render passes
-        void removeUnusedRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::StringHash, Resource>& resources_map);
+        void removeUnusedRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::string_hash, Resource>& resources_map);
 
         // translate 'fe::RenderGraph::CompiledRenderPass' to 'fe::RenderPass' and setup 'fe::RenderPass::compiled_image_barriers' and 'fe::RenderPass::compiled_buffer_barriers'
         void translateRenderPasses(std::vector<CompiledRenderPass>&              render_passes,
-                                   std::unordered_map<fe::StringHash, Resource>& resources_map_dst,
+                                   std::unordered_map<fe::string_hash, Resource>& resources_map_dst,
                                    std::vector<RenderPass>&                      used_render_passes_dst);
 
         // setup resource lifetimes
-        void calculateResourceLifetimes(std::unordered_map<fe::StringHash, ResourceLifetime>& resource_lifetimes);
+        void calculateResourceLifetimes(std::unordered_map<fe::string_hash, ResourceLifetime>& resource_lifetimes);
 
         // set virutal indices in barriers
         // and prepare virtual indices for craetion commands to translate them into real indices later
         template <typename AcquireFn, typename ReleaseFn>
         void setupVirtualIndices(AcquireFn&&                                                        acquire_func,
                                  ReleaseFn&&                                                        release_func,
-                                 std::unordered_map<fe::StringHash, ResourceLifetime>&              resource_lifetimes,
-                                 std::unordered_map<fe::StringHash, render_graph::CreationCommand>& hashed_to_desc_map,
-                                 std::unordered_map<fe::StringHash, size_t>&                        hashed_to_virtual_map_dst) {
+                                 std::unordered_map<fe::string_hash, ResourceLifetime>&              resource_lifetimes,
+                                 std::unordered_map<fe::string_hash, render_graph::CreationCommand>& hashed_to_desc_map,
+                                 std::unordered_map<fe::string_hash, size_t>&                        hashed_to_virtual_map_dst) {
             for (size_t i = 0; i < m_RenderPasses.size(); i++) {
                 RenderPass& render_pass = m_RenderPasses[i];
 
@@ -550,7 +548,7 @@ namespace fe {
 template <>
 struct std::hash<fe::RenderGraph::ResourceHandle> {
     std::size_t operator()(const fe::RenderGraph::ResourceHandle& handle) const {
-        std::size_t h1 = hash<fe::StringHash>()(handle.hashed_name);
+        std::size_t h1 = hash<fe::string_hash>()(handle.hashed_name);
         std::size_t h2 = hash<uint32_t>()(handle.version);
         return h1 ^ (h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2));
     }

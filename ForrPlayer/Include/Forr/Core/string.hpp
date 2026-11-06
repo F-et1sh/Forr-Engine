@@ -23,13 +23,13 @@
 #include "custom_allocators.hpp"
 
 namespace fe {
-    using StringHash                       = uint64_t; // TODO : I don't like this name
-    static constexpr StringHash HASH_START = 14695981039346656037ULL;
-    static constexpr StringHash HASH_SHIFT = 1099511628211ULL;
+    using string_hash                       = uint64_t;
+    static constexpr string_hash HASH_START = 14695981039346656037ULL;
+    static constexpr string_hash HASH_SHIFT = 1099511628211ULL;
 
     FORR_NODISCARD constexpr std::uint64_t hash_codepoint(std::uint64_t hash, std::uint32_t code_point) noexcept {
-        static constexpr StringHash BITS_IN_BYTE = 8;
-        static constexpr StringHash ONE_BYTE     = 0xFF;
+        static constexpr string_hash BITS_IN_BYTE = 8;
+        static constexpr string_hash ONE_BYTE     = 0xFF;
 
         for (size_t i = 0; i < 4; i++) {
             hash ^= (code_point & ONE_BYTE);
@@ -115,12 +115,12 @@ namespace fe {
     //   1b         1b          2b           4b          2b
     //
     template <class Element = char>
-    FORR_NODISCARD constexpr StringHash make_hash(std::basic_string_view<Element> str) noexcept {
+    FORR_NODISCARD constexpr string_hash make_hash(std::basic_string_view<Element> str) noexcept {
         return fe::make_hash(std::basic_string_view<Element>(str));
     }
 
     template <class Element = char>
-    FORR_NODISCARD constexpr StringHash make_hash(const Element* str) noexcept {
+    FORR_NODISCARD constexpr string_hash make_hash(const Element* str) noexcept {
         return fe::make_hash(std::basic_string_view<Element>(str));
     }
 
@@ -144,7 +144,7 @@ namespace fe {
 
         FORR_NODISCARD operator StringViewT() const noexcept { return StringViewT{ m_string.data(), size() }; }
         FORR_NODISCARD operator StringT() const noexcept { return m_string.data(); }
-        FORR_NODISCARD operator fe::StringHash() const noexcept {
+        FORR_NODISCARD operator fe::string_hash() const noexcept {
             return m_hash;
         }
 
@@ -158,7 +158,7 @@ namespace fe {
         }
 
         FORR_NODISCARD const CharT* data() const noexcept { return m_string.data(); }
-        FORR_NODISCARD fe::StringHash get_hash() const noexcept { return m_hash; }
+        FORR_NODISCARD fe::string_hash get_hash() const noexcept { return m_hash; }
 
         // this compares only hash
         template <typename T2, bool IsStringView2>
@@ -188,7 +188,7 @@ namespace fe {
 
     private:
         std::conditional_t<IsStringView, StringViewT, StringT> m_string{};
-        fe::StringHash                                         m_hash{};
+        fe::string_hash                                         m_hash{};
 
         friend class basic_hashed_string;
     };
@@ -308,7 +308,7 @@ namespace fe {
             : m_fixed_string(str), m_hash(fe::make_hash<Element>(str)) {}
 
         FORR_NODISCARD constexpr                operator StringViewT() const noexcept { return { m_fixed_string.c_str(), size() }; }
-        FORR_NODISCARD constexpr fe::StringHash get_hash() const noexcept { return m_hash; }
+        FORR_NODISCARD constexpr fe::string_hash get_hash() const noexcept { return m_hash; }
 
         FORR_NODISCARD constexpr const CharT* c_str() const noexcept { return m_fixed_string.c_str(); }
         FORR_NODISCARD constexpr std::size_t  size() const noexcept { return m_fixed_string.size(); }
@@ -326,7 +326,7 @@ namespace fe {
 
     private:
         fe::basic_fixed_string<N, Element, IsStringView> m_fixed_string{};
-        fe::StringHash                                   m_hash{};
+        fe::string_hash                                   m_hash{};
     };
 
     template <std::size_t N, class Element, bool IsStringView = false>
@@ -360,7 +360,7 @@ namespace fe {
     class string_pool {
     public:
         std::string_view get_or_add(std::string_view str) {
-            fe::StringHash hash = fe::make_hash(str);
+            fe::string_hash hash = fe::make_hash(str);
 
             auto it = m_hash_view_table.find(hash);
             if (it != m_hash_view_table.end()) {
@@ -380,7 +380,7 @@ namespace fe {
             return allocated_view;
         }
 
-        std::string_view find(fe::StringHash hash) const {
+        std::string_view find(fe::string_hash hash) const {
             auto it = m_hash_view_table.find(hash);
             return it != m_hash_view_table.end() ? it->second : std::string_view{};
         }
@@ -391,7 +391,7 @@ namespace fe {
         }
 
     private:
-        std::unordered_map<fe::StringHash, std::string_view> m_hash_view_table{};
+        std::unordered_map<fe::string_hash, std::string_view> m_hash_view_table{};
         fe::Arena                                            m_arena{ 1024 * 4 };
     };
 

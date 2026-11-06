@@ -74,22 +74,22 @@ namespace fe::render_graph {
     template <ResourceHandleSeparator IDType>
     struct ResourceHandle {
         // hashed name - used for user interface ( fe::make_hash("ShadowMap") )
-        fe::StringHash hashed_name{};
+        fe::string_hash hashed_name{};
 
         // index in GPU resource manager's strage - used when render passes are already compiled
         IDType storage_index{};
 
         ResourceHandle() = default;
 
-        ResourceHandle(fe::StringHash hashed_name)
+        ResourceHandle(fe::string_hash hashed_name)
             requires std::is_same_v<IDType, uint64_t>
             : hashed_name(hashed_name), storage_index(std::numeric_limits<uint64_t>::max()) {}
 
-        ResourceHandle(fe::StringHash hashed_name)
+        ResourceHandle(fe::string_hash hashed_name)
             requires(!std::is_same_v<IDType, uint64_t>)
             : hashed_name(hashed_name), storage_index{} {}
 
-        explicit ResourceHandle(fe::StringHash hashed_name, IDType storage_index) : hashed_name(hashed_name), storage_index(storage_index) {}
+        explicit ResourceHandle(fe::string_hash hashed_name, IDType storage_index) : hashed_name(hashed_name), storage_index(storage_index) {}
 
         bool operator==(const ResourceHandle& other) const noexcept { return storage_index == other.storage_index; }
     };
@@ -132,7 +132,7 @@ namespace fe::render_graph {
         ResourceState          new_state{};
 
         ResourceBarrier() = default;
-        ResourceBarrier(fe::StringHash hashed_name,
+        ResourceBarrier(fe::string_hash hashed_name,
                         ResourceState  old_state,
                         ResourceState  new_state)
             : handle(ResourceHandle<IDType>{ hashed_name }), old_state(old_state), new_state(new_state) {}

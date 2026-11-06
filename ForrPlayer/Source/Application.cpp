@@ -31,11 +31,9 @@ fe::Application::Application(const ApplicationDesc& desc) {
         PATH.init("", true);
 
     m_MainEventBus = std::make_unique<EventBus>();
-    m_MainEventBus->Subscribe([&](const events::MouseMoved& mouse_moved) {
-        m_Time = mouse_moved.x / 1000.0;
-    });
+    m_InputSystem  = std::make_unique<InputSystem>(*m_MainEventBus);
 
-    m_InputSystem = std::make_unique<InputSystem>(*m_MainEventBus);
+    m_InputSystem->AddAction("TurnAround", KeyboardAction{ .mods = input::KeyMods::NONE, .code = input::KeyCode::R });
 
     this->InitializePlatformSystem(desc);
     this->InitializeResourceManager(desc);
@@ -55,6 +53,10 @@ void fe::Application::Run() {
         m_MainEventBus->Clear();
 
         m_Renderer->BeginFrame();
+
+        if (m_InputSystem->IsActionPressed(fe::make_hash("TurnAround"))) {
+            m_Time += 0.01f;
+        }
 
         auto& transform_component     = m_Registry.get<TransformComponent>(m_Entities[0]);
         transform_component.transform = glm::mat4(1.0f);

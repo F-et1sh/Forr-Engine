@@ -9,6 +9,8 @@
 ### Done
     'Slang Reflection API vs Unicode' fixed
     string.hpp reworked
+    'fe::StringHash' --> 'fe::string_hash'
+    'fe::events' --> 'fe::event'. InputSystem's minimal version is done
 
 ### Problem
     -
