@@ -73,12 +73,20 @@ namespace fe {
         using owned_type = std::wstring; // the type without 'view'
     };
 
+    template<typename T>
+    // std::string and std::string_view
+    concept string_like = std::is_same_v<T, std::string> || std::is_same_v<T, std::string_view>;
+
+    template<typename T>
+    // std::wstring and std::wstring_view
+    concept wstring_like = std::is_same_v<T, std::wstring> || std::is_same_v<T, std::wstring_view>;
+
     template <typename T>
-    concept storable_string = std::is_same_v<T, std::string> || std::is_same_v<T, std::string_view> ||
-                              std::is_same_v<T, std::wstring> || std::is_same_v<T, std::wstring_view>;
+    // std::string, std::string_view, std::wstring and std::wstring_view
+    concept all_strings = string_like<T> || wstring_like<T>;
 
     // this is like std::string ( or std::string_view, std::wstring, std::wstring_view ) but it uses hash to compare
-    template <storable_string T>
+    template <all_strings T>
     class hashed_string_base {
     private:
         using traits = string_traits<T>;
@@ -156,7 +164,7 @@ namespace fe {
     using hashed_wstring      = hashed_string_base<std::wstring>;
     using hashed_wstring_view = hashed_string_base<std::wstring_view>;
 
-    template <std::size_t N, storable_string T>
+    template <std::size_t N, all_strings T>
         requires std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring>
     class fixed_string_base {
     private:
@@ -174,7 +182,7 @@ namespace fe {
 
         FORR_CLASS_MOVABLE(fixed_string_base)
         FORR_CLASS_COPYABLE(fixed_string_base)
-        
+
         constexpr fixed_string_base(const char_type (&str)[N]) {
             std::copy_n(str, N, m_data.begin());
         }
@@ -189,7 +197,7 @@ namespace fe {
             m_data[copy_size] = '\0';
         }
 
-        FORR_NODISCARD constexpr operator view_type() const noexcept{
+        FORR_NODISCARD constexpr operator view_type() const noexcept {
             return { m_data.data(), size() };
         }
 
@@ -207,7 +215,7 @@ namespace fe {
         std::array<char_type, N> m_data{};
     };
 
-    template <std::size_t N, storable_string T>
+    template <std::size_t N, all_strings T>
         requires std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring>
     fixed_string_base(const char (&)[N], T) -> fixed_string_base<N, T>;
 
@@ -217,7 +225,7 @@ namespace fe {
     template <std::size_t N>
     using fixed_wstring = fixed_string_base<N, std::wstring>;
 
-    template <std::size_t N, storable_string T>
+    template <std::size_t N, all_strings T>
         requires std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring>
     class fixed_hashed_string_base { // mostly for GUI
     private:
@@ -261,7 +269,7 @@ namespace fe {
         fe::StringHash              m_hash{};
     };
 
-    template <std::size_t N, storable_string T>
+    template <std::size_t N, all_strings T>
         requires std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring>
     fixed_hashed_string_base(const char (&)[N], T) -> fixed_hashed_string_base<N, T>;
 
@@ -273,16 +281,49 @@ namespace fe {
 
 } // namespace fe
 
-template <fe::storable_string T>
-struct std::hash<fe::hashed_string_base<T>> {
-    std::size_t operator()(const fe::hashed_string_base<T>& handle) const {
-        return handle.get_hash();
-    }
-};
+namespace std {
+    template <fe::all_strings T>
+    struct std::hash<fe::hashed_string_base<T>> {
+        using is_transparent = void;
 
-template <size_t N, fe::storable_string T>
-struct std::hash<fe::fixed_hashed_string_base<N, T>> {
-    std::size_t operator()(const fe::fixed_hashed_string_base<N, T>& handle) const {
-        return handle.get_hash();
-    }
-};
+        std::size_t operator()(const fe::hashed_string_base<T>& handle) const noexcept {
+            return handle.get_hash();
+        }
+
+        template <fe::all_strings U>
+        std::size_t operator()(const fe::hashed_string_base<U>& handle) const noexcept {
+            return handle.get_hash();
+        }
+    };
+
+    template <size_t N, fe::all_strings T>
+    struct std::hash<fe::fixed_hashed_string_base<N, T>> {
+        using is_transparent = void;
+
+        std::size_t operator()(const fe::fixed_hashed_string_base<N, T>& handle) const noexcept {
+            return handle.get_hash();
+        }
+
+        template <size_t N2, fe::all_strings T2>
+        std::size_t operator()(const fe::fixed_hashed_string_base<N2, T2>& handle) const noexcept {
+            return handle.get_hash();
+        }
+    };
+} // namespace std
+
+namespace fe {
+    using hashed_string_hasher      = std::hash<fe::hashed_string>;
+    using hashed_string_view_hasher = std::hash<fe::hashed_string_view>;
+
+    using hashed_wstring_hasher      = std::hash<fe::hashed_wstring>;
+    using hashed_wstring_view_hasher = std::hash<fe::hashed_wstring_view>;
+
+    struct transparent_equal {
+        using is_transparent = void;
+
+        template <typename T1, typename T2>
+        bool operator()(const T1& lhs, const T2& rhs) const noexcept {
+            return lhs == rhs;
+        }
+    };
+} // namespace fe

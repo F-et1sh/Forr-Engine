@@ -18,4 +18,5 @@ fe::InputSystem::InputSystem(EventBus& event_bus) : m_EventBus(event_bus) {
 }
 
 void fe::InputSystem::keyboardCallback(const events::KeyButton& key_button) {
+
 }

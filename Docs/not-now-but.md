@@ -1,5 +1,10 @@
 # Forr-Engine Not now, but :
 
+# Added 06.11.2026
+- Farrakh --> Farrah Fattah
+
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
+
 # Added 16.10.2026
 - rewrite RenderGraph : remove IRenderer& and ResourceManager& from RenderGraphBuilder and 
   use attachments instead of name hashes
@@ -53,6 +58,7 @@
 <hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
 
 # Added 20.08.2026
+### DONE 06.11.2026 ( it was done much earlier, but I'm changing its status only this day )
 - provide user-custom generics specialization for 'fe::SlangParser'
 
 <hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">

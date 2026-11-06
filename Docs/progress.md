@@ -2,11 +2,12 @@
 
 ## 06.11.2026
 ### Goal
+    completely remove wchar_t from the project and migrate to UTF-8
     provide InputSystem
     provide scan codes logic
 
 ### Done
-    -
+    'Slang Reflection API vs Unicode' fixed
 
 ### Problem
     -

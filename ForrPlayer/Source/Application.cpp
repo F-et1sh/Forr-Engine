@@ -31,8 +31,11 @@ fe::Application::Application(const ApplicationDesc& desc) {
         PATH.init("", true);
 
     m_MainEventBus = std::make_unique<EventBus>();
+    m_MainEventBus->Subscribe([&](const events::MouseMoved& mouse_moved) {
+        m_Time = mouse_moved.x / 1000.0f;
+        });
 
-    m_InputSystem = std::make_unique<InputSystem>(*m_MainEventBus);
+    m_InputSystem  = std::make_unique<InputSystem>(*m_MainEventBus);
 
     this->InitializePlatformSystem(desc);
     this->InitializeResourceManager(desc);
@@ -45,6 +48,8 @@ fe::Application::Application(const ApplicationDesc& desc) {
 void fe::Application::Run() {
     while (m_PrimaryWindow->IsOpen()) {
         m_PrimaryWindow->PollEvents();
+
+        m_InputSystem->Clear();
 
         m_MainEventBus->DispatchAll();
         m_MainEventBus->Clear();

@@ -46,7 +46,7 @@ fe::SlangParser::SlangParser(std::span<const char*> full_search_paths) {
     session_desc.compilerOptionEntryCount = 0;
 
     if (full_search_paths.empty()) {
-        std::array<const char*, 1> paths{ PATH.getShadersPath().generic_string().c_str() };
+        std::array<const char*, 1> paths{ reinterpret_cast<const char*>(PATH.getShadersPath().generic_u8string().c_str()) };
 
         session_desc.searchPathCount = paths.size();
         session_desc.searchPaths     = paths.data();
@@ -92,8 +92,8 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
         blob.attach(blob_raw);
 
         Slang::ComPtr<slang::IBlob> load_diagnostics{};
-        slang::IModule*             loaded_module_raw = m_Session->loadModuleFromIRBlob(shader_file_data.full_path.generic_string().c_str(),
-                                                                                        shader_file_data.full_path.generic_string().c_str(),
+        slang::IModule*             loaded_module_raw = m_Session->loadModuleFromIRBlob(reinterpret_cast<const char*>(shader_file_data.full_path.generic_u8string().c_str()),
+                                                                                        reinterpret_cast<const char*>(shader_file_data.full_path.generic_u8string().c_str()),
                                                                                         blob_raw,
                                                                                         load_diagnostics.writeRef());
 
@@ -372,7 +372,7 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
     Slang::ComPtr<slang::IModule> slang_module{};
 
     Slang::ComPtr<slang::IBlob> load_diagnostics{};
-    slang_module = m_Session->loadModule(resource_full_path.generic_string().c_str(), load_diagnostics.writeRef());
+    slang_module = m_Session->loadModule(reinterpret_cast<const char*>(resource_full_path.generic_u8string().c_str()), load_diagnostics.writeRef());
     if (!slang_module) {
         fe::logging::error("Slang -> Unified. Failed to load a slang module\n%s",
                            (const char*) load_diagnostics->getBufferPointer());

@@ -24,7 +24,7 @@ namespace fe {
 
         void init(std::string_view executable_path, bool is_editor);
 
-        static PathManager& Instance() {
+        static PathManager& Instance()noexcept {
             static PathManager path_manager;
             return path_manager;
         }
@@ -67,9 +67,9 @@ namespace fe {
 
         //
 
-        FORR_STATIC FORR_NODISCARD FORR_CONSTEVAL std::wstring_view getMetadataExtension() { return L".forr_meta"; }
-        FORR_STATIC FORR_NODISCARD FORR_CONSTEVAL std::wstring_view getMaterialExtension() { return L".forr_material"; }
-        FORR_STATIC FORR_NODISCARD FORR_CONSTEVAL std::wstring_view getShaderExtension() { return L".slang"; }
+        FORR_STATIC FORR_NODISCARD FORR_CONSTEVAL std::string_view getMetadataExtension() { return ".forr_meta"; }
+        FORR_STATIC FORR_NODISCARD FORR_CONSTEVAL std::string_view getMaterialExtension() { return ".forr_material"; }
+        FORR_STATIC FORR_NODISCARD FORR_CONSTEVAL std::string_view getShaderExtension() { return ".slang"; }
 
     private:
         PathManager()  = default;

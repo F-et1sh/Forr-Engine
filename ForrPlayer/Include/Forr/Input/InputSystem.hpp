@@ -24,10 +24,9 @@ namespace fe {
     public:
         struct ActionState {
             float value{};
-
-            bool is_pressed{};
-            bool just_pressed{};  // pressed in this frame
-            bool just_released{}; // released in this frame
+            bool  is_pressed{};
+            bool  just_pressed{};  // pressed in this frame
+            bool  just_released{}; // released in this frame
         };
 
         struct KeyboardAction {
@@ -61,6 +60,40 @@ namespace fe {
         InputSystem(EventBus& event_bus);
         ~InputSystem() = default;
 
+        // @brief call this at the beggining or at the end of the frame in the main loop
+        //
+        // it resets 'just_pressed' and 'just_released' actions
+        void Clear() {
+            for (auto& [name, state] : m_Actions) {
+                state.just_pressed  = false;
+                state.just_released = false;
+            }
+        }
+
+        template <fe::wstring_like T>
+        bool IsActionPressed(fe::hashed_string_base<T> action) const {
+            auto it = m_Actions.find(action);
+            return it != m_Actions.end() ? it->second.is_pressed : false;
+        }
+
+        template <fe::wstring_like T>
+        bool IsActionJustPressed(fe::hashed_string_base<T> action) const {
+            auto it = m_Actions.find(action);
+            return it != m_Actions.end() ? it->second.just_pressed : false;
+        }
+
+        template <fe::wstring_like T>
+        bool IsActionJustReleased(fe::hashed_string_base<T> action) const {
+            auto it = m_Actions.find(action);
+            return it != m_Actions.end() ? it->second.just_released : false;
+        }
+
+        template <fe::wstring_like T>
+        float GetActionValue(fe::hashed_string_base<T> action) const {
+            auto it = m_Actions.find(action);
+            return it != m_Actions.end() ? it->second.value : 0.0f;
+        }
+
     private:
         void keyboardCallback(const events::KeyButton& key_button);
 
@@ -68,6 +101,10 @@ namespace fe {
         std::reference_wrapper<EventBus> m_EventBus;
 
         // action name --> is action active
-        std::unordered_map<fe::hashed_wstring, ActionState> m_Actions{};
+        std::unordered_map<fe::hashed_wstring,
+                           ActionState,
+                           fe::hashed_wstring_hasher,
+                           fe::transparent_equal>
+            m_Actions{};
     };
 } // namespace fe
