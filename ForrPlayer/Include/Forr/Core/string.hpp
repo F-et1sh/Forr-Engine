@@ -16,20 +16,107 @@
 #include <string_view>
 #include <array>
 #include <algorithm>
+#include <unordered_map>
+#include <span>
 
 #include "attributes.hpp"
+#include "custom_allocators.hpp"
 
 namespace fe {
-    using StringHash = uint64_t; // TODO : I don't like this name
+    using StringHash                       = uint64_t; // TODO : I don't like this name
+    static constexpr StringHash HASH_START = 14695981039346656037ULL;
+    static constexpr StringHash HASH_SHIFT = 1099511628211ULL;
 
-    template <class Element>
-    FORR_NODISCARD constexpr StringHash make_hash(std::basic_string_view<Element> str) noexcept {
-        std::uint64_t hash = 14695981039346656037ULL;
-        for (const Element c : str) {
-            hash ^= static_cast<std::uint64_t>(static_cast<std::make_unsigned_t<Element>>(c));
-            hash *= 1099511628211ULL;
+    FORR_NODISCARD constexpr std::uint64_t hash_codepoint(std::uint64_t hash, std::uint32_t code_point) noexcept {
+        static constexpr StringHash BITS_IN_BYTE = 8;
+        static constexpr StringHash ONE_BYTE     = 0xFF;
+
+        for (size_t i = 0; i < 4; i++) {
+            hash ^= (code_point & ONE_BYTE);
+            hash *= HASH_SHIFT;
+            code_point >>= BITS_IN_BYTE;
+        }
+
+        return hash;
+    }
+
+    FORR_NODISCARD constexpr std::uint64_t make_hash(std::u32string_view str) noexcept {
+        std::uint64_t hash = HASH_START;
+        for (std::uint32_t code_point : str) {
+            hash = hash_codepoint(hash, code_point);
         }
         return hash;
+    }
+
+    FORR_NODISCARD constexpr std::uint64_t make_hash(std::u16string_view str) noexcept {
+        std::uint64_t hash = HASH_START;
+        for (size_t i = 0; i < str.size(); i++) {
+            std::uint32_t code_point = str[i];
+
+            // read the next element, if there is a symbol, which requires more bytes
+            if (code_point >= 0xD800 &&
+                code_point <= 0xDBFF &&
+                i < str.size() - 1) {
+
+                std::uint32_t low = str[i++];
+                code_point        = 0x10000 + ((code_point - 0xD800) << 10) + (low - 0xDC00);
+            }
+
+            hash = hash_codepoint(hash, code_point);
+        }
+        return hash;
+    }
+
+    FORR_NODISCARD constexpr std::uint64_t make_hash(std::string_view str) noexcept {
+        std::uint64_t hash = HASH_START;
+        std::uint32_t codepoint{};
+        std::uint32_t state{};
+
+        for (const char c : str) {
+            std::uint8_t byte = static_cast<std::uint8_t>(c);
+
+            if (byte < 0x80) { // ASCII
+                hash  = hash_codepoint(hash, byte);
+                state = 0;
+            }
+            else if ((byte & 0xC0) == 0x80) {
+                codepoint = (byte & 0x3F) | (codepoint << 6);
+                if (state-- == 0) {
+                    hash = hash_codepoint(hash, codepoint);
+                }
+            }
+            else {
+                if ((byte & 0xE0) == 0xC0) { // 2 bytes
+                    codepoint = byte & 0x1F;
+                    state     = 1;
+                }
+                else if ((byte & 0xF0) == 0xE0) { // 3 bytes
+                    codepoint = byte & 0x0F;
+                    state     = 2;
+                }
+                else if ((byte & 0xF8) == 0xF0) { // 4 bytes
+                    codepoint = byte & 0x07;
+                    state     = 3;
+                }
+            }
+        }
+        return hash;
+    }
+
+    // @brief create a hash from string
+    // @tparam Element char, char8_t, char16_t, char32_t or wchar_t
+    //
+    // @details the function guaratees that char, char8_t, char16_t, char32_t
+    //          and wchar_t will result the same hash, if there are the same symbols in them
+    //
+    // "test" == u8"test" == u16"test" == u32"test" == L"test"
+    //   ^          ^           ^            ^            ^
+    //  char      char8_t    char16_t     char32_t     wchar_t
+    //   1b         1b          2b           4b          2b
+    //
+    template <class Element = char>
+    FORR_NODISCARD constexpr StringHash make_hash(std::basic_string_view<Element> str) noexcept {
+        return fe::make_hash(std::basic_string_view<Element>(str));
     }
 
     template <class Element = char>
@@ -269,6 +356,44 @@ namespace fe {
     using fixed_hashed_wstring = basic_fixed_hashed_string<N, wchar_t, false>;
     template <std::size_t N>
     using fixed_hashed_wstring_view = basic_fixed_hashed_string<N, wchar_t, true>;
+
+    class string_pool {
+    public:
+        std::string_view get_or_add(std::string_view str) {
+            fe::StringHash hash = fe::make_hash(str);
+
+            auto it = m_hash_view_table.find(hash);
+            if (it != m_hash_view_table.end()) {
+                return it->second;
+            }
+
+            char* arena_storage = reinterpret_cast<char*>(m_arena.allocate(str.size() + 1)); // null-terminator
+            if (arena_storage == nullptr) {
+                return std::string_view{};
+            }
+            std::memcpy(arena_storage, str.data(), str.size());
+            arena_storage[str.size()] = '\0';
+
+            std::string_view allocated_view(arena_storage, str.size());
+            m_hash_view_table[hash] = allocated_view;
+
+            return allocated_view;
+        }
+
+        std::string_view find(fe::StringHash hash) const {
+            auto it = m_hash_view_table.find(hash);
+            return it != m_hash_view_table.end() ? it->second : std::string_view{};
+        }
+
+    private:
+        void increse_arena_capacity() {
+            
+        }
+
+    private:
+        std::unordered_map<fe::StringHash, std::string_view> m_hash_view_table{};
+        fe::Arena                                            m_arena{ 1024 * 4 };
+    };
 
 } // namespace fe
 

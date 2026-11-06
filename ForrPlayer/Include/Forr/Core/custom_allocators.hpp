@@ -23,7 +23,7 @@ namespace fe {
     static constexpr size_t align_up(size_t alignment, size_t offset) noexcept {
         return (offset + alignment - 1) & ~(alignment - 1);
     }
-    
+
     template <typename T>
     static constexpr uintptr_t get_aligned_offset(const uint8_t* buffer, size_t offset) noexcept {
         uintptr_t current_address = reinterpret_cast<uintptr_t>(buffer) + offset;
@@ -97,9 +97,10 @@ namespace fe {
 
         FORR_NODISCARD constexpr size_t get_used_memory() const noexcept { return m_offset; }
         FORR_NODISCARD constexpr size_t get_available_memory() const noexcept { return m_capacity - m_offset; }
+        FORR_NODISCARD constexpr size_t size() const noexcept { return m_capacity; }
 
         FORR_NODISCARD constexpr ArenaMarker save() const noexcept {
-            return { m_offset };
+            return ArenaMarker{ m_offset };
         }
 
         constexpr void restore(ArenaMarker marker) {
