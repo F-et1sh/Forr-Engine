@@ -131,7 +131,7 @@ namespace fe {
             auto transform_view = context.render_registry.view<LocalToWorldComponent>();
             transform_view.each([&pass_data, i = 0](const LocalToWorldComponent& local_to_world_component) mutable {
                 pass_data.data[i] = local_to_world_component.matrix;
-                i                 = (i + 1) % 3;
+                i                 = (i + 1) % 2;
             });
 
             context.BindPipeline(pass_data.pipeline_handle);
@@ -141,7 +141,7 @@ namespace fe {
 
             context.WriteBuffer(pass_data.model_matrices_parameter_id, pass_data.data);
 
-            auto  light_entity    = context.render_registry.view<LightComponent>().back();
+            auto        light_entity    = context.render_registry.view<LightComponent>().back();
             const auto& light_component = context.render_registry.get<LightComponent>(light_entity);
 
             context.WriteBuffer(pass_data.light_projection_parameter, std::as_bytes(std::span{ &light_component.transform, 1 }));
@@ -149,7 +149,7 @@ namespace fe {
             auto models_view = context.render_registry.view<ModelComponent>();
             models_view.each([&context, i = 0](const ModelComponent& model_component) mutable {
                 context.DrawModel(model_component.model_ptr, i);
-                i = (i + 1) % 3;
+                i = (i + 1) % 2;
             });
         }
     };
@@ -317,6 +317,8 @@ namespace fe {
 
             resource::Material pbr_material{};
             pbr_material.layout_key = { .shader_file_data = shader_file_data_ptr, .structure_layout_storage_index = 0 };
+            pbr_material.pipeline_flags_override.cull_enable = false;
+            pbr_material.pipeline_flags_override.cull_mode = CullMode::NONE;
 
             fe::pointer<resource::Material> pbr_material_ptr = builder.resource_manager.CreateResource(std::move(pbr_material));
 
@@ -403,7 +405,7 @@ namespace fe {
             auto transform_view = context.render_registry.view<LocalToWorldComponent>();
             transform_view.each([&pass_data, i = 0](const LocalToWorldComponent& local_to_world_component) mutable {
                 pass_data.data[i] = local_to_world_component.matrix;
-                i                 = (i + 1) % 3;
+                i                 = (i + 1) % 2;
             });
 
             context.BindPipeline(pass_data.pipeline_id);
@@ -417,7 +419,7 @@ namespace fe {
             context.WriteBuffer(pass_data.materials_parameter_id, pass_data.materials_data);
             context.WriteBuffer(pass_data.global_data_parameter_id, pass_data.global_data_as_bytes);
 
-            auto  light_entity    = context.render_registry.view<LightComponent>().back();
+            auto        light_entity    = context.render_registry.view<LightComponent>().back();
             const auto& light_component = context.render_registry.get<LightComponent>(light_entity);
 
             context.WriteBuffer(pass_data.light_projection_parameter, std::as_bytes(std::span{ &light_component.transform, 1 }));
@@ -425,7 +427,7 @@ namespace fe {
             auto models_view = context.render_registry.view<ModelComponent>();
             models_view.each([&context, i = 0](const ModelComponent& model_component) mutable {
                 context.DrawModel(model_component.model_ptr, i);
-                i = (i + 1) % 3;
+                i = (i + 1) % 2;
             });
         }
 

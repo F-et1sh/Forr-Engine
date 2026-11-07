@@ -39,6 +39,9 @@ fe::Application::Application(const ApplicationDesc& desc) {
     m_InputSystem->AddAction("S", KeyboardAction{ .mods = input::KeyMods::NONE, .code = input::KeyCode::S });
     m_InputSystem->AddAction("A", KeyboardAction{ .mods = input::KeyMods::NONE, .code = input::KeyCode::A });
     m_InputSystem->AddAction("D", KeyboardAction{ .mods = input::KeyMods::NONE, .code = input::KeyCode::D });
+    m_InputSystem->AddAction("Z", KeyboardAction{ .mods = input::KeyMods::NONE, .code = input::KeyCode::Z });
+    m_InputSystem->AddAction("X", KeyboardAction{ .mods = input::KeyMods::NONE, .code = input::KeyCode::X });
+    m_InputSystem->AddAction("C", KeyboardAction{ .mods = input::KeyMods::NONE, .code = input::KeyCode::C });
 
     this->InitializePlatformSystem(desc);
     this->InitializeResourceManager(desc);
@@ -61,7 +64,7 @@ void fe::Application::Run() {
 
         m_Renderer->BeginFrame();
 
-        m_Time += (m_InputSystem->GetActionValue(fe::make_hash("TurnAround+")) - m_InputSystem->GetActionValue(fe::make_hash("TurnAround-"))) * 0.01f;
+        m_Time += 0.5f;
 
         //m_Registry.patch<TransformComponent>(m_Entities[0], [&](TransformComponent& transform_component) {
         //    transform_component.position.x = (m_InputSystem->GetActionValue(fe::make_hash("W")) - m_InputSystem->GetActionValue(fe::make_hash("S"))) * 0.01f;
@@ -70,13 +73,19 @@ void fe::Application::Run() {
         //    transform_component.rotation.z = m_Time;
         //});
 
-        auto& transform_component = m_Registry.get<TransformComponent>(m_Entities[2]);
-        transform_component.position.x += (m_InputSystem->GetActionValue(fe::make_hash("A")) - m_InputSystem->GetActionValue(fe::make_hash("D"))) * 0.01f;
-        transform_component.position.z += (m_InputSystem->GetActionValue(fe::make_hash("W")) - m_InputSystem->GetActionValue(fe::make_hash("S"))) * 0.01f;
+        //auto& transform_component = m_Registry.get<TransformComponent>(m_Entities[2]);
+        m_Registry.patch<TransformComponent>(m_Entities[1], [&](TransformComponent& transform_component) {
+            transform_component.position.x += (m_InputSystem->GetActionValue(fe::make_hash("A")) - m_InputSystem->GetActionValue(fe::make_hash("D"))) * 0.01f;
+            transform_component.position.z += (m_InputSystem->GetActionValue(fe::make_hash("W")) - m_InputSystem->GetActionValue(fe::make_hash("S"))) * 0.01f;
 
-        transform_component.rotation.z = m_Time;
+            float delta_x = m_InputSystem->GetActionValue(fe::make_hash("Z")) * 0.1f;
+            float delta_y = m_InputSystem->GetActionValue(fe::make_hash("X")) * 0.1f;
+            float delta_z = m_InputSystem->GetActionValue(fe::make_hash("C")) * 0.1f;
 
-        //transform_component.position = glm::normalize(transform_component.position);
+            glm::quat rotation_step = glm::quat(glm::vec3(delta_x, delta_y, delta_z));
+
+            transform_component.rotation = transform_component.rotation * rotation_step;
+        });
 
         m_TransformSystem->OnUpdate();
 
@@ -109,7 +118,7 @@ void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
     m_ResourceManager->SetupSceneResources(paths); // TODO : rewrite this
 
     m_Models.emplace_back() = m_ResourceManager->ImportResource<resource::Model>(PATH.getModelsPath() / "TatarSuzanne\\TatarSuzanne.gltf");
-    m_Models.emplace_back() = m_ResourceManager->ImportResource<resource::Model>(PATH.getModelsPath() / "FlightHelmet\\FlightHelmet.gltf");
+    //m_Models.emplace_back() = m_ResourceManager->ImportResource<resource::Model>(PATH.getModelsPath() / "FlightHelmet\\FlightHelmet.gltf");
     m_Models.emplace_back() = m_ResourceManager->ImportResource<resource::Model>(PATH.getModelsPath() / "Plane\\plane.glb");
 
     for (auto& model : m_Models) {

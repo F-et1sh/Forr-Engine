@@ -27,6 +27,6 @@ namespace fe {
     private:
         std::reference_wrapper<entt::registry> m_Registry;
 
-        entt::basic_reactive_mixin<entt::basic_storage<entt::reactive>, entt::registry> m_DirtyStorage{};
+        entt::reactive_mixin<entt::storage<void>> m_DirtyStorage{};
     };
 } // namespace fe

@@ -9,6 +9,7 @@
     InputSystem done ( without joystick and gamepad support )
     CameraComponent added
     TransformSystem added. minimal movement done
+    Gimbal Lock fixed
 
 ### Problem
     -

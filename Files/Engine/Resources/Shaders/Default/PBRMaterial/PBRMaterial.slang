@@ -1,7 +1,7 @@
 import "../../Context/GlobalContext.slang";
 import "shader2.slang";
 
-public ConstantBuffer<float4x4> g_LightProjection;
+public ConstantBuffer<column_major float4x4> g_LightProjection;
 
 public struct PBRMaterial : IMaterial {
     public uint2  base_color_texture_handle;
@@ -33,14 +33,14 @@ VertexStageOutput vertexMain<M : IMaterial>(VertexInput input) {
 
     float4x4 model_matrix = g_ModelMatrices[input.index];
     
-    float4 world_position = mul(float4(input.position, 1.0f), model_matrix);
-    float4 view_position  = mul(world_position, g_GlobalData.view);
-    output.sv_position    = mul(view_position, g_GlobalData.projection);
+    float4 world_position = mul(model_matrix, float4(input.position, 1.0f));
+    float4 view_position  = mul(g_GlobalData.view,world_position);
+    output.sv_position    = mul(g_GlobalData.projection, view_position);
+
+    output.light_position = mul(g_LightProjection, world_position);
     
     output.texture_coord  = input.texture_coord;
     output.world_position = world_position.xyz;
-
-    output.light_position = mul(world_position, g_LightProjection);
 
     output.index = input.index;
 
@@ -50,7 +50,7 @@ VertexStageOutput vertexMain<M : IMaterial>(VertexInput input) {
 [shader("fragment")]
 float4 fragmentMain<M : IMaterial>(VertexStageOutput input) : SV_Target { // temp lighting
     float4 base_color = float4(0.0f);
-    if (input.index != 2) {
+    if (input.index != 1) {
         M material = g_MaterialsRawData.Load<M>(input.index * 32);
         base_color = material.GetSurfaceData(input.texture_coord);
     }

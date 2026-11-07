@@ -20,7 +20,7 @@
 #include "attributes.hpp"
 
 namespace fe::logging {
-    enum class Severity {
+    enum class Severity : uint8_t {
         None = 0,
         Info,
         Debug,

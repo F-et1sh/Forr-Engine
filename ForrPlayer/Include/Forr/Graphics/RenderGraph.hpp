@@ -51,7 +51,7 @@ namespace fe {
                     render_registry.create(entity);
                 }
 
-                render_registry.emplace_or_replace<T>(entity, view.get<T>(entity));
+                render_registry.emplace_or_replace<T>(entity, view.template get<T>(entity));
             }
         }
     };

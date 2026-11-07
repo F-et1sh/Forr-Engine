@@ -20,24 +20,25 @@
 
 #include "ShaderReflection.hpp"
 
+#define GLM_FORCE_INTRINSICS
 #define GLM_ENABLE_EXPERIMENTAL
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+//#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
 namespace fe {
-    enum class GraphicsBackend {
+    enum class GraphicsBackend : uint8_t {
         OpenGL,
         Vulkan
     };
 
     // TODO : move this into Core
-    inline static constexpr void hash_combine(std::size_t& seed, std::size_t value) noexcept {
+    static constexpr void hash_combine(std::size_t& seed, std::size_t value) noexcept {
         seed ^= value + 0x9e3779b97f4a7c15 + (seed << 6) + (seed >> 2);
     };
 
@@ -52,7 +53,7 @@ namespace fe {
 
         Vertex(const glm::vec3& position)
             : position(position) {}
-        
+
         Vertex(const glm::vec3& position, const glm::vec3& normal)
             : position(position), normal(normal) {}
 
@@ -158,7 +159,7 @@ namespace fe {
         DepthMode depth_mode{ DepthMode::LESS };
 
         bool     cull_enable{ true };
-        CullMode cull_mode{ CullMode::BACK };
+        CullMode cull_mode{ CullMode::NONE };
     };
 
     struct VertexLayout {

@@ -74,12 +74,12 @@ namespace fe {
             constexpr static size_t entry_point_generic_argument_count = 1;
 
             // load shader file data and check for error
-            auto shader_file_data_raw_pointer = resource_manager.GetResource(shader_file_data_ptr);
+            auto* shader_file_data_raw_pointer = resource_manager.GetResource(shader_file_data_ptr);
             if (!shader_file_data_raw_pointer)
                 return std::unexpected{ PBRPipelineErrorCodes::SHADER_FILE_DATA_PTR_WAS_INVALID };
 
             // load material and check for error
-            auto material_raw_pointer = resource_manager.GetResource(material_ptr);
+            auto* material_raw_pointer = resource_manager.GetResource(material_ptr);
             if (!material_raw_pointer)
                 return std::unexpected{ PBRPipelineErrorCodes::MATERIAL_PTR_WAS_INVALID };
 
@@ -104,7 +104,7 @@ namespace fe {
 
             // load material's shader file data if they are not from the same file
             if (material.layout_key.shader_file_data != shader_file_data_ptr) {
-                auto material_shader_file_data_raw_pointer = resource_manager.GetResource(material.layout_key.shader_file_data);
+                auto* material_shader_file_data_raw_pointer = resource_manager.GetResource(material.layout_key.shader_file_data);
                 if (!material_shader_file_data_raw_pointer)
                     return std::unexpected{ PBRPipelineErrorCodes::MATERIAL_LAYOUT_SHADER_FILE_DATA_PTR_WAS_INVALID };
 
@@ -198,7 +198,7 @@ namespace fe {
         }
     };
 
-    enum class SolidColorPipelineErrorCodes {
+    enum class SolidColorPipelineErrorCodes : uint8_t {
         SHADER_FILE_DATA_PTR_WAS_INVALID,
         VERTEX_ENTRY_POINT_ABSENT,
         FRAGMENT_ENTRY_POINT_ABSENT,
