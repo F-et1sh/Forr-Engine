@@ -56,10 +56,10 @@ namespace fe {
 
     template <typename T>
     concept ActionT = (std::is_same_v<T, KeyboardAction>) ||
-                      (std::is_same_v<T, MouseAction>) ||
+                      (std::is_same_v<T, MouseAction>) /* ||
                       (std::is_same_v<T, JoystickAction>) ||
                       (std::is_same_v<T, GamepadButtonAction>) ||
-                      (std::is_same_v<T, GamepadAxisAction>);
+                      (std::is_same_v<T, GamepadAxisAction>)*/;
 
     class FORR_API InputSystem {
     public:

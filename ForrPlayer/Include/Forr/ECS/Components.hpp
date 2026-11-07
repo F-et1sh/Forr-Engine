@@ -14,15 +14,22 @@
 #pragma once
 #include "Forr/Core/pointer.hpp"
 #include "Forr/ResourceManagement/Resources.hpp"
+#include "Forr/Graphics/Camera.hpp"
 
+// TODO : think about making this 'fe::component' and removing that '*Component' postfix
 namespace fe {
     struct TransformComponent {
-        glm::mat4 transform{}; // temp
+        glm::vec3 position{};
+        glm::vec3 rotation{};
+        glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
+    };
 
-        TransformComponent(const glm::mat4& transform)
-            : transform(transform) {}
+    struct CameraComponent {
+        //glm::mat4
+    };
 
-        TransformComponent() = default;
+    struct LocalToWorldComponent {
+        glm::mat4 matrix{};
     };
 
     struct LightComponent {
@@ -39,9 +46,5 @@ namespace fe {
 
         ModelComponent(fe::pointer<resource::Model> model_ptr) : model_ptr(model_ptr) {}
         ModelComponent() = default;
-    };
-
-    struct CameraComponent {
-
     };
 } // namespace fe

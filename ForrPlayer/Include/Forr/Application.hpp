@@ -21,6 +21,7 @@
 #include "Forr/Graphics/DefaultRenderPasses.hpp"
 #include "Forr/ECS/Components.hpp"
 #include "Forr/ECS/Systems/RenderSystem.hpp"
+#include "Forr/ECS/Systems/TransformSystem.hpp"
 #include "Forr/Events/EventBus.hpp"
 #include "Forr/Events/Events.hpp"
 #include "Forr/Core/type_registry.hpp"
@@ -63,6 +64,7 @@ namespace fe {
         std::unique_ptr<ResourceManager> m_ResourceManager{};
         std::unique_ptr<EventBus>        m_MainEventBus{};
         std::unique_ptr<InputSystem>     m_InputSystem{};
+        std::unique_ptr<TransformSystem> m_TransformSystem{};
 
         fe::IWindow* m_PrimaryWindow{}; // TODO : change this raw pointer to something else
         WindowID     m_PrimaryWindowID{};

@@ -116,6 +116,7 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     <ClInclude Include="Include\Forr\Core\attributes.hpp" />
     <ClInclude Include="Include\Forr\Core\context.hpp" />
     <ClInclude Include="Include\Forr\Core\custom_allocators.hpp" />
+    <ClInclude Include="Include\Forr\ECS\Systems\TransformSystem.hpp" />
     <ClInclude Include="Include\Forr\Events\EventBus.hpp" />
     <ClInclude Include="Include\Forr\Events\Events.hpp" />
     <ClInclude Include="Include\Forr\Core\type_registry.hpp" />
@@ -167,6 +168,7 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\ECS\Systems\RenderSystem.cpp" />
+    <ClCompile Include="Source\ECS\Systems\TransformSystem.cpp" />
     <ClCompile Include="Source\Graphics\RenderGraph.cpp" />
     <ClCompile Include="Source\Graphics\Slang\SlangParser.cpp" />
     <ClCompile Include="Source\Input\InputSystem.cpp" />

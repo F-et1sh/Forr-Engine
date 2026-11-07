@@ -53,6 +53,7 @@
     <ClInclude Include="Include\Forr\Core\context.hpp" />
     <ClInclude Include="Include\Forr\Input\InputSystem.hpp" />
     <ClInclude Include="Include\Forr\Input\InputTypes.hpp" />
+    <ClInclude Include="Include\Forr\ECS\Systems\TransformSystem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -79,5 +80,6 @@
     <ClCompile Include="Source\Graphics\RenderGraph.cpp" />
     <ClCompile Include="Source\Graphics\Slang\SlangParser.cpp" />
     <ClCompile Include="Source\Input\InputSystem.cpp" />
+    <ClCompile Include="Source\ECS\Systems\TransformSystem.cpp" />
   </ItemGroup>
 </Project>

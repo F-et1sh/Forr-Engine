@@ -145,7 +145,6 @@ namespace fe {
                                                                         void*                                       user_data);
 
     private: // Others
-        void configureCamera();
         void resizeWindow();
         void handleRenderQueue(const RenderPacket& render_packet);
 

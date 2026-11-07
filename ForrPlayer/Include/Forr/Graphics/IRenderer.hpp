@@ -69,26 +69,28 @@ namespace fe {
     public:
         virtual ~IRenderer() = default;
 
-        static FORR_NODISCARD std::unique_ptr<IRenderer> Create(const RendererDesc& desc,
+        FORR_NODISCARD static std::unique_ptr<IRenderer> Create(const RendererDesc& desc,
                                                                 IPlatformSystem&    platform_system,
                                                                 WindowID            primary_window_index,
                                                                 ResourceManager&    resource_manager);
 
-        virtual FORR_NODISCARD RenderGraphBindings CreateRenderGraphResources(const RenderGraphCompileResult& compile_result) = 0;
+        FORR_NODISCARD virtual RenderGraphBindings CreateRenderGraphResources(const RenderGraphCompileResult& compile_result) = 0;
 
-        // create a buffer ( SSBO/UBO ) via its reflected data
+        // @brief create a buffer ( SSBO/UBO ) via its reflected data
+        // 
         // @returns fe::ParameterHandle is a variable that can be used in fe::IRenderer::BindBuffer() or fe::IRenderer::WriteParameter()
-        virtual FORR_NODISCARD std::expected<graphics::ParameterHandle, graphics::ParameterCreationErrors> CreateParameter(const graphics::ParameterDesc& parameter_desc) = 0;
-        // bind SSBO or UBO
+        FORR_NODISCARD virtual std::expected<graphics::ParameterHandle, graphics::ParameterCreationErrors> CreateParameter(const graphics::ParameterDesc& parameter_desc) = 0;
+        // @brief bind SSBO or UBO
         virtual void BindParameter(graphics::ParameterHandle parameter_id) = 0;
-        // write to SSBO or UBO
+        // @brief write to SSBO or UBO
         template <typename T>
         void WriteParameter(graphics::ParameterHandle parameter_id, std::span<const T> data) { WriteParameter(parameter_id, std::as_bytes(data)); }
-        // write to SSBO or UBO
+        // @brief write to SSBO or UBO
         virtual void WriteParameter(graphics::ParameterHandle parameter_id, std::span<const std::byte> data) = 0;
+        // @brief destroy SSBO or UBO
         virtual void DestroyParameter(graphics::ParameterHandle parameter_id)                                = 0;
 
-        virtual FORR_NODISCARD std::expected<graphics::PipelineHandle, graphics::PipelineCreationErrors> CreatePipeline(const graphics::PipelineDesc& pipeline_desc) = 0;
+        FORR_NODISCARD virtual std::expected<graphics::PipelineHandle, graphics::PipelineCreationErrors> CreatePipeline(const graphics::PipelineDesc& pipeline_desc) = 0;
         virtual void                                                                                     BindPipeline(graphics::PipelineHandle pipeline_id)          = 0;
         virtual void                                                                                     DestroyPipeline(graphics::PipelineHandle pipeline_id)       = 0;
 

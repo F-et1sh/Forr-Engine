@@ -128,9 +128,9 @@ namespace fe {
         }
 
         static void Execute(RenderGraphContext& context, ShadowPassData& pass_data) {
-            auto transform_view = context.render_registry.view<TransformComponent>();
-            transform_view.each([&pass_data, i = 0](const TransformComponent& transform_component) mutable {
-                pass_data.data[i] = transform_component.transform;
+            auto transform_view = context.render_registry.view<LocalToWorldComponent>();
+            transform_view.each([&pass_data, i = 0](const LocalToWorldComponent& local_to_world_component) mutable {
+                pass_data.data[i] = local_to_world_component.matrix;
                 i                 = (i + 1) % 3;
             });
 
@@ -142,7 +142,7 @@ namespace fe {
             context.WriteBuffer(pass_data.model_matrices_parameter_id, pass_data.data);
 
             auto  light_entity    = context.render_registry.view<LightComponent>().back();
-            auto& light_component = context.render_registry.get<LightComponent>(light_entity);
+            const auto& light_component = context.render_registry.get<LightComponent>(light_entity);
 
             context.WriteBuffer(pass_data.light_projection_parameter, std::as_bytes(std::span{ &light_component.transform, 1 }));
 
@@ -392,9 +392,17 @@ namespace fe {
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
-            auto transform_view = context.render_registry.view<TransformComponent>();
-            transform_view.each([&pass_data, i = 0](const TransformComponent& transform_component) mutable {
-                pass_data.data[i] = transform_component.transform;
+            //auto camera_group = context.render_registry.group_if_exists<CameraComponent, TransformComponent>();
+            //for (auto camera : camera_group) {
+            //    //const auto& camera_component = context.render_registry.get<CameraComponent>(camera);
+            //    //const auto& camera_transform = context.render_registry.get<TransformComponent>(camera);
+            //
+            //    //context.WriteBuffer(pass_data.camera_parameter_id, camera_component.camera.caluclate_view_projection(camera_transform.transform));
+            //}
+
+            auto transform_view = context.render_registry.view<LocalToWorldComponent>();
+            transform_view.each([&pass_data, i = 0](const LocalToWorldComponent& local_to_world_component) mutable {
+                pass_data.data[i] = local_to_world_component.matrix;
                 i                 = (i + 1) % 3;
             });
 
@@ -410,7 +418,7 @@ namespace fe {
             context.WriteBuffer(pass_data.global_data_parameter_id, pass_data.global_data_as_bytes);
 
             auto  light_entity    = context.render_registry.view<LightComponent>().back();
-            auto& light_component = context.render_registry.get<LightComponent>(light_entity);
+            const auto& light_component = context.render_registry.get<LightComponent>(light_entity);
 
             context.WriteBuffer(pass_data.light_projection_parameter, std::as_bytes(std::span{ &light_component.transform, 1 }));
 

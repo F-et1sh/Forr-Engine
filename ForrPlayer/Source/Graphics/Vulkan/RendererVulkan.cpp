@@ -31,8 +31,6 @@ fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
     m_Context.application_name   = desc.application_name;
     m_Context.platform_backend   = desc.platform_backend;
 
-    this->configureCamera();
-
     this->InitializeBase();
     this->InitializeDevice();
     this->InitializeAllocator();
@@ -198,19 +196,6 @@ void fe::RendererVulkan::InitializeGPUResources() {
     });
 }
 
-void fe::RendererVulkan::configureCamera() {
-    m_Camera.setType(Camera::Type::LOOKAT);
-    m_Camera.setPosition(glm::vec3(0.0f, 0.0f, -2.5f));
-    m_Camera.setRotation(glm::vec3(0.0f));
-    m_Camera.setFlipY(true);
-
-    float fov    = 60.0f;
-    float aspect = (float) m_PrimaryWindow.get().getWidth() / (float) m_PrimaryWindow.get().getHeight();
-    float znear  = 1.0f;
-    float zfar   = 1000.0f;
-    m_Camera.setPerspective(fov, aspect, znear, zfar);
-}
-
 void fe::RendererVulkan::resizeWindow() {
     vkDeviceWaitIdle(m_Device);
 
@@ -221,13 +206,6 @@ void fe::RendererVulkan::resizeWindow() {
     this->InitializeSynchronizationPrimitives();
 
     vkDeviceWaitIdle(m_Device);
-
-    int width  = m_PrimaryWindow.get().getWidth();
-    int height = m_PrimaryWindow.get().getHeight();
-
-    if ((width > 0.0f) && (height > 0.0f)) {
-        m_Camera.updateAspectRatio((float) width / (float) height);
-    }
 }
 
 void fe::RendererVulkan::handleRenderQueue(const RenderPacket& render_packet) {

@@ -33,7 +33,12 @@ fe::Application::Application(const ApplicationDesc& desc) {
     m_MainEventBus = std::make_unique<EventBus>();
     m_InputSystem  = std::make_unique<InputSystem>(*m_MainEventBus);
 
-    m_InputSystem->AddAction("TurnAround", KeyboardAction{ .mods = input::KeyMods::NONE, .code = input::KeyCode::R });
+    m_InputSystem->AddAction("TurnAround+", KeyboardAction{ .mods = input::KeyMods::NONE, .code = input::KeyCode::R });
+    m_InputSystem->AddAction("TurnAround-", KeyboardAction{ .mods = input::KeyMods::SHIFT, .code = input::KeyCode::R });
+    m_InputSystem->AddAction("W", KeyboardAction{ .mods = input::KeyMods::NONE, .code = input::KeyCode::W });
+    m_InputSystem->AddAction("S", KeyboardAction{ .mods = input::KeyMods::NONE, .code = input::KeyCode::S });
+    m_InputSystem->AddAction("A", KeyboardAction{ .mods = input::KeyMods::NONE, .code = input::KeyCode::A });
+    m_InputSystem->AddAction("D", KeyboardAction{ .mods = input::KeyMods::NONE, .code = input::KeyCode::D });
 
     this->InitializePlatformSystem(desc);
     this->InitializeResourceManager(desc);
@@ -41,6 +46,8 @@ fe::Application::Application(const ApplicationDesc& desc) {
     this->InitializeRenderer(desc);
 
     m_Renderer->InitializeGPUResources();
+
+    m_TransformSystem = std::make_unique<TransformSystem>(m_Registry);
 }
 
 void fe::Application::Run() {
@@ -54,28 +61,26 @@ void fe::Application::Run() {
 
         m_Renderer->BeginFrame();
 
-        if (m_InputSystem->IsActionPressed(fe::make_hash("TurnAround"))) {
-            m_Time += 0.01f;
-        }
+        m_Time += (m_InputSystem->GetActionValue(fe::make_hash("TurnAround+")) - m_InputSystem->GetActionValue(fe::make_hash("TurnAround-"))) * 0.01f;
 
-        auto& transform_component     = m_Registry.get<TransformComponent>(m_Entities[0]);
-        transform_component.transform = glm::mat4(1.0f);
-        transform_component.transform = glm::translate(transform_component.transform, glm::vec3(-1.5f, 0.5f, 0.0f));
-        transform_component.transform = glm::rotate(transform_component.transform, m_Time, glm::vec3(0, 1, 0));
-        transform_component.transform = glm::scale(transform_component.transform, glm::vec3(0.7f));
+        //m_Registry.patch<TransformComponent>(m_Entities[0], [&](TransformComponent& transform_component) {
+        //    transform_component.position.x = (m_InputSystem->GetActionValue(fe::make_hash("W")) - m_InputSystem->GetActionValue(fe::make_hash("S"))) * 0.01f;
+        //    transform_component.position.y = (m_InputSystem->GetActionValue(fe::make_hash("A")) - m_InputSystem->GetActionValue(fe::make_hash("D"))) * 0.01f;
+        //
+        //    transform_component.rotation.z = m_Time;
+        //});
 
-        auto& transform_component2     = m_Registry.get<TransformComponent>(m_Entities[1]);
-        transform_component2.transform = glm::mat4(1.0f);
-        transform_component2.transform = glm::translate(transform_component2.transform, glm::vec3(1.5f, 0.0f, 0.0f));
-        transform_component2.transform = glm::rotate(transform_component2.transform, m_Time, glm::vec3(0, 1, 0));
-        transform_component2.transform = glm::scale(transform_component2.transform, glm::vec3(2.0f));
+        auto& transform_component = m_Registry.get<TransformComponent>(m_Entities[2]);
+        transform_component.position.x += (m_InputSystem->GetActionValue(fe::make_hash("A")) - m_InputSystem->GetActionValue(fe::make_hash("D"))) * 0.01f;
+        transform_component.position.z += (m_InputSystem->GetActionValue(fe::make_hash("W")) - m_InputSystem->GetActionValue(fe::make_hash("S"))) * 0.01f;
 
-        auto& transform_component3     = m_Registry.get<TransformComponent>(m_Entities[2]);
-        transform_component3.transform = glm::mat4(1.0f);
-        transform_component3.transform = glm::translate(transform_component3.transform, glm::vec3(0.0f, -0.5f, 0.0f));
-        transform_component3.transform = glm::scale(transform_component3.transform, glm::vec3(5.0f));
+        transform_component.rotation.z = m_Time;
 
-        RenderGraphCollector<TransformComponent, ModelComponent, LightComponent> collector{ m_Registry };
+        //transform_component.position = glm::normalize(transform_component.position);
+
+        m_TransformSystem->OnUpdate();
+
+        RenderGraphCollector<TransformComponent, LocalToWorldComponent, ModelComponent, LightComponent> collector{ m_Registry };
 
         auto render_command_list = m_RenderGraph->Execute(collector.getRegistry());
 
@@ -158,7 +163,7 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
     auto forward_pass_data_mapped      = m_RenderGraph->AddPass<ForwardPass>("Forward Pass");          // TODO : make a storage for this mapped data
     auto post_process_pass_data_mapped = m_RenderGraph->AddPass<PostProcessPass>("Post Process Pass"); // TODO : make a storage for this mapped data
 
-    auto create_command_list = std::move(m_RenderGraph->Compile());
-    auto mapping_result      = std::move(m_Renderer->CreateRenderGraphResources(create_command_list));
+    auto create_command_list = m_RenderGraph->Compile();
+    auto mapping_result      = m_Renderer->CreateRenderGraphResources(create_command_list);
     m_RenderGraph->SetupResourceBindings(mapping_result);
 }

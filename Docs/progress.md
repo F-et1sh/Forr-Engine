@@ -8,6 +8,7 @@
     string hashing got better
     InputSystem done ( without joystick and gamepad support )
     CameraComponent added
+    TransformSystem added. minimal movement done
 
 ### Problem
     -
