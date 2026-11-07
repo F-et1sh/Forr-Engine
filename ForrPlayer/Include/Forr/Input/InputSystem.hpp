@@ -40,19 +40,19 @@ namespace fe {
         input::KeyMods     mods{};
     };
 
-    struct JoystickAction {
-        input::Joystick button{};
-    };
-
-    struct GamepadButtonAction {
-        float                dead_zone{};
-        input::GamepadButton button{};
-    };
-
-    struct GamepadAxisAction {
-        float              dead_zone{};
-        input::GamepadAxis axis{};
-    };
+    //struct JoystickAction {
+    //    input::Joystick button{};
+    //};
+    //
+    //struct GamepadButtonAction {
+    //    float                dead_zone{};
+    //    input::GamepadButton button{};
+    //};
+    //
+    //struct GamepadAxisAction {
+    //    float              dead_zone{};
+    //    input::GamepadAxis axis{};
+    //};
 
     template <typename T>
     concept ActionT = (std::is_same_v<T, KeyboardAction>) ||
@@ -91,15 +91,15 @@ namespace fe {
             else if constexpr (std::is_same_v<ActionKind, fe::MouseAction>) {
                 m_MouseActions.push_back({ action_name, action_data });
             }
-            else if constexpr (std::is_same_v<ActionKind, fe::JoystickAction>) {
-                m_JoystickActions.push_back({ action_name, action_data });
-            }
-            else if constexpr (std::is_same_v<ActionKind, fe::GamepadButtonAction>) {
-                m_GamepadButtonActions.push_back({ action_name, action_data });
-            }
-            else if constexpr (std::is_same_v<ActionKind, fe::GamepadAxisAction>) {
-                m_GamepadAxisActions.push_back({ action_name, action_data });
-            }
+            //else if constexpr (std::is_same_v<ActionKind, fe::JoystickAction>) {
+            //    m_JoystickActions.push_back({ action_name, action_data });
+            //}
+            //else if constexpr (std::is_same_v<ActionKind, fe::GamepadButtonAction>) {
+            //    m_GamepadButtonActions.push_back({ action_name, action_data });
+            //}
+            //else if constexpr (std::is_same_v<ActionKind, fe::GamepadAxisAction>) {
+            //    m_GamepadAxisActions.push_back({ action_name, action_data });
+            //}
             else {
                 static_assert(std::false_type::value && "Unknown action kind");
                 return false;
@@ -151,8 +151,9 @@ namespace fe {
         }
 
     private:
-        void keyboardCallback(const event::KeyButton& key_button);
+        void keyButtonCallback(const event::KeyButton& key_button);
         void unicodeCharTypedCallback(const event::UnicodeCharTyped& unicode_char_typed);
+        void mouseButtonCallback(const event::MouseButton& mouse_button);
 
     private:
         std::reference_wrapper<EventBus> m_EventBus;
@@ -162,8 +163,8 @@ namespace fe {
 
         std::vector<StoredAction<KeyboardAction>>      m_KeyboardActions{};
         std::vector<StoredAction<MouseAction>>         m_MouseActions{};
-        std::vector<StoredAction<JoystickAction>>      m_JoystickActions{};
-        std::vector<StoredAction<GamepadButtonAction>> m_GamepadButtonActions{};
-        std::vector<StoredAction<GamepadAxisAction>>   m_GamepadAxisActions{};
+        //std::vector<StoredAction<JoystickAction>>      m_JoystickActions{};
+        //std::vector<StoredAction<GamepadButtonAction>> m_GamepadButtonActions{};
+        //std::vector<StoredAction<GamepadAxisAction>>   m_GamepadAxisActions{};
     };
 } // namespace fe

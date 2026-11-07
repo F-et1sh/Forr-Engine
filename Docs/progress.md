@@ -6,6 +6,7 @@
 
 ### Done
     string hashing got better
+    InputSystem done ( without joystick and gamepad support )
 
 ### Problem
     -

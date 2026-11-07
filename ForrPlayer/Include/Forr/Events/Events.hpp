@@ -31,6 +31,11 @@ namespace fe::event {
         FORR_NODISCARD constexpr inline bool has_num_lock() const noexcept { return mods & input::KeyMods::NUM_LOCK; }
     };
 
+    struct UnicodeCharTyped {
+        input::UnicodeChar code_point{};
+        input::KeyMods  mods{};
+    };
+
     struct MouseButton {
         input::MouseButton button{};
         input::Action      action{};
@@ -54,11 +59,6 @@ namespace fe::event {
         double y_offset{};
     };
 
-    struct UnicodeCharTyped {
-        input::UnicodeChar code_point{};
-        input::KeyMods  mods{};
-    };
-
-    // TODO : add more event structures
+    // TODO : provide joystick, gamepad and drag/drop events
 
 } // namespace fe::event

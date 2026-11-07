@@ -1,5 +1,10 @@
 # Forr-Engine Not now, but :
 
+# Added 07.11.2026
+- provide joystick and gamepad supporting
+
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
+
 # Added 06.11.2026
 - Farrakh --> Farrah Fattah
 
