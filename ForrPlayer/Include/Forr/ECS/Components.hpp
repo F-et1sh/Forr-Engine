@@ -40,4 +40,8 @@ namespace fe {
         ModelComponent(fe::pointer<resource::Model> model_ptr) : model_ptr(model_ptr) {}
         ModelComponent() = default;
     };
+
+    struct CameraComponent {
+
+    };
 } // namespace fe

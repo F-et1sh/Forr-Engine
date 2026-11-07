@@ -2,11 +2,12 @@
 
 ## 07.11.2026
 ### Goal
-    -
+    implement scene camera
 
 ### Done
     string hashing got better
     InputSystem done ( without joystick and gamepad support )
+    CameraComponent added
 
 ### Problem
     -
