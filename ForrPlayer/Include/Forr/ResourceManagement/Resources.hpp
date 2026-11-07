@@ -280,7 +280,7 @@ namespace fe::resource {
 
 #define GENERATE_CONCEPT(RESOURCE_NAME) (std::is_same_v<T, RESOURCE_NAME>) ||
     template <typename T>
-    concept resource_t = FORR_RESOURCES_LIST(GENERATE_CONCEPT) false;
+    concept resource_t = FORR_RESOURCES_LIST(GENERATE_CONCEPT) false; // NOLINT(readability-simplify-boolean-expr)
 #undef GENERATE_CONCEPT
 
 #undef FORR_RESOURCE_BODY
