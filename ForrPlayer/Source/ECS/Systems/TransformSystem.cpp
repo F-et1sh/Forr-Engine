@@ -27,7 +27,9 @@ void fe::TransformSystem::OnUpdate() {
         LocalToWorldComponent& local_to_world_component = m_Registry.get().get_or_emplace<LocalToWorldComponent>(entity);
 
         glm::mat4 rotation              = glm::toMat4(transform_component.rotation);
-        local_to_world_component.matrix = glm::translate(glm::mat4(1.0f), transform_component.position) * rotation * glm::scale(glm::mat4(1.0f), transform_component.scale);
+        local_to_world_component.matrix = glm::translate(glm::mat4(1.0f), transform_component.position) *
+                                          rotation *
+                                          glm::scale(glm::mat4(1.0f), transform_component.scale);
     }
     m_DirtyStorage.clear();
 }

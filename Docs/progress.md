@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 08.11.2026
+### Goal
+    create 'fe::PerspectiveCamera'
+    implement scene camera as 'std::variant<fe::PerspectiveCamera, fe::OrthographicCamera>'
+
+### Done
+
+### Problem
+    -
+
 ## 07.11.2026
 ### Goal
     implement scene camera
