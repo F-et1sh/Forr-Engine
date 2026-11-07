@@ -119,6 +119,6 @@ namespace fe {
         std::unordered_map<fe::string_hash, ActionState> m_ActionStates{};
 
         std::vector<StoredAction<KeyboardAction>> m_KeyboardActions{};
-        // TODO : add more actions
+        std::vector<StoredAction<MouseAction>>    m_MouseActions{};
     };
 } // namespace fe

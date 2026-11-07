@@ -23,24 +23,51 @@
 #include "custom_allocators.hpp"
 
 namespace fe {
-    using string_hash                       = uint64_t;
+    using string_hash = uint64_t;
+
     static constexpr string_hash HASH_START = 14695981039346656037ULL;
     static constexpr string_hash HASH_SHIFT = 1099511628211ULL;
 
-    FORR_NODISCARD constexpr std::uint64_t hash_codepoint(std::uint64_t hash, std::uint32_t code_point) noexcept {
-        static constexpr string_hash BITS_IN_BYTE = 8;
-        static constexpr string_hash ONE_BYTE     = 0xFF;
+    static constexpr std::uint32_t BITS_IN_BYTE = 8;
+    static constexpr std::uint32_t ONE_BYTE     = 0xFF;
 
+    static constexpr std::uint32_t UTF16_HIGH_SURROGATE_START = 0xD800;
+    static constexpr std::uint32_t UTF16_HIGH_SURROGATE_END   = 0xDBFF;
+    static constexpr std::uint32_t UTF16_LOW_SURROGATE_START  = 0xDC00;
+    static constexpr std::uint32_t SURROGATE_BASE_OFFSET      = 0x10000;
+
+    static constexpr std::uint8_t UTF16_PAYLOAD_SIZE_IN_BITS = 10;
+
+    static constexpr std::uint8_t UTF8_PAYLOAD_MASK       = 0b00111111;
+    static constexpr std::uint8_t UTF8_PAYLOAD_BITS_COUNT = 6;
+
+    static constexpr std::uint8_t UTF8_ASCII_MASK = 0b10000000;
+
+    static constexpr std::uint8_t UTF8_CONTINUATION_MASK  = 0b11000000;
+    static constexpr std::uint8_t UTF8_CONTINUATION_VALUE = 0b10000000;
+
+    static constexpr std::uint8_t UTF8_2BYTE_START_MASK   = 0b11100000;
+    static constexpr std::uint8_t UTF8_2BYTE_START_VALUE  = 0b11000000;
+    static constexpr std::uint8_t UTF8_2BYTE_PAYLOAD_MASK = 0b00011111;
+
+    static constexpr std::uint8_t UTF8_3BYTE_START_MASK   = 0b11110000;
+    static constexpr std::uint8_t UTF8_3BYTE_START_VALUE  = 0b11100000;
+    static constexpr std::uint8_t UTF8_3BYTE_PAYLOAD_MASK = 0b00001111;
+
+    static constexpr std::uint8_t UTF8_4BYTE_START_MASK   = 0b11111000;
+    static constexpr std::uint8_t UTF8_4BYTE_START_VALUE  = 0b11110000;
+    static constexpr std::uint8_t UTF8_4BYTE_PAYLOAD_MASK = 0b00000111;
+
+    FORR_NODISCARD constexpr std::uint64_t hash_codepoint(std::uint64_t hash, std::uint32_t codepoint) noexcept {
         for (size_t i = 0; i < 4; i++) {
-            hash ^= (code_point & ONE_BYTE);
+            hash ^= (codepoint & ONE_BYTE);
             hash *= HASH_SHIFT;
-            code_point >>= BITS_IN_BYTE;
+            codepoint >>= BITS_IN_BYTE;
         }
-
         return hash;
     }
 
-    FORR_NODISCARD constexpr std::uint64_t make_hash(std::u32string_view str) noexcept {
+    FORR_NODISCARD constexpr std::uint64_t make_hash_impl(std::u32string_view str) noexcept {
         std::uint64_t hash = HASH_START;
         for (std::uint32_t code_point : str) {
             hash = hash_codepoint(hash, code_point);
@@ -48,18 +75,20 @@ namespace fe {
         return hash;
     }
 
-    FORR_NODISCARD constexpr std::uint64_t make_hash(std::u16string_view str) noexcept {
+    FORR_NODISCARD constexpr std::uint64_t make_hash_impl(std::u16string_view str) noexcept {
         std::uint64_t hash = HASH_START;
         for (size_t i = 0; i < str.size(); i++) {
             std::uint32_t code_point = str[i];
 
-            // read the next element, if there is a symbol, which requires more bytes
-            if (code_point >= 0xD800 &&
-                code_point <= 0xDBFF &&
-                i < str.size() - 1) {
+            if (code_point >= UTF16_HIGH_SURROGATE_START &&
+                code_point <= UTF16_HIGH_SURROGATE_END &&
+                i + 1 < str.size()) {
 
-                std::uint32_t low = str[i++];
-                code_point        = 0x10000 + ((code_point - 0xD800) << 10) + (low - 0xDC00);
+                std::uint32_t low = str[++i];
+
+                code_point = SURROGATE_BASE_OFFSET +
+                             ((code_point - UTF16_HIGH_SURROGATE_START) << UTF16_PAYLOAD_SIZE_IN_BITS) +
+                             (low - UTF16_LOW_SURROGATE_START);
             }
 
             hash = hash_codepoint(hash, code_point);
@@ -67,7 +96,7 @@ namespace fe {
         return hash;
     }
 
-    FORR_NODISCARD constexpr std::uint64_t make_hash(std::string_view str) noexcept {
+    FORR_NODISCARD constexpr std::uint64_t make_hash_impl(std::string_view str) noexcept {
         std::uint64_t hash = HASH_START;
         std::uint32_t codepoint{};
         std::uint32_t state{};
@@ -75,28 +104,28 @@ namespace fe {
         for (const char c : str) {
             std::uint8_t byte = static_cast<std::uint8_t>(c);
 
-            if (byte < 0x80) { // ASCII
+            if (byte < UTF8_ASCII_MASK) { // ASCII
                 hash  = hash_codepoint(hash, byte);
                 state = 0;
             }
-            else if ((byte & 0xC0) == 0x80) {
-                codepoint = (byte & 0x3F) | (codepoint << 6);
-                if (state-- == 0) {
+            else if ((byte & UTF8_CONTINUATION_MASK) == UTF8_CONTINUATION_VALUE) {
+                codepoint = (byte & UTF8_PAYLOAD_MASK) | (codepoint << UTF8_PAYLOAD_BITS_COUNT);
+                if (--state == 0) {
                     hash = hash_codepoint(hash, codepoint);
                 }
             }
             else {
-                if ((byte & 0xE0) == 0xC0) { // 2 bytes
-                    codepoint = byte & 0x1F;
-                    state     = 1;
+                if ((byte & UTF8_2BYTE_START_MASK) == UTF8_2BYTE_START_VALUE) { // 2 bytes
+                    codepoint = byte & UTF8_2BYTE_PAYLOAD_MASK;
+                    state     = 1; // 1 byte remaining
                 }
-                else if ((byte & 0xF0) == 0xE0) { // 3 bytes
-                    codepoint = byte & 0x0F;
-                    state     = 2;
+                else if ((byte & UTF8_3BYTE_START_MASK) == UTF8_3BYTE_START_VALUE) { // 3 bytes
+                    codepoint = byte & UTF8_3BYTE_PAYLOAD_MASK;
+                    state     = 2; // 2 bytes remaining
                 }
-                else if ((byte & 0xF8) == 0xF0) { // 4 bytes
-                    codepoint = byte & 0x07;
-                    state     = 3;
+                else if ((byte & UTF8_4BYTE_START_MASK) == UTF8_4BYTE_START_VALUE) { // 4 bytes
+                    codepoint = byte & UTF8_4BYTE_PAYLOAD_MASK;
+                    state     = 3; // 3 bytes remaining
                 }
             }
         }
@@ -114,14 +143,22 @@ namespace fe {
     //  char      char8_t    char16_t     char32_t     wchar_t
     //   1b         1b          2b           4b          2b
     //
-    template <class Element = char>
+    template <class Element>
     FORR_NODISCARD constexpr string_hash make_hash(std::basic_string_view<Element> str) noexcept {
-        return fe::make_hash(std::basic_string_view<Element>(str));
+        if constexpr (sizeof(Element) == 1) { // char and char8_t
+            return make_hash_impl(std::string_view(reinterpret_cast<const char*>(str.data()), str.size()));
+        }
+        else if constexpr (sizeof(Element) == 2) { // char16_t and wchar_t on Windows
+            return make_hash_impl(std::u16string_view(reinterpret_cast<const char16_t*>(str.data()), str.size()));
+        }
+        else if constexpr (sizeof(Element) == 4) { // char32_t and wchar_t on Linux/macOS
+            return make_hash_impl(std::u32string_view(reinterpret_cast<const char32_t*>(str.data()), str.size()));
+        }
     }
 
-    template <class Element = char>
+    template <class Element>
     FORR_NODISCARD constexpr string_hash make_hash(const Element* str) noexcept {
-        return fe::make_hash(std::basic_string_view<Element>(str));
+        return make_hash(std::basic_string_view<Element>(str));
     }
 
     template <class Element, bool IsStringView = false>
@@ -188,7 +225,7 @@ namespace fe {
 
     private:
         std::conditional_t<IsStringView, StringViewT, StringT> m_string{};
-        fe::string_hash                                         m_hash{};
+        fe::string_hash                                        m_hash{};
 
         friend class basic_hashed_string;
     };
@@ -307,7 +344,7 @@ namespace fe {
         constexpr basic_fixed_hashed_string(StringViewT str)
             : m_fixed_string(str), m_hash(fe::make_hash<Element>(str)) {}
 
-        FORR_NODISCARD constexpr                operator StringViewT() const noexcept { return { m_fixed_string.c_str(), size() }; }
+        FORR_NODISCARD constexpr                 operator StringViewT() const noexcept { return { m_fixed_string.c_str(), size() }; }
         FORR_NODISCARD constexpr fe::string_hash get_hash() const noexcept { return m_hash; }
 
         FORR_NODISCARD constexpr const CharT* c_str() const noexcept { return m_fixed_string.c_str(); }
@@ -326,7 +363,7 @@ namespace fe {
 
     private:
         fe::basic_fixed_string<N, Element, IsStringView> m_fixed_string{};
-        fe::string_hash                                   m_hash{};
+        fe::string_hash                                  m_hash{};
     };
 
     template <std::size_t N, class Element, bool IsStringView = false>
@@ -387,12 +424,11 @@ namespace fe {
 
     private:
         void increse_arena_capacity() {
-            
         }
 
     private:
         std::unordered_map<fe::string_hash, std::string_view> m_hash_view_table{};
-        fe::Arena                                            m_arena{ 1024 * 4 };
+        fe::Arena                                             m_arena{ 1024 * 4 };
     };
 
 } // namespace fe

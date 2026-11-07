@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 07.11.2026
+### Goal
+    -
+
+### Done
+    string hashing got better
+
+### Problem
+    -
+
 ## 06.11.2026
 ### Goal
     mark wchar_t as deprecated and migrate to UTF-8
