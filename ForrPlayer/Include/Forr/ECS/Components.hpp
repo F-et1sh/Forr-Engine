@@ -12,6 +12,8 @@
 ===============================================*/
 
 #pragma once
+#include <variant>
+
 #include "Forr/Core/pointer.hpp"
 #include "Forr/ResourceManagement/Resources.hpp"
 #include "Forr/Graphics/Camera.hpp"
@@ -24,12 +26,39 @@ namespace fe {
         glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
     };
 
-    struct CameraComponent {
-        //glm::mat4
-    };
-
     struct LocalToWorldComponent {
         glm::mat4 matrix{};
+    };
+
+    struct CameraComponent {
+        struct PerspectiveSettings {
+            float fov{};
+            float aspect_ratio{};
+
+            float near_plane{};
+            float far_plane{};
+        };
+
+        struct OrthographicSettings {
+            float left{};
+            float right{};
+            float bottom{};
+            float top{};
+
+            float near_plane{};
+            float far_plane{};
+        };
+
+        std::variant<PerspectiveSettings,
+                     OrthographicSettings>
+             camera_settings{};
+        bool is_primary{};
+    };
+
+    struct ViewProjectionComponent {
+        glm::mat4 projection{};
+        glm::mat4 view{};
+        glm::mat4 view_projection{};
     };
 
     struct LightComponent {

@@ -54,6 +54,7 @@
     <ClInclude Include="Include\Forr\Input\InputSystem.hpp" />
     <ClInclude Include="Include\Forr\Input\InputTypes.hpp" />
     <ClInclude Include="Include\Forr\ECS\Systems\TransformSystem.hpp" />
+    <ClInclude Include="Include\Forr\ECS\Systems\CameraSystem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -81,5 +82,6 @@
     <ClCompile Include="Source\Graphics\Slang\SlangParser.cpp" />
     <ClCompile Include="Source\Input\InputSystem.cpp" />
     <ClCompile Include="Source\ECS\Systems\TransformSystem.cpp" />
+    <ClCompile Include="Source\ECS\Systems\CameraSystem.cpp" />
   </ItemGroup>
 </Project>

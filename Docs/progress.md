@@ -2,13 +2,15 @@
 
 ## 08.11.2026
 ### Goal
-    create 'fe::PerspectiveCamera'
+    create 'fe::OrthographicCamera' and 'fe::PerspectiveCamera'
     implement scene camera as 'std::variant<fe::PerspectiveCamera, fe::OrthographicCamera>'
 
 ### Done
+    CameraSystem added
 
 ### Problem
-    -
+    skypjack doesn't know what is 'backward compatibility'
+    and I'm very inattentive
 
 ## 07.11.2026
 ### Goal

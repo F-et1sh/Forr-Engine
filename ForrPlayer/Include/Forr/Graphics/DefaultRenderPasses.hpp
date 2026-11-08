@@ -316,9 +316,9 @@ namespace fe {
             }
 
             resource::Material pbr_material{};
-            pbr_material.layout_key = { .shader_file_data = shader_file_data_ptr, .structure_layout_storage_index = 0 };
+            pbr_material.layout_key                          = { .shader_file_data = shader_file_data_ptr, .structure_layout_storage_index = 0 };
             pbr_material.pipeline_flags_override.cull_enable = false;
-            pbr_material.pipeline_flags_override.cull_mode = CullMode::NONE;
+            pbr_material.pipeline_flags_override.cull_mode   = CullMode::NONE;
 
             fe::pointer<resource::Material> pbr_material_ptr = builder.resource_manager.CreateResource(std::move(pbr_material));
 
@@ -394,13 +394,17 @@ namespace fe {
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
-            //auto camera_group = context.render_registry.group_if_exists<CameraComponent, TransformComponent>();
-            //for (auto camera : camera_group) {
-            //    //const auto& camera_component = context.render_registry.get<CameraComponent>(camera);
-            //    //const auto& camera_transform = context.render_registry.get<TransformComponent>(camera);
-            //
-            //    //context.WriteBuffer(pass_data.camera_parameter_id, camera_component.camera.caluclate_view_projection(camera_transform.transform));
-            //}
+            auto camera_view = context.render_registry.view<ViewProjectionComponent>();
+            for (auto entity : camera_view) {
+                const auto& camera_component = context.render_registry.get<ViewProjectionComponent>(entity);
+
+                ForwardPassData::GlobalData global_data{};
+                global_data.view       = camera_component.view;
+                global_data.projection = camera_component.projection;
+
+                pass_data.global_data_as_bytes.resize(sizeof(ForwardPassData::GlobalData));
+                memcpy(&pass_data.global_data_as_bytes[0], &global_data, sizeof(ForwardPassData::GlobalData));
+            }
 
             auto transform_view = context.render_registry.view<LocalToWorldComponent>();
             transform_view.each([&pass_data, i = 0](const LocalToWorldComponent& local_to_world_component) mutable {

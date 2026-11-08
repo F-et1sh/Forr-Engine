@@ -3,7 +3,7 @@
     Forr Engine
 
     File : TransformSystem.hpp
-    Role : calculates 'LocalToWorldComponent' via 'TransformComponent' and 'CameraComponent'
+    Role : calculates 'LocalToWorldComponent' via 'TransformComponent'
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
