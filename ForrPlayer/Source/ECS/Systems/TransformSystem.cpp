@@ -23,7 +23,7 @@ fe::TransformSystem::TransformSystem(entt::registry& registry) : m_Registry(regi
 
 void fe::TransformSystem::OnUpdate() {
     for (auto entity : m_DirtyStorage) {
-        component::Transform& transform_component = m_Registry.get().get<component::Transform>(entity);
+        const component::Transform& transform_component = m_Registry.get<component::Transform>(entity);
 
         component::LocalToWorld local_to_world_component{};
 
@@ -32,7 +32,7 @@ void fe::TransformSystem::OnUpdate() {
                                           rotation *
                                           glm::scale(glm::mat4(1.0f), transform_component.scale);
 
-        m_Registry.get().emplace_or_replace<component::LocalToWorld>(entity, local_to_world_component);
+        m_Registry.emplace_or_replace<component::LocalToWorld>(entity, local_to_world_component);
     }
     m_DirtyStorage.clear();
 }

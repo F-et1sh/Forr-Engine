@@ -47,6 +47,8 @@ fe::Application::Application(const ApplicationDesc& desc) {
     m_TransformSystem = std::make_unique<TransformSystem>(m_Registry);
     m_CameraSystem    = std::make_unique<CameraSystem>(m_Registry);
 
+    m_Registry.on_destroy<component::Transform>().connect<&entt::registry::remove<component::LocalToWorld>>();
+
     this->InitializePlatformSystem(desc);
     this->InitializeResourceManager(desc);
     this->InitializePrimaryWindow(desc);

@@ -8,6 +8,7 @@
     CameraComponent::OrthographicCamera and CameraComponent::PerspectiveCamera processing in CameraSystem added
     'fe::*Component' --> 'fe::component::*'
     'fe::Camera' removed ( unused )
+    ReactiveRegistry added
 
 ### Problem
     school and lack of sleep

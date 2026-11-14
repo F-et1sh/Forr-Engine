@@ -16,6 +16,7 @@
     <ProjectGuid>{38ca8431-599d-4927-9871-b0acd6085b88}</ProjectGuid>
     <RootNamespace>ForrGame</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>ForrGame</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

@@ -40,7 +40,7 @@ void fe::CameraSystem::OnUpdate() {
         view_projection_component.view            = glm::inverse(local_to_world_component.matrix);
         view_projection_component.view_projection = view_projection_component.projection * view_projection_component.view;
 
-        m_Registry.get().emplace_or_replace<component::ViewProjection>(entity, view_projection_component);
+        m_Registry.emplace_or_replace<component::ViewProjection>(entity, view_projection_component);
     }
 
     m_DirtyStorage.clear();

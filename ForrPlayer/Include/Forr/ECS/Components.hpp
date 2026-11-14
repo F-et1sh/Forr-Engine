@@ -14,12 +14,13 @@
 ===============================================*/
 
 #pragma once
+#include <utility>
 #include <variant>
 
 #include "Forr/Core/pointer.hpp"
 #include "Forr/ResourceManagement/Resources.hpp"
 
-#include <entt/fwd.hpp>
+#include <entt/entt.hpp>
 
 namespace fe {
     template <typename... Components>
@@ -36,6 +37,39 @@ namespace fe {
     static constexpr void bind_to_destroy_of(entt::reactive_mixin<entt::storage<void>>& dirty_storage) noexcept {
         (dirty_storage.on_destroy<Components>(), ...);
     }
+
+    class ReactiveRegistry {
+    public:
+        ReactiveRegistry(entt::registry& registry) : m_registry(registry) {}
+
+        template <typename T, typename Func>
+        decltype(auto) patch(entt::entity entity, Func&& func) {
+            return std::as_const(m_registry.get().patch<T>(entity, std::forward<Func>(func)));
+        }
+
+        template <typename T, typename... Args>
+        decltype(auto) emplace_or_replace(entt::entity entity, Args&&... args) {
+            return std::as_const(m_registry.get().emplace_or_replace<T>(entity, std::forward<Args>(args)...));
+        }
+
+        template <typename T, typename... Args>
+        decltype(auto) replace(entt::entity entity, Args&&... args) {
+            return std::as_const(m_registry.get().replace<T>(entity, std::forward<Args>(args)...));
+        }
+
+        template <typename T>
+        FORR_NODISCARD decltype(auto) get(entt::entity entity) const {
+            return std::as_const(m_registry.get().get<T>(entity));
+        }
+
+        FORR_NODISCARD const entt::registry& registry() const { return m_registry; }
+        const entt::registry& change_registry(entt::registry& registry_to) { return m_registry = registry_to; }
+
+    private:
+        std::reference_wrapper<entt::registry> m_registry;
+    };
+
+    using ReactiveDirtyStorage = entt::reactive_mixin<entt::storage<void>>;
 } // namespace fe
 
 namespace fe::component {

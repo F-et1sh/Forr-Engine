@@ -25,8 +25,7 @@ namespace fe {
         void OnUpdate();
 
     private:
-        std::reference_wrapper<entt::registry> m_Registry;
-
-        entt::reactive_mixin<entt::storage<void>> m_DirtyStorage{};
+        ReactiveRegistry     m_Registry;
+        ReactiveDirtyStorage m_DirtyStorage{};
     };
 } // namespace fe
