@@ -128,8 +128,8 @@ namespace fe {
         }
 
         static void Execute(RenderGraphContext& context, ShadowPassData& pass_data) {
-            auto transform_view = context.render_registry.view<LocalToWorldComponent>();
-            transform_view.each([&pass_data, i = 0](const LocalToWorldComponent& local_to_world_component) mutable {
+            auto transform_view = context.render_registry.view<component::LocalToWorld>();
+            transform_view.each([&pass_data, i = 0](const component::LocalToWorld& local_to_world_component) mutable {
                 pass_data.data[i] = local_to_world_component.matrix;
                 i                 = (i + 1) % 2;
             });
@@ -141,13 +141,13 @@ namespace fe {
 
             context.WriteBuffer(pass_data.model_matrices_parameter_id, pass_data.data);
 
-            auto        light_entity    = context.render_registry.view<LightComponent>().back();
-            const auto& light_component = context.render_registry.get<LightComponent>(light_entity);
+            auto        light_entity    = context.render_registry.view<component::Light>().back();
+            const auto& light_component = context.render_registry.get<component::Light>(light_entity);
 
             context.WriteBuffer(pass_data.light_projection_parameter, std::as_bytes(std::span{ &light_component.transform, 1 }));
 
-            auto models_view = context.render_registry.view<ModelComponent>();
-            models_view.each([&context, i = 0](const ModelComponent& model_component) mutable {
+            auto models_view = context.render_registry.view<component::Model>();
+            models_view.each([&context, i = 0](const component::Model& model_component) mutable {
                 context.DrawModel(model_component.model_ptr, i);
                 i = (i + 1) % 2;
             });
@@ -394,9 +394,9 @@ namespace fe {
         }
 
         static void Execute(RenderGraphContext& context, ForwardPassData& pass_data) {
-            auto camera_view = context.render_registry.view<ViewProjectionComponent>();
+            auto camera_view = context.render_registry.view<component::ViewProjection>();
             for (auto entity : camera_view) {
-                const auto& camera_component = context.render_registry.get<ViewProjectionComponent>(entity);
+                const auto& camera_component = context.render_registry.get<component::ViewProjection>(entity);
 
                 ForwardPassData::GlobalData global_data{};
                 global_data.view       = camera_component.view;
@@ -406,8 +406,8 @@ namespace fe {
                 memcpy(&pass_data.global_data_as_bytes[0], &global_data, sizeof(ForwardPassData::GlobalData));
             }
 
-            auto transform_view = context.render_registry.view<LocalToWorldComponent>();
-            transform_view.each([&pass_data, i = 0](const LocalToWorldComponent& local_to_world_component) mutable {
+            auto transform_view = context.render_registry.view<component::LocalToWorld>();
+            transform_view.each([&pass_data, i = 0](const component::LocalToWorld& local_to_world_component) mutable {
                 pass_data.data[i] = local_to_world_component.matrix;
                 i                 = (i + 1) % 2;
             });
@@ -423,13 +423,13 @@ namespace fe {
             context.WriteBuffer(pass_data.materials_parameter_id, pass_data.materials_data);
             context.WriteBuffer(pass_data.global_data_parameter_id, pass_data.global_data_as_bytes);
 
-            auto        light_entity    = context.render_registry.view<LightComponent>().back();
-            const auto& light_component = context.render_registry.get<LightComponent>(light_entity);
+            auto        light_entity    = context.render_registry.view<component::Light>().back();
+            const auto& light_component = context.render_registry.get<component::Light>(light_entity);
 
             context.WriteBuffer(pass_data.light_projection_parameter, std::as_bytes(std::span{ &light_component.transform, 1 }));
 
-            auto models_view = context.render_registry.view<ModelComponent>();
-            models_view.each([&context, i = 0](const ModelComponent& model_component) mutable {
+            auto models_view = context.render_registry.view<component::Model>();
+            models_view.each([&context, i = 0](const component::Model& model_component) mutable {
                 context.DrawModel(model_component.model_ptr, i);
                 i = (i + 1) % 2;
             });

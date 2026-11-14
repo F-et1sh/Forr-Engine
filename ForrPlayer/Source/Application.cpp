@@ -77,7 +77,7 @@ void fe::Application::Run() {
 
         //auto& transform_component = m_Registry.get<TransformComponent>(m_Entities[2]);
 
-        m_Registry.patch<TransformComponent>(m_Camera, [&](TransformComponent& transform_component) {
+        m_Registry.patch<component::Transform>(m_Camera, [&](component::Transform& transform_component) {
             //auto& camera_component = m_Registry.get<CameraComponent>(m_Camera);
 
             transform_component.position.x += (m_InputSystem->GetActionValue(fe::make_hash("A")) - m_InputSystem->GetActionValue(fe::make_hash("D"))) * 0.01f;
@@ -95,12 +95,12 @@ void fe::Application::Run() {
         m_TransformSystem->OnUpdate();
         m_CameraSystem->OnUpdate();
 
-        RenderGraphCollector<TransformComponent,
-                             CameraComponent,
-                             ViewProjectionComponent,
-                             LocalToWorldComponent,
-                             ModelComponent,
-                             LightComponent>
+        RenderGraphCollector<component::Transform,
+                             component::Camera,
+                             component::ViewProjection,
+                             component::LocalToWorld,
+                             component::Model,
+                             component::Light>
             collector{ m_Registry };
 
         auto render_command_list = m_RenderGraph->Execute(collector.getRegistry());
@@ -135,11 +135,11 @@ void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
 
     for (auto& model : m_Models) {
         m_Entities.emplace_back() = m_Registry.create();
-        m_Registry.emplace<ModelComponent>(m_Entities.back(), model);
-        m_Registry.emplace<TransformComponent>(m_Entities.back());
+        m_Registry.emplace<component::Model>(m_Entities.back(), model);
+        m_Registry.emplace<component::Transform>(m_Entities.back());
     }
 
-    LightComponent light_component{};
+    component::Light light_component{};
 
     //glm::mat4 proj = glm::perspective(glm::radians(45.0f),
     //                                  1920.0f / 1080.0f,
@@ -156,17 +156,17 @@ void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
     light_component.transform = proj * view;
 
     m_Entities.emplace_back() = m_Registry.create();
-    m_Registry.emplace<LightComponent>(m_Entities.back(), light_component);
+    m_Registry.emplace<component::Light>(m_Entities.back(), light_component);
 
     m_Camera = m_Registry.create();
-    m_Registry.emplace<CameraComponent>(m_Camera,
-                                        CameraComponent{ .camera_settings = CameraComponent::PerspectiveSettings{
-                                                             .fov          = glm::radians(45.0f),
-                                                             .aspect_ratio = 1920.0f / 1080.0f,
-                                                             .near_plane   = 0.1f,
-                                                             .far_plane    = 1000.0f },
-                                                         .is_primary = true });
-    m_Registry.emplace<TransformComponent>(m_Camera, TransformComponent{ .position = glm::vec3{ 8.0f, 3.0f, 5.0f } });
+    m_Registry.emplace<component::Camera>(m_Camera,
+                                          component::Camera{ .camera_settings = component::Camera::PerspectiveSettings{
+                                                                 .fov          = glm::radians(45.0f),
+                                                                 .aspect_ratio = 1920.0f / 1080.0f,
+                                                                 .near_plane   = 0.1f,
+                                                                 .far_plane    = 1000.0f },
+                                                             .is_primary = true });
+    m_Registry.emplace<component::Transform>(m_Camera, component::Transform{ .position = glm::vec3{ 8.0f, 3.0f, 5.0f } });
 }
 
 void fe::Application::InitializePrimaryWindow(const ApplicationDesc& desc) {

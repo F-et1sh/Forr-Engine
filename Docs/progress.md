@@ -6,6 +6,7 @@
 
 ### Done
     CameraComponent::OrthographicCamera and CameraComponent::PerspectiveCamera processing in CameraSystem added
+    'fe::*Component' --> 'fe::component::*'
 
 ### Problem
     school and lack of sleep

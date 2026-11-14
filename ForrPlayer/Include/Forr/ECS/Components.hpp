@@ -3,8 +3,10 @@
     Forr Engine
 
     File : Components.hpp
-    Role : ECS ( Entity Component System ) components.
+    Role : ECS ( Entity System ) components.
         All structures here must be POD - this ECS is data-oriented.
+
+        TODO : think about adding that "DOD fe::component::Transform --> OOP fe::TransformComponent" like in Resource Management system
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -18,19 +20,18 @@
 #include "Forr/ResourceManagement/Resources.hpp"
 #include "Forr/Graphics/Camera.hpp"
 
-// TODO : think about making this 'fe::component' and removing that '*Component' postfix
-namespace fe {
-    struct TransformComponent {
+namespace fe::component {
+    struct Transform {
         glm::vec3 position{};
         glm::quat rotation{ 1.0f, 0.0f, 0.0f, 0.0f };
         glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
     };
 
-    struct LocalToWorldComponent {
+    struct LocalToWorld {
         glm::mat4 matrix{};
     };
 
-    struct CameraComponent {
+    struct Camera {
         struct PerspectiveSettings {
             float fov{};
             float aspect_ratio{};
@@ -55,25 +56,25 @@ namespace fe {
         bool is_primary{};
     };
 
-    struct ViewProjectionComponent {
+    struct ViewProjection {
         glm::mat4 projection{};
         glm::mat4 view{};
         glm::mat4 view_projection{};
     };
 
-    struct LightComponent {
+    struct Light {
         glm::mat4 transform{}; // temp
 
-        LightComponent(const glm::mat4& transform)
+        Light(const glm::mat4& transform)
             : transform(transform) {}
 
-        LightComponent() = default;
+        Light() = default;
     };
 
-    struct ModelComponent {
+    struct Model {
         fe::pointer<resource::Model> model_ptr{};
 
-        ModelComponent(fe::pointer<resource::Model> model_ptr) : model_ptr(model_ptr) {}
-        ModelComponent() = default;
+        Model(fe::pointer<resource::Model> model_ptr) : model_ptr(model_ptr) {}
+        Model() = default;
     };
-} // namespace fe
+} // namespace fe::component
