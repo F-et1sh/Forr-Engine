@@ -23,7 +23,7 @@ fe::TransformSystem::TransformSystem(entt::registry& registry) : m_Registry(regi
 
 void fe::TransformSystem::OnUpdate() {
     for (auto entity : m_DirtyStorage) {
-        TransformComponent&   transform_component = m_Registry.get().get<TransformComponent>(entity);
+        TransformComponent& transform_component = m_Registry.get().get<TransformComponent>(entity);
 
         LocalToWorldComponent local_to_world_component{};
 

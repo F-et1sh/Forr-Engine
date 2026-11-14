@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 14.11.2026
+### Goal
+    implement scene camera as 'std::variant<fe::PerspectiveCamera, fe::OrthographicCamera>'
+
+### Done
+    CameraComponent::OrthographicCamera and CameraComponent::PerspectiveCamera processing in CameraSystem added
+
+### Problem
+    school and lack of sleep
+
 ## 08.11.2026
 ### Goal
     create 'fe::OrthographicCamera' and 'fe::PerspectiveCamera'
@@ -7,6 +17,7 @@
 
 ### Done
     CameraSystem added
+    CameraComponent::OrthographicCamera and CameraComponent::PerspectiveCamera added
 
 ### Problem
     skypjack doesn't know what is 'backward compatibility'
