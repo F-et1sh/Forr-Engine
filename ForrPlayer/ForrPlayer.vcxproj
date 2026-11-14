@@ -127,7 +127,6 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     <ClInclude Include="Include\Forr\Core\string.hpp" />
     <ClInclude Include="Include\Forr\ECS\Components.hpp" />
     <ClInclude Include="Include\Forr\ECS\Systems\RenderSystem.hpp" />
-    <ClInclude Include="Include\Forr\Graphics\Camera.hpp" />
     <ClInclude Include="Include\Forr\Graphics\DefaultPipelineBuilders.hpp" />
     <ClInclude Include="Include\Forr\Graphics\DefaultRenderPasses.hpp" />
     <ClInclude Include="Include\Forr\Graphics\IRenderer.hpp" />
@@ -176,7 +175,6 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     <ClCompile Include="Source\Input\InputSystem.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\ShaderImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceCreator.cpp" />
-    <ClCompile Include="Source\Graphics\Camera.cpp" />
     <ClCompile Include="Source\Application.cpp" />
     <ClCompile Include="Source\Graphics\IRenderer.cpp" />
     <ClCompile Include="Source\Graphics\OpenGL\RendererOpenGL.cpp" />

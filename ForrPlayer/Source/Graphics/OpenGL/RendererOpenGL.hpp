@@ -14,7 +14,6 @@
 #include <array>
 
 #include "Forr/Graphics/IRenderer.hpp"
-#include "Forr/Graphics/Camera.hpp"
 #include "OpenGLTypes.hpp"
 #include <GLFW/glfw3.h>
 #include "Tools.hpp"

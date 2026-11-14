@@ -28,8 +28,6 @@
 #include "VKTools.hpp"
 #include "VulkanTypes.hpp"
 
-#include "Forr/Graphics/Camera.hpp"
-
 namespace fe {
     class RendererVulkan : public IRenderer {
     public:
@@ -186,8 +184,6 @@ namespace fe {
 
         std::array<FrameData, MAX_CONCURRENT_FRAMES> m_FrameData{};
         std::vector<fe::vk::Semaphore>               m_RenderCompleteSemaphores{};
-
-        Camera m_Camera{};
 
         uint32_t m_CurrentFrame{};
         uint32_t m_ImageIndex{};

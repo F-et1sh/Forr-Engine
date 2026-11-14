@@ -18,7 +18,25 @@
 
 #include "Forr/Core/pointer.hpp"
 #include "Forr/ResourceManagement/Resources.hpp"
-#include "Forr/Graphics/Camera.hpp"
+
+#include <entt/fwd.hpp>
+
+namespace fe {
+    template <typename... Components>
+    static constexpr void bind_to_update_of(entt::reactive_mixin<entt::storage<void>>& dirty_storage) noexcept {
+        (dirty_storage.on_update<Components>(), ...);
+    }
+
+    template <typename... Components>
+    static constexpr void bind_to_construct_of(entt::reactive_mixin<entt::storage<void>>& dirty_storage) noexcept {
+        (dirty_storage.on_construct<Components>(), ...);
+    }
+
+    template <typename... Components>
+    static constexpr void bind_to_destroy_of(entt::reactive_mixin<entt::storage<void>>& dirty_storage) noexcept {
+        (dirty_storage.on_destroy<Components>(), ...);
+    }
+} // namespace fe
 
 namespace fe::component {
     struct Transform {

@@ -16,7 +16,6 @@
     <ClInclude Include="Include\Forr\Graphics\GPUTypes.hpp" />
     <ClInclude Include="Include\Forr\Core\path.hpp" />
     <ClInclude Include="Source\Tools.hpp" />
-    <ClInclude Include="Include\Forr\Graphics\Camera.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceManager.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\Resources.hpp" />
     <ClInclude Include="Include\Forr\ResourceManagement\ResourceImporter.hpp" />
@@ -66,7 +65,6 @@
     <ClCompile Include="Source\Platform\GLFW\WindowGLFW.cpp" />
     <ClCompile Include="Source\Graphics\IRenderer.cpp" />
     <ClCompile Include="Source\path.cpp" />
-    <ClCompile Include="Source\Graphics\Camera.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceManager.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\TextureImporter.cpp" />

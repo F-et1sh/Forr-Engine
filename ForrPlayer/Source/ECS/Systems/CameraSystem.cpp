@@ -17,17 +17,13 @@
 
 fe::CameraSystem::CameraSystem(entt::registry& registry) : m_Registry(registry) {
     m_DirtyStorage.bind(registry);
-    m_DirtyStorage.on_construct<component::Camera>();
-    m_DirtyStorage.on_update<component::Camera>();
 
-    m_DirtyStorage.on_construct<component::LocalToWorld>();
-    m_DirtyStorage.on_update<component::LocalToWorld>();
+    fe::bind_to_construct_of<component::Camera, component::LocalToWorld>(m_DirtyStorage);
+    fe::bind_to_update_of<component::Camera, component::LocalToWorld>(m_DirtyStorage);
 }
 
 void fe::CameraSystem::OnUpdate() {
-    auto dirty_view = m_DirtyStorage.view<component::Camera, component::LocalToWorld>();
-
-    dirty_view.each([&](auto entity, const component::Camera& camera_component, const component::LocalToWorld& local_to_world_component) {
+    for (auto [entity, camera_component, local_to_world_component] : m_DirtyStorage.view<component::Camera, component::LocalToWorld>().each()) {
         component::ViewProjection view_projection_component{};
 
         std::visit([&view_projection_component](auto&& camera_settigs) {
@@ -40,11 +36,12 @@ void fe::CameraSystem::OnUpdate() {
             }
         },
                    camera_component.camera_settings);
-        
+
         view_projection_component.view            = glm::inverse(local_to_world_component.matrix);
         view_projection_component.view_projection = view_projection_component.projection * view_projection_component.view;
 
         m_Registry.get().emplace_or_replace<component::ViewProjection>(entity, view_projection_component);
-    });
+    }
+
     m_DirtyStorage.clear();
 }
