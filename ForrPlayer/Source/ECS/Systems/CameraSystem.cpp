@@ -18,8 +18,17 @@
 fe::CameraSystem::CameraSystem(entt::registry& registry) : m_Registry(registry) {
     m_DirtyStorage.bind(registry);
 
-    fe::bind_to_construct_of<component::Camera, component::LocalToWorld>(m_DirtyStorage);
-    fe::bind_to_update_of<component::Camera, component::LocalToWorld>(m_DirtyStorage);
+    fe::bind_related_component<component::ViewProjection, // related component
+                               component::Camera,         // main component
+                               component::LocalToWorld>   // affected by component
+        (m_DirtyStorage);
+}
+
+fe::CameraSystem::~CameraSystem() {
+    fe::unbind_related_component<component::ViewProjection, // related component
+                                 component::Camera,         // main component
+                                 component::LocalToWorld>   // affected by component
+        (m_DirtyStorage);
 }
 
 void fe::CameraSystem::OnUpdate() {

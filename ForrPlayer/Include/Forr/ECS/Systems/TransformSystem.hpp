@@ -20,7 +20,7 @@ namespace fe {
     class FORR_API TransformSystem {
     public:
         TransformSystem(entt::registry& registry);
-        ~TransformSystem() = default;
+        ~TransformSystem();
 
         void OnUpdate();
 

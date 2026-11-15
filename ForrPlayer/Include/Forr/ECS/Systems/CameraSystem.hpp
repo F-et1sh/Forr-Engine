@@ -20,7 +20,7 @@ namespace fe {
     class FORR_API CameraSystem {
     public:
         CameraSystem(entt::registry& registry);
-        ~CameraSystem() = default;
+        ~CameraSystem();
 
         void OnUpdate();
 

@@ -33,7 +33,7 @@ namespace fe {
 
         struct Listener {
             using SubscriptionID = size_t;
-            using Callback       = void (*)(void*, const void*);
+            using Callback       = void (*)(void*, const void* event);
             using DestructorFunc = void (*)(void*);
 
             SubscriptionID subscription_id{};

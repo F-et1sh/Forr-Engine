@@ -6,6 +6,7 @@
 
 ### Done
     'string_raw' added, names in 'type_registry.hpp' fixed, 'dll_module_api.hpp' added
+    added a lot of helper to with with EnTT
 
 ### Problem
     -

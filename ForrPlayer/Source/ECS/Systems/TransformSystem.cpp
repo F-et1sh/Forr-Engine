@@ -17,8 +17,12 @@
 
 fe::TransformSystem::TransformSystem(entt::registry& registry) : m_Registry(registry) {
     m_DirtyStorage.bind(registry);
-    m_DirtyStorage.on_construct<component::Transform>();
-    m_DirtyStorage.on_update<component::Transform>();
+
+    fe::bind_related_component<component::LocalToWorld, component::Transform>(m_DirtyStorage);
+}
+
+fe::TransformSystem::~TransformSystem() {
+    fe::unbind_related_component<component::LocalToWorld, component::Transform>(m_DirtyStorage);
 }
 
 void fe::TransformSystem::OnUpdate() {
