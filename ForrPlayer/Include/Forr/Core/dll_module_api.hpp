@@ -55,8 +55,6 @@ namespace fe {
         on_release_func    on_release{};
     };
 
-    using get_module_func = const module_desc* (*) ();
-
     template <typename T>
     void register_component(const engine_api* api, const char* name) {
         component_desc desc{};
@@ -72,7 +70,7 @@ namespace fe {
     // this define creates a function to be found by the 'ForrGame' or 'ForrEditor' via 'LoadLibrary()'
     // use it as an entry point into your game/mod
 #define FORR_REGISTER_DLL_MODULE(name, is_primary, on_initialize, on_update, on_release) \
-    extern "C" __declspec(dllexport) const ModuleDesc* GetModule() {                     \
+    extern "C" __declspec(dllexport) const module_desc* get_module() {                   \
         static module_desc result{                                                       \
             name,                                                                        \
             is_primary,                                                                  \
