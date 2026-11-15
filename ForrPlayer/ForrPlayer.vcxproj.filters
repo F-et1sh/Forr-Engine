@@ -60,12 +60,12 @@
     <ClCompile Include="Source\Application.cpp" />
     <ClCompile Include="Source\pch.cpp" />
     <ClCompile Include="Source\Layer.cpp" />
-    <ClCompile Include="Source\logging.cpp" />
+    <ClCompile Include="Source\Core\logging.cpp" />
     <ClCompile Include="Source\Platform\IPlatformSystem.cpp" />
     <ClCompile Include="Source\Platform\GLFW\PlatformSystemGLFW.cpp" />
     <ClCompile Include="Source\Platform\GLFW\WindowGLFW.cpp" />
     <ClCompile Include="Source\Graphics\IRenderer.cpp" />
-    <ClCompile Include="Source\path.cpp" />
+    <ClCompile Include="Source\Core\path.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceManager.cpp" />
     <ClCompile Include="Source\ResourceManagement\ResourceImporter.cpp" />
     <ClCompile Include="Source\ResourceManagement\Importers\TextureImporter.cpp" />
@@ -82,5 +82,6 @@
     <ClCompile Include="Source\Input\InputSystem.cpp" />
     <ClCompile Include="Source\ECS\Systems\TransformSystem.cpp" />
     <ClCompile Include="Source\ECS\Systems\CameraSystem.cpp" />
+    <ClCompile Include="Source\Core\dll_module_api.cpp" />
   </ItemGroup>
 </Project>

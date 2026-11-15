@@ -14,6 +14,9 @@
 #include "Forr/Core/path.hpp"
 
 int main(int argc, char* argv[]) {
+
+    
+
     std::setlocale(0, "RU");
 
     fe::ApplicationDesc desc{};

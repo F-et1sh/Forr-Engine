@@ -7,6 +7,7 @@
 ### Done
     'string_raw' added, names in 'type_registry.hpp' fixed, 'dll_module_api.hpp' added
     added a lot of helper to with with EnTT
+    dll_module_api.hpp/dll_module_api.cpp in process ( or almost done )
 
 ### Problem
     -

@@ -168,6 +168,7 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     <ClInclude Include="Source\Tools.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Core\dll_module_api.cpp" />
     <ClCompile Include="Source\ECS\Systems\CameraSystem.cpp" />
     <ClCompile Include="Source\ECS\Systems\RenderSystem.cpp" />
     <ClCompile Include="Source\ECS\Systems\TransformSystem.cpp" />
@@ -182,8 +183,8 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     <ClCompile Include="Source\Graphics\Vulkan\RendererVulkan.cpp" />
     <ClCompile Include="Source\Graphics\Vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="Source\Layer.cpp" />
-    <ClCompile Include="Source\logging.cpp" />
-    <ClCompile Include="Source\path.cpp" />
+    <ClCompile Include="Source\Core\logging.cpp" />
+    <ClCompile Include="Source\Core\path.cpp" />
     <ClCompile Include="Source\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
