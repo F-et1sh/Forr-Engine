@@ -26,9 +26,9 @@ namespace fe {
     class EventBus {
     private:
         struct EventHeader {
-            TypeRegistry<EventBus>::TypeID event_type_id{};
-            size_t                         event_structure_offset{}; // starts from std::vector<>::data()
-            size_t                         next_header_offset{};     // starts from std::vector<>::data()
+            type_registry<EventBus>::type_id event_type_id{};
+            size_t                           event_structure_offset{}; // starts from std::vector<>::data()
+            size_t                           next_header_offset{};     // starts from std::vector<>::data()
         };
 
         struct Listener {
@@ -104,7 +104,7 @@ namespace fe {
         template <typename Event>
             requires std::is_trivially_copyable_v<Event> && std::is_trivially_destructible_v<Event>
         void Enqueue(const Event& event) {
-            const TypeRegistry<EventBus>::TypeID id = TypeRegistry<EventBus>::get_id<Event>();
+            const type_registry<EventBus>::type_id id = type_registry<EventBus>::get_id<Event>();
 
             size_t storage_size                  = m_Storage.size();
             size_t aligned_header_offset         = fe::align_up(alignof(EventHeader), storage_size);
@@ -133,7 +133,7 @@ namespace fe {
 
             static_assert(std::is_same_v<typename Traits::ClassT, ClassT>, "The provided instance does not match the class of the function");
 
-            TypeRegistry<EventBus>::TypeID type_id = TypeRegistry<EventBus>::get_id<EventT>();
+            type_registry<EventBus>::type_id type_id = type_registry<EventBus>::get_id<EventT>();
 
             if (type_id >= m_Listeners.size()) {
                 m_Listeners.resize(type_id + 1);
@@ -164,7 +164,7 @@ namespace fe {
             using ClassT = Traits::ClassT;
             using EventT = Traits::EventT;
 
-            TypeRegistry<EventBus>::TypeID type_id = TypeRegistry<EventBus>::get_id<EventT>();
+            type_registry<EventBus>::type_id type_id = type_registry<EventBus>::get_id<EventT>();
 
             if (type_id >= m_Listeners.size()) {
                 m_Listeners.resize(type_id + 1);

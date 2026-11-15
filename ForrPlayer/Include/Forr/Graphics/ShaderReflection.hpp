@@ -85,6 +85,8 @@ namespace fe::shader {
         ReflectedDataNode(ValueType type, uint32_t array_size, uint32_t size, std::vector<ReflectedMember> members, std::string name)
             : type(type), array_size(array_size), size(size), members(std::move(members)), name(std::move(name)) {}
 
+        // TODO : think about moving to non-RTTI ( without 'dynamic_cast' ) method
+        // but right now ( 15.11.2026 ) there is no need in that
         virtual ~ReflectedDataNode() = default;
 
         FORR_CLASS_MOVABLE(ReflectedDataNode)

@@ -25,6 +25,12 @@
 namespace fe {
     using string_hash = uint64_t;
 
+    using string_raw    = const char*;
+    using u8string_raw  = const char8_t*;
+    using u16string_raw = const char16_t*;
+    using u32string_raw = const char32_t*;
+    using wstring_raw   = const wchar_t*;
+
     static constexpr string_hash HASH_START = 14695981039346656037ULL;
     static constexpr string_hash HASH_SHIFT = 1099511628211ULL;
 

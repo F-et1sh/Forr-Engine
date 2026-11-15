@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 15.11.2026
+### Goal
+    provide modules to load the game as a dll
+
+### Done
+    'string_raw' added, names in 'type_registry.hpp' fixed, 'dll_module_api.hpp' added
+
+### Problem
+    -
+
 ## 14.11.2026
 ### Goal
     implement scene camera as 'std::variant<fe::PerspectiveCamera, fe::OrthographicCamera>'
@@ -91,7 +101,7 @@
 ### Done
     context.hpp added
     guid.hpp -> type_registry.hpp
-    'fe::TypeRegistry' --> 'fe::TypeRegistry<typename Category>'
+    'fe::type_registry' --> 'fe::type_registry<typename Category>'
     events provided and everything's working fine
 
 ### Problem
@@ -156,7 +166,7 @@
 
 ### Done
     EventBus added. #include "pch.hpp" --> #include "Forr/PCH/pch.hpp"
-    EventBus::TypeRegistry added. fe::render_graph::CommandList fixed
+    EventBus::type_registry added. fe::render_graph::CommandList fixed
 
 ### Problem
     School & lack of sleep

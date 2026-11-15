@@ -19,11 +19,15 @@
 #include "type_registry.hpp"
 
 namespace fe {
+    struct EngineContext {
+
+    };
+
     //class EngineContext {
     //public:
     //    template <typename T>
     //    void Register(T& system) {
-    //        const TypeRegistry<EngineContext>::TypeID type_id = TypeRegistry<EngineContext>::get_id<T>();
+    //        const type_registry<EngineContext>::type_id type_id = type_registry<EngineContext>::get_id<T>();
     //        if (type_id >= m_types.size()) {
     //            m_types.resize(type_id + 1, nullptr);
     //        }
@@ -35,7 +39,7 @@ namespace fe {
     //
     //    template <typename T>
     //    T& Get() {
-    //        const TypeRegistry<EngineContext>::TypeID type_id = TypeRegistry<EngineContext>::get_id<T>();
+    //        const type_registry<EngineContext>::type_id type_id = type_registry<EngineContext>::get_id<T>();
     //        if (type_id >= m_types.size() || m_types[type_id] == nullptr) {
     //            fe::logging::fatal("Failed to find a type. Type wasn't registered.\nType index was %llu", type_id);
     //        }
