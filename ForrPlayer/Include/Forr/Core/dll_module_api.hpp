@@ -124,8 +124,8 @@ namespace fe::dll_api {
 
     template <typename FuncPtr>
         requires std::is_pointer_v<FuncPtr>
-    FORR_NODISCARD std::expected<FuncPtr, library_loading_error> get_symbol_address(library_handle library_handle, std::string_view symbol_name) {
-        return reinterpret_cast<FuncPtr>(fe::dll_api::get_symbol_address_raw(library_handle, symbol_name));
+    FORR_NODISCARD std::expected<FuncPtr, library_loading_error> get_symbol_address(library_handle loaded_library_handle, std::string_view symbol_name) {
+        return reinterpret_cast<FuncPtr>(fe::dll_api::get_symbol_address_raw(loaded_library_handle, symbol_name));
     }
 
     using create_application_module = application_module* (*) ();
@@ -139,8 +139,8 @@ namespace fe::dll_api {
 // this define creates a function to be found by the 'ForrGame' or 'ForrEditor' via 'fe::dll_api::load_library()'
 // use it as an entry point into your game/mod
 #define FORR_REGISTER_DLL_MODULE(name, is_primary, on_initialize, on_update, on_release) \
-    FORR_MODULE_EXPORT application_module* get_application_module() {                    \
-        static application_module result{                                                \
+    FORR_MODULE_EXPORT fe::dll_api::application_module* get_application_module() {       \
+        static fe::dll_api::application_module result{                                   \
             name,                                                                        \
             is_primary,                                                                  \
             on_initialize,                                                               \
