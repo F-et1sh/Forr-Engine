@@ -1,5 +1,15 @@
 ﻿# Forr-Engine Devlog
 
+## 17.11.2026
+### Goal
+    create an extension for the 'Forr-Editor'
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 15.11.2026
 ### Goal
     provide modules to load the game as a dll
