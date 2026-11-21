@@ -52,8 +52,8 @@ fe::dll_api::load_library(const std::filesystem::path& full_path) {
     return library_handle{ result };
 }
 
-std::expected<fe::dll_api::symbol_handle_raw, fe::dll_api::symbol_getting_error> fe::dll_api::get_symbol_address_raw(library_handle library_handle, std::string_view symbol_name) {
-    if (!library_handle) {
+std::expected<fe::dll_api::symbol_handle_raw, fe::dll_api::symbol_getting_error> fe::dll_api::get_symbol_address_raw(fe::dll_api::library_handle_raw loaded_library_handle, std::string_view symbol_name) {
+    if (!loaded_library_handle) {
         return std::unexpected{ symbol_getting_error::LIBRARY_HANDLE_WAS_NULL };
     }
 
@@ -64,9 +64,9 @@ std::expected<fe::dll_api::symbol_handle_raw, fe::dll_api::symbol_getting_error>
     std::string name_str{ symbol_name };
 
 #ifdef _WIN32
-    FARPROC raw_symbol = GetProcAddress(reinterpret_cast<HMODULE>(library_handle.get_raw_handle()), name_str.c_str());
+    FARPROC raw_symbol = GetProcAddress(reinterpret_cast<HMODULE>(loaded_library_handle), name_str.c_str());
 #else
-    void* raw_symbol = dlsym(library_handle, name_str.c_str());
+    void* raw_symbol = dlsym(loaded_library_handle, name_str.c_str());
 #endif
 
     if (!raw_symbol) {
@@ -76,14 +76,14 @@ std::expected<fe::dll_api::symbol_handle_raw, fe::dll_api::symbol_getting_error>
     return raw_symbol;
 }
 
-bool fe::dll_api::free_library(library_handle library_handle) {
-    if (!library_handle) {
+bool fe::dll_api::free_library_raw(fe::dll_api::library_handle_raw loaded_library_handle) {
+    if (!loaded_library_handle) {
         return false;
     }
 
 #ifdef _WIN32
-    return FreeLibrary(reinterpret_cast<HMODULE>(library_handle.get_raw_handle())) != 0;
+    return FreeLibrary(reinterpret_cast<HMODULE>(loaded_library_handle)) != 0;
 #else
-    return dlclose(library_handle) == 0;
+    return dlclose(loaded_library_handle) == 0;
 #endif
 }

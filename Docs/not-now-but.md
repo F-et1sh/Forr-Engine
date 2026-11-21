@@ -1,5 +1,11 @@
 # Forr-Engine Not now, but :
 
+# Added 21.11.2026
+- rename 'ForrPlayer' --> 'ForrEngine' ( not that necessary )
+- rename 'ForrGame' --> 'ForrGame-Example'
+
+<hr style="height: 2px; background-color: #555; border: none; margin: 30px 0;">
+
 # Added 07.11.2026
 - provide joystick and gamepad supporting
 

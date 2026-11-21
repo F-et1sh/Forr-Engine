@@ -12,6 +12,7 @@
 ===============================================*/
 
 #pragma once
+#include <utility>
 #include <filesystem>
 #include <expected>
 
@@ -49,9 +50,14 @@ namespace fe::dll_api {
 
     // game or mod
     struct application_module {
+
+        using get_info_func = const char* (*) ();
+
         using on_initialize_func = void (*)(const engine_api*);
         using on_update_func     = void (*)(const engine_api*);
         using on_release_func    = void (*)(const engine_api*);
+
+        get_info_func get_info{};
 
         string_raw name{};
         bool       is_primary{};
@@ -91,42 +97,37 @@ namespace fe::dll_api {
     };
 
     FORR_NODISCARD FORR_API std::expected<library_handle, library_loading_error> load_library(const std::filesystem::path& full_path);
-    FORR_NODISCARD FORR_API std::expected<symbol_handle_raw, symbol_getting_error> get_symbol_address_raw(library_handle library_handle, std::string_view symbol_name);
+    FORR_NODISCARD FORR_API std::expected<symbol_handle_raw, symbol_getting_error> get_symbol_address_raw(library_handle_raw loaded_library_handle, std::string_view symbol_name);
     // @returns 'false', if 'library_handle' was null or if something went wrong
-    FORR_API bool free_library(library_handle library_handle);
+    FORR_API bool free_library_raw(library_handle_raw loaded_library_handle);
 
     class library_handle {
+        struct deleter {
+            void operator()(void* ptr) const noexcept {
+                if (ptr) fe::dll_api::free_library_raw(ptr);
+            }
+        };
+
     public:
         library_handle() = default;
-        library_handle(void* handle) noexcept
-            : m_handle(handle) {}
-
-        ~library_handle() {
-            if (m_handle) {
-                fe::dll_api::free_library(m_handle);
-            }
-        }
-
-        FORR_CLASS_MOVABLEONLY(library_handle)
+        explicit library_handle(void* handle) noexcept : m_handle(handle) {}
 
         template <typename FuncPtr>
-        auto get_symbol(std::string_view symbol_name) const {
-            return reinterpret_cast<FuncPtr>(fe::dll_api::get_symbol_address_raw(m_handle, symbol_name));
+            requires std::is_pointer_v<FuncPtr>
+        FORR_NODISCARD std::expected<FuncPtr, symbol_getting_error> get_symbol_address(std::string_view symbol_name) const {
+            auto result = fe::dll_api::get_symbol_address_raw(m_handle.get(), symbol_name);
+            if (result.has_value()) {
+                return reinterpret_cast<FuncPtr>(result.value());
+            }
+            return std::unexpected{ result.error() };
         }
 
-        FORR_NODISCARD library_handle_raw get_raw_handle() const noexcept { return m_handle; }
-
-        explicit operator bool() const noexcept { return m_handle != nullptr; }
+        FORR_NODISCARD library_handle_raw get() const noexcept { return m_handle.get(); }
+        explicit                          operator bool() const noexcept { return m_handle != nullptr; }
 
     private:
-        void* m_handle{ nullptr };
+        std::unique_ptr<void, deleter> m_handle{ nullptr };
     };
-
-    template <typename FuncPtr>
-        requires std::is_pointer_v<FuncPtr>
-    FORR_NODISCARD std::expected<FuncPtr, library_loading_error> get_symbol_address(library_handle loaded_library_handle, std::string_view symbol_name) {
-        return reinterpret_cast<FuncPtr>(fe::dll_api::get_symbol_address_raw(loaded_library_handle, symbol_name));
-    }
 
     using create_application_module = application_module* (*) ();
 
