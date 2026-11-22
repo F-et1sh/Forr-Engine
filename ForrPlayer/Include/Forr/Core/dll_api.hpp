@@ -2,9 +2,9 @@
 
     Forr Engine
 
-    File : dll_module_api.hpp
+    File : dll_api.hpp
     Role : provides an interface to register a dll module ( a game or a mod )
-           and unified function to load, unload and get process address from a dll
+           and unified function to load, unload and get symbol addresses from the loaded dll
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -74,8 +74,6 @@ namespace fe::dll_api {
         api->register_component(&desc);
     }
 
-    class library_handle; // forward declaration
-
     using library_handle_raw = void*;
     using symbol_handle_raw  = void*;
 
@@ -91,40 +89,17 @@ namespace fe::dll_api {
         SYMBOL_NOT_FOUND
     };
 
-    FORR_NODISCARD FORR_API std::expected<library_handle, library_loading_error> load_library(const std::filesystem::path& full_path);
+    FORR_NODISCARD FORR_API std::expected<library_handle_raw, library_loading_error> load_library_raw(const std::filesystem::path& full_path);
     FORR_NODISCARD FORR_API std::expected<symbol_handle_raw, symbol_getting_error> get_symbol_address_raw(library_handle_raw loaded_library_handle, std::string_view symbol_name);
-    // @returns 'false', if 'library_handle' was null or if something went wrong
+    // @returns 'false', if 'library_handle_raw' was null or if something went wrong
     FORR_API bool free_library_raw(library_handle_raw loaded_library_handle);
 
-    class library_handle {
-        struct deleter {
-            void operator()(void* ptr) const noexcept {
-                if (ptr) fe::dll_api::free_library_raw(ptr);
-            }
-        };
-
-    public:
-        library_handle() = default;
-        explicit library_handle(void* handle) noexcept : m_handle(handle) {}
-
-        template <typename FuncPtr>
-            requires std::is_pointer_v<FuncPtr>
-        FORR_NODISCARD std::expected<FuncPtr, symbol_getting_error> get_symbol_address(std::string_view symbol_name) const {
-            auto result = fe::dll_api::get_symbol_address_raw(m_handle.get(), symbol_name);
-            if (result.has_value()) {
-                return reinterpret_cast<FuncPtr>(result.value());
-            }
-            return std::unexpected{ result.error() };
+    struct deleter {
+        void operator()(void* ptr) const noexcept {
+            if (ptr) fe::dll_api::free_library_raw(ptr);
         }
-
-        FORR_NODISCARD library_handle_raw get() const noexcept { return m_handle.get(); }
-        explicit                          operator bool() const noexcept { return m_handle != nullptr; }
-
-    private:
-        std::unique_ptr<void, deleter> m_handle{ nullptr };
     };
-
-    using create_application_module = application_module* (*) ();
+    using library_handle = std::unique_ptr<void, deleter>;
 
 #ifdef _WIN32
 #define FORR_MODULE_EXPORT extern "C" __declspec(dllexport)

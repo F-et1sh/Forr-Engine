@@ -10,7 +10,7 @@
 
 ===============================================*/
 
-#include "Forr/Core/dll_module_api.hpp"
+#include "Forr/Core/dll_api.hpp"
 
 void on_initialize(const fe::dll_api::engine_api* engine_api) {
 }

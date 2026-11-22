@@ -7,10 +7,11 @@
     'dll_module_api.hpp'/'dll_module_api.cpp' --> 'dll_api.hpp'/'dll_api.cpp'
     provide executing stages ( priorities ) for the systems
     create 'in-game' events
-    redesign the dll_module_api.hpp logic
+    redesign the dll_api.hpp logic
 
 ### Done
     some optimizations in 'DefaultPipelineBuilders.hpp', 'SlangParser.hpp' and 'SlangParser.cpp'
+    'dll_module_api.hpp'/'dll_module_api.cpp' --> 'dll_api.hpp'/'dll_api.cpp'
 
 ### Problem
     -

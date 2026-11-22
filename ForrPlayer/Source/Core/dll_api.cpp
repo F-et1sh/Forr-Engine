@@ -2,8 +2,9 @@
 
     Forr Engine
 
-    File : dll_module_api.cpp
-    Role : provides an interface to register your dll module ( a game or a mod )
+    File : dll_api.cpp
+    Role : provides an interface to register a dll module ( a game or a mod )
+           and unified function to load, unload and get symbol addresses from the loaded dll
 
     Copyright (C) 2026 Farrakh
     All Rights Reserved.
@@ -11,7 +12,7 @@
 ===============================================*/
 
 #include "Forr/PCH/pch.hpp"
-#include "Forr/Core/dll_module_api.hpp"
+#include "Forr/Core/dll_api.hpp"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -24,8 +25,8 @@ constexpr std::string_view LIB_EXT = ".dylib";
 constexpr std::string_view LIB_EXT = ".so";
 #endif
 
-std::expected<fe::dll_api::library_handle, fe::dll_api::library_loading_error>
-fe::dll_api::load_library(const std::filesystem::path& full_path) {
+std::expected<fe::dll_api::library_handle_raw, fe::dll_api::library_loading_error>
+fe::dll_api::load_library_raw(const std::filesystem::path& full_path) {
     if (full_path.empty()) {
         return std::unexpected{ library_loading_error::PATH_WAS_EMPTY };
     }
@@ -49,10 +50,11 @@ fe::dll_api::load_library(const std::filesystem::path& full_path) {
         return std::unexpected{ library_loading_error::FAILED_TO_LOAD_LIBRARY };
     }
 
-    return library_handle{ result };
+    return library_handle_raw{ result };
 }
 
-std::expected<fe::dll_api::symbol_handle_raw, fe::dll_api::symbol_getting_error> fe::dll_api::get_symbol_address_raw(fe::dll_api::library_handle_raw loaded_library_handle, std::string_view symbol_name) {
+std::expected<fe::dll_api::symbol_handle_raw, fe::dll_api::symbol_getting_error>
+fe::dll_api::get_symbol_address_raw(fe::dll_api::library_handle_raw loaded_library_handle, std::string_view symbol_name) {
     if (!loaded_library_handle) {
         return std::unexpected{ symbol_getting_error::LIBRARY_HANDLE_WAS_NULL };
     }
