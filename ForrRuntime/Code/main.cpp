@@ -47,7 +47,6 @@ int main(int argc, char* argv[]) {
 
     auto symbol_address = symbol_address_result.value();
 
-    fe::logging::info(symbol_address()->get_info());
 
     return 0;
 }

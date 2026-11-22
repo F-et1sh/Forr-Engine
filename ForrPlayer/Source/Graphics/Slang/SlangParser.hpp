@@ -51,15 +51,15 @@ namespace fe {
         FORR_CLASS_NONCOPYABLE(SlangParser)
 
         // TODO : firstly pass whole 'fe::PipelineDesc', then collapse this function, making the class more modular
-        static FORR_NODISCARD std::expected<shader::ProgramSources, ShaderBuildErrors> BuildShaderSources(const graphics::PipelineDesc& pipeline_desc, const ResourceManager& resource_manager);
+        FORR_NODISCARD static std::expected<shader::ProgramSources, ShaderBuildErrors> BuildShaderSources(const graphics::PipelineDesc& pipeline_desc, const ResourceManager& resource_manager);
 
         // TODO : return whole 'resource::ShaderFileData', then collapse this function, making the class more modular
-        static FORR_NODISCARD std::expected<resource::ShaderFileData, ShaderFileDataErrors> BuildShaderFileData(const std::filesystem::path& resource_full_path, const ResourceStorage& storage);
+        FORR_NODISCARD static std::expected<resource::ShaderFileData, ShaderFileDataErrors> BuildShaderFileData(const std::filesystem::path& resource_full_path, const ResourceStorage& storage);
 
     private:
-        static FORR_NODISCARD std::expected<Slang::ComPtr<slang::IComponentType>,
+        FORR_NODISCARD static std::expected<Slang::ComPtr<slang::IComponentType>,
                                             ShaderSpecializationErrors>
-                              specialize(const graphics::PipelineDesc& pipeline_desc, slang::IComponentType* composed_program, std::vector<slang::IComponentType*>& component_types);
+        specialize(const graphics::PipelineDesc& pipeline_desc, slang::IComponentType* composed_program, std::vector<slang::IComponentType*>& component_types);
 
         // this reflects descriptors and push constants
         static void parseVariableRecursive(slang::VariableLayoutReflection*             variable_layout,
@@ -77,9 +77,17 @@ namespace fe {
         static void mapScalar(slang::TypeLayoutReflection* type_layout, shader::ValueType& type);
 
     private:
-        inline static Slang::ComPtr<slang::IGlobalSession> m_GlobalSession{};
-        inline static Slang::ComPtr<slang::ISession>       m_Session{};
+        static Slang::ComPtr<slang::IGlobalSession>& getGlobalSession() {
+            static Slang::ComPtr<slang::IGlobalSession> S_GLOBAL_SESSION{};
+            return S_GLOBAL_SESSION;
+        }
 
-        inline static std::string m_UnknownVariableName{ "[UNKNOWN]" };
+        static Slang::ComPtr<slang::ISession>& getSession() {
+            static Slang::ComPtr<slang::ISession> S_SESSION{};
+            return S_SESSION;
+        }
+
+    private:
+        static constexpr std::string_view S_UNKNOWN_VARIABLE_NAME{ "[UNKNOWN]" };
     };
 } // namespace fe

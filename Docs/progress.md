@@ -1,5 +1,20 @@
 ﻿# Forr-Engine Devlog
 
+## 22.11.2026
+### Goal
+    create an extension for the 'Forr-Editor'
+    provide 'set_system_enabled' and 'override_system' for the dll api
+    'dll_module_api.hpp'/'dll_module_api.cpp' --> 'dll_api.hpp'/'dll_api.cpp'
+    provide executing stages ( priorities ) for the systems
+    create 'in-game' events
+    redesign the dll_module_api.hpp logic
+
+### Done
+    some optimizations in 'DefaultPipelineBuilders.hpp', 'SlangParser.hpp' and 'SlangParser.cpp'
+
+### Problem
+    -
+
 ## 21.11.2026
 ### Goal
     create an extension for the 'Forr-Editor'

@@ -58,16 +58,16 @@ namespace fe {
                                                                                    ResourceManager&                      resource_manager,
                                                                                    IRenderer&                            renderer) {
             /* declare common shader resources */
-            const static fe::hashed_string vertex_entry_point_name{ "vertexMain" };
-            const static fe::hashed_string fragment_entry_point_name{ "fragmentMain" };
-            const static fe::hashed_string material_interface_name{ "IMaterial" };
-            const static fe::hashed_string materials_raw_data_name{ "g_MaterialsRawData" };
-            const static fe::hashed_string model_matrices_name{ "g_ModelMatrices" };
-            const static fe::hashed_string global_data_name{ "g_GlobalData" };
-            const static fe::hashed_string push_constants_name{ "push_constants" };
-            const static fe::hashed_string unspecialized_buffer_name{ "TBuffer" };
-            const static fe::hashed_string opengl_buffer_name{ "OpenGLBuffer" };
-            const static fe::hashed_string vulkan_buffer_name{ "VulkanBuffer" };
+            const static fe::hashed_string_view vertex_entry_point_name{ "vertexMain" };
+            const static fe::hashed_string_view fragment_entry_point_name{ "fragmentMain" };
+            const static fe::hashed_string_view material_interface_name{ "IMaterial" };
+            const static fe::hashed_string_view materials_raw_data_name{ "g_MaterialsRawData" };
+            const static fe::hashed_string_view model_matrices_name{ "g_ModelMatrices" };
+            const static fe::hashed_string_view global_data_name{ "g_GlobalData" };
+            const static fe::hashed_string_view push_constants_name{ "push_constants" };
+            const static fe::hashed_string_view unspecialized_buffer_name{ "TBuffer" };
+            const static fe::hashed_string_view opengl_buffer_name{ "OpenGLBuffer" };
+            const static fe::hashed_string_view vulkan_buffer_name{ "VulkanBuffer" };
 
             // how many generic parameters are required for the entry point
             // applied to both entry points
@@ -91,9 +91,9 @@ namespace fe {
               graphics::PipelineDesc pipeline_desc{
                 .pipeline_flags        = material.pipeline_flags_override,
                 .shader_file_data_ptrs = { shader_file_data_ptr },
-                .entry_points          = { vertex_entry_point_name, fragment_entry_point_name },
-                .descriptor_sets       = { materials_raw_data_name, model_matrices_name, global_data_name },
-                .push_constants        = { push_constants_name },
+                .entry_points          = { vertex_entry_point_name.data(), fragment_entry_point_name.data() },
+                .descriptor_sets       = { materials_raw_data_name.data(), model_matrices_name.data(), global_data_name.data() },
+                .push_constants        = { push_constants_name.data() },
             };
 
             // this is needed to write directly into 'pipeline_desc' without extra copyings
@@ -167,11 +167,11 @@ namespace fe {
                 specialization.entry_points.emplace_back(shader::EntryPointSpecialization{
                     .name      = entry_point,
                     .arguments = { shader::SpecializationArgument{
-                        .name  = material_interface_name,
+                        .name  = material_interface_name.data(),
                         .value = material_structure_layout.name } } });
             }
 
-            std::reference_wrapper<const fe::hashed_string> buffer_specialization_name{ opengl_buffer_name };
+            std::reference_wrapper<const fe::hashed_string_view> buffer_specialization_name{ opengl_buffer_name };
 
             switch (renderer.GetCurrentGraphicsBackend()) {
                 case GraphicsBackend::OpenGL:
@@ -185,7 +185,7 @@ namespace fe {
             }
 
             // this is necessary to specialize at least 'g_MaterialsRawData'
-            specialization.global_arguments.emplace_back(shader::SpecializationArgument{ .name  = unspecialized_buffer_name,
+            specialization.global_arguments.emplace_back(shader::SpecializationArgument{ .name  = unspecialized_buffer_name.data(),
                                                                                          .value = buffer_specialization_name.get() });
 
             // create pipeline

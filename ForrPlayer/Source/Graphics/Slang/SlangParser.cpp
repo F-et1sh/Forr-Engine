@@ -25,9 +25,9 @@ namespace fe {
 } // namespace fe
 
 fe::SlangParser::SlangParser(std::span<const char*> full_search_paths) {
-    if (m_GlobalSession && m_Session) return;
+    if (getGlobalSession() && getSession()) return;
 
-    if (SLANG_FAILED(slang::createGlobalSession(m_GlobalSession.writeRef()))) {
+    if (SLANG_FAILED(slang::createGlobalSession(getGlobalSession().writeRef()))) {
         fe::logging::error("Slang -> Unified. Failed to create global session");
         return;
     }
@@ -36,7 +36,7 @@ fe::SlangParser::SlangParser(std::span<const char*> full_search_paths) {
     slang::TargetDesc  target_desc{};
 
     target_desc.format  = SLANG_SPIRV;
-    target_desc.profile = m_GlobalSession->findProfile("spirv_1_5");
+    target_desc.profile = getGlobalSession()->findProfile("spirv_1_5");
     target_desc.flags   = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
 
     target_desc.flags |= SLANG_TARGET_FLAG_GENERATE_WHOLE_PROGRAM;
@@ -45,18 +45,20 @@ fe::SlangParser::SlangParser(std::span<const char*> full_search_paths) {
     session_desc.targetCount              = 1;
     session_desc.compilerOptionEntryCount = 0;
 
+    std::string shaders_path = reinterpret_cast<const char*>(PATH.getShadersPath().generic_u8string().c_str());
+
     if (full_search_paths.empty()) {
-        std::array<const char*, 1> paths{ reinterpret_cast<const char*>(PATH.getShadersPath().generic_u8string().c_str()) };
+        std::array<const char*, 1> paths{ shaders_path.c_str() };
 
         session_desc.searchPathCount = paths.size();
         session_desc.searchPaths     = paths.data();
     }
     else {
-        session_desc.searchPathCount = full_search_paths.size();
+        session_desc.searchPathCount = static_cast<SlangInt>(full_search_paths.size());
         session_desc.searchPaths     = full_search_paths.data();
     }
 
-    if (SLANG_FAILED(m_GlobalSession->createSession(session_desc, m_Session.writeRef()))) {
+    if (SLANG_FAILED(getGlobalSession()->createSession(session_desc, getSession().writeRef()))) {
         fe::logging::error("Slang -> Unified. Failed to create a session");
         return;
     }
@@ -92,7 +94,7 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
         blob.attach(blob_raw);
 
         Slang::ComPtr<slang::IBlob> load_diagnostics{};
-        slang::IModule*             loaded_module_raw = m_Session->loadModuleFromIRBlob(reinterpret_cast<const char*>(shader_file_data.full_path.generic_u8string().c_str()),
+        slang::IModule*             loaded_module_raw = getSession()->loadModuleFromIRBlob(reinterpret_cast<const char*>(shader_file_data.full_path.generic_u8string().c_str()),
                                                                                         reinterpret_cast<const char*>(shader_file_data.full_path.generic_u8string().c_str()),
                                                                                         blob_raw,
                                                                                         load_diagnostics.writeRef());
@@ -109,7 +111,7 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
             const char* dependency_file = loaded_module_raw->getDependencyFilePath(i);
 
             Slang::ComPtr<slang::IBlob> load_diagnostics{};
-            slang::IModule*             imported_module_raw = m_Session->loadModule(dependency_file, load_diagnostics.writeRef());
+            slang::IModule*             imported_module_raw = getSession()->loadModule(dependency_file, load_diagnostics.writeRef());
             if (imported_module_raw) {
                 loaded_modules.emplace_back(imported_module_raw);
             }
@@ -307,7 +309,7 @@ fe::SlangParser::BuildShaderSources(const graphics::PipelineDesc& pipeline_desc,
     Slang::ComPtr<slang::IComponentType> composed_program{};
 
     Slang::ComPtr<slang::IBlob> composition_diagnostics{};
-    SlangResult                 composition_result = m_Session->createCompositeComponentType(component_types.data(),
+    SlangResult                 composition_result = getSession()->createCompositeComponentType(component_types.data(),
                                                                                              component_types.size(),
                                                                                              composed_program.writeRef(),
                                                                                              composition_diagnostics.writeRef());
@@ -372,7 +374,7 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
     Slang::ComPtr<slang::IModule> slang_module{};
 
     Slang::ComPtr<slang::IBlob> load_diagnostics{};
-    slang_module = m_Session->loadModule(reinterpret_cast<const char*>(resource_full_path.generic_u8string().c_str()), load_diagnostics.writeRef());
+    slang_module = getSession()->loadModule(reinterpret_cast<const char*>(resource_full_path.generic_u8string().c_str()), load_diagnostics.writeRef());
     if (!slang_module) {
         fe::logging::error("Slang -> Unified. Failed to load a slang module\n%s",
                            (const char*) load_diagnostics->getBufferPointer());
@@ -407,7 +409,7 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
         const char* dependency_file = slang_module->getDependencyFilePath(i);
 
         Slang::ComPtr<slang::IBlob> load_diagnostics{};
-        slang::IModule*             imported_module = m_Session->loadModule(dependency_file, load_diagnostics.writeRef());
+        slang::IModule*             imported_module = getSession()->loadModule(dependency_file, load_diagnostics.writeRef());
         if (imported_module) {
             slang::ShaderReflection* module_reflection = imported_module->getLayout();
 
@@ -431,8 +433,8 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
                 auto& this_entry_point = shader_file_data.entry_points.emplace_back();
 
                 // collect name
-                auto functoin_name_raw = function_reflection->getName();
-                this_entry_point.name  = functoin_name_raw ? functoin_name_raw : m_UnknownVariableName;
+                const auto* functoin_name_raw = function_reflection->getName();
+                this_entry_point.name  = functoin_name_raw ? functoin_name_raw : S_UNKNOWN_VARIABLE_NAME;
 
                 // collect generic arguments
                 slang::GenericReflection* generic_reflection = function_reflection->getGenericContainer();
@@ -450,8 +452,8 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
                     for (size_t constraint_i = 0; constraint_i < constraint_count; constraint_i++) {
 
                         slang::TypeReflection* type_reflection = generic_reflection->getTypeParameterConstraintType(variable_reflection, constraint_i);
-                        auto                   type_name_raw   = type_reflection->getName();
-                        std::string            name            = type_name_raw ? type_name_raw : m_UnknownVariableName;
+                        const auto*            type_name_raw   = type_reflection->getName();
+                        std::string            name            = type_name_raw ? type_name_raw : S_UNKNOWN_VARIABLE_NAME.data();
 
                         constraints.emplace_back(std::move(name.c_str()));
                     }
@@ -475,7 +477,7 @@ fe::SlangParser::BuildShaderFileData(const std::filesystem::path& resource_full_
     Slang::ComPtr<slang::IComponentType> composed_program{};
 
     Slang::ComPtr<slang::IBlob> composition_diagnostics{};
-    SlangResult                 result = m_Session->createCompositeComponentType(component_types.data(),
+    SlangResult                 result = getSession()->createCompositeComponentType(component_types.data(),
                                                                                  component_types.size(),
                                                                                  composed_program.writeRef(),
                                                                                  composition_diagnostics.writeRef());
@@ -666,7 +668,7 @@ void fe::SlangParser::parseVariableRecursive(slang::VariableLayoutReflection*   
             //    const char* type_name_raw = type_layout->getName();
             //    const char* name_raw      = variable_layout->getName();
 
-            //    descriptor_layout.name            = name_raw ? name_raw : (type_name_raw ? type_name_raw : m_UnknownVariableName);
+            //    descriptor_layout.name            = name_raw ? name_raw : (type_name_raw ? type_name_raw : S_UNKNOWN_VARIABLE_NAME);
             //    descriptor_layout.descriptor_type = ShaderDescriptor::GENERIC;
 
             //    descriptor_layout.stage_flags |= static_cast<uint32_t>(ShaderType::VERTEX);
@@ -678,7 +680,7 @@ void fe::SlangParser::parseVariableRecursive(slang::VariableLayoutReflection*   
         case SlangCategory::SubElementRegisterSpace: {
             // TODO : rewrite this if needed
 
-            auto                             type_layout             = variable_layout->getTypeLayout();
+            auto*                            type_layout             = variable_layout->getTypeLayout();
             slang::VariableLayoutReflection* element_variable_layout = type_layout->getElementVarLayout();
             slang::TypeLayoutReflection*     element_type_layout     = type_layout->getElementTypeLayout();
 
@@ -686,7 +688,7 @@ void fe::SlangParser::parseVariableRecursive(slang::VariableLayoutReflection*   
 
             const char* name_raw = variable_layout->getName();
 
-            descriptor_layout.name            = name_raw ? name_raw : m_UnknownVariableName;
+            descriptor_layout.name            = name_raw ? name_raw : S_UNKNOWN_VARIABLE_NAME;
             descriptor_layout.descriptor_type = ShaderDescriptor::GENERIC;
 
             descriptor_layout.stage_flags |= static_cast<uint32_t>(ShaderType::VERTEX);

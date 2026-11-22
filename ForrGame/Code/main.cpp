@@ -15,19 +15,4 @@
 void on_initialize(const fe::dll_api::engine_api* engine_api) {
 }
 
-const char* get_info() {
-    static std::string message{ "ForrGame-Example executed" };
-    return message.c_str();
-}
-
-extern "C" __declspec(dllexport) fe::dll_api::application_module* get_application_module() {
-    static fe::dll_api::application_module result{
-        &get_info,
-        "ForrGame-Example",
-        true,
-        &on_initialize,
-        nullptr,
-        nullptr,
-    };
-    return &result;
-}
+FORR_REGISTER_DLL_MODULE("ForrGame-Example", true, &on_initialize, nullptr, nullptr)

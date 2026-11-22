@@ -50,14 +50,9 @@ namespace fe::dll_api {
 
     // game or mod
     struct application_module {
-
-        using get_info_func = const char* (*) ();
-
         using on_initialize_func = void (*)(const engine_api*);
         using on_update_func     = void (*)(const engine_api*);
         using on_release_func    = void (*)(const engine_api*);
-
-        get_info_func get_info{};
 
         string_raw name{};
         bool       is_primary{};
@@ -137,8 +132,16 @@ namespace fe::dll_api {
 #define FORR_MODULE_EXPORT extern "C" __attribute__((visibility("default")))
 #endif
 
-// this define creates a function to be found by the 'ForrGame' or 'ForrEditor' via 'fe::dll_api::load_library()'
+// this define creates a function to be found by the 'ForrRuntime' or 'ForrEditor' via 'fe::dll_api::load_library()'
 // use it as an entry point into your game/mod
+//
+// @param name name of the dll module
+// @param is_primary defines is this a game or a mod for the game. primary dll modules are loaded first
+// @param on_initialize a pointer to a function, which will be called on initialize. you can put 'nullptr' here
+// @param on_update a pointer to a function, which will be called every frame. you can put 'nullptr' here
+// @param on_release a pointer to a function, which will be called on release. you can put 'nullptr' here
+//
+// @returns the built application desc, which is going to be used by the executer : ForrRuntime or ForrEditor
 #define FORR_REGISTER_DLL_MODULE(name, is_primary, on_initialize, on_update, on_release) \
     FORR_MODULE_EXPORT fe::dll_api::application_module* get_application_module() {       \
         static fe::dll_api::application_module result{                                   \
