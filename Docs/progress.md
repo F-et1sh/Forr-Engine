@@ -14,7 +14,7 @@
     some optimizations in 'DefaultPipelineBuilders.hpp', 'SlangParser.hpp' and 'SlangParser.cpp'
     'dll_module_api.hpp'/'dll_module_api.cpp' --> 'dll_api.hpp'/'dll_api.cpp'
     'Forr/ECS/Helpers.hpp' added
-    some fixes in 'Forr/Core/string.hpp'
+    some fixes in 'Forr/Core/string.hpp' and 'Forr/Events/EventBus.hpp'
 
 ### Problem
     -
