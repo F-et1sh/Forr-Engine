@@ -14,7 +14,7 @@
 #include "Forr/ECS/Components.hpp"
 #include "Forr/Graphics/IRenderer.hpp"
 
-#include <entt/fwd.hpp>
+#include "Forr/ECS/Helpers.hpp"
 
 namespace fe {
     class FORR_API CameraSystem {

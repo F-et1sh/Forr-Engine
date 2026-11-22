@@ -12,6 +12,7 @@
 ### Done
     some optimizations in 'DefaultPipelineBuilders.hpp', 'SlangParser.hpp' and 'SlangParser.cpp'
     'dll_module_api.hpp'/'dll_module_api.cpp' --> 'dll_api.hpp'/'dll_api.cpp'
+    'Forr/ECS/Helpers.hpp' added
 
 ### Problem
     -

@@ -64,6 +64,7 @@ namespace fe {
         std::unique_ptr<RenderGraph>     m_RenderGraph{};
         std::unique_ptr<ResourceManager> m_ResourceManager{};
         std::unique_ptr<EventBus>        m_MainEventBus{};
+
         std::unique_ptr<InputSystem>     m_InputSystem{};
         std::unique_ptr<TransformSystem> m_TransformSystem{};
         std::unique_ptr<CameraSystem>    m_CameraSystem{};

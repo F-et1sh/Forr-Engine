@@ -54,7 +54,8 @@
     <ClInclude Include="Include\Forr\Input\InputTypes.hpp" />
     <ClInclude Include="Include\Forr\ECS\Systems\TransformSystem.hpp" />
     <ClInclude Include="Include\Forr\ECS\Systems\CameraSystem.hpp" />
-    <ClInclude Include="Include\Forr\Core\dll_module_api.hpp" />
+    <ClInclude Include="Include\Forr\Core\dll_api.hpp" />
+    <ClInclude Include="Include\Forr\ECS\Helpers.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />
@@ -82,6 +83,6 @@
     <ClCompile Include="Source\Input\InputSystem.cpp" />
     <ClCompile Include="Source\ECS\Systems\TransformSystem.cpp" />
     <ClCompile Include="Source\ECS\Systems\CameraSystem.cpp" />
-    <ClCompile Include="Source\Core\dll_module_api.cpp" />
+    <ClCompile Include="Source\Core\dll_api.cpp" />
   </ItemGroup>
 </Project>

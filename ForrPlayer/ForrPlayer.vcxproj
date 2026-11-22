@@ -116,7 +116,8 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     <ClInclude Include="Include\Forr\Core\attributes.hpp" />
     <ClInclude Include="Include\Forr\Core\context.hpp" />
     <ClInclude Include="Include\Forr\Core\custom_allocators.hpp" />
-    <ClInclude Include="Include\Forr\Core\dll_module_api.hpp" />
+    <ClInclude Include="Include\Forr\Core\dll_api.hpp" />
+    <ClInclude Include="Include\Forr\ECS\Helpers.hpp" />
     <ClInclude Include="Include\Forr\ECS\Systems\CameraSystem.hpp" />
     <ClInclude Include="Include\Forr\ECS\Systems\TransformSystem.hpp" />
     <ClInclude Include="Include\Forr\Events\EventBus.hpp" />
@@ -168,7 +169,7 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
     <ClInclude Include="Source\Tools.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Core\dll_module_api.cpp" />
+    <ClCompile Include="Source\Core\dll_api.cpp" />
     <ClCompile Include="Source\ECS\Systems\CameraSystem.cpp" />
     <ClCompile Include="Source\ECS\Systems\RenderSystem.cpp" />
     <ClCompile Include="Source\ECS\Systems\TransformSystem.cpp" />
