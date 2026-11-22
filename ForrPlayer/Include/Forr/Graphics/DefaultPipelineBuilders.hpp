@@ -44,30 +44,30 @@ namespace fe {
     class PBRPipelineBuilder {
     public:
         // @brief builds a pipeline for PBR materials
-        // 
+        //
         // @param shader_file_data_ptr shader file data resource pointer that contains everything needed
         // @param material_ptr material resource pointer that you want to combine the shader with ( specialize )
         //  by the way, if you want to change pipeline flags, then you can change pipeline flags in the material, which's pointer you're passing
         //  because they're overrieded
         // @param resource_manager actual resource manager of the application
         // @param renderer actual renderer of the application
-        // 
+        //
         // @returns done pipeline handle or an error
         static std::expected<fe::graphics::PipelineHandle, PBRPipelineError> Build(fe::pointer<resource::ShaderFileData> shader_file_data_ptr,
                                                                                    fe::pointer<resource::Material>       material_ptr,
                                                                                    ResourceManager&                      resource_manager,
                                                                                    IRenderer&                            renderer) {
             /* declare common shader resources */
-            const static fe::hashed_string_view vertex_entry_point_name{ "vertexMain" };
-            const static fe::hashed_string_view fragment_entry_point_name{ "fragmentMain" };
-            const static fe::hashed_string_view material_interface_name{ "IMaterial" };
-            const static fe::hashed_string_view materials_raw_data_name{ "g_MaterialsRawData" };
-            const static fe::hashed_string_view model_matrices_name{ "g_ModelMatrices" };
-            const static fe::hashed_string_view global_data_name{ "g_GlobalData" };
-            const static fe::hashed_string_view push_constants_name{ "push_constants" };
-            const static fe::hashed_string_view unspecialized_buffer_name{ "TBuffer" };
-            const static fe::hashed_string_view opengl_buffer_name{ "OpenGLBuffer" };
-            const static fe::hashed_string_view vulkan_buffer_name{ "VulkanBuffer" };
+            constexpr static fe::hashed_string_view vertex_entry_point_name{ "vertexMain" };
+            constexpr static fe::hashed_string_view fragment_entry_point_name{ "fragmentMain" };
+            constexpr static fe::hashed_string_view material_interface_name{ "IMaterial" };
+            constexpr static fe::hashed_string_view materials_raw_data_name{ "g_MaterialsRawData" };
+            constexpr static fe::hashed_string_view model_matrices_name{ "g_ModelMatrices" };
+            constexpr static fe::hashed_string_view global_data_name{ "g_GlobalData" };
+            constexpr static fe::hashed_string_view push_constants_name{ "push_constants" };
+            constexpr static fe::hashed_string_view unspecialized_buffer_name{ "TBuffer" };
+            constexpr static fe::hashed_string_view opengl_buffer_name{ "OpenGLBuffer" };
+            constexpr static fe::hashed_string_view vulkan_buffer_name{ "VulkanBuffer" };
 
             // how many generic parameters are required for the entry point
             // applied to both entry points
@@ -88,12 +88,12 @@ namespace fe {
             auto& material         = *material_raw_pointer;
 
             // pre-create pipeline desc
-              graphics::PipelineDesc pipeline_desc{
+            graphics::PipelineDesc pipeline_desc{
                 .pipeline_flags        = material.pipeline_flags_override,
                 .shader_file_data_ptrs = { shader_file_data_ptr },
-                .entry_points          = { vertex_entry_point_name.data(), fragment_entry_point_name.data() },
-                .descriptor_sets       = { materials_raw_data_name.data(), model_matrices_name.data(), global_data_name.data() },
-                .push_constants        = { push_constants_name.data() },
+                .entry_points          = { vertex_entry_point_name, fragment_entry_point_name },
+                .descriptor_sets       = { materials_raw_data_name, model_matrices_name, global_data_name },
+                .push_constants        = { push_constants_name },
             };
 
             // this is needed to write directly into 'pipeline_desc' without extra copyings
@@ -185,8 +185,8 @@ namespace fe {
             }
 
             // this is necessary to specialize at least 'g_MaterialsRawData'
-            specialization.global_arguments.emplace_back(shader::SpecializationArgument{ .name  = unspecialized_buffer_name.data(),
-                                                                                         .value = buffer_specialization_name.get() });
+            specialization.global_arguments.emplace_back(shader::SpecializationArgument{ .name  = unspecialized_buffer_name,
+                                                                                         .value = fe::hashed_string{ buffer_specialization_name.get() } });
 
             // create pipeline
             auto pipeline_id_expected = renderer.CreatePipeline(pipeline_desc);

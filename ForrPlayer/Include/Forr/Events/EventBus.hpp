@@ -33,70 +33,38 @@ namespace fe {
 
         struct Listener {
             using SubscriptionID = size_t;
-            using Callback       = void (*)(void*, const void* event);
-            using DestructorFunc = void (*)(void*);
+            using Callback       = std::move_only_function<void(const void*) const>;
 
             SubscriptionID subscription_id{};
-
-            void*          instance{};
             Callback       callback{};
-            DestructorFunc destructor{};
         };
         using Listeners = std::vector<Listener>;
 
+        template <typename ClassType, typename... Args>
+        struct ListenerCallbackTraitsBase {
+            static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
+            using ClassT = ClassType;
+            using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
+        };
+
         template <typename T>
-        struct ListenerCallbackTraitsFn {
-            using Traits = ListenerCallbackTraitsFn<decltype(&T::operator())>; // for lambdas
-            using ClassT = T;
-            using EventT = Traits::EventT;
-        };
+        struct ListenerCallbackTraitsFn : ListenerCallbackTraitsFn<decltype(&T::operator())> {};
 
         template <typename ClassType, typename ReturnType, typename... Args>
-        struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...)> {
-            static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
-
-            using ClassT = ClassType;
-            using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
-        };
+        struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...)> : ListenerCallbackTraitsBase<ClassType, Args...> {};
 
         template <typename ClassType, typename ReturnType, typename... Args>
-        struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...) const> {
-            static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
-
-            using ClassT = ClassType;
-            using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
-        };
+        struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...) const> : ListenerCallbackTraitsBase<ClassType, Args...> {};
 
         template <typename ClassType, typename ReturnType, typename... Args>
-        struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...) noexcept> {
-            static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
-
-            using ClassT = ClassType;
-            using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
-        };
+        struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...) noexcept> : ListenerCallbackTraitsBase<ClassType, Args...> {};
 
         template <typename ClassType, typename ReturnType, typename... Args>
-        struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...) const noexcept> {
-            static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
-
-            using ClassT = ClassType;
-            using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
-        };
+        struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...) const noexcept> : ListenerCallbackTraitsBase<ClassType, Args...> {};
 
     public:
-        EventBus() = default;
-        ~EventBus() {
-            for (auto& event_listeners : m_Listeners) {
-                for (auto& listener : event_listeners) {
-
-                    if (listener.destructor) {
-
-                        listener.destructor(listener.instance);
-                        ::operator delete(listener.instance);
-                    }
-                }
-            }
-        }
+        EventBus()  = default;
+        ~EventBus() = default;
 
         FORR_CLASS_MOVABLE(EventBus)
         FORR_CLASS_NONCOPYABLE(EventBus)
@@ -123,7 +91,6 @@ namespace fe {
             std::memcpy(&m_Storage[aligned_event_offset], &event, sizeof(Event));
         }
 
-        // @brief
         // @param instance functor class, which is invoked with 'const EventT&'
         // @returns a subscription index to unsubscribe ( fe::EventBus::Unsubscribe() ) if needed
         template <auto Func, typename ClassT>
@@ -139,54 +106,32 @@ namespace fe {
                 m_Listeners.resize(type_id + 1);
             }
 
-            Listener listener{
-                .subscription_id = S_SUBSCRIPTION_COUNTER.fetch_add(1, std::memory_order_relaxed),
-                .instance        = &instance,
-                .callback        = [](void* instance, const void* event_data) {
-                    auto*       object = static_cast<ClassT*>(instance);
-                    const auto* event  = static_cast<const EventT*>(event_data);
-                    (object->*Func)(*event);
-                },
-                .destructor = nullptr
-            };
+            auto subscription_id = S_SUBSCRIPTION_COUNTER.fetch_add(1, std::memory_order_relaxed);
 
-            m_Listeners[type_id].push_back(listener);
+            m_Listeners[type_id].push_back({ .subscription_id = subscription_id,
+                                             .callback        = [&instance](const void* event) { (instance.*Func)(*static_cast<const EventT*>(event)); } });
 
-            return listener.subscription_id;
+            return subscription_id;
         }
 
-        // @brief
         // @param lambda invoked with 'const EventT&'
         // @returns a subscription index to unsubscribe ( fe::EventBus::Unsubscribe() ) if needed
         template <typename LambdaT>
         Listener::SubscriptionID Subscribe(LambdaT&& lambda) {
             using Traits = ListenerCallbackTraitsFn<std::decay_t<LambdaT>>;
-            using ClassT = Traits::ClassT;
             using EventT = Traits::EventT;
 
-            type_registry<EventBus>::type_id type_id = type_registry<EventBus>::get_id<EventT>();
-
+            auto type_id = type_registry<EventBus>::get_id<EventT>();
             if (type_id >= m_Listeners.size()) {
                 m_Listeners.resize(type_id + 1);
             }
 
-            using CleanLambdaT             = std::decay_t<LambdaT>;
-            void*         allocated_lambda = ::operator new(sizeof(CleanLambdaT));
-            CleanLambdaT* lambda_ptr       = new (allocated_lambda) CleanLambdaT(std::forward<LambdaT>(lambda));
+            auto subscription_id = S_SUBSCRIPTION_COUNTER.fetch_add(1, std::memory_order_relaxed);
 
-            Listener listener{
-                .subscription_id = S_SUBSCRIPTION_COUNTER.fetch_add(1, std::memory_order_relaxed),
-                .instance        = lambda_ptr,
-                .callback        = [](void* instance, const void* event_data) {
-                    auto*       lambda = static_cast<CleanLambdaT*>(instance);
-                    const auto* event  = static_cast<const EventT*>(event_data);
-                    (*lambda)(*event); },
-                .destructor      = [](void* instance) { std::destroy_at(static_cast<CleanLambdaT*>(instance)); }
-            };
+            m_Listeners[type_id].push_back({ .subscription_id = subscription_id,
+                                             .callback        = [func = std::forward<LambdaT>(lambda)](const void* event) { func(*static_cast<const EventT*>(event)); } });
 
-            m_Listeners[type_id].push_back(listener);
-
-            return listener.subscription_id;
+            return subscription_id;
         }
 
         void Unsubscribe(Listener::SubscriptionID subscription_id) {
@@ -194,12 +139,6 @@ namespace fe {
                 for (auto it = event_listeners.begin(); it != event_listeners.end(); it++) {
 
                     if (it->subscription_id == subscription_id) {
-
-                        if (it->destructor) {
-                            it->destructor(it->instance);
-                            ::operator delete(it->instance);
-                        }
-
                         event_listeners.erase(it);
                         return;
                     }
@@ -221,7 +160,7 @@ namespace fe {
 
                     const void* event = &buffer[header.event_structure_offset];
                     for (const auto& listener : m_Listeners[header.event_type_id]) {
-                        listener.callback(listener.instance, event);
+                        listener.callback(event);
                     }
                 }
 

@@ -35,17 +35,51 @@ namespace fe::dll_api {
     };
 
     struct engine_api {
-        using register_component_func = void (*)(const component* desc);
-        using register_system_func    = void (*)(const char* name, void (*update_func)(float delta_time));
+        using logging_func    = void (*)(void*, const char*);
+        using destructor_func = void (*)(void*);
 
-        using add_component_func = void* (*) (uint32_t entity_id, string_hash type_hash);
-        using get_component_func = void* (*) (uint32_t entity_id, string_hash type_hash);
+        void*           instance{};
+        logging_func    logging{};
+        destructor_func destructor{};
+    };
 
-        register_component_func register_component{};
-        register_system_func    register_system{};
+    template <typename T>
+    struct ListenerCallbackTraitsFn {
+        using Traits = ListenerCallbackTraitsFn<decltype(&T::operator())>; // for lambdas
+        using ClassT = T;
+        using EventT = Traits::EventT;
+    };
 
-        add_component_func add_component{};
-        get_component_func get_component{};
+    template <typename ClassType, typename ReturnType, typename... Args>
+    struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...)> {
+        static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
+
+        using ClassT = ClassType;
+        using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
+    };
+
+    template <typename ClassType, typename ReturnType, typename... Args>
+    struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...) const> {
+        static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
+
+        using ClassT = ClassType;
+        using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
+    };
+
+    template <typename ClassType, typename ReturnType, typename... Args>
+    struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...) noexcept> {
+        static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
+
+        using ClassT = ClassType;
+        using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
+    };
+
+    template <typename ClassType, typename ReturnType, typename... Args>
+    struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...) const noexcept> {
+        static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
+
+        using ClassT = ClassType;
+        using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
     };
 
     // game or mod
@@ -62,17 +96,17 @@ namespace fe::dll_api {
         on_release_func    on_release{};
     };
 
-    template <typename T>
-    void register_component(const engine_api* api, const char* name) {
-        component desc{};
-        desc.name         = name;
-        desc.type_hash    = fe::make_hash(name);
-        desc.size         = sizeof(T);
-        desc.alignment    = alignof(T);
-        desc.on_construct = [](void* ptr) { new (ptr) T(); };
-        desc.on_destruct  = [](void* ptr) { static_cast<T*>(ptr)->~T(); };
-        api->register_component(&desc);
-    }
+    //template <typename T>
+    //void register_component(const engine_api* api, const char* name) {
+    //    component desc{};
+    //    desc.name         = name;
+    //    desc.type_hash    = fe::make_hash(name);
+    //    desc.size         = sizeof(T);
+    //    desc.alignment    = alignof(T);
+    //    desc.on_construct = [](void* ptr) { new (ptr) T(); };
+    //    desc.on_destruct  = [](void* ptr) { static_cast<T*>(ptr)->~T(); };
+    //    api->register_component(&desc);
+    //}
 
     using library_handle_raw = void*;
     using symbol_handle_raw  = void*;

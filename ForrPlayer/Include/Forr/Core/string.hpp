@@ -64,7 +64,7 @@ namespace fe {
     static constexpr std::uint8_t UTF8_4BYTE_START_VALUE  = 0b11110000;
     static constexpr std::uint8_t UTF8_4BYTE_PAYLOAD_MASK = 0b00000111;
 
-    FORR_NODISCARD constexpr std::uint64_t hash_codepoint(std::uint64_t hash, std::uint32_t codepoint) noexcept {
+    FORR_NODISCARD constexpr string_hash hash_codepoint(string_hash hash, std::uint32_t codepoint) noexcept {
         for (size_t i = 0; i < 4; i++) {
             hash ^= (codepoint & ONE_BYTE);
             hash *= HASH_SHIFT;
@@ -73,16 +73,20 @@ namespace fe {
         return hash;
     }
 
-    FORR_NODISCARD constexpr std::uint64_t make_hash_impl(std::u32string_view str) noexcept {
-        std::uint64_t hash = HASH_START;
+    template <typename Element>
+        requires std::same_as<Element, char32_t>
+    FORR_NODISCARD constexpr string_hash make_hash_impl(std::basic_string_view<Element> str) noexcept {
+        string_hash hash = HASH_START;
         for (std::uint32_t code_point : str) {
             hash = hash_codepoint(hash, code_point);
         }
         return hash;
     }
 
-    FORR_NODISCARD constexpr std::uint64_t make_hash_impl(std::u16string_view str) noexcept {
-        std::uint64_t hash = HASH_START;
+    template <typename Element>
+        requires std::same_as<Element, char16_t>
+    FORR_NODISCARD constexpr string_hash make_hash_impl(std::basic_string_view<Element> str) noexcept {
+        string_hash hash = HASH_START;
         for (size_t i = 0; i < str.size(); i++) {
             std::uint32_t code_point = str[i];
 
@@ -102,8 +106,10 @@ namespace fe {
         return hash;
     }
 
-    FORR_NODISCARD constexpr std::uint64_t make_hash_impl(std::string_view str) noexcept {
-        std::uint64_t hash = HASH_START;
+    template <typename Element>
+        requires std::same_as<Element, char8_t> || std::same_as<Element, char>
+    FORR_NODISCARD constexpr string_hash make_hash_impl(std::basic_string_view<Element> str) noexcept {
+        string_hash   hash = HASH_START;
         std::uint32_t codepoint{};
         std::uint32_t state{};
 
@@ -151,15 +157,7 @@ namespace fe {
     //
     template <class Element>
     FORR_NODISCARD constexpr string_hash make_hash(std::basic_string_view<Element> str) noexcept {
-        if constexpr (sizeof(Element) == 1) { // char and char8_t
-            return make_hash_impl(std::string_view(reinterpret_cast<const char*>(str.data()), str.size()));
-        }
-        else if constexpr (sizeof(Element) == 2) { // char16_t and wchar_t on Windows
-            return make_hash_impl(std::u16string_view(reinterpret_cast<const char16_t*>(str.data()), str.size()));
-        }
-        else if constexpr (sizeof(Element) == 4) { // char32_t and wchar_t on Linux/macOS
-            return make_hash_impl(std::u32string_view(reinterpret_cast<const char32_t*>(str.data()), str.size()));
-        }
+        return make_hash_impl<Element>(str);
     }
 
     template <class Element>
@@ -184,9 +182,11 @@ namespace fe {
         constexpr basic_hashed_string(const CharT* str) : m_string(str), m_hash(fe::make_hash<Element>(m_string)) {}
         constexpr basic_hashed_string(StringViewT string_view) : m_string(string_view), m_hash(fe::make_hash<Element>(m_string)) {}
         constexpr explicit basic_hashed_string(StringT string) : m_string(std::move(string)), m_hash(fe::make_hash<Element>(m_string)) {}
+        template <bool IsStringView2>
+        constexpr basic_hashed_string(const basic_hashed_string<Element, IsStringView2>& other) : m_string(other.m_string), m_hash(other.m_hash) {}
 
         FORR_NODISCARD operator StringViewT() const noexcept { return StringViewT{ m_string.data(), size() }; }
-        FORR_NODISCARD operator StringT() const noexcept { return m_string.data(); }
+        FORR_NODISCARD operator StringT() const { return StringT{ m_string.data(), m_string.size() }; }
         FORR_NODISCARD operator fe::string_hash() const noexcept {
             return m_hash;
         }
@@ -204,8 +204,8 @@ namespace fe {
         FORR_NODISCARD fe::string_hash get_hash() const noexcept { return m_hash; }
 
         // this compares only hash
-        template <typename T2, bool IsStringView2>
-        FORR_NODISCARD bool operator==(const basic_hashed_string<T2, IsStringView2>& other) const noexcept { return m_hash == other.m_hash; }
+        template <typename Element2, bool IsStringView2>
+        FORR_NODISCARD bool operator==(const basic_hashed_string<Element2, IsStringView2>& other) const noexcept { return m_hash == other.m_hash; }
 
         FORR_NODISCARD bool operator==(const StringT& string) const noexcept { return m_string == string; }
         FORR_NODISCARD bool operator==(const CharT* str) const noexcept { return m_string == str; }
@@ -229,10 +229,18 @@ namespace fe {
             return *this;
         }
 
+        template <bool IsStringView2>
+        basic_hashed_string& operator=(const basic_hashed_string<Element, IsStringView2>& other) {
+            m_string = other.m_string;
+            m_hash   = other.m_hash;
+            return *this;
+        }
+
     private:
         std::conditional_t<IsStringView, StringViewT, StringT> m_string{};
         fe::string_hash                                        m_hash{};
 
+        template <class, bool>
         friend class basic_hashed_string;
     };
 
@@ -400,42 +408,44 @@ namespace fe {
     template <std::size_t N>
     using fixed_hashed_wstring_view = basic_fixed_hashed_string<N, wchar_t, true>;
 
-    class string_pool {
-    public:
-        std::string_view get_or_add(std::string_view str) {
-            fe::string_hash hash = fe::make_hash(str);
+    // TODO : finish this
+    //
+    //class string_pool {
+    //public:
+    //    std::string_view get_or_add(std::string_view str) {
+    //        fe::string_hash hash = fe::make_hash(str);
 
-            auto it = m_hash_view_table.find(hash);
-            if (it != m_hash_view_table.end()) {
-                return it->second;
-            }
+    //        auto it = m_hash_view_table.find(hash);
+    //        if (it != m_hash_view_table.end()) {
+    //            return it->second;
+    //        }
 
-            char* arena_storage = reinterpret_cast<char*>(m_arena.allocate(str.size() + 1)); // null-terminator
-            if (arena_storage == nullptr) {
-                return std::string_view{};
-            }
-            std::memcpy(arena_storage, str.data(), str.size());
-            arena_storage[str.size()] = '\0';
+    //        char* arena_storage = reinterpret_cast<char*>(m_arena.allocate(str.size() + 1)); // null-terminator
+    //        if (arena_storage == nullptr) {
+    //            return std::string_view{};
+    //        }
+    //        std::memcpy(arena_storage, str.data(), str.size());
+    //        arena_storage[str.size()] = '\0';
 
-            std::string_view allocated_view(arena_storage, str.size());
-            m_hash_view_table[hash] = allocated_view;
+    //        std::string_view allocated_view(arena_storage, str.size());
+    //        m_hash_view_table[hash] = allocated_view;
 
-            return allocated_view;
-        }
+    //        return allocated_view;
+    //    }
 
-        std::string_view find(fe::string_hash hash) const {
-            auto it = m_hash_view_table.find(hash);
-            return it != m_hash_view_table.end() ? it->second : std::string_view{};
-        }
+    //    std::string_view find(fe::string_hash hash) const {
+    //        auto it = m_hash_view_table.find(hash);
+    //        return it != m_hash_view_table.end() ? it->second : std::string_view{};
+    //    }
 
-    private:
-        void increse_arena_capacity() {
-        }
+    //private:
+    //    void increse_arena_capacity() {
+    //    }
 
-    private:
-        std::unordered_map<fe::string_hash, std::string_view> m_hash_view_table{};
-        fe::Arena                                             m_arena{ 1024 * 4 };
-    };
+    //private:
+    //    std::unordered_map<fe::string_hash, std::string_view> m_hash_view_table{};
+    //    fe::Arena                                             m_arena{ 1024 * 4 };
+    //};
 
 } // namespace fe
 
