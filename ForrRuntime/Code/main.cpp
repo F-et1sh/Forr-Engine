@@ -15,6 +15,8 @@
 #include <memory>
 
 #include "Forr/Core/path.hpp"
+#include "Forr/Events/EventBus.hpp"
+#include "Forr/Events/Events.hpp"
 #include "Forr/Platform/IPlatformSystem.hpp"
 #include "Forr/Platform/IWindow.hpp"
 #include "Forr/ResourceManagement/ResourceManager.hpp"
@@ -26,6 +28,7 @@ int main(int argc, char* argv[]) {
     // static variables
 
     static constexpr bool                is_editor{ false };
+    static constexpr bool                validation_layers_enabled{ false };
     static constexpr fe::GraphicsBackend graphics_backend{ fe::GraphicsBackend::OpenGL };
     static constexpr fe::PlatformBackend platform_backend{ fe::PlatformBackend::GLFW };
     static constexpr fe::WindowDesc      primary_window_desc{
@@ -93,7 +96,7 @@ int main(int argc, char* argv[]) {
     renderer_desc.graphics_backend    = graphics_backend;
     renderer_desc.application_name    = primary_window_desc.name;
     renderer_desc.primary_window_desc = primary_window_desc;
-    renderer_desc.validation_enabled  = false;
+    renderer_desc.validation_enabled  = validation_layers_enabled;
 
     renderer = fe::IRenderer::Create(renderer_desc, *platform_system, primary_window_id, *resource_manager);
 

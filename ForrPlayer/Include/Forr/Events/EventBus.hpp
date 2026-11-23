@@ -97,40 +97,40 @@ namespace fe {
         Listener::SubscriptionID Subscribe(ClassT& instance) {
             using Traits = ListenerCallbackTraitsFn<decltype(Func)>;
             using EventT = Traits::EventT;
-
+        
             static_assert(std::is_same_v<typename Traits::ClassT, ClassT>, "The provided instance does not match the class of the function");
-
+        
             type_registry<EventBus>::type_id type_id = type_registry<EventBus>::get_id<EventT>();
-
+        
             if (type_id >= m_Listeners.size()) {
                 m_Listeners.resize(type_id + 1);
             }
-
+        
             auto subscription_id = S_SUBSCRIPTION_COUNTER.fetch_add(1, std::memory_order_relaxed);
-
+        
             m_Listeners[type_id].push_back({ .subscription_id = subscription_id,
                                              .callback        = [&instance](const void* event) { (instance.*Func)(*static_cast<const EventT*>(event)); } });
-
+        
             return subscription_id;
         }
-
+        
         // @param lambda invoked with 'const EventT&'
         // @returns a subscription index to unsubscribe ( fe::EventBus::Unsubscribe() ) if needed
         template <typename LambdaT>
         Listener::SubscriptionID Subscribe(LambdaT&& lambda) {
             using Traits = ListenerCallbackTraitsFn<std::decay_t<LambdaT>>;
             using EventT = Traits::EventT;
-
+        
             auto type_id = type_registry<EventBus>::get_id<EventT>();
             if (type_id >= m_Listeners.size()) {
                 m_Listeners.resize(type_id + 1);
             }
-
+        
             auto subscription_id = S_SUBSCRIPTION_COUNTER.fetch_add(1, std::memory_order_relaxed);
-
+        
             m_Listeners[type_id].push_back({ .subscription_id = subscription_id,
                                              .callback        = [func = std::forward<LambdaT>(lambda)](const void* event) { func(*static_cast<const EventT*>(event)); } });
-
+        
             return subscription_id;
         }
 

@@ -2,7 +2,7 @@
 
     Forr Engine
 
-    File : Helpers.hpp
+    File : Systems.hpp
     Role : provides helpers to work with ECS and EnTT itself
 
     Copyright (C) 2026 Farrakh
@@ -13,19 +13,120 @@
 #pragma once
 
 #include "Forr/Core/attributes.hpp"
+#include "Forr/Core/string.hpp"
 
 #include <entt/entt.hpp>
 
 namespace fe {
+    template <typename T>
+    using SystemDataT = T::Data;
+
+    struct EmptySystemDataT {};
+
+    template <typename T>
+    concept SystemConcept = requires(/*fe::EngineContext& context, */ SystemDataT<T>& system_data) {
+        { T::Initialize(/*context, */ system_data) } -> std::same_as<void>;
+        { T::Update(/*context, */ system_data) } -> std::same_as<void>;
+        { T::Release(/*context, */ system_data) } -> std::same_as<void>;
+    };
+
+    struct System {
+        using InitializeFunction = void (*)(/*fe::EngineContext& context, */ void*);
+        using UpdateFunction     = void (*)(/*fe::EngineContext& context, */ void*);
+        using ReleaseFunction    = void (*)(/*fe::EngineContext& context, */ void*);
+
+        fe::fixed_string<32> name{};
+        void*                mapped_data{};
+
+        InitializeFunction initialize_function{};
+        UpdateFunction     update_function{};
+        ReleaseFunction    release_function{};
+
+        System()  = default;
+        ~System() = default;
+
+        FORR_CLASS_MOVABLE(System)
+        FORR_CLASS_NONCOPYABLE(System)
+    };
+
+    // this is the structure you get in 'fe::Scene::AddSystem<>' to
+    //  access your mapped data and system's index in the array
+    template <SystemConcept System>
+    struct SystemHandle {
+        using SystemDataT = SystemDataT<System>::Data;
+
+        SystemDataT* mapped_data{};
+        // system's index in 'fe::Scene::m_Systems'
+        uint32_t               system_index{};
+        fe::hashed_string_view system_name{};
+
+        SystemHandle()  = default;
+        ~SystemHandle() = default;
+
+        FORR_CLASS_MOVABLE(SystemHandle)
+        FORR_CLASS_NONCOPYABLE(SystemHandle)
+    };
+
+    class Scene {
+    public:
+        Scene()  = default;
+        ~Scene() = default;
+
+        FORR_CLASS_MOVABLEONLY(Scene)
+
+        template <SystemConcept System>
+        FORR_NODISCARD SystemHandle<System> AddSystem(fe::fixed_string_view<32> name) {
+            using SystemDataT = SystemDataT<System>::Data;
+
+            auto& system = m_Systems.emplace_back();
+            system.name  = name;
+
+            SystemHandle<System> system_handle{};
+            system_handle.render_pass_index = m_Systems.size() - 1;
+            system_handle.render_pass_name  = name;
+
+            if constexpr (!std::is_same_v<SystemDataT, EmptySystemDataT>) {
+                std::byte*   mapped_data_raw = m_SystemsData.allocate(sizeof(std::decay_t<SystemDataT>), alignof(SystemDataT));
+                SystemDataT* mapped_data     = new (mapped_data_raw) SystemDataT();
+
+                system.mapped_data        = mapped_data;
+                system_handle.mapped_data = mapped_data;
+
+                system.initialize_function = [](/*fe::EngineContext& context, */ void* system_data) { System::Initialize(/*fe::EngineContext& context, */ *reinterpret_cast<SystemDataT*>(system_data)); };
+                system.update_function     = [](/*fe::EngineContext& context, */ void* system_data) { System::Update(/*fe::EngineContext& context, */ *reinterpret_cast<SystemDataT*>(system_data)); };
+                system.release_function    = [](/*fe::EngineContext& context, */ void* system_data) {
+                    System::Release(/*fe::EngineContext& context, */ *reinterpret_cast<SystemDataT*>(system_data));
+                    std::destroy_at(reinterpret_cast<SystemDataT*>(system_data));
+                };
+            }
+            else {
+                system.mapped_data        = nullptr;
+                system_handle.mapped_data = nullptr;
+
+                system.initialize_function = [](/*fe::EngineContext& context, */ void* system_data) { System::Initialize(/*fe::EngineContext& context, */); };
+                system.update_function     = [](/*fe::EngineContext& context, */ void* system_data) { System::Update(/*fe::EngineContext& context, */); };
+                system.release_function    = [](/*fe::EngineContext& context, */ void* system_data) { System::Release(/*fe::EngineContext& context, */); };
+            }
+
+            return system_handle;
+        }
+
+    private:
+        std::vector<System> m_Systems{};
+        fe::Arena           m_SystemsData{ 16 * 1024 };
+    };
+
     enum class SystemStage : uint8_t {
         PRE_UPDATE,
         UPDATE,
         POST_UPDATE,
-        RENDER, 
+        RENDER,
     };
 
     using ReactiveDirtyStorage = entt::reactive_mixin<entt::storage<void>>;
 
+    // @brief a wrapper over 'entt::registry' that does not allow you to change the
+    //        components without telling the 'entt::registry' about it
     class ReactiveRegistry {
     public:
         ReactiveRegistry(entt::registry& registry) : m_registry(registry) {}

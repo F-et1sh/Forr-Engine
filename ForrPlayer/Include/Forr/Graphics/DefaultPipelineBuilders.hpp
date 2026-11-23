@@ -103,12 +103,12 @@ namespace fe {
             std::reference_wrapper<resource::ShaderFileData> shader_file_data_to_find_material_structure{ shader_file_data };
 
             // load material's shader file data if they are not from the same file
-            if (material.layout_key.shader_file_data != shader_file_data_ptr) {
-                auto* material_shader_file_data_raw_pointer = resource_manager.GetResource(material.layout_key.shader_file_data);
+            if (material.layout_key.shader_file_data_ptr != shader_file_data_ptr) {
+                auto* material_shader_file_data_raw_pointer = resource_manager.GetResource(material.layout_key.shader_file_data_ptr);
                 if (!material_shader_file_data_raw_pointer)
                     return std::unexpected{ PBRPipelineErrorCodes::MATERIAL_LAYOUT_SHADER_FILE_DATA_PTR_WAS_INVALID };
 
-                pipeline_desc.shader_file_data_ptrs.emplace_back(material.layout_key.shader_file_data);
+                pipeline_desc.shader_file_data_ptrs.emplace_back(material.layout_key.shader_file_data_ptr);
                 shader_file_data_to_find_material_structure = *material_shader_file_data_raw_pointer;
             }
 

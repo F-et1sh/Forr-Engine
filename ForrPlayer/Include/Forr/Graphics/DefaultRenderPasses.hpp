@@ -316,7 +316,7 @@ namespace fe {
             }
 
             resource::Material pbr_material{};
-            pbr_material.layout_key                          = { .shader_file_data = shader_file_data_ptr, .structure_layout_storage_index = 0 };
+            pbr_material.layout_key                          = { .shader_file_data_ptr = shader_file_data_ptr, .structure_layout_storage_index = 0 };
             pbr_material.pipeline_flags_override.cull_enable = false;
             pbr_material.pipeline_flags_override.cull_mode   = CullMode::NONE;
 

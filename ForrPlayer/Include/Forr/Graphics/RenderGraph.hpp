@@ -48,7 +48,7 @@ namespace fe {
 
             for (auto entity : view) {
                 if (!render_registry.valid(entity)) {
-                    render_registry.create(entity);
+                    std::ignore = render_registry.create(entity);
                 }
 
                 render_registry.emplace_or_replace<T>(entity, view.template get<T>(entity));
@@ -320,23 +320,26 @@ namespace fe {
         std::vector<render_graph::ImageBarrier>  compiled_image_barriers{};
         std::vector<render_graph::BufferBarrier> compiled_buffer_barriers{};
 
-        RenderPass()  = default;
-        ~RenderPass() = default;
+        RenderPass() = default;
+        ~RenderPass() {
+            if (destroy_function && mapped_data) {
+                destroy_function(mapped_data);
+            }
+        }
 
-        FORR_CLASS_MOVABLE(RenderPass)
-        FORR_CLASS_NONCOPYABLE(RenderPass)
+        FORR_CLASS_MOVABLEONLY(RenderPass)
     };
 
     // this is the structure you get in 'fe::RenderGraph::AddPass<>' to
     //  access your mapped data and render pass' index in the array
-    template <RenderPassConcept RenderPass>
+    template <RenderPassConcept RenderPassT>
     struct RenderPassHandle {
-        using RenderPassDataT = RenderPassTraits<RenderPass>::RenderPassDataT;
+        using RenderPassDataT = RenderPassTraits<RenderPassT>::RenderPassDataT;
 
         RenderPassDataT* mapped_data{};
-        // render pass's index in 'fe::RenderGraph::m_RenderPasses'
-        uint32_t               render_pass_index{};
-        fe::hashed_string_view render_pass_name{};
+        // render pass' index in 'fe::RenderGraph::m_RenderPasses'
+        fe::pointer<RenderPass> render_pass_ptr{};
+        fe::hashed_string_view  render_pass_name{};
 
         RenderPassHandle()  = default;
         ~RenderPassHandle() = default;
@@ -351,7 +354,7 @@ namespace fe {
         // different versions of the same resource cannot be accessed
         struct ResourceHandle {
             fe::string_hash hashed_name{};
-            uint32_t       version{};
+            uint32_t        version{};
 
             ResourceHandle() = default;
             ResourceHandle(fe::string_hash hashed_name, uint32_t version) : hashed_name(hashed_name), version(version) {}
@@ -432,16 +435,15 @@ namespace fe {
 
         FORR_CLASS_MOVABLEONLY(RenderGraph)
 
-        template <RenderPassConcept RenderPass>
-        FORR_NODISCARD RenderPassHandle<RenderPass> AddPass(const fe::fixed_string<32>& name) {
-            using RenderPassDataT = RenderPassTraits<RenderPass>::RenderPassDataT;
+        template <RenderPassConcept RenderPassT>
+        FORR_NODISCARD RenderPassHandle<RenderPassT> AddPass(fe::fixed_string_view<32> name) {
+            using RenderPassDataT = RenderPassTraits<RenderPassT>::RenderPassDataT;
 
-            auto& render_pass = m_RenderPasses.emplace_back();
-            render_pass.name  = name;
+            RenderPass render_pass{};
+            render_pass.name = name;
 
-            RenderPassHandle<RenderPass> render_pass_handle{};
-            render_pass_handle.render_pass_index = m_RenderPasses.size() - 1;
-            render_pass_handle.render_pass_name  = name;
+            RenderPassHandle<RenderPassT> render_pass_handle{};
+            render_pass_handle.render_pass_name = name;
 
             if constexpr (!std::is_same_v<RenderPassDataT, EmptyRenderPassDataT>) {
                 std::byte*       mapped_data_raw = m_RenderPassesData.allocate(sizeof(std::decay_t<RenderPassDataT>), alignof(RenderPassDataT));
@@ -450,20 +452,27 @@ namespace fe {
                 render_pass.mapped_data        = mapped_data;
                 render_pass_handle.mapped_data = mapped_data;
 
-                render_pass.setup_function   = [](RenderGraphBuilder& builder, void* render_pass_data) { RenderPass::Setup(builder, *reinterpret_cast<RenderPassDataT*>(render_pass_data)); };
-                render_pass.execute_function = [](RenderGraphContext& context, void* render_pass_data) { RenderPass::Execute(context, *reinterpret_cast<RenderPassDataT*>(render_pass_data)); };
+                render_pass.setup_function   = [](RenderGraphBuilder& builder, void* render_pass_data) { RenderPassT::Setup(builder, *reinterpret_cast<RenderPassDataT*>(render_pass_data)); };
+                render_pass.execute_function = [](RenderGraphContext& context, void* render_pass_data) { RenderPassT::Execute(context, *reinterpret_cast<RenderPassDataT*>(render_pass_data)); };
                 render_pass.destroy_function = [](void* render_pass_data) { std::destroy_at(reinterpret_cast<RenderPassDataT*>(render_pass_data)); };
             }
             else {
                 render_pass.mapped_data        = nullptr;
                 render_pass_handle.mapped_data = nullptr;
 
-                render_pass.setup_function   = [](RenderGraphBuilder& builder, void* render_pass_data) { RenderPass::Setup(builder); };
-                render_pass.execute_function = [](RenderGraphContext& context, void* render_pass_data) { RenderPass::Execute(context); };
+                render_pass.setup_function   = [](RenderGraphBuilder& builder, void* render_pass_data) { RenderPassT::Setup(builder); };
+                render_pass.execute_function = [](RenderGraphContext& context, void* render_pass_data) { RenderPassT::Execute(context); };
                 render_pass.destroy_function = [](void* render_pass_data) {};
             }
 
+            render_pass_handle.render_pass_ptr = m_RenderPasses.create(std::move(render_pass));
+
             return render_pass_handle;
+        }
+
+        template <RenderPassConcept RenderPass>
+        void RemovePass(RenderPassHandle<RenderPass> render_pass_handle) {
+            m_RenderPasses.destroy(render_pass_handle.render_pass_ptr);
         }
 
         RenderGraphCompileResult Compile();
@@ -488,9 +497,9 @@ namespace fe {
         void removeUnusedRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::string_hash, Resource>& resources_map);
 
         // translate 'fe::RenderGraph::CompiledRenderPass' to 'fe::RenderPass' and setup 'fe::RenderPass::compiled_image_barriers' and 'fe::RenderPass::compiled_buffer_barriers'
-        void translateRenderPasses(std::vector<CompiledRenderPass>&              render_passes,
+        void translateRenderPasses(std::vector<CompiledRenderPass>&               render_passes,
                                    std::unordered_map<fe::string_hash, Resource>& resources_map_dst,
-                                   std::vector<RenderPass>&                      used_render_passes_dst);
+                                   fe::typed_pointer_storage<RenderPass>&         used_render_passes_dst);
 
         // setup resource lifetimes
         void calculateResourceLifetimes(std::unordered_map<fe::string_hash, ResourceLifetime>& resource_lifetimes);
@@ -498,14 +507,13 @@ namespace fe {
         // set virutal indices in barriers
         // and prepare virtual indices for craetion commands to translate them into real indices later
         template <typename AcquireFn, typename ReleaseFn>
-        void setupVirtualIndices(AcquireFn&&                                                        acquire_func,
-                                 ReleaseFn&&                                                        release_func,
+        void setupVirtualIndices(AcquireFn&&                                                         acquire_func,
+                                 ReleaseFn&&                                                         release_func,
                                  std::unordered_map<fe::string_hash, ResourceLifetime>&              resource_lifetimes,
                                  std::unordered_map<fe::string_hash, render_graph::CreationCommand>& hashed_to_desc_map,
                                  std::unordered_map<fe::string_hash, size_t>&                        hashed_to_virtual_map_dst) {
-            for (size_t i = 0; i < m_RenderPasses.size(); i++) {
-                RenderPass& render_pass = m_RenderPasses[i];
 
+            m_RenderPasses.for_each([&](RenderPass& render_pass, size_t i) {
                 for (const auto& [hashed_name, lifetime] : resource_lifetimes) {
                     if (lifetime.first_pass_index == i) {
                         const render_graph::CreationCommand& desc = hashed_to_desc_map[hashed_name];
@@ -532,15 +540,15 @@ namespace fe {
                         release_func(desc, virtual_storage_index);
                     }
                 }
-            }
+            });
         }
 
     private:
         ResourceManager& m_ResourceManager;
         IRenderer&       m_Renderer;
 
-        std::vector<RenderPass> m_RenderPasses{};
-        fe::Arena               m_RenderPassesData{ 16 * 1024 };
+        fe::typed_pointer_storage<RenderPass> m_RenderPasses{};
+        fe::Arena                             m_RenderPassesData{ 16 * 1024 };
     };
 
 } // namespace fe

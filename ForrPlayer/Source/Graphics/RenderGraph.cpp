@@ -32,7 +32,7 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
     resources_map.clear();
 
     // this is needed to translate 'fe::RenderGraph::CompiledRenderPass' to 'fe::RenderPass'
-    std::vector<RenderPass> used_render_passes{};
+    fe::typed_pointer_storage<RenderPass> used_render_passes{};
     used_render_passes.reserve(render_passes.size());
 
     // translate 'fe::RenderGraph::CompiledRenderPass' to 'fe::RenderPass' and setup 'fe::RenderPass::compiled_image_barriers' and 'fe::RenderPass::compiled_buffer_barriers'
@@ -90,14 +90,14 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
         // images
 
         for (const auto& create_request : render_pass.image_create_requests) {
-            fe::string_hash hashed_name      = create_request.handle.hashed_name;
+            fe::string_hash hashed_name     = create_request.handle.hashed_name;
             hashed_to_desc_map[hashed_name] = create_request;
         }
 
         // buffers
 
         for (const auto& create_request : render_pass.buffer_create_requests) {
-            fe::string_hash hashed_name      = create_request.handle.hashed_name;
+            fe::string_hash hashed_name     = create_request.handle.hashed_name;
             hashed_to_desc_map[hashed_name] = create_request;
         }
     }
@@ -120,7 +120,7 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
         // images
 
         for (auto& create_request : render_pass.image_create_requests) {
-            fe::string_hash hashed_name          = create_request.handle.hashed_name;
+            fe::string_hash hashed_name         = create_request.handle.hashed_name;
             create_request.handle.storage_index = graphics::TextureHandle::from_packed(hashed_to_virtual_map[hashed_name]); // be careful : hack
             result.image_descs.emplace_back(create_request);
         }
@@ -128,14 +128,13 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
         // buffers
 
         for (auto& create_request : render_pass.buffer_create_requests) {
-            fe::string_hash hashed_name          = create_request.handle.hashed_name;
+            fe::string_hash hashed_name         = create_request.handle.hashed_name;
             create_request.handle.storage_index = graphics::BufferHandle::from_packed(hashed_to_virtual_map[hashed_name]); // be careful : hack
             result.buffer_descs.emplace_back(create_request);
         }
     }
 
-    for (size_t i = 0; i < m_RenderPasses.size(); i++) {
-        RenderPass&         render_pass          = m_RenderPasses[i];
+    m_RenderPasses.for_each([&](RenderPass& render_pass, size_t i) {
         CompiledRenderPass& compiled_render_pass = render_passes[i]; // using this index here will work
 
         render_graph::BeginRenderPass& begin_command = render_pass.compiled_begin_command;
@@ -170,11 +169,10 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
                 begin_command.has_depth_target = true;
             }
             else {
-                begin_command.color_targets[j] = graphics::TextureHandle::from_packed(image_barrier.handle.hashed_name); // be careful : hack
-                begin_command.color_targets_count++;
+                begin_command.color_targets[begin_command.color_targets_count++] = graphics::TextureHandle::from_packed(image_barrier.handle.hashed_name); // be careful : hack
             }
         }
-    }
+    });
 
     //
     // Pass01 | read : []               , write :  ColorBuffer_v0
@@ -255,7 +253,7 @@ fe::render_graph::CommandList fe::RenderGraph::Execute(const entt::registry& ren
     render_graph::CommandList render_command_list{};
     render_command_list.reserve(m_RenderPasses.size() * 1024); // size in bytes
 
-    for (const RenderPass& render_pass : m_RenderPasses) {
+    m_RenderPasses.for_each([&](const RenderPass& render_pass) {
         RenderGraphContext context{ render_data };
         render_pass.execute_function(context, render_pass.mapped_data);
 
@@ -269,22 +267,17 @@ fe::render_graph::CommandList fe::RenderGraph::Execute(const entt::registry& ren
 
         render_command_list.append_command_list(context.command_list);
         render_command_list.enqueue(render_pass.compiled_end_command);
-    }
+    });
 
     return render_command_list;
 }
 
 void fe::RenderGraph::Clear() {
-    for (auto& pass : m_RenderPasses) {
-        if (pass.destroy_function && pass.mapped_data) {
-            pass.destroy_function(pass.mapped_data);
-        }
-    }
     m_RenderPasses.clear();
     m_RenderPassesData.reset();
 }
 
-void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&              render_passes_dst,
+void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&               render_passes_dst,
                                           std::unordered_map<fe::string_hash, Resource>& resources_map) {
     for (auto& render_pass : m_RenderPasses) {
         RenderGraphBuilder builder{ m_ResourceManager, m_Renderer };
@@ -517,7 +510,7 @@ void fe::RenderGraph::sortRenderPasses(std::vector<CompiledRenderPass>& render_p
     render_passes_dst = std::move(sorted_render_passes);
 }
 
-void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>&              render_passes_dst,
+void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>&               render_passes_dst,
                                                std::unordered_map<fe::string_hash, Resource>& resources_map) {
     if (render_passes_dst.empty()) return;
 
@@ -569,9 +562,9 @@ void fe::RenderGraph::removeUnusedRenderPasses(std::vector<CompiledRenderPass>& 
     render_passes_dst = std::move(used_render_passes);
 }
 
-void fe::RenderGraph::translateRenderPasses(std::vector<CompiledRenderPass>&              render_passes,
+void fe::RenderGraph::translateRenderPasses(std::vector<CompiledRenderPass>&               render_passes,
                                             std::unordered_map<fe::string_hash, Resource>& resources_map_dst,
-                                            std::vector<RenderPass>&                      used_render_passes_dst) {
+                                            fe::typed_pointer_storage<RenderPass>&         used_render_passes_dst) {
     for (const CompiledRenderPass& render_pass : render_passes) {
         // find this render pass in 'fe::RenderGraph::m_RenderPasses'
         auto it = std::ranges::find_if(m_RenderPasses, [&render_pass](const RenderPass& this_render_pass) -> bool {
@@ -625,16 +618,15 @@ void fe::RenderGraph::translateRenderPasses(std::vector<CompiledRenderPass>&    
                 resources_map_dst[this_barrier.handle.hashed_name].old_state = write_barrier.new_state;
             }
 
-            used_render_passes_dst.emplace_back(std::move(*it));
+            std::ignore = used_render_passes_dst.emplace(std::move(*it));
         }
     }
 }
 
 void fe::RenderGraph::calculateResourceLifetimes(std::unordered_map<fe::string_hash, ResourceLifetime>& resource_lifetimes) {
     resource_lifetimes.reserve(m_RenderPasses.size() * 5);
-    for (size_t i = 0; i < m_RenderPasses.size(); i++) {
-        const RenderPass& render_pass = m_RenderPasses[i];
 
+    m_RenderPasses.for_each([&](const RenderPass& render_pass, size_t i) {
         // images
 
         for (const render_graph::ImageBarrier& image_barrier : render_pass.compiled_image_barriers) {
@@ -658,5 +650,5 @@ void fe::RenderGraph::calculateResourceLifetimes(std::unordered_map<fe::string_h
 
             lifetime.last_pass_index = i;
         }
-    }
+    });
 }

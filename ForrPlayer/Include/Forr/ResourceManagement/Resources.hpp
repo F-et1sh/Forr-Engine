@@ -120,7 +120,7 @@ namespace fe::resource {
     struct Material {
     public:
         struct MaterialLayoutKey {
-            fe::pointer<resource::ShaderFileData> shader_file_data{};
+            fe::pointer<resource::ShaderFileData> shader_file_data_ptr{};
             // index of structure layout in 'fe::resource::ShaderFileData::structure_layouts'
             size_t structure_layout_storage_index{ std::numeric_limits<size_t>::max() };
         };

@@ -14,7 +14,7 @@
 #include "Forr/ECS/Components.hpp"
 #include "Forr/Graphics/IRenderer.hpp"
 
-#include "Forr/ECS/Helpers.hpp"
+#include "Forr/ECS/Systems.hpp"
 
 namespace fe {
     struct RenderMeshEntry {

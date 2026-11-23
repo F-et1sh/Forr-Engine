@@ -255,19 +255,97 @@ namespace fe {
     template <storable_t T, pointer_t PointerT = pointer<T>>
     class typed_pointer_storage {
     public:
-        typed_pointer_storage() = default;
-        ~typed_pointer_storage() {
-            for (size_t i = 0; i < m_slots_object.size(); i++) {
-                if (m_slots_alive[i]) {
-                    std::destroy_at(get_ptr(i));
+        struct Slot {
+        public:
+            alignas(T) std::array<std::byte, sizeof(T)> storage{};
+        };
+
+        template <bool IsConst>
+        struct Iterator {
+            using iterator_concept  = std::forward_iterator_tag;
+            using iterator_category = std::forward_iterator_tag;
+            using difference_type   = std::ptrdiff_t;
+            using value_type        = T;
+            using pointer           = std::conditional_t<IsConst, const T*, T*>;
+            using reference         = std::conditional_t<IsConst, const T&, T&>;
+
+            using ContainerPtr = std::conditional_t<IsConst, const typed_pointer_storage<T, PointerT>*, typed_pointer_storage<T, PointerT>*>;
+            using IndexType    = PointerT::HandleType;
+
+            ContainerPtr container{ nullptr };
+            IndexType    index{ 0 };
+
+            constexpr void skip_dead() noexcept {
+                if (!container) return;
+                const auto size = static_cast<IndexType>(container->m_slots_alive.size());
+                while (index < size && container->m_slots_alive[index] == 0) {
+                    ++index;
                 }
             }
+
+            constexpr reference operator*() const noexcept {
+                return *container->get_ptr(index);
+            }
+
+            constexpr pointer operator->() const noexcept {
+                return container->get_ptr(index);
+            }
+
+            FORR_NODISCARD constexpr PointerT handle() const noexcept {
+                return PointerT{ index, container->m_slots_generation[index] };
+            }
+
+            constexpr Iterator& operator++() noexcept {
+                ++index;
+                skip_dead();
+                return *this;
+            }
+
+            constexpr Iterator operator++(int) noexcept {
+                Iterator temp = *this;
+                ++(*this);
+                return temp;
+            }
+
+            constexpr bool operator==(const Iterator& other) const noexcept {
+                return container == other.container && index == other.index;
+            }
+
+            constexpr Iterator() noexcept = default;
+            constexpr Iterator(ContainerPtr container, IndexType index) noexcept
+                : container(container), index(index) {}
+        };
+
+        using iterator       = Iterator<false>;
+        using const_iterator = Iterator<true>;
+
+        FORR_NODISCARD constexpr iterator begin() noexcept {
+            iterator it{ this, 0 };
+            it.skip_dead();
+            return it;
         }
 
-        // TEMORARY
-        FORR_CLASS_NONCOPYABLE(typed_pointer_storage)
-        // TEMORARY
-        FORR_CLASS_NONMOVABLE(typed_pointer_storage)
+        FORR_NODISCARD constexpr iterator end() noexcept {
+            return iterator{ this, static_cast<PointerT::HandleType>(this->size()) };
+        }
+
+        FORR_NODISCARD constexpr const_iterator begin() const noexcept {
+            const_iterator it{ this, 0 };
+            it.skip_dead();
+            return it;
+        }
+
+        FORR_NODISCARD constexpr const_iterator end() const noexcept {
+            return const_iterator{ this, static_cast<PointerT::HandleType>(this->size()) };
+        }
+
+    public:
+        typed_pointer_storage() = default;
+        ~typed_pointer_storage() { this->clear(); }
+
+        // TODO : as I remember this may cause a bug or an error. be careful here
+        FORR_CLASS_COPYABLE(typed_pointer_storage)
+        FORR_CLASS_MOVABLE(typed_pointer_storage)
 
         FORR_NODISCARD PointerT create(const T& value)
             requires std::is_same_v<typename PointerT::CustomFieldsType, empty_custom_fields_t>
@@ -342,15 +420,50 @@ namespace fe {
             return m_slots_alive.size() - m_free_list.size();
         }
 
-        // this function runs your lambda through all objects of the storage.
+        FORR_NODISCARD size_t size() const noexcept {
+            return m_slots_object.size();
+        }
+
+        // TODO : I'm not sure about this method, maybe needs to be rewritten
+        void reserve(size_t new_capacity) {
+            m_slots_object.reserve(new_capacity);
+            m_slots_generation.reserve(new_capacity);
+            m_slots_alive.reserve(new_capacity);
+        }
+
+        void clear() noexcept {
+            for (size_t i = 0; i < m_slots_object.size(); i++) {
+                if (m_slots_alive[i]) {
+                    std::destroy_at(get_ptr(i));
+                }
+            }
+        }
+
+        // this function runs your lambda through all objects of the storage
         // it can be invoked by :
+        // 
         // [](T&, fe::pointer<T>) -> void {}
         // [](fe::pointer<T>, T&) -> void {}
         // [](T&) -> void {}
+        // []() -> void {}
+        // 
+        // the same but with const ( in the second overload )
         // [](fe::pointer<T>) -> void {}
         // [](const T&, fe::pointer<T>) -> void {}
         // [](fe::pointer<T>, const T&) -> void {}
         // [](const T&) -> void {}
+        // 
+        // and the same but with the current index
+        // [](T&, fe::pointer<T>, size_t) -> void {}
+        // [](fe::pointer<T>, T&, size_t) -> void {}
+        // [](T&, size_t) -> void {}
+        // [](size_t) -> void {}
+        // 
+        // [](fe::pointer<T>, size_t) -> void {}
+        // [](const T&, fe::pointer<T>, size_t) -> void {}
+        // [](fe::pointer<T>, const T&, size_t) -> void {}
+        // [](const T&, size_t) -> void {}
+        // [](size_t) -> void {}
         template <typename Func>
         void for_each(Func&& func) {
             for (size_t i = 0; i < m_slots_object.size(); i++) {
@@ -359,6 +472,7 @@ namespace fe {
                 T&       object = *get_ptr(i);
                 PointerT ptr(i, m_slots_generation[i]);
 
+                // without index
                 if constexpr (std::is_invocable_v<Func, T&, PointerT>) {
                     func(object, ptr);
                 }
@@ -371,6 +485,25 @@ namespace fe {
                 else if constexpr (std::is_invocable_v<Func, PointerT>) {
                     func(ptr);
                 }
+                else if constexpr (std::is_invocable_v<Func>) {
+                    func();
+                }
+                // with index
+                else if constexpr (std::is_invocable_v<Func, T&, PointerT, size_t>) {
+                    func(object, ptr, i);
+                }
+                else if constexpr (std::is_invocable_v<Func, PointerT, T&, size_t>) {
+                    func(ptr, object, i);
+                }
+                else if constexpr (std::is_invocable_v<Func, T&, size_t>) {
+                    func(object, i);
+                }
+                else if constexpr (std::is_invocable_v<Func, PointerT, size_t>) {
+                    func(ptr, i);
+                }
+                else if constexpr (std::is_invocable_v<Func, size_t>) {
+                    func(i);
+                }
                 else {
                     static_assert(std::false_type::value, "fe::typed_pointer_storage : for_each lambda has invalid signature");
                 }
@@ -379,10 +512,29 @@ namespace fe {
 
         // this function runs your lambda through all objects of the storage
         // it can be invoked by :
+        // 
+        // [](T&, fe::pointer<T>) -> void {}
+        // [](fe::pointer<T>, T&) -> void {}
+        // [](T&) -> void {}
+        // []() -> void {}
+        // 
+        // the same but with const ( in this overload )
         // [](fe::pointer<T>) -> void {}
         // [](const T&, fe::pointer<T>) -> void {}
         // [](fe::pointer<T>, const T&) -> void {}
         // [](const T&) -> void {}
+        // 
+        // and the same but with the current index
+        // [](T&, fe::pointer<T>, size_t) -> void {}
+        // [](fe::pointer<T>, T&, size_t) -> void {}
+        // [](T&, size_t) -> void {}
+        // [](size_t) -> void {}
+        // 
+        // [](fe::pointer<T>, size_t) -> void {}
+        // [](const T&, fe::pointer<T>, size_t) -> void {}
+        // [](fe::pointer<T>, const T&, size_t) -> void {}
+        // [](const T&, size_t) -> void {}
+        // [](size_t) -> void {}
         template <typename Func>
         void for_each(Func&& func) const {
             for (size_t i = 0; i < m_slots_object.size(); i++) {
@@ -391,6 +543,7 @@ namespace fe {
                 const T& object = *get_ptr(i);
                 PointerT ptr(i, m_slots_generation[i]);
 
+                // without index
                 if constexpr (std::is_invocable_v<Func, const T&, PointerT>) {
                     func(object, ptr);
                 }
@@ -403,6 +556,25 @@ namespace fe {
                 else if constexpr (std::is_invocable_v<Func, PointerT>) {
                     func(ptr);
                 }
+                else if constexpr (std::is_invocable_v<Func>) {
+                    func();
+                }
+                // with index
+                else if constexpr (std::is_invocable_v<Func, const T&, PointerT, size_t>) {
+                    func(object, ptr, i);
+                }
+                else if constexpr (std::is_invocable_v<Func, PointerT, const T&, size_t>) {
+                    func(ptr, object, i);
+                }
+                else if constexpr (std::is_invocable_v<Func, const T&, size_t>) {
+                    func(object, i);
+                }
+                else if constexpr (std::is_invocable_v<Func, PointerT, size_t>) {
+                    func(ptr, i);
+                }
+                else if constexpr (std::is_invocable_v<Func, size_t>) {
+                    func(i);
+                }
                 else {
                     static_assert(std::false_type::value, "fe::typed_pointer_storage : const for_each lambda has invalid signature");
                 }
@@ -410,11 +582,6 @@ namespace fe {
         }
 
     private:
-        struct Slot {
-        public:
-            alignas(T) std::array<std::byte, sizeof(T)> storage{};
-        };
-
         FORR_NODISCARD T* get_ptr(size_t index) noexcept {
             return std::launder(reinterpret_cast<T*>(m_slots_object[index].storage.data()));
         }
@@ -452,7 +619,7 @@ namespace fe {
 
                 try {
                     // if you're getting an error here, then most likely you are :
-                    // - passing wrong arguments to the constructor ( or wrong number of arguments; zero counts )
+                    // - passing wrong arguments to the constructor ( Args&&... ) or wrong number of arguments; zero counts
                     // - forgot 'std::move()' for movable-only objects
                     std::construct_at(get_ptr(index), std::forward<Args>(args)...);
                     m_slots_alive[index] = true;

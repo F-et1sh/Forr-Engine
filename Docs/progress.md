@@ -11,6 +11,9 @@
 
 ### Done
     the 'thin wrapper' logic in progress
+    'fe::fixed_string' and 'fe::typed_pointer_storage' got better
+    'fe::RenderGraph::RemovePass' added
+    'fe::resource::Material::MaterialLayoutKey::shader_file_data' --> 'fe::resource::Material::MaterialLayoutKey::shader_file_data_ptr'
 
 ### Problem
     -

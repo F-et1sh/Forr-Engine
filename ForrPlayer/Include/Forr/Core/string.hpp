@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include <span>
+#include <stdexcept>
 
 #include "attributes.hpp"
 #include "custom_allocators.hpp"
@@ -283,9 +284,23 @@ namespace fe {
             std::copy_n(str, N, m_data.begin());
         }
 
-        constexpr basic_fixed_string(StringViewT str) {
-            const std::size_t copy_size = std::min(N - 1, str.size());
-            std::copy_n(str.data(), copy_size, m_data.begin());
+        constexpr explicit basic_fixed_string(StringT string) {
+            if (string.size() > N) {
+                throw std::length_error("String is too long");
+            }
+
+            const std::size_t copy_size = std::min(N - 1, string.size());
+            std::copy_n(string.data(), copy_size, m_data.begin());
+            m_data[copy_size] = '\0';
+        }
+
+        constexpr basic_fixed_string(StringViewT string_view) {
+            if (string_view.size() > N) {
+                throw std::length_error("String is too long");
+            }
+
+            const std::size_t copy_size = std::min(N - 1, string_view.size());
+            std::copy_n(string_view.data(), copy_size, m_data.begin());
             m_data[copy_size] = '\0';
         }
 
@@ -304,8 +319,46 @@ namespace fe {
             return StringViewT(*this) == StringViewT(other);
         }
 
+        basic_fixed_string& operator=(const CharT (&str)[N]) {
+            m_data = str;
+            return *this;
+        }
+
+        basic_fixed_string& operator=(StringViewT string_view) {
+            if (string_view.size() > N) {
+                throw std::length_error("String is too long");
+            }
+
+            const std::size_t copy_size = std::min(N - 1, string_view.size());
+            std::copy_n(string_view.data(), copy_size, m_data.begin());
+            m_data[copy_size] = '\0';
+
+            return *this;
+        }
+
+        basic_fixed_string& operator=(const StringT& string) {
+            if (string.size() > N) {
+                throw std::length_error("String is too long");
+            }
+
+            const std::size_t copy_size = std::min(N - 1, string.size());
+            std::copy_n(string.data(), copy_size, m_data.begin());
+            m_data[copy_size] = '\0';
+
+            return *this;
+        }
+
+        template <bool IsStringView2>
+        basic_fixed_string& operator=(const basic_fixed_string<N, Element, IsStringView2>& other) {
+            m_data = other.m_data;
+            return *this;
+        }
+
     private:
-        std::array<CharT, N> m_data{};
+        std::array<CharT, N + 1> m_data{}; // plus 1 for the null-terminator
+
+        template <std::size_t, class, bool>
+        friend class basic_fixed_string;
     };
 
     template <std::size_t N, class Element, bool IsStringView = false>
