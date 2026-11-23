@@ -23,7 +23,7 @@
 #include "Forr/Graphics/IRenderer.hpp"
 #include "Forr/Graphics/RenderGraph.hpp"
 #include "Forr/Graphics/DefaultRenderPasses.hpp"
-#include "Forr/ECS/Systems.hpp"
+#include "Forr/ECS/Scene.hpp"
 
 int main(int argc, char* argv[]) {
     // static variables
@@ -114,9 +114,6 @@ int main(int argc, char* argv[]) {
     render_graph->SetupResourceBindings(mapping_result);
 
     // registry
-
-    uint32_t a{};
-    uint32_t b{};
 
     entt::registry registry{};
 

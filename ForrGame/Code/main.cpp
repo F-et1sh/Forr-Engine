@@ -12,15 +12,16 @@
 
 #include "Forr/Core/dll_api.hpp"
 
-static std::string message{};
-
 void on_initialize(const fe::dll_api::engine_api* engine_api) {
-    message = engine_api->get_message(engine_api->instance);
+    
 }
 
-const char* return_message() {
-    static std::string message2 = message + " -- 2";
-    return message2.c_str();
+void on_update(const fe::dll_api::engine_api* engine_api) {
+    
+}
+
+void on_release(const fe::dll_api::engine_api* engine_api) {
+    
 }
 
 extern "C" __declspec(dllexport) fe::dll_api::application_module* get_application_module() {
@@ -28,9 +29,8 @@ extern "C" __declspec(dllexport) fe::dll_api::application_module* get_applicatio
         "ForrGame-Example",
         true,
         &on_initialize,
-        nullptr,
-        nullptr,
-        &return_message
+        &on_update,
+        &on_release
     };
     return &result;
 }

@@ -1,5 +1,19 @@
 ﻿# Forr-Engine Devlog
 
+## 24.11.2026
+### Goal
+    create unified context that can contain any type of systems
+    create an extension for the 'Forr-Editor'
+    provide 'set_system_enabled' and 'override_system' for the dll api
+    create 'in-game' events
+    redesign the dll_api.hpp logic
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 23.11.2026
 ### Goal
     create C++ ABI

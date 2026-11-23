@@ -23,8 +23,6 @@
 namespace fe::dll_api {
     struct engine_api {
         void* instance{};
-
-        const char* (*get_message)(void* instance);
     };
 
     // game or mod
@@ -33,16 +31,12 @@ namespace fe::dll_api {
         using on_update_func     = void (*)(const engine_api*);
         using on_release_func    = void (*)(const engine_api*);
 
-        using return_message_func = const char* (*)();
-
         string_raw name{};
         bool       is_primary{};
 
         on_initialize_func on_initialize{};
         on_update_func     on_update{};
         on_release_func    on_release{};
-
-        return_message_func return_message{};
     };
 
     using library_handle_raw = void*;
