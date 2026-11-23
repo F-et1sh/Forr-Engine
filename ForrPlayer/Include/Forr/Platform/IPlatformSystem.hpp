@@ -38,6 +38,7 @@ namespace fe {
     public:
         virtual ~IPlatformSystem() = default;
 
+        // TODO : make the 'event_bus' optional
         FORR_NODISCARD static std::unique_ptr<IPlatformSystem> Create(const PlatformSystemDesc& desc, EventBus& event_bus);
 
         // returns window index

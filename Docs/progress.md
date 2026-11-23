@@ -10,7 +10,7 @@
     redesign the dll_api.hpp logic
 
 ### Done
-    -
+    the 'thin wrapper' logic in progress
 
 ### Problem
     -

@@ -69,6 +69,7 @@ namespace fe {
     public:
         virtual ~IRenderer() = default;
 
+        // TODO : make 'resource_manager' optional
         FORR_NODISCARD static std::unique_ptr<IRenderer> Create(const RendererDesc& desc,
                                                                 IPlatformSystem&    platform_system,
                                                                 WindowID            primary_window_index,

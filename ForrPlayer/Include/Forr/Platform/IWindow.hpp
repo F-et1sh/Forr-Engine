@@ -12,19 +12,17 @@
 
 #pragma once
 #include <string>
+#include <string_view>
 #include "Forr/Core/attributes.hpp"
 
 namespace fe {
     struct WindowDesc {
-        int         width{ ~0 };
-        int         height{ ~0 };
-        std::string name{};
-        int         monitor_index{ ~0 };
-        int         vsync{};
-        bool        is_fullscreen{};
-
-        WindowDesc()  = default;
-        ~WindowDesc() = default;
+        int              width{ ~0 };
+        int              height{ ~0 };
+        std::string_view name{};
+        int              monitor_index{ ~0 };
+        int              vsync{};
+        bool             is_fullscreen{};
     };
 
     class IWindow {

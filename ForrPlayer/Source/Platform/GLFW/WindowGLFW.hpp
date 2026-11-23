@@ -28,7 +28,7 @@ namespace fe {
         FORR_NODISCARD void* getNativeHandle() override { return static_cast<void*>(m_GLFWwindow); }
         FORR_NODISCARD int   getWidth() override { return m_Description.width; }
         FORR_NODISCARD int   getHeight() override { return m_Description.height; }
-        FORR_NODISCARD std::string getName() override { return m_Description.name; }
+        FORR_NODISCARD std::string getName() override { return m_Name; }
         FORR_NODISCARD int         getMonitorIndex() override { return m_Description.monitor_index; }
         FORR_NODISCARD int         getVSync() override { return m_Description.vsync; }
         FORR_NODISCARD bool        getIsFullscreen() override { return m_Description.is_fullscreen; }
@@ -48,6 +48,8 @@ namespace fe {
 
     private:
         WindowDesc m_Description{};
+
+        std::string m_Name{};
 
         std::reference_wrapper<EventBus> m_EventBus;
 

@@ -19,7 +19,7 @@
 #include "GLFWTranslators.hpp"
 
 fe::WindowGLFW::WindowGLFW(const WindowDesc& desc, EventBus& event_bus)
-    : m_EventBus(event_bus) {
+    : m_EventBus(event_bus), m_Name(desc.name) {
 
     m_Description = desc;
 
@@ -48,7 +48,7 @@ fe::WindowGLFW::WindowGLFW(const WindowDesc& desc, EventBus& event_bus)
 
     GLFWmonitor* monitor = m_Description.is_fullscreen ? m_GLFWmonitor : nullptr;
 
-    m_GLFWwindow = glfwCreateWindow(m_Description.width, m_Description.height, m_Description.name.c_str(), monitor, nullptr); // TODO : check GLFWwindow* share
+    m_GLFWwindow = glfwCreateWindow(m_Description.width, m_Description.height, m_Name.c_str(), monitor, nullptr); // TODO : check GLFWwindow* share
     if (!m_GLFWwindow) {
         fe::logging::error("Failed to create GLFW window");
         return;
@@ -68,7 +68,7 @@ fe::WindowGLFW::WindowGLFW(const WindowDesc& desc, EventBus& event_bus)
 }
 
 fe::WindowGLFW::~WindowGLFW() {
-    fe::logging::debug("Window \"%s\" destroyed", m_Description.name.c_str());
+    fe::logging::debug("Window \"%s\" destroyed", m_Name.c_str());
     glfwDestroyWindow(m_GLFWwindow);
 }
 
