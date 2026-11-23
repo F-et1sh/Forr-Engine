@@ -47,10 +47,32 @@ int main(int argc, char* argv[]) {
 
     fe::logging::info("the symbol is loaded");
 
-    auto symbol_address = symbol_address_result.value();
+    auto        symbol_address     = symbol_address_result.value();
     const auto* application_module = reinterpret_cast<create_application_module>(symbol_address)();
-    
-    fe::logging::info("%s", application_module->name);
+
+    struct Engine {
+        fe::dll_api::engine_api create_api() {
+            fe::dll_api::engine_api api{};
+            api.instance = this;
+
+            api.get_message = [](void* handle) -> const char* {
+                return static_cast<Engine*>(handle)->get_message();
+            };
+
+            return api;
+        }
+
+        const char* get_message() {
+            constexpr static std::string_view message{ "Hello World !!" };
+            return message.data();
+        }
+    } api;
+
+    std::unique_ptr<fe::dll_api::engine_api> engine_api = std::make_unique<fe::dll_api::engine_api>(api.create_api());
+
+    application_module->on_initialize(engine_api.get());
+    auto message = application_module->return_message();
+    fe::logging::info(message);
 
     return 0;
 }

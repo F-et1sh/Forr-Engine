@@ -1,5 +1,20 @@
 ﻿# Forr-Engine Devlog
 
+## 23.11.2026
+### Goal
+    create C++ ABI
+    create an extension for the 'Forr-Editor'
+    provide 'set_system_enabled' and 'override_system' for the dll api
+    provide executing stages ( priorities ) for the systems
+    create 'in-game' events
+    redesign the dll_api.hpp logic
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 22.11.2026
 ### Goal
     create an extension for the 'Forr-Editor'
@@ -8,7 +23,6 @@
     provide executing stages ( priorities ) for the systems
     create 'in-game' events
     redesign the dll_api.hpp logic
-    create 'fe::function_ref'
 
 ### Done
     some optimizations in 'DefaultPipelineBuilders.hpp', 'SlangParser.hpp' and 'SlangParser.cpp'

@@ -21,65 +21,10 @@
 #include "string.hpp"
 
 namespace fe::dll_api {
-    struct component {
-        using on_construct_func = void (*)(void*);
-        using on_destruct_func  = void (*)(void*);
-
-        string_raw  name{};
-        string_hash type_hash{};
-        size_t      size{};
-        size_t      alignment{};
-
-        on_construct_func on_construct{};
-        on_destruct_func  on_destruct{};
-    };
-
     struct engine_api {
-        using logging_func    = void (*)(void*, const char*);
-        using destructor_func = void (*)(void*);
+        void* instance{};
 
-        void*           instance{};
-        logging_func    logging{};
-        destructor_func destructor{};
-    };
-
-    template <typename T>
-    struct ListenerCallbackTraitsFn {
-        using Traits = ListenerCallbackTraitsFn<decltype(&T::operator())>; // for lambdas
-        using ClassT = T;
-        using EventT = Traits::EventT;
-    };
-
-    template <typename ClassType, typename ReturnType, typename... Args>
-    struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...)> {
-        static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
-
-        using ClassT = ClassType;
-        using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
-    };
-
-    template <typename ClassType, typename ReturnType, typename... Args>
-    struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...) const> {
-        static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
-
-        using ClassT = ClassType;
-        using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
-    };
-
-    template <typename ClassType, typename ReturnType, typename... Args>
-    struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...) noexcept> {
-        static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
-
-        using ClassT = ClassType;
-        using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
-    };
-
-    template <typename ClassType, typename ReturnType, typename... Args>
-    struct ListenerCallbackTraitsFn<ReturnType (ClassType::*)(Args...) const noexcept> {
-        static_assert(sizeof...(Args) == 1, "The listener method must accept only 1 argument - the event");
-
-        using ClassT = ClassType;
-        using EventT = std::decay_t<std::tuple_element_t<0, std::tuple<Args...>>>;
+        const char* (*get_message)(void* instance);
     };
 
     // game or mod
@@ -88,25 +33,17 @@ namespace fe::dll_api {
         using on_update_func     = void (*)(const engine_api*);
         using on_release_func    = void (*)(const engine_api*);
 
+        using return_message_func = const char* (*)();
+
         string_raw name{};
         bool       is_primary{};
 
         on_initialize_func on_initialize{};
         on_update_func     on_update{};
         on_release_func    on_release{};
-    };
 
-    //template <typename T>
-    //void register_component(const engine_api* api, const char* name) {
-    //    component desc{};
-    //    desc.name         = name;
-    //    desc.type_hash    = fe::make_hash(name);
-    //    desc.size         = sizeof(T);
-    //    desc.alignment    = alignof(T);
-    //    desc.on_construct = [](void* ptr) { new (ptr) T(); };
-    //    desc.on_destruct  = [](void* ptr) { static_cast<T*>(ptr)->~T(); };
-    //    api->register_component(&desc);
-    //}
+        return_message_func return_message{};
+    };
 
     using library_handle_raw = void*;
     using symbol_handle_raw  = void*;
