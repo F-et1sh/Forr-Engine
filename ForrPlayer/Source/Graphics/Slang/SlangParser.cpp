@@ -5,8 +5,8 @@
     File : SlangParser.cpp
     Role : this class compiles and reflects Slang shaders
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

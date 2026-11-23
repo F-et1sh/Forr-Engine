@@ -5,8 +5,8 @@
     File : Layer.hpp
     Role : Application layer interface
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

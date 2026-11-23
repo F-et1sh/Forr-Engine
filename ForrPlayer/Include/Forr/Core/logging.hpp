@@ -8,8 +8,8 @@
 
         TODO : rewrite this using templates and std::format
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

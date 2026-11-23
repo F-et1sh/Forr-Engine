@@ -5,8 +5,8 @@
     File : path.cpp
     Role : gives you full paths to any folder
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

@@ -5,8 +5,8 @@
     File : Tools.hpp
     Role : helpful defines
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

@@ -6,8 +6,8 @@
     Role : util for logging info to console. 
         Based on Donut, MIT License ( https://github.com/NVIDIA-RTX/Donut )
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

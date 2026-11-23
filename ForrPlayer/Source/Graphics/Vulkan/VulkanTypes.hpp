@@ -6,8 +6,8 @@
     Role : Vulkan types. All structures here must be movable only
         Even if the structure is only 4 bytes
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

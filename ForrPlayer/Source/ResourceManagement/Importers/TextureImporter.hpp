@@ -5,8 +5,8 @@
     File : TextureImporter.hpp
     Role : imports resources and their metadata. for textures
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

@@ -14,8 +14,8 @@
         Sometimes one file ( extension ) might need to create multiple resources. In this case, better create
             one resource and store its 'sub-resources' inside.
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

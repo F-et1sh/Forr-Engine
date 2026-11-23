@@ -5,8 +5,8 @@
     File : InputSystem.cpp
     Role : InputSystem is a class to work with the game actions
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

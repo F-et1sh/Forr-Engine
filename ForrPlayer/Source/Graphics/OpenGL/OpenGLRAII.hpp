@@ -6,8 +6,8 @@
     Role : Thin wrapper classes to provide RAII to OpenGL.
         fe::gl:: - is a namespace that contains only thin wrappers.
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

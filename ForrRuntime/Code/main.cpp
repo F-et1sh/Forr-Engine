@@ -7,8 +7,8 @@
 
         ForrRuntime is a thin wrapper to execute games made with Forr-Engine
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

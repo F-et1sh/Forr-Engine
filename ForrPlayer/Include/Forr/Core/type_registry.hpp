@@ -5,8 +5,8 @@
     File : type_registry.hpp
     Role : type registry gets you an unique id for your type
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

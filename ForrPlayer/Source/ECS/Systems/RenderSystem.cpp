@@ -5,8 +5,8 @@
     File : RenderSystem.cpp
     Role : renderer system
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

@@ -5,8 +5,8 @@
     File : VulkanContext.hpp
     Role : VulkanContext just a container for all Vulkan stuff/state.
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

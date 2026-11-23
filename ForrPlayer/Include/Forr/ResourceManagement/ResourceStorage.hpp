@@ -7,8 +7,8 @@
         For example : fe::resource::Materil's 'samplers' and 'buffer' are kept here
         via 'fe::Arena' to decrease allocations count
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

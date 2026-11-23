@@ -7,8 +7,8 @@
         fe::vk:: - is a namespace that contains only thin wrappers.
         Classes/Structs like VulkanDevice won't be here, they will be in fe::
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

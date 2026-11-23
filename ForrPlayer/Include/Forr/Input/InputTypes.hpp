@@ -8,8 +8,8 @@
     Based on GLFW ( zlib License. Copyright (c) 2002-2006 Marcus Geelnard, Copyright (c) 2006-2019 Camilla Lowy )
                                                                                                             ^ changed the letter, because clang-format doesn't work with non-ASCII
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

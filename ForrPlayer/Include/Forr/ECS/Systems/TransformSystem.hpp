@@ -5,8 +5,8 @@
     File : TransformSystem.hpp
     Role : calculates 'LocalToWorldComponent' via 'TransformComponent'
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

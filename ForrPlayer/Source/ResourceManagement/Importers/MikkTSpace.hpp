@@ -5,8 +5,8 @@
     File : MikkTSpace.hpp
     Role : A common standard for tangent space used in baking tools to produce normal maps. More information can be found at http://www.mikktspace.com/.
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

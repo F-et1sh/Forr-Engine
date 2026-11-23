@@ -5,8 +5,8 @@
     File : ShaderReflection.hpp
     Role : structs to handle shaders reflection
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

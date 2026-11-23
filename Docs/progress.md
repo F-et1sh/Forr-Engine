@@ -15,6 +15,7 @@
     'fe::fixed_string' and 'fe::typed_pointer_storage' got better
     'fe::RenderGraph::RemovePass' added
     'fe::resource::Material::MaterialLayoutKey::shader_file_data' --> 'fe::resource::Material::MaterialLayoutKey::shader_file_data_ptr'
+    licenses fixed : 'All rights reseved.' --> 'SPDX-License-Identifier: MIT'. 'Farrakh' --> 'Farrah' ( the new way to write my name )
 
 ### Problem
     -

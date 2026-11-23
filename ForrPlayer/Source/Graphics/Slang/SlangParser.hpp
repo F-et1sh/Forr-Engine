@@ -8,8 +8,8 @@
         OpenGLResourceManager/VulkanResourceManager ( secondary processing ) - merge shader's and material's serialized
             data and finally compile the shader
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

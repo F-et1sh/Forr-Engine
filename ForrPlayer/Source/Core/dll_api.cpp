@@ -6,8 +6,8 @@
     Role : provides an interface to register a dll module ( a game or a mod )
            and unified function to load, unload and get symbol addresses from the loaded dll
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

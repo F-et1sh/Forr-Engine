@@ -6,8 +6,8 @@
     Role : everything with strings. the project primarily uses std::string and assumes it is encoded in UTF-8
            there are a lot of tools, which done with 'wchar_t', but now it's deprecated - use just std::string
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

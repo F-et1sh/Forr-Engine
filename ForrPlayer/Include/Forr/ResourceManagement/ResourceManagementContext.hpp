@@ -5,8 +5,8 @@
     File : ResourceManagementContext.hpp
     Role : resource management context. Contains default variables and current graphics backend
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 

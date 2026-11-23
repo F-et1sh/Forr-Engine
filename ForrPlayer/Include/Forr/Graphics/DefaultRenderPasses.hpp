@@ -5,8 +5,8 @@
     File : DefaultRenderPasses.hpp
     Role : render passes that provided by the engine
 
-    Copyright (C) 2026 Farrakh
-    All Rights Reserved.
+    Copyright (C) 2026 Farrah
+    SPDX-License-Identifier: MIT
 
 ===============================================*/
 
