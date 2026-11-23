@@ -2,7 +2,7 @@
 
     Forr Engine
 
-    File : Systems.hpp
+    File : Scene.hpp
     Role : provides helpers to work with ECS and EnTT itself
 
     Copyright (C) 2026 Farrah
@@ -12,8 +12,12 @@
 
 #pragma once
 
+#include <ranges>
+#include <algorithm>
+
 #include "Forr/Core/attributes.hpp"
 #include "Forr/Core/string.hpp"
+#include "Forr/Core/pointer.hpp"
 
 #include <entt/entt.hpp>
 
@@ -31,40 +35,45 @@ namespace fe {
     };
 
     struct System {
+        enum class Stage : uint8_t {
+            PRE_UPDATE,
+            UPDATE,
+            POST_UPDATE,
+            RENDER
+        };
+
         using InitializeFunction = void (*)(/*fe::EngineContext& context, */ void*);
         using UpdateFunction     = void (*)(/*fe::EngineContext& context, */ void*);
         using ReleaseFunction    = void (*)(/*fe::EngineContext& context, */ void*);
 
         fe::fixed_string<32> name{};
-        void*                mapped_data{};
+        Stage                stage{};
+
+        void* mapped_data{};
 
         InitializeFunction initialize_function{};
         UpdateFunction     update_function{};
         ReleaseFunction    release_function{};
 
-        System()  = default;
-        ~System() = default;
+        System() = default;
+        ~System() {
+            if (release_function && mapped_data) {
+                release_function(mapped_data);
+            }
+        }
 
-        FORR_CLASS_MOVABLE(System)
-        FORR_CLASS_NONCOPYABLE(System)
+        FORR_CLASS_MOVABLEONLY(System)
     };
 
     // this is the structure you get in 'fe::Scene::AddSystem<>' to
-    //  access your mapped data and system's index in the array
+    //  access your mapped data and to remove the system if needed
     template <SystemConcept System>
     struct SystemHandle {
         using SystemDataT = SystemDataT<System>::Data;
 
-        SystemDataT* mapped_data{};
-        // system's index in 'fe::Scene::m_Systems'
-        uint32_t               system_index{};
+        SystemDataT*           mapped_data{};
+        fe::pointer<System>    system_ptr{};
         fe::hashed_string_view system_name{};
-
-        SystemHandle()  = default;
-        ~SystemHandle() = default;
-
-        FORR_CLASS_MOVABLE(SystemHandle)
-        FORR_CLASS_NONCOPYABLE(SystemHandle)
     };
 
     class Scene {
@@ -74,16 +83,16 @@ namespace fe {
 
         FORR_CLASS_MOVABLEONLY(Scene)
 
-        template <SystemConcept System>
-        FORR_NODISCARD SystemHandle<System> AddSystem(fe::fixed_string_view<32> name) {
-            using SystemDataT = SystemDataT<System>::Data;
+        template <SystemConcept SystemT>
+        FORR_NODISCARD SystemHandle<SystemT> AddSystem(fe::fixed_string_view<32> name, System::Stage stage = System::Stage::UPDATE) {
+            using SystemDataT = SystemDataT<SystemT>::Data;
 
-            auto& system = m_Systems.emplace_back();
+            System system{};
             system.name  = name;
+            system.stage = stage;
 
-            SystemHandle<System> system_handle{};
-            system_handle.render_pass_index = m_Systems.size() - 1;
-            system_handle.render_pass_name  = name;
+            SystemHandle<SystemT> system_handle{};
+            system_handle.system_name = name;
 
             if constexpr (!std::is_same_v<SystemDataT, EmptySystemDataT>) {
                 std::byte*   mapped_data_raw = m_SystemsData.allocate(sizeof(std::decay_t<SystemDataT>), alignof(SystemDataT));
@@ -92,10 +101,10 @@ namespace fe {
                 system.mapped_data        = mapped_data;
                 system_handle.mapped_data = mapped_data;
 
-                system.initialize_function = [](/*fe::EngineContext& context, */ void* system_data) { System::Initialize(/*fe::EngineContext& context, */ *reinterpret_cast<SystemDataT*>(system_data)); };
-                system.update_function     = [](/*fe::EngineContext& context, */ void* system_data) { System::Update(/*fe::EngineContext& context, */ *reinterpret_cast<SystemDataT*>(system_data)); };
+                system.initialize_function = [](/*fe::EngineContext& context, */ void* system_data) { SystemT::Initialize(/*fe::EngineContext& context, */ *reinterpret_cast<SystemDataT*>(system_data)); };
+                system.update_function     = [](/*fe::EngineContext& context, */ void* system_data) { SystemT::Update(/*fe::EngineContext& context, */ *reinterpret_cast<SystemDataT*>(system_data)); };
                 system.release_function    = [](/*fe::EngineContext& context, */ void* system_data) {
-                    System::Release(/*fe::EngineContext& context, */ *reinterpret_cast<SystemDataT*>(system_data));
+                    SystemT::Release(/*fe::EngineContext& context, */ *reinterpret_cast<SystemDataT*>(system_data));
                     std::destroy_at(reinterpret_cast<SystemDataT*>(system_data));
                 };
             }
@@ -103,24 +112,70 @@ namespace fe {
                 system.mapped_data        = nullptr;
                 system_handle.mapped_data = nullptr;
 
-                system.initialize_function = [](/*fe::EngineContext& context, */ void* system_data) { System::Initialize(/*fe::EngineContext& context, */); };
-                system.update_function     = [](/*fe::EngineContext& context, */ void* system_data) { System::Update(/*fe::EngineContext& context, */); };
-                system.release_function    = [](/*fe::EngineContext& context, */ void* system_data) { System::Release(/*fe::EngineContext& context, */); };
+                system.initialize_function = [](/*fe::EngineContext& context, */ void* system_data) { SystemT::Initialize(/*fe::EngineContext& context, */); };
+                system.update_function     = [](/*fe::EngineContext& context, */ void* system_data) { SystemT::Update(/*fe::EngineContext& context, */); };
+                system.release_function    = [](/*fe::EngineContext& context, */ void* system_data) { SystemT::Release(/*fe::EngineContext& context, */); };
             }
+
+            system_handle.system_ptr = m_Systems.create(std::move(system));
 
             return system_handle;
         }
 
-    private:
-        std::vector<System> m_Systems{};
-        fe::Arena           m_SystemsData{ 16 * 1024 };
-    };
+        template <SystemConcept SystemT>
+        void RemoveSystem(SystemHandle<SystemT> system_handle) {
+            m_Systems.destroy(system_handle.system_ptr);
+        }
 
-    enum class SystemStage : uint8_t {
-        PRE_UPDATE,
-        UPDATE,
-        POST_UPDATE,
-        RENDER,
+        // TODO : provide ability to invoke something between the stages
+        void InitializeSystems(/*fe::EngineContext& context*/) {
+            auto systems = this->getSorted();
+
+            for (size_t i = 0; i < systems.size(); i++) {
+                const auto& system = *m_Systems.get(systems[i]);
+                system.initialize_function(/*context,*/ system.mapped_data);
+            }
+        }
+
+        // TODO : provide ability to invoke something between the stages
+        void UpdateSystems(/*fe::EngineContext& context*/) {
+            auto systems = this->getSorted();
+
+            for (size_t i = 0; i < systems.size(); i++) {
+                const auto& system = *m_Systems.get(systems[i]);
+                system.update_function(/*context,*/ system.mapped_data);
+            }
+        }
+
+        // TODO : provide ability to invoke something between the stages
+        void ReleaseSystems(/*fe::EngineContext& context*/) {
+            auto systems = this->getSorted();
+
+            for (size_t i = 0; i < systems.size(); i++) {
+                const auto& system = *m_Systems.get(systems[i]);
+                system.release_function(/*context,*/ system.mapped_data);
+            }
+        }
+
+    private:
+        std::vector<fe::pointer<System>> getSorted() const {
+            std::vector<fe::pointer<System>> order{};
+            order.reserve(m_Systems.size());
+
+            m_Systems.for_each([&order](fe::pointer<System> ptr) {
+                order.push_back(ptr);
+            });
+
+            std::ranges::sort(order, [&](fe::pointer<System> a, fe::pointer<System> b) -> bool {
+                return m_Systems.get(a)->stage < m_Systems.get(b)->stage;
+            });
+
+            return order;
+        }
+
+    private:
+        fe::typed_pointer_storage<System> m_Systems{};
+        fe::Arena                         m_SystemsData{ 16 * 1024 };
     };
 
     using ReactiveDirtyStorage = entt::reactive_mixin<entt::storage<void>>;

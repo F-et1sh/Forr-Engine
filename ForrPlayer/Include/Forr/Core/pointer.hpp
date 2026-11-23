@@ -316,8 +316,10 @@ namespace fe {
                 : container(container), index(index) {}
         };
 
-        using iterator       = Iterator<false>;
-        using const_iterator = Iterator<true>;
+        using iterator               = Iterator<false>;
+        using const_iterator         = Iterator<true>;
+        using reverse_iterator       = std::reverse_iterator<iterator>;
+        using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
         FORR_NODISCARD constexpr iterator begin() noexcept {
             iterator it{ this, 0 };
@@ -337,6 +339,38 @@ namespace fe {
 
         FORR_NODISCARD constexpr const_iterator end() const noexcept {
             return const_iterator{ this, static_cast<PointerT::HandleType>(this->size()) };
+        }
+
+        FORR_NODISCARD constexpr reverse_iterator rbegin() noexcept {
+            return reverse_iterator(this->end());
+        }
+
+        FORR_NODISCARD constexpr const_reverse_iterator rbegin() const noexcept {
+            return const_reverse_iterator(this->end());
+        }
+
+        FORR_NODISCARD constexpr reverse_iterator rend() noexcept {
+            return reverse_iterator(this->begin());
+        }
+
+        FORR_NODISCARD constexpr const_reverse_iterator rend() const noexcept {
+            return const_reverse_iterator(this->begin());
+        }
+
+        FORR_NODISCARD constexpr const_iterator cbegin() const noexcept {
+            return this->begin();
+        }
+
+        FORR_NODISCARD constexpr const_iterator cend() const noexcept {
+            return this->end();
+        }
+
+        FORR_NODISCARD constexpr const_reverse_iterator crbegin() const noexcept {
+            return this->rbegin();
+        }
+
+        FORR_NODISCARD constexpr const_reverse_iterator crend() const noexcept {
+            return this->rend();
         }
 
     public:
@@ -441,24 +475,24 @@ namespace fe {
 
         // this function runs your lambda through all objects of the storage
         // it can be invoked by :
-        // 
+        //
         // [](T&, fe::pointer<T>) -> void {}
         // [](fe::pointer<T>, T&) -> void {}
         // [](T&) -> void {}
         // []() -> void {}
-        // 
+        //
         // the same but with const ( in the second overload )
         // [](fe::pointer<T>) -> void {}
         // [](const T&, fe::pointer<T>) -> void {}
         // [](fe::pointer<T>, const T&) -> void {}
         // [](const T&) -> void {}
-        // 
+        //
         // and the same but with the current index
         // [](T&, fe::pointer<T>, size_t) -> void {}
         // [](fe::pointer<T>, T&, size_t) -> void {}
         // [](T&, size_t) -> void {}
         // [](size_t) -> void {}
-        // 
+        //
         // [](fe::pointer<T>, size_t) -> void {}
         // [](const T&, fe::pointer<T>, size_t) -> void {}
         // [](fe::pointer<T>, const T&, size_t) -> void {}
@@ -512,24 +546,24 @@ namespace fe {
 
         // this function runs your lambda through all objects of the storage
         // it can be invoked by :
-        // 
+        //
         // [](T&, fe::pointer<T>) -> void {}
         // [](fe::pointer<T>, T&) -> void {}
         // [](T&) -> void {}
         // []() -> void {}
-        // 
+        //
         // the same but with const ( in this overload )
         // [](fe::pointer<T>) -> void {}
         // [](const T&, fe::pointer<T>) -> void {}
         // [](fe::pointer<T>, const T&) -> void {}
         // [](const T&) -> void {}
-        // 
+        //
         // and the same but with the current index
         // [](T&, fe::pointer<T>, size_t) -> void {}
         // [](fe::pointer<T>, T&, size_t) -> void {}
         // [](T&, size_t) -> void {}
         // [](size_t) -> void {}
-        // 
+        //
         // [](fe::pointer<T>, size_t) -> void {}
         // [](const T&, fe::pointer<T>, size_t) -> void {}
         // [](fe::pointer<T>, const T&, size_t) -> void {}

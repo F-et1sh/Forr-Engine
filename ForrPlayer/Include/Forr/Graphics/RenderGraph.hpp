@@ -157,7 +157,7 @@ namespace fe {
         }
 
         enum class ParameterCreationErrors {
-
+            // TODO : provide this logic or rewrite
         };
 
         std::expected<graphics::ParameterHandle, ParameterCreationErrors> createParameter();
@@ -331,21 +331,14 @@ namespace fe {
     };
 
     // this is the structure you get in 'fe::RenderGraph::AddPass<>' to
-    //  access your mapped data and render pass' index in the array
+    //  access your mapped data and to remove the render pass if needed
     template <RenderPassConcept RenderPassT>
     struct RenderPassHandle {
         using RenderPassDataT = RenderPassTraits<RenderPassT>::RenderPassDataT;
 
-        RenderPassDataT* mapped_data{};
-        // render pass' index in 'fe::RenderGraph::m_RenderPasses'
+        RenderPassDataT*        mapped_data{};
         fe::pointer<RenderPass> render_pass_ptr{};
         fe::hashed_string_view  render_pass_name{};
-
-        RenderPassHandle()  = default;
-        ~RenderPassHandle() = default;
-
-        FORR_CLASS_MOVABLE(RenderPassHandle)
-        FORR_CLASS_NONCOPYABLE(RenderPassHandle)
     };
 
     class FORR_API RenderGraph {
@@ -470,8 +463,8 @@ namespace fe {
             return render_pass_handle;
         }
 
-        template <RenderPassConcept RenderPass>
-        void RemovePass(RenderPassHandle<RenderPass> render_pass_handle) {
+        template <RenderPassConcept RenderPassT>
+        void RemovePass(RenderPassHandle<RenderPassT> render_pass_handle) {
             m_RenderPasses.destroy(render_pass_handle.render_pass_ptr);
         }
 
