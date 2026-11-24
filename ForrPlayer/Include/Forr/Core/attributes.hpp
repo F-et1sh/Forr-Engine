@@ -26,9 +26,11 @@
 #if __cplusplus >= 201103L // C++11
 #define FORR_STATIC static
 #define FORR_CONSTEXPR constexpr
+#define FORR_NORETURN [[noreturn]]
 #else
 #define FORR_STATIC
 #define FORR_CONSTEXPR
+#define FORR_NORETURN
 #endif
 
 #if __cplusplus >= 201402L // C++14

@@ -31,10 +31,10 @@ namespace fe::logging {
 
     using Callback = std::function<void(Severity, char const*)>;
 
-    void     FORR_API setMinSeverity(Severity severity);
-    void     FORR_API setCallback(Callback func);
+    void FORR_API     setMinSeverity(Severity severity);
+    void FORR_API     setCallback(Callback func);
     Callback FORR_API getCallback();
-    void     FORR_API resetCallback();
+    void FORR_API     resetCallback();
 
     // Windows : enables or disables future log messages to be shown as MessageBox'es.
     // This is the default mode.
@@ -59,11 +59,11 @@ namespace fe::logging {
     // - EnableOutputToMessageBox(false);
     void FORR_API ConsoleApplicationMode();
 
-    void FORR_API message(Severity severity, const char* fmt, ...);
-    void FORR_API debug(const char* fmt, ...);
-    void FORR_API info(const char* fmt, ...);
-    void FORR_API warning(const char* fmt, ...);
-    void FORR_API error(const char* fmt, ...);
-    void FORR_API fatal(const char* fmt, ...);
+    void FORR_API               message(Severity severity, const char* fmt, ...);
+    void FORR_API               debug(const char* fmt, ...);
+    void FORR_API               info(const char* fmt, ...);
+    void FORR_API               warning(const char* fmt, ...);
+    void FORR_API               error(const char* fmt, ...);
+    FORR_NORETURN void FORR_API fatal(const char* fmt, ...);
 
 } // namespace fe::logging

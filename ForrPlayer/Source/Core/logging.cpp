@@ -85,6 +85,7 @@ namespace fe::logging {
         std::print("\033[0m"); // reset color
 
         if (severity == Severity::Fatal) {
+            __debugbreak();
             abort();
         }
     }
