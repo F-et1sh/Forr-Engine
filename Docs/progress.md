@@ -4,7 +4,7 @@
 ### Goal
     create unified context that can contain any type of systems
     create an extension for the 'Forr-Editor'
-    provide 'set_system_enabled' and 'override_system' for the dll api
+    provide 'set_system_enabled' and 'override_system' for the dll API
     create 'in-game' events
     redesign the dll_api.hpp logic
 
@@ -12,6 +12,7 @@
     fe::context added. fe::type_registry got better. FORR_NORETURN added
     fe::context::replace() and fe::context::emplace_or_replace() added
     RenderPassConcept fixed
+    C++ ABI is almost done. dll_api.hpp's logic redesigned
 
 ### Problem
     -

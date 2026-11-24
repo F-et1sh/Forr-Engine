@@ -13,7 +13,17 @@
 #include "Forr/PCH/pch.hpp"
 #include "Forr/Core/type_registry.hpp"
 
-FORR_API size_t fe::details::next_type_id() noexcept {
-    static std::atomic<size_t> S_COUNTER{ 0 };
-    return S_COUNTER.fetch_add(1, std::memory_order_relaxed);
+#include <unordered_map>
+#include <mutex>
+
+fe::registered_type_id fe::details::resolve_type_id(fe::string_hash domain_hashed_name, fe::string_hash type_hashed_name) {
+    static std::mutex mutex{};
+    // domain hashed name --> { type hashed name --> type id }
+    static std::unordered_map<fe::string_hash, std::unordered_map<fe::string_hash, fe::registered_type_id>> registry{};
+
+    std::lock_guard<std::mutex> lock{ mutex };
+    auto&                       domain_map = registry[domain_hashed_name];
+
+    auto [it, inserted] = domain_map.try_emplace(type_hashed_name, domain_map.size());
+    return it->second;
 }

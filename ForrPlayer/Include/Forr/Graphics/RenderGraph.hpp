@@ -22,6 +22,8 @@
 namespace fe {
     class IRenderer; // forward declaration
 
+    // TODO : rewrite
+    //
     // this structure is needed to collect only necessary components ( for example, MeshComponent ),
     //  ignoring others. And after collecting them, continue ECS calculation for frame N+1, while renderer
     //  is working on frame N
@@ -263,12 +265,13 @@ namespace fe {
     // Context here is 'fe::RenderGraphBuilder' or 'fe::RenderGraphContext'
     template <typename Context, typename... Args>
     struct ExtractRenderPassDataTypeTraits {
-        template <typename T>
-        constexpr static bool is_context = std::is_same_v<std::decay_t<T>, Context>;
+        using RenderPassDataT = std::tuple_element_t<1, std::tuple<Args...>>;
+    };
 
-        using RenderPassDataT = std::conditional_t<sizeof...(Args) == 1,
-                                                   EmptyRenderPassDataT,
-                                                   std::tuple_element_t<1, std::tuple<Args...>>>;
+    // Context here is 'fe::RenderGraphBuilder' or 'fe::RenderGraphContext'
+    template <typename Context, typename FirstArg>
+    struct ExtractRenderPassDataTypeTraits<Context, FirstArg> { // partial specialization instead of 'std::conditional_t' to not get the 'tuple index out of bounds' error
+        using RenderPassDataT = EmptyRenderPassDataT;
     };
 
     template <typename T>
@@ -282,13 +285,13 @@ namespace fe {
         static_assert((sizeof...(Args) == 1) || (sizeof...(Args) == 2), "Wrong number of arguments");
     };
 
-    template <typename RenderPass>
+    template <typename RenderPassT>
     struct RenderPassTraits {
     private:
-        using RenderPassDataT_Setup   = RenderPassFnTraits<decltype(&RenderPass::Setup)>::RenderPassDataT_Setup;
-        using RenderPassDataT_Execute = RenderPassFnTraits<decltype(&RenderPass::Execute)>::RenderPassDataT_Execute;
+        using RenderPassDataT_Setup   = RenderPassFnTraits<decltype(&RenderPassT::Setup)>::RenderPassDataT_Setup;
+        using RenderPassDataT_Execute = RenderPassFnTraits<decltype(&RenderPassT::Execute)>::RenderPassDataT_Execute;
 
-        static_assert(std::is_same_v<RenderPassDataT_Setup, RenderPassDataT_Execute>, "RenderPass::Setup() and RenderPass::Execute() accept different render pass data types");
+        static_assert(std::is_same_v<RenderPassDataT_Setup, RenderPassDataT_Execute>, "RenderPassT::Setup() and RenderPassT::Execute() accept different data types");
 
     public:
         using RenderPassDataT = RenderPassDataT_Setup;
@@ -469,6 +472,10 @@ namespace fe {
         template <RenderPassConcept RenderPassT>
         void RemovePass(RenderPassHandle<RenderPassT> render_pass_handle) {
             m_RenderPasses.destroy(render_pass_handle.render_pass_ptr);
+        }
+
+        void RemovePass(fe::pointer<RenderPass> render_pass_ptr) {
+            m_RenderPasses.destroy(render_pass_ptr);
         }
 
         RenderGraphCompileResult Compile();

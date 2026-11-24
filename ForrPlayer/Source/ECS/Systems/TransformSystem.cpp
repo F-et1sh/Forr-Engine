@@ -13,6 +13,7 @@
 #include "Forr/PCH/pch.hpp"
 #include "Forr/ECS/Systems/TransformSystem.hpp"
 
+#define ENTT_API_EXPORT
 #include <entt/entt.hpp>
 
 fe::TransformSystem::TransformSystem(entt::registry& registry) : m_Registry(registry) {

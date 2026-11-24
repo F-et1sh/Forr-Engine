@@ -50,6 +50,8 @@ fe::dll_api::load_library_raw(const std::filesystem::path& full_path) {
         return std::unexpected{ library_loading_error::FAILED_TO_LOAD_LIBRARY };
     }
 
+    fe::dll_api::set_current_library(result);
+
     return library_handle_raw{ result };
 }
 
@@ -88,4 +90,14 @@ bool fe::dll_api::free_library_raw(fe::dll_api::library_handle_raw loaded_librar
 #else
     return dlclose(loaded_library_handle) == 0;
 #endif
+}
+
+thread_local fe::dll_api::library_handle_raw G_CURRENT_LIBRARY = nullptr;
+
+void fe::dll_api::set_current_library(fe::dll_api::library_handle_raw current_handle) noexcept {
+    G_CURRENT_LIBRARY = current_handle;
+}
+
+fe::dll_api::library_handle_raw fe::dll_api::get_current_library() noexcept {
+    return G_CURRENT_LIBRARY;
 }

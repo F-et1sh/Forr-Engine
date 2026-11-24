@@ -70,6 +70,6 @@ namespace fe {
         std::unique_ptr<CameraSystem>    m_CameraSystem{};
 
         fe::IWindow* m_PrimaryWindow{}; // TODO : change this raw pointer to something else
-        WindowID     m_PrimaryWindowID{};
+        WindowHandle m_PrimaryWindowHandle{};
     };
 } // namespace fe

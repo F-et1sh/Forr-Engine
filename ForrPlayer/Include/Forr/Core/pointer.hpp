@@ -487,7 +487,9 @@ namespace fe {
         // [](fe::pointer<T>, const T&) -> void {}
         // [](const T&) -> void {}
         //
-        // and the same but with the current index
+        // and the same but with the current index - this index is
+        // not the number of the object in the 'fe::typed_pointer_storage', but the
+        // index of current iteration
         // [](T&, fe::pointer<T>, size_t) -> void {}
         // [](fe::pointer<T>, T&, size_t) -> void {}
         // [](T&, size_t) -> void {}
@@ -500,15 +502,34 @@ namespace fe {
         // [](size_t) -> void {}
         template <typename Func>
         void for_each(Func&& func) {
+            // index to pass into the function
+            size_t index{};
+
             for (size_t i = 0; i < m_slots_object.size(); i++) {
                 if (!m_slots_alive[i]) continue;
 
                 T&       object = *get_ptr(i);
                 PointerT ptr(i, m_slots_generation[i]);
 
+                // with index
+                if constexpr (std::is_invocable_v<Func, T&, PointerT, size_t>) {
+                    func(object, ptr, index);
+                }
+                else if constexpr (std::is_invocable_v<Func, PointerT, T&, size_t>) {
+                    func(ptr, object, index);
+                }
+                else if constexpr (std::is_invocable_v<Func, T&, size_t>) {
+                    func(object, index); // instead of this
+                }
+                else if constexpr (std::is_invocable_v<Func, PointerT, size_t>) {
+                    func(ptr, index);
+                }
+                else if constexpr (std::is_invocable_v<Func, size_t>) {
+                    func(index);
+                }
                 // without index
-                if constexpr (std::is_invocable_v<Func, T&, PointerT>) {
-                    func(object, ptr);
+                else if constexpr (std::is_invocable_v<Func, T&, PointerT>) {
+                    func(object, ptr); // this
                 }
                 else if constexpr (std::is_invocable_v<Func, PointerT, T&>) {
                     func(ptr, object);
@@ -522,25 +543,11 @@ namespace fe {
                 else if constexpr (std::is_invocable_v<Func>) {
                     func();
                 }
-                // with index
-                else if constexpr (std::is_invocable_v<Func, T&, PointerT, size_t>) {
-                    func(object, ptr, i);
-                }
-                else if constexpr (std::is_invocable_v<Func, PointerT, T&, size_t>) {
-                    func(ptr, object, i);
-                }
-                else if constexpr (std::is_invocable_v<Func, T&, size_t>) {
-                    func(object, i);
-                }
-                else if constexpr (std::is_invocable_v<Func, PointerT, size_t>) {
-                    func(ptr, i);
-                }
-                else if constexpr (std::is_invocable_v<Func, size_t>) {
-                    func(i);
-                }
                 else {
-                    static_assert(std::false_type::value, "fe::typed_pointer_storage : for_each lambda has invalid signature");
+                    static_assert(false, "fe::typed_pointer_storage : for_each lambda has invalid signature");
                 }
+
+                index++;
             }
         }
 
@@ -558,7 +565,9 @@ namespace fe {
         // [](fe::pointer<T>, const T&) -> void {}
         // [](const T&) -> void {}
         //
-        // and the same but with the current index
+        // and the same but with the current index - this index is
+        // not the number of the object in the 'fe::typed_pointer_storage', but the
+        // index of current iteration
         // [](T&, fe::pointer<T>, size_t) -> void {}
         // [](fe::pointer<T>, T&, size_t) -> void {}
         // [](T&, size_t) -> void {}
@@ -571,14 +580,33 @@ namespace fe {
         // [](size_t) -> void {}
         template <typename Func>
         void for_each(Func&& func) const {
+            // index to pass into the function
+            size_t index{};
+
             for (size_t i = 0; i < m_slots_object.size(); i++) {
                 if (!m_slots_alive[i]) continue;
 
                 const T& object = *get_ptr(i);
                 PointerT ptr(i, m_slots_generation[i]);
 
+                // with index
+                if constexpr (std::is_invocable_v<Func, const T&, PointerT, size_t>) {
+                    func(object, ptr, index);
+                }
+                else if constexpr (std::is_invocable_v<Func, PointerT, const T&, size_t>) {
+                    func(ptr, object, index);
+                }
+                else if constexpr (std::is_invocable_v<Func, const T&, size_t>) {
+                    func(object, index);
+                }
+                else if constexpr (std::is_invocable_v<Func, PointerT, size_t>) {
+                    func(ptr, index);
+                }
+                else if constexpr (std::is_invocable_v<Func, size_t>) {
+                    func(index);
+                }
                 // without index
-                if constexpr (std::is_invocable_v<Func, const T&, PointerT>) {
+                else if constexpr (std::is_invocable_v<Func, const T&, PointerT>) {
                     func(object, ptr);
                 }
                 else if constexpr (std::is_invocable_v<Func, PointerT, const T&>) {
@@ -593,25 +621,11 @@ namespace fe {
                 else if constexpr (std::is_invocable_v<Func>) {
                     func();
                 }
-                // with index
-                else if constexpr (std::is_invocable_v<Func, const T&, PointerT, size_t>) {
-                    func(object, ptr, i);
-                }
-                else if constexpr (std::is_invocable_v<Func, PointerT, const T&, size_t>) {
-                    func(ptr, object, i);
-                }
-                else if constexpr (std::is_invocable_v<Func, const T&, size_t>) {
-                    func(object, i);
-                }
-                else if constexpr (std::is_invocable_v<Func, PointerT, size_t>) {
-                    func(ptr, i);
-                }
-                else if constexpr (std::is_invocable_v<Func, size_t>) {
-                    func(i);
-                }
                 else {
-                    static_assert(std::false_type::value, "fe::typed_pointer_storage : const for_each lambda has invalid signature");
+                    static_assert(false, "fe::typed_pointer_storage : const for_each lambda has invalid signature");
                 }
+
+                index++;
             }
         }
 

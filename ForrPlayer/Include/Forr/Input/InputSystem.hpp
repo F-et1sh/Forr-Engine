@@ -101,7 +101,7 @@ namespace fe {
             //    m_GamepadAxisActions.push_back({ action_name, action_data });
             //}
             else {
-                static_assert(std::false_type::value && "Unknown action kind");
+                static_assert(false && "Unknown action kind");
                 return false;
             }
 

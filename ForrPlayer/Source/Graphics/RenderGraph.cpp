@@ -135,7 +135,7 @@ fe::RenderGraphCompileResult fe::RenderGraph::Compile() {
     }
 
     m_RenderPasses.for_each([&](RenderPass& render_pass, size_t i) {
-        CompiledRenderPass& compiled_render_pass = render_passes[i]; // using this index here will work
+        CompiledRenderPass& compiled_render_pass = render_passes[i];
 
         render_graph::BeginRenderPass& begin_command = render_pass.compiled_begin_command;
 

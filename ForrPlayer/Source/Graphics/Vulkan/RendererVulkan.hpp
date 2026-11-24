@@ -33,7 +33,7 @@ namespace fe {
     public:
         RendererVulkan(const RendererDesc& desc,
                        IPlatformSystem&    platform_system,
-                       WindowID            primary_window_index,
+                       WindowHandle        primary_window_handle,
                        ResourceManager&    resource_manager);
         ~RendererVulkan()override;
 

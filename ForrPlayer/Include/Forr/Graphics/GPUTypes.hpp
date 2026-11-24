@@ -280,7 +280,7 @@ namespace fe {
             std::optional<shader::ProgramSpecialization> specialization{};
         };
 
-        enum class PipelineCreationErrors {
+        enum class PipelineCreationErrors : uint8_t {
             ERROR,
             // TODO : fill this up
         };

@@ -104,7 +104,7 @@ namespace fe {
             FORR_RESOURCES_LIST(GENERATE_STORAGES)
 #undef GENERATE_STORAGES
             else {
-                static_assert(std::false_type::value && "Forgot to add new resource to FORR_RESOURCES_LIST");
+                static_assert(false && "Forgot to add new resource to FORR_RESOURCES_LIST");
             }
         }
 
@@ -119,7 +119,7 @@ namespace fe {
             FORR_RESOURCES_LIST(GENERATE_STORAGES)
 #undef GENERATE_STORAGES
             else {
-                static_assert(std::false_type::value && "Forgot to add new resource to FORR_RESOURCES_LIST");
+                static_assert(false && "Forgot to add new resource to FORR_RESOURCES_LIST");
             }
         }
 

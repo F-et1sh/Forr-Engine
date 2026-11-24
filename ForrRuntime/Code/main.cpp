@@ -23,6 +23,7 @@
 #include <Forr/Graphics/DefaultRenderPasses.hpp>
 #include <Forr/ECS/Scene.hpp>
 #include <Forr/Core/context.hpp>
+#include <Forr/Core/dll_api.hpp>
 
 int main(int argc, char* argv[]) {
     // static variables
@@ -61,16 +62,14 @@ int main(int argc, char* argv[]) {
 
     // window
 
-    fe::IWindow* primary_window{}; // TODO : change this raw pointer to something else
-    fe::WindowID primary_window_id{};
+    fe::WindowHandle primary_window_handle{};
 
-    primary_window_id  = platform_system->CreateWindow(primary_window_desc);
-    auto window_result = platform_system->getWindow(primary_window_id);
-    if (!window_result.has_value()) {
-        fe::logging::fatal("Failed to get the primary window.\nWindow index was %llu", primary_window_id);
+    primary_window_handle = platform_system->CreateWindow(primary_window_desc);
+    auto window_result    = platform_system->getWindow(primary_window_handle);
+    if (!window_result) {
+        fe::logging::fatal("Failed to get the primary window.\nWindow index was %llu", primary_window_handle);
         return 0;
     }
-    primary_window = &window_result.value().get();
 
     // resource manager
 
@@ -98,7 +97,7 @@ int main(int argc, char* argv[]) {
     renderer_desc.primary_window_desc = primary_window_desc;
     renderer_desc.validation_enabled  = validation_layers_enabled;
 
-    renderer = fe::IRenderer::Create(renderer_desc, *platform_system, primary_window_id, *resource_manager);
+    renderer = fe::IRenderer::Create(renderer_desc, *platform_system, primary_window_handle, *resource_manager);
 
     // render graph
 
@@ -106,57 +105,55 @@ int main(int argc, char* argv[]) {
 
     render_graph = std::make_unique<fe::RenderGraph>(*resource_manager, *renderer);
 
-    auto forward_pass_data_mapped = render_graph->AddPass<fe::ForwardPass>("Forward Pass");
-
-    auto create_command_list = render_graph->Compile();
-    auto mapping_result      = renderer->CreateRenderGraphResources(create_command_list);
-    render_graph->SetupResourceBindings(mapping_result);
-
     // registry
 
-    entt::registry registry{};
+    std::unique_ptr<entt::registry> registry = std::make_unique<entt::registry>();
 
     fe::context engine_context{};
     engine_context.emplace(*main_event_bus, fe::make_hash("main"));
     engine_context.emplace(*platform_system, fe::make_hash("main"));
+    engine_context.emplace(primary_window_handle, fe::make_hash("main"));
     engine_context.emplace(*resource_manager, fe::make_hash("main"));
     engine_context.emplace(*renderer, fe::make_hash("main"));
     engine_context.emplace(*render_graph, fe::make_hash("main"));
-    engine_context.emplace(registry, fe::make_hash("main"));
+    engine_context.emplace(*registry, fe::make_hash("main"));
 
-    struct SomeSystem {
-        using DataT = fe::EmptySystemDataT;
+    fe::dll_api::module_context loaded_library{ std::filesystem::path(argv[1]) };
+    if (!loaded_library.get_library_handle_raw()) {
+        fe::logging::fatal("Failed to load the library\nPath : %s", argv[1]);
+        return -1;
+    }
 
-        static void Initialize(fe::context&, DataT&) {};
-        static void Update(fe::context&, DataT&) {};
-        static void Release(DataT&) {};
-    };
+    auto symbol_address_result = fe::dll_api::get_symbol_address_raw(loaded_library.get_library_handle_raw(), "get_application_desc");
+    if (!symbol_address_result.has_value()) {
+        fe::logging::fatal("Failed to get the symbol address\nLibrary Path : %s\nSymbol name : %s", argv[1], "get_application_desc");
+        return -1;
+    }
+    auto                           create_application_desc_func = reinterpret_cast<fe::dll_api::create_application_desc>(symbol_address_result.value());
+    fe::dll_api::application_desc* application_desc             = create_application_desc_func();
 
-    fe::Scene scene{};
-    scene.AddSystem<SomeSystem>("SomeSystem");
+    fe::logging::info("Successfully loaded %s", application_desc->name);
+
+    engine_context.emplace(loaded_library, fe::make_hash("main"));
+    
+    application_desc->on_initialize(engine_context);
 
     // main loop
 
-    while (primary_window->IsOpen()) {
-        primary_window->PollEvents();
+    fe::RenderGraphCollector<fe::component::Transform,
+                             fe::component::Camera,
+                             fe::component::ViewProjection,
+                             fe::component::LocalToWorld,
+                             fe::component::Model,
+                             fe::component::Light>
+        collector{ *registry };
 
-        main_event_bus->DispatchAll();
-        main_event_bus->Clear();
-
-        renderer->BeginFrame();
-
-        fe::RenderGraphCollector<fe::component::Transform,
-                                 fe::component::Camera,
-                                 fe::component::ViewProjection,
-                                 fe::component::LocalToWorld,
-                                 fe::component::Model,
-                                 fe::component::Light>
-            collector{ registry };
-
-        auto render_command_list = render_graph->Execute(collector.getRegistry());
-
-        renderer->EndFrame(render_command_list);
+    while (window_result->IsOpen()) {
+        fe::dll_api::module_guard guard{ loaded_library };
+        application_desc->on_update(engine_context);
     }
+
+    application_desc->on_release(engine_context);
 
     return 0;
 }

@@ -72,13 +72,13 @@ namespace fe {
         // TODO : make 'resource_manager' optional
         FORR_NODISCARD static std::unique_ptr<IRenderer> Create(const RendererDesc& desc,
                                                                 IPlatformSystem&    platform_system,
-                                                                WindowID            primary_window_index,
+                                                                WindowHandle        primary_window_handle,
                                                                 ResourceManager&    resource_manager);
 
         FORR_NODISCARD virtual RenderGraphBindings CreateRenderGraphResources(const RenderGraphCompileResult& compile_result) = 0;
 
         // @brief create a buffer ( SSBO/UBO ) via its reflected data
-        // 
+        //
         // @returns fe::ParameterHandle is a variable that can be used in fe::IRenderer::BindBuffer() or fe::IRenderer::WriteParameter()
         FORR_NODISCARD virtual std::expected<graphics::ParameterHandle, graphics::ParameterCreationErrors> CreateParameter(const graphics::ParameterDesc& parameter_desc) = 0;
         // @brief bind SSBO or UBO
@@ -89,7 +89,7 @@ namespace fe {
         // @brief write to SSBO or UBO
         virtual void WriteParameter(graphics::ParameterHandle parameter_id, std::span<const std::byte> data) = 0;
         // @brief destroy SSBO or UBO
-        virtual void DestroyParameter(graphics::ParameterHandle parameter_id)                                = 0;
+        virtual void DestroyParameter(graphics::ParameterHandle parameter_id) = 0;
 
         FORR_NODISCARD virtual std::expected<graphics::PipelineHandle, graphics::PipelineCreationErrors> CreatePipeline(const graphics::PipelineDesc& pipeline_desc) = 0;
         virtual void                                                                                     BindPipeline(graphics::PipelineHandle pipeline_id)          = 0;

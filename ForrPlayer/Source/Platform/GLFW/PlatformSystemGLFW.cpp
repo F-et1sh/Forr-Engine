@@ -40,10 +40,9 @@ fe::PlatformSystemGLFW::~PlatformSystemGLFW() {
     glfwTerminate();
 }
 
-size_t fe::PlatformSystemGLFW::CreateWindow(const WindowDesc& desc) {
+fe::WindowHandle fe::PlatformSystemGLFW::CreateWindow(const WindowDesc& desc) {
     std::unique_ptr<IWindow> window = std::make_unique<WindowGLFW>(desc, m_EventBus);
-    m_WindowList.push_back(std::move(window));
-    return m_WindowList.size() - 1;
+    return m_WindowList.emplace(std::move(window));
 }
 
 FORR_NODISCARD std::vector<const char*> fe::PlatformSystemGLFW::getSurfaceRequiredExtensions() {

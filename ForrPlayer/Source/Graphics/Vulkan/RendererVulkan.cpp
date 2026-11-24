@@ -20,10 +20,10 @@
 
 fe::RendererVulkan::RendererVulkan(const RendererDesc& desc,
                                    IPlatformSystem&    platform_system,
-                                   WindowID            primary_window_index,
+                                   WindowHandle        primary_window_handle,
                                    ResourceManager&    resource_manager)
     : m_PlatformSystem(platform_system),
-      m_PrimaryWindow(m_PlatformSystem.getWindow(primary_window_index).value()),
+      m_PrimaryWindow(*m_PlatformSystem.getWindow(primary_window_handle)),
       m_ResourceManager(resource_manager) {
 
     // === SETUP CONTEXT ===

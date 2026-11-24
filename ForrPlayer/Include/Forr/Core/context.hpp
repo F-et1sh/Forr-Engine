@@ -35,31 +35,17 @@ namespace fe {
         // @returns 'true' if everything is alright, 'false' if emplacement is failed
         template <typename T>
         bool emplace(T& object, fe::string_hash tag = {}) {
-            const type_registry<context>::type_id type_id = type_registry<context>::get_id<T>();
+            const auto type_id = type_registry<context>::get_id<T>();
+            types&     storage = m_objects[tag];
 
-            auto it = m_objects.find(tag);
-            if (it != m_objects.end()) {
-                types& storage = it->second;
-
-                if (type_id >= storage.size()) {
-                    storage.resize(type_id + 1, nullptr);
-                }
-                else if (storage[type_id] != nullptr) {
-                    // TODO : think about removing this completely. this comments may annoy, while using 'fe::context::emplace_or_replace()'
-                    //
-                    //fe::logging::error("Failed to emplace an object to the context. This type is already busy in this Tag\nTag %llu\nType index was %llu",
-                    //                   static_cast<uint64_t>(tag),
-                    //                   static_cast<uint64_t>(type_id));
-                    return false;
-                }
-            }
-
-            types& storage = m_objects[tag];
             if (type_id >= storage.size()) {
                 storage.resize(type_id + 1, nullptr);
             }
-            storage[type_id] = static_cast<void*>(&object);
+            else if (storage[type_id] != nullptr) {
+                return false;
+            }
 
+            storage[type_id] = static_cast<void*>(&object);
             return true;
         }
 
@@ -125,19 +111,44 @@ namespace fe {
 
             auto it = m_objects.find(tag);
             if (it == m_objects.end()) {
-                fe::logging::fatal("Failed to get an object from the context. No types were registered with this hash\nTag %llu\nType index was %llu",
+                fe::logging::fatal("Failed to get an object from the context. No types were registered with this tag\nTag %llu\nType index was %llu",
                                    static_cast<uint64_t>(tag),
                                    static_cast<uint64_t>(type_id));
             }
             else {
                 types& storage = it->second;
                 if (type_id >= storage.size() || storage[type_id] == nullptr) {
-                    fe::logging::fatal("Failed to find a type. Type wasn't registered in this Tag\nTag %llu\nType index was %llu",
+                    fe::logging::fatal("Failed to find a type. Type wasn't registered in this tag\nTag %llu\nType index was %llu",
                                        static_cast<uint64_t>(tag),
                                        static_cast<uint64_t>(type_id));
                 }
                 return *static_cast<T*>(storage[type_id]);
             }
+        }
+
+        // @brief remove the object from the context
+        //
+        // @tparam T type of your object
+        //
+        // @param tag optional tag to distinguish multiple objects of the same type ( 0 by default )
+        //
+        // @returns 'true' if everything is alright, 'false' if removement is failed
+        template <typename T>
+        bool remove(fe::string_hash tag = {}) {
+            const type_registry<context>::type_id type_id = type_registry<context>::get_id<T>();
+
+            auto it = m_objects.find(tag);
+            if (it == m_objects.end()) {
+                return false;
+            }
+
+            types& storage = it->second;
+            if (type_id >= storage.size() || storage[type_id] == nullptr) {
+                return false;
+            }
+            storage[type_id] = nullptr;
+
+            return true;
         }
 
     private:

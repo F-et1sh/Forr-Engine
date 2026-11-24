@@ -20,20 +20,17 @@ namespace fe {
         ~PlatformSystemGLFW() override;
 
         // returns window index
-        FORR_NODISCARD WindowID CreateWindow(const WindowDesc& desc) override;
+        FORR_NODISCARD WindowHandle CreateWindow(const WindowDesc& desc) override;
 
-        FORR_NODISCARD WindowID getWindowCount() override { return m_WindowList.size(); }
-        FORR_NODISCARD std::optional<std::reference_wrapper<IWindow>> getWindow(WindowID index) override {
-            if (index >= m_WindowList.size() || m_WindowList[index] == nullptr) {
-                return std::nullopt;
-            }
-            return *m_WindowList[index];
+        FORR_NODISCARD size_t   getWindowsCount() override { return m_WindowList.size(); }
+        FORR_NODISCARD IWindow* getWindow(WindowHandle window_ptr) override {
+            return m_WindowList.get(window_ptr)->get();
         }
 
         FORR_NODISCARD std::vector<const char*> getSurfaceRequiredExtensions() override;
 
     private:
-        std::reference_wrapper<EventBus>      m_EventBus;
-        std::vector<std::unique_ptr<IWindow>> m_WindowList{};
+        std::reference_wrapper<EventBus>                    m_EventBus;
+        fe::typed_pointer_storage<std::unique_ptr<IWindow>> m_WindowList{};
     };
 } // namespace fe

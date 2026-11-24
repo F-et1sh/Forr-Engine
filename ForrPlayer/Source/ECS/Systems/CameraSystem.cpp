@@ -13,6 +13,7 @@
 #include "Forr/PCH/pch.hpp"
 #include "Forr/ECS/Systems/CameraSystem.hpp"
 
+#define ENTT_API_EXPORT
 #include <entt/entt.hpp>
 
 fe::CameraSystem::CameraSystem(entt::registry& registry) : m_Registry(registry) {

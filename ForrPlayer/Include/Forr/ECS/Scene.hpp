@@ -20,10 +20,53 @@
 #include "Forr/Core/pointer.hpp"
 #include "Forr/Core/context.hpp"
 
+#ifdef FORRENGINE_EXPORTS
+    #define ENTT_API_EXPORT
+#else
+    #define ENTT_API_IMPORT
+#endif
+
 #include <entt/entt.hpp>
 
 namespace fe {
     struct EmptySystemDataT {};
+
+    template <typename Context, typename... Args>
+    struct ExtractSystemDataTypeTraits {
+        using SystemDataT = std::tuple_element_t<1, std::tuple<Args...>>;
+    };
+
+    template <typename Context, typename FirstArg>
+    struct ExtractSystemDataTypeTraits<Context, FirstArg> {
+        using SystemDataT = EmptySystemDataT;
+    };
+
+    template <typename T>
+    struct SystemFnTraits;
+
+    template <typename ReturnType, typename... Args>
+    struct SystemFnTraits<ReturnType (*)(Args...)> {
+        using SystemDataT_Initialize = ExtractSystemDataTypeTraits<fe::context, std::decay_t<Args>...>::SystemDataT;
+        using SystemDataT_Update     = ExtractSystemDataTypeTraits<fe::context, std::decay_t<Args>...>::SystemDataT;
+        using SystemDataT_Release    = ExtractSystemDataTypeTraits<fe::context, std::decay_t<Args>...>::SystemDataT;
+
+        static_assert((sizeof...(Args) == 1) || (sizeof...(Args) == 2), "Wrong number of arguments");
+    };
+
+    template <typename SystemT>
+    struct SystemTraits {
+    private:
+        using SystemDataT_Initialize = SystemFnTraits<decltype(&SystemT::Initialize)>::SystemDataT_Initialize;
+        using SystemDataT_Update     = SystemFnTraits<decltype(&SystemT::Update)>::SystemDataT_Update;
+        using SystemDataT_Release    = SystemFnTraits<decltype(&SystemT::Release)>::SystemDataT_Release;
+
+        static_assert(std::is_same_v<SystemDataT_Initialize, SystemDataT_Update> &&
+                          std::is_same_v<SystemDataT_Update, SystemDataT_Release>,
+                      "SystemT::Initialize(), SystemT::Update() and SystemT::Release() accept different data types");
+
+    public:
+        using SystemDataT = SystemDataT_Initialize;
+    };
 
     template <typename T>
     concept SystemConcept = requires(fe::context& context, SystemTraits<T>::SystemDataT& system_data) {
@@ -69,9 +112,9 @@ namespace fe {
 
     // this is the structure you get in 'fe::Scene::AddSystem<>' to
     //  access your mapped data and to remove the system if needed
-    template <SystemConcept System>
+    template <SystemConcept SystemT>
     struct SystemHandle {
-        using SystemDataT = SystemDataT<System>::Data;
+        using SystemDataT = SystemTraits<SystemT>::SystemDataT;
 
         SystemDataT*           mapped_data{};
         fe::pointer<System>    system_ptr{};
@@ -87,7 +130,7 @@ namespace fe {
 
         template <SystemConcept SystemT>
         FORR_NODISCARD SystemHandle<SystemT> AddSystem(fe::fixed_string_view<32> name, System::Stage stage = System::Stage::UPDATE) {
-            using SystemDataT = SystemDataT<SystemT>::Data;
+            using SystemDataT = SystemTraits<SystemT>::SystemDataT;
 
             System system{};
             system.name  = name;

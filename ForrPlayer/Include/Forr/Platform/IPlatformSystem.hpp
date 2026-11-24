@@ -15,8 +15,10 @@
 #include <memory>
 
 #include "Forr/Core/attributes.hpp"
+#include "Forr/Core/pointer.hpp"
 #include "Forr/Graphics/GPUTypes.hpp"
 #include "Forr/Events/EventBus.hpp"
+
 #include "IWindow.hpp"
 
 namespace fe {
@@ -32,8 +34,9 @@ namespace fe {
         ~PlatformSystemDesc() = default;
     };
 
-    using WindowID = size_t;
+    using WindowHandle = fe::pointer<std::unique_ptr<IWindow>>;
 
+    // TODO : write more comments where
     class FORR_API IPlatformSystem {
     public:
         virtual ~IPlatformSystem() = default;
@@ -42,10 +45,10 @@ namespace fe {
         FORR_NODISCARD static std::unique_ptr<IPlatformSystem> Create(const PlatformSystemDesc& desc, EventBus& event_bus);
 
         // returns window index
-        FORR_NODISCARD virtual WindowID CreateWindow(const WindowDesc& desc) = 0;
+        FORR_NODISCARD virtual WindowHandle CreateWindow(const WindowDesc& desc) = 0;
 
-        FORR_NODISCARD virtual WindowID                        getWindowCount()          = 0;
-        virtual std::optional<std::reference_wrapper<IWindow>> getWindow(WindowID index) = 0;
+        FORR_NODISCARD virtual size_t getWindowsCount()              = 0;
+        virtual IWindow*              getWindow(WindowHandle window_ptr) = 0;
 
         FORR_NODISCARD virtual std::vector<const char*> getSurfaceRequiredExtensions() = 0;
     };

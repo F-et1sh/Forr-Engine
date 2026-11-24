@@ -172,13 +172,13 @@ void fe::Application::InitializeResourceManager(const ApplicationDesc& desc) {
 }
 
 void fe::Application::InitializePrimaryWindow(const ApplicationDesc& desc) {
-    m_PrimaryWindowID  = m_PlatformSystem->CreateWindow(desc.primary_window_desc);
-    auto window_result = m_PlatformSystem->getWindow(m_PrimaryWindowID);
-    if (!window_result.has_value()) {
-        fe::logging::error("Failed to get the primary window.\nWindow index was %llu", m_PrimaryWindowID);
+    m_PrimaryWindowHandle = m_PlatformSystem->CreateWindow(desc.primary_window_desc);
+    auto window_result    = m_PlatformSystem->getWindow(m_PrimaryWindowHandle);
+    if (!window_result) {
+        fe::logging::error("Failed to get the primary window.\nWindow index was %llu", m_PrimaryWindowHandle);
         return;
     }
-    m_PrimaryWindow = &window_result.value().get();
+    m_PrimaryWindow = window_result;
 }
 
 void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
@@ -189,7 +189,7 @@ void fe::Application::InitializeRenderer(const ApplicationDesc& desc) {
     renderer_desc.primary_window_desc = desc.primary_window_desc;
     renderer_desc.validation_enabled  = desc.validation_enabled;
 
-    m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowID, *m_ResourceManager);
+    m_Renderer = IRenderer::Create(renderer_desc, *m_PlatformSystem, m_PrimaryWindowHandle, *m_ResourceManager);
 
     m_RenderGraph                      = std::make_unique<RenderGraph>(*m_ResourceManager, *m_Renderer);
     auto shadow_pass_data_mapped       = m_RenderGraph->AddPass<ShadowPass>("Shadow Pass");            // TODO : make a storage for this mapped data
