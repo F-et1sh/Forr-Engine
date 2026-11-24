@@ -12,19 +12,17 @@
 
 ===============================================*/
 
-#include <memory>
-
-#include "Forr/Core/path.hpp"
-#include "Forr/Events/EventBus.hpp"
-#include "Forr/Events/Events.hpp"
-#include "Forr/Platform/IPlatformSystem.hpp"
-#include "Forr/Platform/IWindow.hpp"
-#include "Forr/ResourceManagement/ResourceManager.hpp"
-#include "Forr/Graphics/IRenderer.hpp"
-#include "Forr/Graphics/RenderGraph.hpp"
-#include "Forr/Graphics/DefaultRenderPasses.hpp"
-#include "Forr/ECS/Scene.hpp"
-#include "Forr/Core/context.hpp"
+#include <Forr/Core/path.hpp>
+#include <Forr/Events/EventBus.hpp>
+#include <Forr/Events/Events.hpp>
+#include <Forr/Platform/IPlatformSystem.hpp>
+#include <Forr/Platform/IWindow.hpp>
+#include <Forr/ResourceManagement/ResourceManager.hpp>
+#include <Forr/Graphics/IRenderer.hpp>
+#include <Forr/Graphics/RenderGraph.hpp>
+#include <Forr/Graphics/DefaultRenderPasses.hpp>
+#include <Forr/ECS/Scene.hpp>
+#include <Forr/Core/context.hpp>
 
 int main(int argc, char* argv[]) {
     // static variables
@@ -124,6 +122,18 @@ int main(int argc, char* argv[]) {
     engine_context.emplace(*resource_manager, fe::make_hash("main"));
     engine_context.emplace(*renderer, fe::make_hash("main"));
     engine_context.emplace(*render_graph, fe::make_hash("main"));
+    engine_context.emplace(registry, fe::make_hash("main"));
+
+    struct SomeSystem {
+        using DataT = fe::EmptySystemDataT;
+
+        static void Initialize(fe::context&, DataT&) {};
+        static void Update(fe::context&, DataT&) {};
+        static void Release(DataT&) {};
+    };
+
+    fe::Scene scene{};
+    scene.AddSystem<SomeSystem>("SomeSystem");
 
     // main loop
 

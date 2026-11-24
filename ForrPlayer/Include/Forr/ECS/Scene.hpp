@@ -18,20 +18,22 @@
 #include "Forr/Core/attributes.hpp"
 #include "Forr/Core/string.hpp"
 #include "Forr/Core/pointer.hpp"
+#include "Forr/Core/context.hpp"
 
 #include <entt/entt.hpp>
 
 namespace fe {
-    template <typename T>
-    using SystemDataT = T::Data;
-
     struct EmptySystemDataT {};
 
     template <typename T>
-    concept SystemConcept = requires(/*fe::EngineContext& context, */ SystemDataT<T>& system_data) {
-        { T::Initialize(/*context, */ system_data) } -> std::same_as<void>;
-        { T::Update(/*context, */ system_data) } -> std::same_as<void>;
-        { T::Release(/*context, */ system_data) } -> std::same_as<void>;
+    concept SystemConcept = requires(fe::context& context, SystemTraits<T>::SystemDataT& system_data) {
+        { T::Initialize(context, system_data) } -> std::same_as<void>;
+        { T::Update(context, system_data) } -> std::same_as<void>;
+        { T::Release(system_data) } -> std::same_as<void>;
+    } || requires(fe::context& context) {
+        { T::Initialize(context) } -> std::same_as<void>;
+        { T::Update(context) } -> std::same_as<void>;
+        { T::Release() } -> std::same_as<void>;
     };
 
     struct System {
@@ -42,9 +44,9 @@ namespace fe {
             RENDER
         };
 
-        using InitializeFunction = void (*)(/*fe::EngineContext& context, */ void*);
-        using UpdateFunction     = void (*)(/*fe::EngineContext& context, */ void*);
-        using ReleaseFunction    = void (*)(/*fe::EngineContext& context, */ void*);
+        using InitializeFunction = void (*)(fe::context& context, void*);
+        using UpdateFunction     = void (*)(fe::context& context, void*);
+        using ReleaseFunction    = void (*)(void*);
 
         fe::fixed_string<32> name{};
         Stage                stage{};
@@ -101,10 +103,10 @@ namespace fe {
                 system.mapped_data        = mapped_data;
                 system_handle.mapped_data = mapped_data;
 
-                system.initialize_function = [](/*fe::EngineContext& context, */ void* system_data) { SystemT::Initialize(/*fe::EngineContext& context, */ *reinterpret_cast<SystemDataT*>(system_data)); };
-                system.update_function     = [](/*fe::EngineContext& context, */ void* system_data) { SystemT::Update(/*fe::EngineContext& context, */ *reinterpret_cast<SystemDataT*>(system_data)); };
-                system.release_function    = [](/*fe::EngineContext& context, */ void* system_data) {
-                    SystemT::Release(/*fe::EngineContext& context, */ *reinterpret_cast<SystemDataT*>(system_data));
+                system.initialize_function = [](fe::context& context, void* system_data) { SystemT::Initialize(context, *reinterpret_cast<SystemDataT*>(system_data)); };
+                system.update_function     = [](fe::context& context, void* system_data) { SystemT::Update(context, *reinterpret_cast<SystemDataT*>(system_data)); };
+                system.release_function    = [](void* system_data) {
+                    SystemT::Release(*reinterpret_cast<SystemDataT*>(system_data));
                     std::destroy_at(reinterpret_cast<SystemDataT*>(system_data));
                 };
             }
@@ -112,9 +114,9 @@ namespace fe {
                 system.mapped_data        = nullptr;
                 system_handle.mapped_data = nullptr;
 
-                system.initialize_function = [](/*fe::EngineContext& context, */ void* system_data) { SystemT::Initialize(/*fe::EngineContext& context, */); };
-                system.update_function     = [](/*fe::EngineContext& context, */ void* system_data) { SystemT::Update(/*fe::EngineContext& context, */); };
-                system.release_function    = [](/*fe::EngineContext& context, */ void* system_data) { SystemT::Release(/*fe::EngineContext& context, */); };
+                system.initialize_function = [](fe::context& context, void* system_data) { SystemT::Initialize(context); };
+                system.update_function     = [](fe::context& context, void* system_data) { SystemT::Update(context); };
+                system.release_function    = [](void* system_data) { SystemT::Release(); };
             }
 
             system_handle.system_ptr = m_Systems.create(std::move(system));
@@ -128,32 +130,32 @@ namespace fe {
         }
 
         // TODO : provide ability to invoke something between the stages
-        void InitializeSystems(/*fe::EngineContext& context*/) {
+        void InitializeSystems(fe::context& context) {
             auto systems = this->getSorted();
 
             for (size_t i = 0; i < systems.size(); i++) {
                 const auto& system = *m_Systems.get(systems[i]);
-                system.initialize_function(/*context,*/ system.mapped_data);
+                system.initialize_function(context, system.mapped_data);
             }
         }
 
         // TODO : provide ability to invoke something between the stages
-        void UpdateSystems(/*fe::EngineContext& context*/) {
+        void UpdateSystems(fe::context& context) {
             auto systems = this->getSorted();
 
             for (size_t i = 0; i < systems.size(); i++) {
                 const auto& system = *m_Systems.get(systems[i]);
-                system.update_function(/*context,*/ system.mapped_data);
+                system.update_function(context, system.mapped_data);
             }
         }
 
         // TODO : provide ability to invoke something between the stages
-        void ReleaseSystems(/*fe::EngineContext& context*/) {
+        void ReleaseSystems(fe::context& context) {
             auto systems = this->getSorted();
 
             for (size_t i = 0; i < systems.size(); i++) {
                 const auto& system = *m_Systems.get(systems[i]);
-                system.release_function(/*context,*/ system.mapped_data);
+                system.release_function(system.mapped_data);
             }
         }
 

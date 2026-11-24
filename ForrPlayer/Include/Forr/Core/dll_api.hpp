@@ -21,15 +21,11 @@
 #include "string.hpp"
 
 namespace fe::dll_api {
-    struct engine_api {
-        void* instance{};
-    };
-
     // game or mod
     struct application_module {
-        using on_initialize_func = void (*)(const engine_api*);
-        using on_update_func     = void (*)(const engine_api*);
-        using on_release_func    = void (*)(const engine_api*);
+        using on_initialize_func = void (*)(context&);
+        using on_update_func     = void (*)(context&);
+        using on_release_func    = void (*)(context&);
 
         string_raw name{};
         bool       is_primary{};

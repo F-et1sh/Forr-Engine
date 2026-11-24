@@ -107,7 +107,9 @@ namespace fe {
         // @param tag optional tag to distinguish multiple objects of the same type ( 0 by default )
         template <typename T>
         void emplace_or_replace(T& object, fe::string_hash tag = {}) {
-            (!this->replace<T>(object, tag)) ? this->emplace<T>(object, tag) : 0;
+            if (!this->replace<T>(object, tag)) {
+                this->emplace<T>(object, tag);
+            }
         }
 
         // @brief get the object from the context

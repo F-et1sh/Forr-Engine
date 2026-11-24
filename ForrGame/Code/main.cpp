@@ -10,19 +10,26 @@
 
 ===============================================*/
 
-#include "Forr/Core/dll_api.hpp"
-#include "Forr/Core/context.hpp"
+#include <Forr/Core/dll_api.hpp>
+#include <Forr/Core/context.hpp>
+#include <Forr/Graphics/RenderGraph.hpp>
 
-void on_initialize(fe::context& engine_context) {
-    
+struct EmptryRenderPass {
+    static void Setup(fe::RenderGraphBuilder& builder) {
+    }
+
+    static void Execute(fe::RenderGraphContext& context) {
+    }
+};
+
+void on_initialize(fe::context& context) {
+    context.get<fe::RenderGraph>().AddPass<EmptryRenderPass>("EmptyRenderPass from the game's dll");
 }
 
-void on_update(fe::context& engine_context) {
-    
+void on_update(fe::context& context) {
 }
 
-void on_release(fe::context& engine_context) {
-    
+void on_release(fe::context& context) {
 }
 
 extern "C" __declspec(dllexport) fe::dll_api::application_module* get_application_module() {

@@ -300,6 +300,9 @@ namespace fe {
                                          RenderPassTraits<T>::RenderPassDataT& render_pass_data) {
         { T::Setup(builder, render_pass_data) } -> std::same_as<void>;
         { T::Execute(context, render_pass_data) } -> std::same_as<void>;
+    } || requires(RenderGraphBuilder& builder, RenderGraphContext& context) {
+        { T::Setup(builder) } -> std::same_as<void>;
+        { T::Execute(context) } -> std::same_as<void>;
     };
 
     struct RenderPass {
