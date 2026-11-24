@@ -10,6 +10,7 @@
 
 ### Done
     fe::context added. fe::type_registry got better. FORR_NORETURN added
+    fe::context::replace() and fe::context::emplace_or_replace() added
 
 ### Problem
     -

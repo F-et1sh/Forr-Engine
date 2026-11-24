@@ -11,16 +11,17 @@
 ===============================================*/
 
 #include "Forr/Core/dll_api.hpp"
+#include "Forr/Core/context.hpp"
 
-void on_initialize(const fe::dll_api::engine_api* engine_api) {
+void on_initialize(fe::context& engine_context) {
     
 }
 
-void on_update(const fe::dll_api::engine_api* engine_api) {
+void on_update(fe::context& engine_context) {
     
 }
 
-void on_release(const fe::dll_api::engine_api* engine_api) {
+void on_release(fe::context& engine_context) {
     
 }
 

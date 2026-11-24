@@ -14,7 +14,7 @@
 #include "Forr/ECS/Components.hpp"
 #include "Forr/Graphics/IRenderer.hpp"
 
-#include "Forr/ECS/Systems.hpp"
+#include "Forr/ECS/Scene.hpp"
 
 namespace fe {
     class FORR_API TransformSystem {

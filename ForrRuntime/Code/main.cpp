@@ -24,6 +24,7 @@
 #include "Forr/Graphics/RenderGraph.hpp"
 #include "Forr/Graphics/DefaultRenderPasses.hpp"
 #include "Forr/ECS/Scene.hpp"
+#include "Forr/Core/context.hpp"
 
 int main(int argc, char* argv[]) {
     // static variables
@@ -116,6 +117,13 @@ int main(int argc, char* argv[]) {
     // registry
 
     entt::registry registry{};
+
+    fe::context engine_context{};
+    engine_context.emplace(*main_event_bus, fe::make_hash("main"));
+    engine_context.emplace(*platform_system, fe::make_hash("main"));
+    engine_context.emplace(*resource_manager, fe::make_hash("main"));
+    engine_context.emplace(*renderer, fe::make_hash("main"));
+    engine_context.emplace(*render_graph, fe::make_hash("main"));
 
     // main loop
 

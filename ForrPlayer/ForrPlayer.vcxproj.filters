@@ -84,5 +84,6 @@
     <ClCompile Include="Source\ECS\Systems\TransformSystem.cpp" />
     <ClCompile Include="Source\ECS\Systems\CameraSystem.cpp" />
     <ClCompile Include="Source\Core\dll_api.cpp" />
+    <ClCompile Include="Source\Core\type_registry.cpp" />
   </ItemGroup>
 </Project>

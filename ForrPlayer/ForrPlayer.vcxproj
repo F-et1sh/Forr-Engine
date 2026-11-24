@@ -170,6 +170,7 @@ call "$(ProjectDir)..\Scripts\slang\copy_dlls_to_build_folder_release.bat" $(Tar
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Core\dll_api.cpp" />
+    <ClCompile Include="Source\Core\type_registry.cpp" />
     <ClCompile Include="Source\ECS\Systems\CameraSystem.cpp" />
     <ClCompile Include="Source\ECS\Systems\RenderSystem.cpp" />
     <ClCompile Include="Source\ECS\Systems\TransformSystem.cpp" />
