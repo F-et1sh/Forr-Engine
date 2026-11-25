@@ -16,6 +16,7 @@
 #include "string.hpp"
 #include "logging.hpp"
 #include "type_registry.hpp"
+#include "dll_api.hpp"
 
 namespace fe {
     // @brief context that can contain any type of object; important : it does not *store* your objects, you're responsible for their lifetime. it just gives you convenient access

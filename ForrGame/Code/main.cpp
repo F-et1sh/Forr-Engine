@@ -311,13 +311,13 @@ struct ForwardPass {
 
 void on_initialize(fe::context& context) {
     auto& renderer     = context.get<fe::IRenderer>(fe::make_hash("main"));
-    auto& render_graph = context.get<fe::RenderGraph>(fe::make_hash("main"));
+    auto& render_graph = context.get<fe::dll_proxy::RenderGraph>(fe::make_hash("main"));
 
     auto forward_pass_handle = render_graph.AddPass<ForwardPass>(fe::fixed_string_view<32>{ "ForwardPass" });
 
     auto create_command_list = render_graph.Compile();
     auto mapping_result      = renderer.CreateRenderGraphResources(create_command_list);
-    render_graph.SetupResourceBindings(mapping_result);
+    render_graph->SetupResourceBindings(mapping_result);
 
     //auto& resource_manager = context.get<fe::ResourceManager>(fe::make_hash("main"));
 
