@@ -18,6 +18,7 @@
 #include <functional>
 #include <vector>
 #include <ranges>
+#include <type_traits>
 
 #include "attributes.hpp"
 #include "context.hpp"
@@ -65,11 +66,16 @@ namespace fe::dll_api {
     };
     using library_handle = std::unique_ptr<void, deleter>;
 
+    class module_context; // forward declaration
+
+    FORR_API void            set_current_module_context(module_context* current_module_context) noexcept;
+    FORR_API module_context* get_current_module_context() noexcept;
+
     class module_context {
     public:
         module_context() = default;
-        module_context(library_handle_raw library_handle_raw) : m_library_handle(library_handle_raw) {}
-        module_context(library_handle loaded_library_handle) : m_library_handle(std::move(loaded_library_handle)) {}
+        module_context(library_handle_raw library_handle_raw) : m_library_handle(library_handle_raw) { fe::dll_api::set_current_module_context(this); }
+        module_context(library_handle loaded_library_handle) : m_library_handle(std::move(loaded_library_handle)) { fe::dll_api::set_current_module_context(this); }
         explicit module_context(const std::filesystem::path& full_path) {
             auto result = load_library_raw(full_path);
             if (!result.has_value()) {
@@ -77,8 +83,12 @@ namespace fe::dll_api {
                 return;
             }
             m_library_handle = library_handle{ result.value() };
+            fe::dll_api::set_current_module_context(this);
         }
         ~module_context() {
+            if (fe::dll_api::get_current_module_context() == this) {
+                fe::dll_api::set_current_module_context(nullptr);
+            }
             this->unload();
         }
 
@@ -105,24 +115,73 @@ namespace fe::dll_api {
         library_handle                               m_library_handle{};
     };
 
-    FORR_API void               set_current_library(library_handle_raw current_handle) noexcept;
-    FORR_API library_handle_raw get_current_library() noexcept;
-
     struct module_guard {
-        library_handle_raw previous{};
+        module_context* previous{};
 
-        explicit module_guard(library_handle_raw current_handle) noexcept
-            : previous(fe::dll_api::get_current_library()) {
-            fe::dll_api::set_current_library(current_handle);
-        }
-        explicit module_guard(const module_context& current_module_context) noexcept
-            : previous(fe::dll_api::get_current_library()) {
-            fe::dll_api::set_current_library(current_module_context.get_library_handle_raw());
+        explicit module_guard(module_context& current_module_context) noexcept
+            : previous(fe::dll_api::get_current_module_context()) {
+            fe::dll_api::set_current_module_context(&current_module_context);
         }
         ~module_guard() noexcept {
-            fe::dll_api::set_current_library(previous);
+            fe::dll_api::set_current_module_context(previous);
         }
     };
+
+    // @brief a class for convenient creation of proxy systems for 'fe::dll_proxy::*'
+    //
+    // @tparam SystemT the original system ( 'fe::RenderGraph' for example )
+    template <typename SystemT>
+    class proxy_base {
+    public:
+        proxy_base(SystemT& system, fe::dll_api::module_context& module_context)
+            : m_system(system), m_module_context(module_context) {}
+
+        SystemT*       operator->() noexcept { return &m_system.get(); }
+        const SystemT* operator->() const noexcept { return &m_system.get(); }
+
+        operator SystemT&() noexcept { return m_system.get(); }
+        operator const SystemT&() const noexcept { return m_system.get(); }
+
+        SystemT&       get() noexcept { return m_system.get(); }
+        const SystemT& get() const noexcept { return m_system.get(); }
+
+    protected:
+        template <typename FuncT>
+        void register_cleanup(FuncT&& cleanup_fn) {
+            m_module_context.get().on_unload(std::forward<FuncT>(cleanup_fn));
+        }
+
+        SystemT& raw() noexcept { return m_system.get(); }
+
+    private:
+        std::reference_wrapper<SystemT>                     m_system;
+        std::reference_wrapper<fe::dll_api::module_context> m_module_context;
+    };
+
+    template <typename T>
+    struct proxy_for {
+        using type = T;
+    };
+
+    template <typename T>
+    using proxy_for_t = proxy_for<T>::type;
+
+#define FORR_CREATE_DLL_PROXY_CLASS_START(ORIGINAL_SYSTEM_NAME, PROXY_SYSTEM_NAME) \
+    /* forward declaration */                                                      \
+    namespace fe::dll_proxy {                                                      \
+        class PROXY_SYSTEM_NAME; /* NOLINT(bugprone-macro-parentheses) */          \
+    }                                                                              \
+    template <>                                                                    \
+    struct fe::dll_api::proxy_for<ORIGINAL_SYSTEM_NAME> {                          \
+        using type = fe::dll_proxy::PROXY_SYSTEM_NAME;                             \
+    };                                                                             \
+    namespace fe::dll_proxy {                                                      \
+        class PROXY_SYSTEM_NAME : public fe::dll_api::proxy_base<ORIGINAL_SYSTEM_NAME> { /* NOLINT(bugprone-macro-parentheses) */
+
+#define FORR_CREATE_DLL_PROXY_CLASS_END \
+    }                                   \
+    ;                                   \
+    }
 
     using create_application_desc = application_desc* (*) ();
 

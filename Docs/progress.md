@@ -13,6 +13,7 @@
     fe::context::replace() and fe::context::emplace_or_replace() added
     RenderPassConcept fixed
     C++ ABI is almost done. dll_api.hpp's logic redesigned
+    proxy systems for the dll module in progress
 
 ### Problem
     -

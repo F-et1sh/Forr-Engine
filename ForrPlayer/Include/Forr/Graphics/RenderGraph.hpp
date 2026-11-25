@@ -13,6 +13,9 @@
 #pragma once
 
 #include <type_traits>
+#include <memory>
+
+#include "Forr/Core/dll_api.hpp"
 
 #include "Forr/ResourceManagement/ResourceManager.hpp"
 #include "RenderGraphTypes.hpp"
@@ -553,6 +556,20 @@ namespace fe {
         fe::typed_pointer_storage<RenderPass> m_RenderPasses{};
         fe::Arena                             m_RenderPassesData{ 16 * 1024 };
     };
+
+    FORR_CREATE_DLL_PROXY_CLASS_START(RenderGraph, RenderGraph)
+    template <RenderPassConcept RenderPassT>
+    FORR_NODISCARD RenderPassHandle<RenderPassT> AddPass(fe::fixed_string_view<32> name) {
+        auto& render_graph = raw();
+        auto  handle       = render_graph.AddPass<RenderPassT>(name);
+
+        register_cleanup([handle, &render_graph]() {
+            render_graph.RemovePass(handle);
+        });
+
+        return handle;
+    }
+    FORR_CREATE_DLL_PROXY_CLASS_END
 
 } // namespace fe
 
