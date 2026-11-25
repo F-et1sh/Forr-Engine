@@ -26,151 +26,151 @@
 
 namespace fe::vk {
     struct DeviceDestroy {
-        static void operator()(VkDevice device) noexcept {
+        void operator()(VkDevice device) const noexcept {
             vkDestroyDevice(device, nullptr);
         }
     };
 
     struct InstanceDestroy {
-        static void operator()(VkInstance instance) noexcept {
+        void operator()(VkInstance instance) const noexcept {
             vkDestroyInstance(instance, nullptr);
         }
     };
 
     struct AllocatorDestroy {
-        static void operator()(VmaAllocator allocator) noexcept {
+        void operator()(VmaAllocator allocator) const noexcept {
             vmaDestroyAllocator(allocator);
         }
     };
 
     struct SurfaceDestroy {
-        static void operator()(VkInstance instance, VkSurfaceKHR handle) noexcept {
+        void operator()(VkInstance instance, VkSurfaceKHR handle) const noexcept {
             vkDestroySurfaceKHR(instance, handle, nullptr);
         }
     };
 
     struct SwapchainDestroy {
-        static void operator()(VkDevice device, VkSwapchainKHR handle) noexcept {
+        void operator()(VkDevice device, VkSwapchainKHR handle) const noexcept {
             vkDestroySwapchainKHR(device, handle, nullptr);
         }
     };
 
     struct BufferDestroy {
-        static void operator()(VkDevice device, VkBuffer handle) noexcept {
+        void operator()(VkDevice device, VkBuffer handle) const noexcept {
             vkDestroyBuffer(device, handle, nullptr);
         }
     };
 
     struct ImageDestroy {
-        static void operator()(VkDevice device, VkImage handle) noexcept {
+        void operator()(VkDevice device, VkImage handle) const noexcept {
             vkDestroyImage(device, handle, nullptr);
         }
     };
 
     struct ImageViewDestroy {
-        static void operator()(VkDevice device, VkImageView handle) noexcept {
+        void operator()(VkDevice device, VkImageView handle) const noexcept {
             vkDestroyImageView(device, handle, nullptr);
         }
     };
 
     struct SamplerDestroy {
-        static void operator()(VkDevice device, VkSampler handle) noexcept {
+        void operator()(VkDevice device, VkSampler handle) const noexcept {
             vkDestroySampler(device, handle, nullptr);
         }
     };
 
     struct ShaderModuleDestroy {
-        static void operator()(VkDevice device, VkShaderModule handle) noexcept {
+        void operator()(VkDevice device, VkShaderModule handle) const noexcept {
             vkDestroyShaderModule(device, handle, nullptr);
         }
     };
 
     struct RenderPassDestroy {
-        static void operator()(VkDevice device, VkRenderPass handle) noexcept {
+        void operator()(VkDevice device, VkRenderPass handle) const noexcept {
             vkDestroyRenderPass(device, handle, nullptr);
         }
     };
 
     struct FramebufferDestroy {
-        static void operator()(VkDevice device, VkFramebuffer handle) noexcept {
+        void operator()(VkDevice device, VkFramebuffer handle) const noexcept {
             vkDestroyFramebuffer(device, handle, nullptr);
         }
     };
 
     struct PipelineDestroy {
-        static void operator()(VkDevice device, VkPipeline handle) noexcept {
+        void operator()(VkDevice device, VkPipeline handle) const noexcept {
             vkDestroyPipeline(device, handle, nullptr);
         }
     };
 
     struct PipelineCacheDestroy {
-        static void operator()(VkDevice device, VkPipelineCache handle) noexcept {
+        void operator()(VkDevice device, VkPipelineCache handle) const noexcept {
             vkDestroyPipelineCache(device, handle, nullptr);
         }
     };
 
     struct PipelineLayoutDestroy {
-        static void operator()(VkDevice device, VkPipelineLayout handle) noexcept {
+        void operator()(VkDevice device, VkPipelineLayout handle) const noexcept {
             vkDestroyPipelineLayout(device, handle, nullptr);
         }
     };
 
     struct DescriptorSetLayoutDestroy {
-        static void operator()(VkDevice device, VkDescriptorSetLayout handle) noexcept {
+        void operator()(VkDevice device, VkDescriptorSetLayout handle) const noexcept {
             vkDestroyDescriptorSetLayout(device, handle, nullptr);
         }
     };
 
     struct DescriptorPoolDestroy {
-        static void operator()(VkDevice device, VkDescriptorPool handle) noexcept {
+        void operator()(VkDevice device, VkDescriptorPool handle) const noexcept {
             vkDestroyDescriptorPool(device, handle, nullptr);
         }
     };
 
     struct CommandPoolDestroy {
-        static void operator()(VkDevice device, VkCommandPool handle) noexcept {
+        void operator()(VkDevice device, VkCommandPool handle) const noexcept {
             vkDestroyCommandPool(device, handle, nullptr);
         }
     };
 
     struct FenceDestroy {
-        static void operator()(VkDevice device, VkFence handle) noexcept {
+        void operator()(VkDevice device, VkFence handle) const noexcept {
             vkDestroyFence(device, handle, nullptr);
         }
     };
 
     struct SemaphoreDestroy {
-        static void operator()(VkDevice device, VkSemaphore handle) noexcept {
+        void operator()(VkDevice device, VkSemaphore handle) const noexcept {
             vkDestroySemaphore(device, handle, nullptr);
         }
     };
 
     struct EventDestroy {
-        static void operator()(VkDevice device, VkEvent handle) noexcept {
+        void operator()(VkDevice device, VkEvent handle) const noexcept {
             vkDestroyEvent(device, handle, nullptr);
         }
     };
 
     struct DeviceMemoryDestroy {
-        static void operator()(VkDevice device, VkDeviceMemory handle) noexcept {
+        void operator()(VkDevice device, VkDeviceMemory handle) const noexcept {
             vkFreeMemory(device, handle, nullptr);
         }
     };
 
     struct VmaBufferDestroy {
-        static void operator()(VmaAllocator allocator, VkBuffer buffer, VmaAllocation allocation) noexcept {
+        void operator()(VmaAllocator allocator, VkBuffer buffer, VmaAllocation allocation) const noexcept {
             vmaDestroyBuffer(allocator, buffer, allocation);
         }
     };
 
     struct VmaImageDestroy {
-        static void operator()(VmaAllocator allocator, VkImage image, VmaAllocation allocation) noexcept {
+        void operator()(VmaAllocator allocator, VkImage image, VmaAllocation allocation) const noexcept {
             vmaDestroyImage(allocator, image, allocation);
         }
     };
 
     struct CommandBufferDestroy {
-        static void operator()(VkDevice device, VkCommandPool command_pool, VkCommandBuffer handle) noexcept {
+        void operator()(VkDevice device, VkCommandPool command_pool, VkCommandBuffer handle) const noexcept {
             vkFreeCommandBuffers(device, command_pool, 1, &handle);
         }
     };

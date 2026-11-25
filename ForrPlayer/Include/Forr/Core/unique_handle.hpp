@@ -79,20 +79,27 @@ namespace fe {
     };
 
     namespace detail {
-        template <typename... Args>
-        struct unique_handle_traits_base {
-            template <typename DestroyFn>
-            using handle_type = unique_handle<DestroyFn, Args...>;
+        template <typename ClassType, typename... Args>
+        struct unique_handle_traits_fn_base {
+            using handle_type = unique_handle<ClassType, Args...>;
         };
 
         template <typename T>
-        struct unique_handle_traits : unique_handle_traits<decltype(&T::operator())> {};
+        struct unique_handle_traits_fn;
 
-        template <typename... Args, bool Noexcept>
-        struct unique_handle_traits<void (*)(Args...) noexcept(Noexcept)> : unique_handle_traits_base<Args...> {};
+        template <typename ClassType, typename ReturnType, typename... Args>
+        struct unique_handle_traits_fn<ReturnType (ClassType::*)(Args...) const noexcept> : unique_handle_traits_fn_base<ClassType, Args...> {};
+
+        template <typename ClassType, typename ReturnType, typename... Args>
+        struct unique_handle_traits_fn<ReturnType (ClassType::*)(Args...) const> : unique_handle_traits_fn_base<ClassType, Args...> {};
     } // namespace detail
 
+    // TODO : use 'static operator()' when IntelliSense will be able to parse it
+    //
+    // If you get error C2938 - 'fe::create_unique_handle' : Failed to specialize alias template :
+    // destroy structure's operator() must have the same signature as in 'ReturnType (ClassType::*)(Args...) const noexcept' or 'ReturnType (ClassType::*)(Args...) const'
+    // don't forget to put 'const noexcept' or just 'const'
     template <typename DestroyFn>
-    using create_unique_handle = detail::unique_handle_traits<decltype(&DestroyFn::operator())>::template handle_type<DestroyFn>;
+    using create_unique_handle = detail::unique_handle_traits_fn<decltype(&DestroyFn::operator())>::handle_type;
 
 } // namespace fe

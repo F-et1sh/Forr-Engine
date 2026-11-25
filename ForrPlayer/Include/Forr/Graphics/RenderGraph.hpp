@@ -354,7 +354,7 @@ namespace fe {
 
     template <typename T>
     struct RenderPassDestroy {
-        static void operator()(RenderGraph* render_graph, RenderPassHandle<T> render_pass_handle);
+        void operator()(RenderGraph* render_graph, RenderPassHandle<T> render_pass_handle)const;
     };
 
     template <typename T>
@@ -568,7 +568,7 @@ namespace fe {
     };
 
     template <typename T>
-    void RenderPassDestroy<T>::operator()(RenderGraph* render_graph, RenderPassHandle<T> render_pass_handle) {
+    void RenderPassDestroy<T>::operator()(RenderGraph* render_graph, RenderPassHandle<T> render_pass_handle)const {
         if (render_graph) {
             render_graph->RemovePass(render_pass_handle);
         }
