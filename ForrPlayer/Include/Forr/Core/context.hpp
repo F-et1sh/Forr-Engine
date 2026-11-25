@@ -16,7 +16,6 @@
 #include "string.hpp"
 #include "logging.hpp"
 #include "type_registry.hpp"
-#include "dll_api.hpp"
 
 namespace fe {
     // @brief context that can contain any type of object; important : it does not *store* your objects, you're responsible for their lifetime. it just gives you convenient access
@@ -156,19 +155,4 @@ namespace fe {
         // hashed name --> { T0, T1, T2, T3 }
         std::unordered_map<fe::string_hash, types> m_objects{};
     };
-
-    namespace dll_proxy {
-        //// @brief the same 'fe::context' but translates 'T' to 'fe::dll_api::proxy_for_t<T>'
-        //class context {
-        //public:
-        //    template <typename T>
-        //    auto& get(fe::string_hash tag = {}) {
-        //        using ActualT = dll_api::proxy_for_t<T>;
-        //        return m_base_context.get<ActualT>(tag);
-        //    }
-
-        //private:
-        //    fe::context m_base_context;
-        //};
-    } // namespace dll_proxy
 } // namespace fe

@@ -12,6 +12,7 @@
 ===============================================*/
 
 #pragma once
+#include <memory>
 #include <utility>
 #include <filesystem>
 #include <expected>
@@ -23,22 +24,9 @@
 #include "attributes.hpp"
 #include "context.hpp"
 #include "string.hpp"
+#include "unique_handle.hpp"
 
 namespace fe::dll_api {
-    // game or mod
-    struct application_desc {
-        using on_initialize_func = void (*)(context&);
-        using on_update_func     = void (*)(context&);
-        using on_release_func    = void (*)(context&);
-
-        string_raw name{};
-        bool       is_primary{};
-
-        on_initialize_func on_initialize{};
-        on_update_func     on_update{};
-        on_release_func    on_release{};
-    };
-
     using library_handle_raw = void*;
     using symbol_handle_raw  = void*;
 
@@ -66,16 +54,12 @@ namespace fe::dll_api {
     };
     using library_handle = std::unique_ptr<void, deleter>;
 
-    class module_context; // forward declaration
-
-    FORR_API void            set_current_module_context(module_context* current_module_context) noexcept;
-    FORR_API module_context* get_current_module_context() noexcept;
-
+    // TODO : write comments
     class module_context {
     public:
         module_context() = default;
-        module_context(library_handle_raw library_handle_raw) : m_library_handle(library_handle_raw) { fe::dll_api::set_current_module_context(this); }
-        module_context(library_handle loaded_library_handle) : m_library_handle(std::move(loaded_library_handle)) { fe::dll_api::set_current_module_context(this); }
+        module_context(library_handle_raw library_handle_raw) : m_library_handle(library_handle_raw) {}
+        module_context(library_handle loaded_library_handle) : m_library_handle(std::move(loaded_library_handle)) {}
         explicit module_context(const std::filesystem::path& full_path) {
             auto result = load_library_raw(full_path);
             if (!result.has_value()) {
@@ -83,16 +67,21 @@ namespace fe::dll_api {
                 return;
             }
             m_library_handle = library_handle{ result.value() };
-            fe::dll_api::set_current_module_context(this);
         }
         ~module_context() {
-            if (fe::dll_api::get_current_module_context() == this) {
-                fe::dll_api::set_current_module_context(nullptr);
-            }
             this->unload();
         }
 
         FORR_CLASS_MOVABLEONLY(module_context)
+
+        template <typename ScopedHandleT>
+        ScopedHandleT& own_scoped(ScopedHandleT&& scoped_handle) {
+            using CleanT = std::decay_t<ScopedHandleT>;
+            auto ptr = std::make_unique<CleanT>(std::forward<ScopedHandleT>(scoped_handle));
+            ScopedHandleT& ref = *ptr;
+            m_cleanup.emplace_back([p = std::move(ptr)]() mutable { p.reset(); });
+            return ref;
+        }
 
         template <typename Fn>
         void on_unload(Fn&& fn) {
@@ -115,92 +104,19 @@ namespace fe::dll_api {
         library_handle                               m_library_handle{};
     };
 
-    struct module_guard {
-        module_context* previous{};
+    // game or mod
+    struct application_desc {
+        using on_initialize_func = void (*)(context&, module_context&);
+        using on_update_func     = void (*)(context&, module_context&);
+        using on_release_func    = void (*)(context&, module_context&);
 
-        explicit module_guard(module_context& current_module_context) noexcept
-            : previous(fe::dll_api::get_current_module_context()) {
-            fe::dll_api::set_current_module_context(&current_module_context);
-        }
-        ~module_guard() noexcept {
-            fe::dll_api::set_current_module_context(previous);
-        }
+        string_raw name{};
+        bool       is_primary{};
+
+        on_initialize_func on_initialize{};
+        on_update_func     on_update{};
+        on_release_func    on_release{};
     };
-
-    // @brief a class for convenient creation of proxy systems for 'fe::dll_proxy::*'
-    //
-    // @tparam SystemT the original system ( 'fe::RenderGraph' for example )
-    template <typename SystemT>
-    class proxy_base {
-    public:
-        proxy_base(SystemT& system, fe::dll_api::module_context& module_context)
-            : m_system(system), m_module_context(module_context) {}
-
-        SystemT*       operator->() noexcept { return &m_system.get(); }
-        const SystemT* operator->() const noexcept { return &m_system.get(); }
-
-        operator SystemT&() noexcept { return m_system.get(); }
-        operator const SystemT&() const noexcept { return m_system.get(); }
-
-        SystemT&       get() noexcept { return m_system.get(); }
-        const SystemT& get() const noexcept { return m_system.get(); }
-
-    protected:
-        template <typename FuncT>
-        void register_cleanup(FuncT&& cleanup_fn) {
-            m_module_context.get().on_unload(std::forward<FuncT>(cleanup_fn));
-        }
-
-        SystemT& raw() noexcept { return m_system.get(); }
-
-    private:
-        std::reference_wrapper<SystemT>                     m_system;
-        std::reference_wrapper<fe::dll_api::module_context> m_module_context;
-    };
-
-    template <typename T>
-    struct proxy_for {
-        using type = T;
-    };
-
-    // @brief a class for convenient creation of proxy systems for 'fe::dll_proxy::*'
-    //
-    // @tparam SystemT the original system ( 'fe::RenderGraph' for example )
-    template <typename SystemT>
-    class proxy_base {
-    public:
-        proxy_base(SystemT& system, fe::dll_api::module_context& module_context)
-            : m_system(system), m_module_context(module_context) {}
-
-        SystemT*       operator->() noexcept { return &m_system.get(); }
-        const SystemT* operator->() const noexcept { return &m_system.get(); }
-
-        operator SystemT&() noexcept { return m_system.get(); }
-        operator const SystemT&() const noexcept { return m_system.get(); }
-
-        SystemT&       get() noexcept { return m_system.get(); }
-        const SystemT& get() const noexcept { return m_system.get(); }
-
-    protected:
-        template <typename FuncT>
-        void register_cleanup(FuncT&& cleanup_fn) {
-            m_module_context.get().on_unload(std::forward<FuncT>(cleanup_fn));
-        }
-
-        SystemT& raw() noexcept { return m_system.get(); }
-
-    private:
-        std::reference_wrapper<SystemT>                     m_system;
-        std::reference_wrapper<fe::dll_api::module_context> m_module_context;
-    };
-
-    template <typename T>
-    struct proxy_for {
-        using type = T;
-    };
-
-    template <typename T>
-    using proxy_for_t = proxy_for<T>::type;
 
     using create_application_desc = application_desc* (*) ();
 

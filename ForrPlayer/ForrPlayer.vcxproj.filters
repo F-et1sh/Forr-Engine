@@ -56,6 +56,7 @@
     <ClInclude Include="Include\Forr\ECS\Systems\CameraSystem.hpp" />
     <ClInclude Include="Include\Forr\Core\dll_api.hpp" />
     <ClInclude Include="Include\Forr\ECS\Scene.hpp" />
+    <ClInclude Include="Include\Forr\Core\unique_handle.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application.cpp" />

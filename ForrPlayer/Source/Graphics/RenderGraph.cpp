@@ -277,10 +277,6 @@ void fe::RenderGraph::Clear() {
     m_RenderPassesData.reset();
 }
 
-fe::pointer<fe::RenderPass> fe::RenderGraph::createRenderPass(RenderPass&& render_pass) {
-    return m_RenderPasses.create(std::move(render_pass));
-}
-
 void fe::RenderGraph::collectRenderPasses(std::vector<CompiledRenderPass>&               render_passes_dst,
                                           std::unordered_map<fe::string_hash, Resource>& resources_map) {
     for (auto& render_pass : m_RenderPasses) {

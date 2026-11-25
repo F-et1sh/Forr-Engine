@@ -15,12 +15,10 @@
 #include <type_traits>
 #include <memory>
 
-#include "Forr/Core/dll_api.hpp"
+#include "Forr/Core/unique_handle.hpp"
 
 #include "Forr/ResourceManagement/ResourceManager.hpp"
 #include "RenderGraphTypes.hpp"
-
-#include "Forr/Core/dll_api.hpp"
 
 #include "entt/entt.hpp"
 
@@ -352,6 +350,16 @@ namespace fe {
         fe::hashed_string_view  render_pass_name{};
     };
 
+    class RenderGraph; // forward declaration
+
+    template <typename T>
+    struct RenderPassDestroy {
+        static void operator()(RenderGraph* render_graph, RenderPassHandle<T> render_pass_handle);
+    };
+
+    template <typename T>
+    using ScopedRenderPassHandle = fe::create_unique_handle<RenderPassDestroy<T>>;
+
     class RenderGraph {
     public:
         // this structure is used to access resources in a map
@@ -469,7 +477,7 @@ namespace fe {
                 render_pass.destroy_function = [](void* render_pass_data) {};
             }
 
-            render_pass_handle.render_pass_ptr = this->createRenderPass(std::move(render_pass));
+            render_pass_handle.render_pass_ptr = m_RenderPasses.create(std::move(render_pass));
 
             return render_pass_handle;
         }
@@ -495,9 +503,6 @@ namespace fe {
         FORR_API void Clear();
 
     private:
-        // @brief a proxy function to move render pass creation into cpp file
-        FORR_NODISCARD FORR_API fe::pointer<RenderPass> createRenderPass(RenderPass&& render_pass);
-
         // @brief run Setup() for every added render pass and collect its required resources via fe::RenderGraphBuilder
         FORR_API void collectRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::string_hash, Resource>& resources_map);
 
@@ -509,8 +514,8 @@ namespace fe {
 
         // @brief translate 'fe::RenderGraph::CompiledRenderPass' to 'fe::RenderPass' and setup 'fe::RenderPass::compiled_image_barriers' and 'fe::RenderPass::compiled_buffer_barriers'
         FORR_API void translateRenderPasses(std::vector<CompiledRenderPass>&               render_passes,
-                                   std::unordered_map<fe::string_hash, Resource>& resources_map_dst,
-                                   fe::typed_pointer_storage<RenderPass>&         used_render_passes_dst);
+                                            std::unordered_map<fe::string_hash, Resource>& resources_map_dst,
+                                            fe::typed_pointer_storage<RenderPass>&         used_render_passes_dst);
 
         // @brief setup resource lifetimes
         FORR_API void calculateResourceLifetimes(std::unordered_map<fe::string_hash, ResourceLifetime>& resource_lifetimes);
@@ -562,19 +567,12 @@ namespace fe {
         fe::Arena                             m_RenderPassesData{ 16 * 1024 };
     };
 
-    FORR_CREATE_DLL_PROXY_CLASS_START(RenderGraph, RenderGraph)
-    template <RenderPassConcept RenderPassT>
-    FORR_NODISCARD RenderPassHandle<RenderPassT> AddPass(fe::fixed_string_view<32> name) {
-        auto& render_graph = raw();
-        auto  handle       = render_graph.AddPass<RenderPassT>(name);
-
-        register_cleanup([handle, &render_graph]() {
-            render_graph.RemovePass(handle);
-        });
-
-        return handle;
+    template <typename T>
+    void RenderPassDestroy<T>::operator()(RenderGraph* render_graph, RenderPassHandle<T> render_pass_handle) {
+        if (render_graph) {
+            render_graph->RemovePass(render_pass_handle);
+        }
     }
-    FORR_CREATE_DLL_PROXY_CLASS_END
 
 } // namespace fe
 

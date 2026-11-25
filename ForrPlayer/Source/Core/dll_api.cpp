@@ -89,13 +89,3 @@ bool fe::dll_api::free_library_raw(fe::dll_api::library_handle_raw loaded_librar
     return dlclose(loaded_library_handle) == 0;
 #endif
 }
-
-thread_local fe::dll_api::module_context* G_CURRENT_MODULE_CONTEXT = nullptr;
-
-void fe::dll_api::set_current_module_context(module_context* current_module_context) noexcept {
-    G_CURRENT_MODULE_CONTEXT = current_module_context;
-}
-
-fe::dll_api::module_context* fe::dll_api::get_current_module_context() noexcept {
-    return G_CURRENT_MODULE_CONTEXT;
-}

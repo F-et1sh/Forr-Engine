@@ -134,9 +134,7 @@ int main(int argc, char* argv[]) {
 
     fe::logging::info("Successfully loaded %s", application_desc->name);
 
-    engine_context.emplace(loaded_library, fe::make_hash("main"));
-
-    application_desc->on_initialize(engine_context);
+    application_desc->on_initialize(engine_context, loaded_library);
 
     // main loop
 
@@ -149,11 +147,10 @@ int main(int argc, char* argv[]) {
         collector{ *registry };
 
     while (window_result->IsOpen()) {
-        fe::dll_api::module_guard guard{ loaded_library };
-        application_desc->on_update(engine_context);
+        application_desc->on_update(engine_context, loaded_library);
     }
 
-    application_desc->on_release(engine_context);
+    application_desc->on_release(engine_context, loaded_library);
 
     return 0;
 }

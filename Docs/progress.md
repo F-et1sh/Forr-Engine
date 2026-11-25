@@ -8,6 +8,7 @@
 
 ### Done
     a horrible bug in 'fe::typed_pointer_storage::clear()' fixed
+    'fe::unique_handle' added. dll-exe memory management problem seems like solved
 
 ### Problem
     -

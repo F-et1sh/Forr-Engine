@@ -16,6 +16,7 @@
 
 #include <span>
 
+#include "Forr/Core/unique_handle.hpp"
 #include "Forr/Core/logging.hpp"
 #include "Forr/Core/attributes.hpp"
 
@@ -24,264 +25,180 @@
 #include "vk_mem_alloc.h"
 
 namespace fe::vk {
-    template <typename DestroyFn, typename... Handles>
-    class VulkanHandle {
-    public:
-        static constexpr std::size_t HandlesCount = sizeof...(Handles);
-
-    public:
-        VulkanHandle() = default;
-        explicit VulkanHandle(Handles... handles) noexcept
-            : m_Handles(handles...) {}
-
-        ~VulkanHandle() { this->free(); }
-
-        FORR_CLASS_NONCOPYABLE(VulkanHandle)
-
-        VulkanHandle(VulkanHandle&& other) noexcept
-            : m_Handles(std::move(other.m_Handles)) {
-            other.reset_handles();
-        }
-
-        VulkanHandle& operator=(VulkanHandle&& other) noexcept {
-            if (this != &other) {
-                this->free();
-                m_Handles = std::move(other.m_Handles);
-                other.reset_handles(); // NOT other.free()
-            }
-            return *this;
-        }
-
-        void free() noexcept {
-            auto target_handle       = this->get_target_handle();
-            using target_handle_type = decltype(target_handle); // there is no need in 'std::decay_t<>'
-
-            if (target_handle != target_handle_type{}) {
-                std::apply(DestroyFn{}, m_Handles);
-                this->reset_handles();
-            }
-        }
-
-        void attach(Handles... handles) noexcept {
-            std::tuple<Handles...> new_handles{ handles... };
-
-            if (m_Handles != new_handles) {
-                this->free();
-                m_Handles = std::move(new_handles);
-            }
-        }
-
-        auto get() const noexcept { return get_target_handle(); }
-
-        operator auto() const noexcept { return get_target_handle(); }
-
-        template <typename T>
-        auto get() const noexcept { return std::get<T>(m_Handles); }
-
-    private:
-        void reset_handles() noexcept {
-            m_Handles = std::tuple<Handles...>{ Handles{}... };
-        }
-
-        auto get_target_handle() const noexcept {
-            return std::get<HandlesCount - 1>(m_Handles);
-        }
-
-    private:
-        std::tuple<Handles...> m_Handles{ Handles{}... };
-    };
-
-    ///
-
     struct DeviceDestroy {
-        void operator()(VkDevice device) const noexcept {
+        static void operator()(VkDevice device) noexcept {
             vkDestroyDevice(device, nullptr);
         }
     };
 
     struct InstanceDestroy {
-        void operator()(VkInstance instance) const noexcept {
+        static void operator()(VkInstance instance) noexcept {
             vkDestroyInstance(instance, nullptr);
         }
     };
 
     struct AllocatorDestroy {
-        void operator()(VmaAllocator allocator) const noexcept {
+        static void operator()(VmaAllocator allocator) noexcept {
             vmaDestroyAllocator(allocator);
         }
     };
 
     struct SurfaceDestroy {
-        void operator()(VkInstance instance, VkSurfaceKHR handle) const noexcept {
+        static void operator()(VkInstance instance, VkSurfaceKHR handle) noexcept {
             vkDestroySurfaceKHR(instance, handle, nullptr);
         }
     };
 
     struct SwapchainDestroy {
-        void operator()(VkDevice device, VkSwapchainKHR handle) const noexcept {
+        static void operator()(VkDevice device, VkSwapchainKHR handle) noexcept {
             vkDestroySwapchainKHR(device, handle, nullptr);
         }
     };
 
     struct BufferDestroy {
-        void operator()(VkDevice device, VkBuffer handle) const noexcept {
+        static void operator()(VkDevice device, VkBuffer handle) noexcept {
             vkDestroyBuffer(device, handle, nullptr);
         }
     };
 
     struct ImageDestroy {
-        void operator()(VkDevice device, VkImage handle) const noexcept {
+        static void operator()(VkDevice device, VkImage handle) noexcept {
             vkDestroyImage(device, handle, nullptr);
         }
     };
 
     struct ImageViewDestroy {
-        void operator()(VkDevice device, VkImageView handle) const noexcept {
+        static void operator()(VkDevice device, VkImageView handle) noexcept {
             vkDestroyImageView(device, handle, nullptr);
         }
     };
 
     struct SamplerDestroy {
-        void operator()(VkDevice device, VkSampler handle) const noexcept {
+        static void operator()(VkDevice device, VkSampler handle) noexcept {
             vkDestroySampler(device, handle, nullptr);
         }
     };
 
     struct ShaderModuleDestroy {
-        void operator()(VkDevice device, VkShaderModule handle) const noexcept {
+        static void operator()(VkDevice device, VkShaderModule handle) noexcept {
             vkDestroyShaderModule(device, handle, nullptr);
         }
     };
 
     struct RenderPassDestroy {
-        void operator()(VkDevice device, VkRenderPass handle) const noexcept {
+        static void operator()(VkDevice device, VkRenderPass handle) noexcept {
             vkDestroyRenderPass(device, handle, nullptr);
         }
     };
 
     struct FramebufferDestroy {
-        void operator()(VkDevice device, VkFramebuffer handle) const noexcept {
+        static void operator()(VkDevice device, VkFramebuffer handle) noexcept {
             vkDestroyFramebuffer(device, handle, nullptr);
         }
     };
 
     struct PipelineDestroy {
-        void operator()(VkDevice device, VkPipeline handle) const noexcept {
+        static void operator()(VkDevice device, VkPipeline handle) noexcept {
             vkDestroyPipeline(device, handle, nullptr);
         }
     };
 
     struct PipelineCacheDestroy {
-        void operator()(VkDevice device, VkPipelineCache handle) const noexcept {
+        static void operator()(VkDevice device, VkPipelineCache handle) noexcept {
             vkDestroyPipelineCache(device, handle, nullptr);
         }
     };
 
     struct PipelineLayoutDestroy {
-        void operator()(VkDevice device, VkPipelineLayout handle) const noexcept {
+        static void operator()(VkDevice device, VkPipelineLayout handle) noexcept {
             vkDestroyPipelineLayout(device, handle, nullptr);
         }
     };
 
     struct DescriptorSetLayoutDestroy {
-        void operator()(VkDevice device, VkDescriptorSetLayout handle) const noexcept {
+        static void operator()(VkDevice device, VkDescriptorSetLayout handle) noexcept {
             vkDestroyDescriptorSetLayout(device, handle, nullptr);
         }
     };
 
     struct DescriptorPoolDestroy {
-        void operator()(VkDevice device, VkDescriptorPool handle) const noexcept {
+        static void operator()(VkDevice device, VkDescriptorPool handle) noexcept {
             vkDestroyDescriptorPool(device, handle, nullptr);
         }
     };
 
     struct CommandPoolDestroy {
-        void operator()(VkDevice device, VkCommandPool handle) const noexcept {
+        static void operator()(VkDevice device, VkCommandPool handle) noexcept {
             vkDestroyCommandPool(device, handle, nullptr);
         }
     };
 
     struct FenceDestroy {
-        void operator()(VkDevice device, VkFence handle) const noexcept {
+        static void operator()(VkDevice device, VkFence handle) noexcept {
             vkDestroyFence(device, handle, nullptr);
         }
     };
 
     struct SemaphoreDestroy {
-        void operator()(VkDevice device, VkSemaphore handle) const noexcept {
+        static void operator()(VkDevice device, VkSemaphore handle) noexcept {
             vkDestroySemaphore(device, handle, nullptr);
         }
     };
 
     struct EventDestroy {
-        void operator()(VkDevice device, VkEvent handle) const noexcept {
+        static void operator()(VkDevice device, VkEvent handle) noexcept {
             vkDestroyEvent(device, handle, nullptr);
         }
     };
 
     struct DeviceMemoryDestroy {
-        void operator()(VkDevice device, VkDeviceMemory handle) const noexcept {
+        static void operator()(VkDevice device, VkDeviceMemory handle) noexcept {
             vkFreeMemory(device, handle, nullptr);
         }
     };
 
     struct VmaBufferDestroy {
-        void operator()(VmaAllocator allocator, VkBuffer buffer, VmaAllocation allocation) const noexcept {
+        static void operator()(VmaAllocator allocator, VkBuffer buffer, VmaAllocation allocation) noexcept {
             vmaDestroyBuffer(allocator, buffer, allocation);
         }
     };
 
     struct VmaImageDestroy {
-        void operator()(VmaAllocator allocator, VkImage image, VmaAllocation allocation) const noexcept {
+        static void operator()(VmaAllocator allocator, VkImage image, VmaAllocation allocation) noexcept {
             vmaDestroyImage(allocator, image, allocation);
         }
     };
 
     struct CommandBufferDestroy {
-        void operator()(VkDevice device, VkCommandPool command_pool, VkCommandBuffer handle) const noexcept {
+        static void operator()(VkDevice device, VkCommandPool command_pool, VkCommandBuffer handle) noexcept {
             vkFreeCommandBuffers(device, command_pool, 1, &handle);
         }
     };
 
-    template <typename T>
-    struct TraitsFromDestroyFn;
-
-    template <typename ClassType, typename ReturnType, typename... Args>
-    struct TraitsFromDestroyFn<ReturnType (ClassType::*)(Args...) const noexcept> {
-        template <typename DestroyFn>
-        using HandleType = VulkanHandle<DestroyFn, Args...>;
-    };
-
-    // If you get error C2938 - 'fe::vk::MakeVulkanHandle' : Failed to specialize alias template :
-    // destroy structure's operator() must have the same signature as in 'TraitsFromDestroyFn<ReturnType (ClassType::*)(Args...) const noexcept'
-    // don't forget 'const noexcept'
-    template <typename DestroyFn>
-    using MakeVulkanHandle = TraitsFromDestroyFn<decltype(&DestroyFn::operator())>::template HandleType<DestroyFn>;
-
-    using Device              = MakeVulkanHandle<DeviceDestroy>;
-    using Instance            = MakeVulkanHandle<InstanceDestroy>;
-    using Allocator           = MakeVulkanHandle<AllocatorDestroy>;
-    using Surface             = MakeVulkanHandle<SurfaceDestroy>;
-    using Swapchain           = MakeVulkanHandle<SwapchainDestroy>;
-    using Buffer              = MakeVulkanHandle<BufferDestroy>;
-    using Image               = MakeVulkanHandle<ImageDestroy>;
-    using ImageView           = MakeVulkanHandle<ImageViewDestroy>;
-    using Sampler             = MakeVulkanHandle<SamplerDestroy>;
-    using ShaderModule        = MakeVulkanHandle<ShaderModuleDestroy>;
-    using RenderPass          = MakeVulkanHandle<RenderPassDestroy>;
-    using Framebuffer         = MakeVulkanHandle<FramebufferDestroy>;
-    using Pipeline            = MakeVulkanHandle<PipelineDestroy>;
-    using PipelineCache       = MakeVulkanHandle<PipelineCacheDestroy>;
-    using PipelineLayout      = MakeVulkanHandle<PipelineLayoutDestroy>;
-    using DescriptorSetLayout = MakeVulkanHandle<DescriptorSetLayoutDestroy>;
-    using DescriptorPool      = MakeVulkanHandle<DescriptorPoolDestroy>;
-    using CommandPool         = MakeVulkanHandle<CommandPoolDestroy>;
-    using Fence               = MakeVulkanHandle<FenceDestroy>;
-    using Semaphore           = MakeVulkanHandle<SemaphoreDestroy>;
-    using Event               = MakeVulkanHandle<EventDestroy>;
-    using DeviceMemory        = MakeVulkanHandle<DeviceMemoryDestroy>;
-    using VmaBuffer           = MakeVulkanHandle<VmaBufferDestroy>;
-    using VmaImage            = MakeVulkanHandle<VmaImageDestroy>;
-    using CommandBuffer       = MakeVulkanHandle<CommandBufferDestroy>;
+    using Device              = fe::create_unique_handle<DeviceDestroy>;
+    using Instance            = fe::create_unique_handle<InstanceDestroy>;
+    using Allocator           = fe::create_unique_handle<AllocatorDestroy>;
+    using Surface             = fe::create_unique_handle<SurfaceDestroy>;
+    using Swapchain           = fe::create_unique_handle<SwapchainDestroy>;
+    using Buffer              = fe::create_unique_handle<BufferDestroy>;
+    using Image               = fe::create_unique_handle<ImageDestroy>;
+    using ImageView           = fe::create_unique_handle<ImageViewDestroy>;
+    using Sampler             = fe::create_unique_handle<SamplerDestroy>;
+    using ShaderModule        = fe::create_unique_handle<ShaderModuleDestroy>;
+    using RenderPass          = fe::create_unique_handle<RenderPassDestroy>;
+    using Framebuffer         = fe::create_unique_handle<FramebufferDestroy>;
+    using Pipeline            = fe::create_unique_handle<PipelineDestroy>;
+    using PipelineCache       = fe::create_unique_handle<PipelineCacheDestroy>;
+    using PipelineLayout      = fe::create_unique_handle<PipelineLayoutDestroy>;
+    using DescriptorSetLayout = fe::create_unique_handle<DescriptorSetLayoutDestroy>;
+    using DescriptorPool      = fe::create_unique_handle<DescriptorPoolDestroy>;
+    using CommandPool         = fe::create_unique_handle<CommandPoolDestroy>;
+    using Fence               = fe::create_unique_handle<FenceDestroy>;
+    using Semaphore           = fe::create_unique_handle<SemaphoreDestroy>;
+    using Event               = fe::create_unique_handle<EventDestroy>;
+    using DeviceMemory        = fe::create_unique_handle<DeviceMemoryDestroy>;
+    using VmaBuffer           = fe::create_unique_handle<VmaBufferDestroy>;
+    using VmaImage            = fe::create_unique_handle<VmaImageDestroy>;
+    using CommandBuffer       = fe::create_unique_handle<CommandBufferDestroy>;
 
 } // namespace fe::vk

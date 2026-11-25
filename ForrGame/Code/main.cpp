@@ -309,15 +309,16 @@ struct ForwardPass {
     ~ForwardPass() = default;
 };
 
-void on_initialize(fe::context& context) {
+void on_initialize(fe::context& context, fe::dll_api::module_context& self) {
     auto& renderer     = context.get<fe::IRenderer>(fe::make_hash("main"));
-    auto& render_graph = context.get<fe::dll_proxy::RenderGraph>(fe::make_hash("main"));
+    auto& render_graph = context.get<fe::RenderGraph>(fe::make_hash("main"));
 
     auto forward_pass_handle = render_graph.AddPass<ForwardPass>(fe::fixed_string_view<32>{ "ForwardPass" });
+    self.own_scoped(fe::ScopedRenderPassHandle<ForwardPass>{ &render_graph, forward_pass_handle });
 
     auto create_command_list = render_graph.Compile();
     auto mapping_result      = renderer.CreateRenderGraphResources(create_command_list);
-    render_graph->SetupResourceBindings(mapping_result);
+    render_graph.SetupResourceBindings(mapping_result);
 
     //auto& resource_manager = context.get<fe::ResourceManager>(fe::make_hash("main"));
 
@@ -329,7 +330,7 @@ void on_initialize(fe::context& context) {
 
 static size_t working_time{};
 
-void on_update(fe::context& context) {
+void on_update(fe::context& context, fe::dll_api::module_context& self) {
     auto& platform_system       = context.get<fe::IPlatformSystem>(fe::make_hash("main"));
     auto& primary_window_handle = context.get<fe::WindowHandle>(fe::make_hash("main"));
     auto& main_event_bus        = context.get<fe::EventBus>(fe::make_hash("main"));
@@ -361,7 +362,7 @@ void on_update(fe::context& context) {
     working_time++;
 }
 
-void on_release(fe::context& context) {
+void on_release(fe::context& context, fe::dll_api::module_context& self) {
     //auto& render_graph = context.get<fe::RenderGraph>(fe::make_hash("main"));
     //render_graph.Clear();
 
