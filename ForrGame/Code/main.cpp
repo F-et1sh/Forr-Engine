@@ -363,9 +363,6 @@ void on_update(fe::context& context, fe::dll_api::module_context& self) {
 }
 
 void on_release(fe::context& context, fe::dll_api::module_context& self) {
-    //auto& render_graph = context.get<fe::RenderGraph>(fe::make_hash("main"));
-    //render_graph.Clear();
-
     fe::logging::info("dll unloaded\nit worked for %llu frames", working_time);
 }
 

@@ -1,5 +1,19 @@
 ﻿# Forr-Engine Devlog
 
+## 26.11.2026
+### Goal
+    solve the 'entt::registry' problem : try adding a custom component in dll
+    create an extension for the 'Forr-Editor'
+    provide 'set_system_enabled' and 'override_system' for the dll API
+    create 'in-game' events
+    write comments
+
+### Done
+    -
+
+### Problem
+    -
+
 ## 25.11.2026
 ### Goal
     create an extension for the 'Forr-Editor'
