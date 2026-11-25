@@ -1,5 +1,17 @@
 ﻿# Forr-Engine Devlog
 
+## 25.11.2026
+### Goal
+    create an extension for the 'Forr-Editor'
+    provide 'set_system_enabled' and 'override_system' for the dll API
+    create 'in-game' events
+
+### Done
+    a horrible bug in 'fe::typed_pointer_storage::clear()' fixed
+
+### Problem
+    -
+
 ## 24.11.2026
 ### Goal
     create unified context that can contain any type of systems

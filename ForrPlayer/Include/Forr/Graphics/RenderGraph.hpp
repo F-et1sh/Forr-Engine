@@ -17,6 +17,8 @@
 #include "Forr/ResourceManagement/ResourceManager.hpp"
 #include "RenderGraphTypes.hpp"
 
+#include "Forr/Core/dll_api.hpp"
+
 #include "entt/entt.hpp"
 
 namespace fe {
@@ -347,7 +349,7 @@ namespace fe {
         fe::hashed_string_view  render_pass_name{};
     };
 
-    class FORR_API RenderGraph {
+    class RenderGraph {
     public:
         // this structure is used to access resources in a map
         // different versions of the same resource cannot be accessed
@@ -464,7 +466,7 @@ namespace fe {
                 render_pass.destroy_function = [](void* render_pass_data) {};
             }
 
-            render_pass_handle.render_pass_ptr = m_RenderPasses.create(std::move(render_pass));
+            render_pass_handle.render_pass_ptr = this->createRenderPass(std::move(render_pass));
 
             return render_pass_handle;
         }
@@ -478,36 +480,39 @@ namespace fe {
             m_RenderPasses.destroy(render_pass_ptr);
         }
 
-        RenderGraphCompileResult Compile();
-        // after 'fe::RenderGraph::Compile()' you get 'fe::RenderGraphCompileResult' - you have to pass it into the renderer
-        //  renderer should get you 'fe::RenderGraphBindings' to use it here
+        FORR_API RenderGraphCompileResult Compile();
+        // @brief after 'fe::RenderGraph::Compile()' you get 'fe::RenderGraphCompileResult' - you have to pass it into the renderer
+        //  renderer should get you 'fe::RenderGraphBindings' to use it here;
         // basically, this function changes 'fe::RenderPass::compiled_image_barriers->hashed_name' to 'fe::RenderPass::compiled_image_barriers->texture_index'
         //  and the same for 'fe::RenderPass::compiled_buffer_barriers'
-        void SetupResourceBindings(const RenderGraphBindings& bindings);
+        FORR_API void SetupResourceBindings(const RenderGraphBindings& bindings);
 
-        render_graph::CommandList Execute(const entt::registry& render_data);
+        FORR_API render_graph::CommandList Execute(const entt::registry& render_data);
 
-        void Clear();
+        FORR_API void Clear();
 
     private:
-        // run Setup() for every added render pass and collect its required resources via fe::RenderGraphBuilder
-        void collectRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::string_hash, Resource>& resources_map);
+        // @brief a proxy function to move render pass creation into cpp file
+        FORR_NODISCARD FORR_API fe::pointer<RenderPass> createRenderPass(RenderPass&& render_pass);
 
-        // run Kahn's algorithm
-        void sortRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst);
+        // @brief run Setup() for every added render pass and collect its required resources via fe::RenderGraphBuilder
+        FORR_API void collectRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::string_hash, Resource>& resources_map);
 
-        // run culling : remove unused render passes
-        void removeUnusedRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::string_hash, Resource>& resources_map);
+        // @brief run Kahn's algorithm
+        FORR_API void sortRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst);
 
-        // translate 'fe::RenderGraph::CompiledRenderPass' to 'fe::RenderPass' and setup 'fe::RenderPass::compiled_image_barriers' and 'fe::RenderPass::compiled_buffer_barriers'
-        void translateRenderPasses(std::vector<CompiledRenderPass>&               render_passes,
+        // @brief run culling : remove unused render passes
+        FORR_API void removeUnusedRenderPasses(std::vector<CompiledRenderPass>& render_passes_dst, std::unordered_map<fe::string_hash, Resource>& resources_map);
+
+        // @brief translate 'fe::RenderGraph::CompiledRenderPass' to 'fe::RenderPass' and setup 'fe::RenderPass::compiled_image_barriers' and 'fe::RenderPass::compiled_buffer_barriers'
+        FORR_API void translateRenderPasses(std::vector<CompiledRenderPass>&               render_passes,
                                    std::unordered_map<fe::string_hash, Resource>& resources_map_dst,
                                    fe::typed_pointer_storage<RenderPass>&         used_render_passes_dst);
 
-        // setup resource lifetimes
-        void calculateResourceLifetimes(std::unordered_map<fe::string_hash, ResourceLifetime>& resource_lifetimes);
+        // @brief setup resource lifetimes
+        FORR_API void calculateResourceLifetimes(std::unordered_map<fe::string_hash, ResourceLifetime>& resource_lifetimes);
 
-        // set virutal indices in barriers
+        // @brief set virutal indices in barriers
         // and prepare virtual indices for craetion commands to translate them into real indices later
         template <typename AcquireFn, typename ReleaseFn>
         void setupVirtualIndices(AcquireFn&&                                                         acquire_func,

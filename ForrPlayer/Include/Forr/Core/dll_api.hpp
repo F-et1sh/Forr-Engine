@@ -124,6 +124,45 @@ namespace fe::dll_api {
         }
     };
 
+    // @brief a class for convenient creation of proxy systems for 'fe::dll_proxy::*'
+    //
+    // @tparam SystemT the original system ( 'fe::RenderGraph' for example )
+    template <typename SystemT>
+    class proxy_base {
+    public:
+        proxy_base(SystemT& system, fe::dll_api::module_context& module_context)
+            : m_system(system), m_module_context(module_context) {}
+
+        SystemT*       operator->() noexcept { return &m_system.get(); }
+        const SystemT* operator->() const noexcept { return &m_system.get(); }
+
+        operator SystemT&() noexcept { return m_system.get(); }
+        operator const SystemT&() const noexcept { return m_system.get(); }
+
+        SystemT&       get() noexcept { return m_system.get(); }
+        const SystemT& get() const noexcept { return m_system.get(); }
+
+    protected:
+        template <typename FuncT>
+        void register_cleanup(FuncT&& cleanup_fn) {
+            m_module_context.get().on_unload(std::forward<FuncT>(cleanup_fn));
+        }
+
+        SystemT& raw() noexcept { return m_system.get(); }
+
+    private:
+        std::reference_wrapper<SystemT>                     m_system;
+        std::reference_wrapper<fe::dll_api::module_context> m_module_context;
+    };
+
+    template <typename T>
+    struct proxy_for {
+        using type = T;
+    };
+
+    template <typename T>
+    using proxy_for_t = proxy_for<T>::type;
+
     using create_application_desc = application_desc* (*) ();
 
 #ifdef _WIN32

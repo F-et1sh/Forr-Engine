@@ -76,8 +76,8 @@ int main(int argc, char* argv[]) {
     std::unique_ptr<fe::ResourceManager> resource_manager{};
 
     std::vector<std::filesystem::path> paths{}; // temp
-    paths.emplace_back(fe::PATH.getModelsPath() / "TatarSuzanne/TatarSuzanne.gltf");
-    paths.emplace_back(fe::PATH.getModelsPath() / "PirateRoom/PirateRoom.gltf");
+    //paths.emplace_back(fe::PATH.getModelsPath() / "TatarSuzanne/TatarSuzanne.gltf");
+    //paths.emplace_back(fe::PATH.getModelsPath() / "PirateRoom/PirateRoom.gltf");
 
     fe::ResourceManagerDesc resource_manager_desc{};
     resource_manager_desc.graphics_backend = graphics_backend;
@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
     fe::logging::info("Successfully loaded %s", application_desc->name);
 
     engine_context.emplace(loaded_library, fe::make_hash("main"));
-    
+
     application_desc->on_initialize(engine_context);
 
     // main loop

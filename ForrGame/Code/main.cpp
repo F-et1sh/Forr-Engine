@@ -315,11 +315,6 @@ void on_initialize(fe::context& context) {
 
     auto forward_pass_handle = render_graph.AddPass<ForwardPass>(fe::fixed_string_view<32>{ "ForwardPass" });
 
-    auto& this_loaded_library = context.get<fe::dll_api::module_context>(fe::make_hash("main"));
-    this_loaded_library.on_unload([forward_pass_handle, &render_graph]() {
-        render_graph.RemovePass(forward_pass_handle);
-    });
-
     auto create_command_list = render_graph.Compile();
     auto mapping_result      = renderer.CreateRenderGraphResources(create_command_list);
     render_graph.SetupResourceBindings(mapping_result);
@@ -367,6 +362,9 @@ void on_update(fe::context& context) {
 }
 
 void on_release(fe::context& context) {
+    //auto& render_graph = context.get<fe::RenderGraph>(fe::make_hash("main"));
+    //render_graph.Clear();
+
     fe::logging::info("dll unloaded\nit worked for %llu frames", working_time);
 }
 

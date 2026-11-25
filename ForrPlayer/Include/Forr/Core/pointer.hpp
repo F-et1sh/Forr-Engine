@@ -467,9 +467,8 @@ namespace fe {
 
         void clear() noexcept {
             for (size_t i = 0; i < m_slots_object.size(); i++) {
-                if (m_slots_alive[i]) {
-                    std::destroy_at(get_ptr(i));
-                }
+                PointerT ptr(i, m_slots_generation[i]);
+                this->destroy(ptr);
             }
         }
 
