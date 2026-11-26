@@ -24,7 +24,7 @@
 #include <Forr/Core/dll_api.hpp>
 
 namespace game {
-    namespace components {
+    namespace component {
         struct MyComponent {
             int a{};
         };
@@ -39,7 +39,7 @@ namespace game {
 
 #define GAME_GENERATE_COMPONENTS_TUPLE(COMPONENT_NAME) COMPONENT_NAME,
 
-        using AllComponents = fe::component::detail::TupleRemoveLast<GAME_COMPONENTS_LIST(GAME_GENERATE_COMPONENTS_TUPLE) void>;
+        using AllComponents = fe::tuple_remove_last_element_t<GAME_COMPONENTS_LIST(GAME_GENERATE_COMPONENTS_TUPLE) void>;
 
 #undef GAME_GENERATE_COMPONENTS_TUPLE
     } // namespace components
@@ -337,7 +337,7 @@ void on_initialize(fe::context& context, fe::dll_api::module_context& self) {
 
     auto& registry = context.get<entt::registry>();
 
-    registry.emplace<game::components::MyComponent>(registry.create());
+    registry.emplace<game::component::MyComponent>(registry.create());
 
     auto& renderer     = context.get<fe::IRenderer>();
     auto& render_graph = context.get<fe::RenderGraph>();
@@ -397,7 +397,7 @@ void on_release(fe::context& context, fe::dll_api::module_context& self) {
 
     for (auto [id, storage] : registry.storage()) {
 #define GAME_GENERATE_COMPONENTS_TYPE_IDS(COMPONENT_NAME)                 \
-    if (entt::type_id<game::components::COMPONENT_NAME>().hash() == id) { \
+    if (entt::type_id<game::component::COMPONENT_NAME>().hash() == id) { \
         registry.reset(id);                                               \
     }
 

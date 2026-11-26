@@ -17,6 +17,7 @@
 #include <variant>
 
 #include "Forr/Core/pointer.hpp"
+#include "Forr/Core/tuple.hpp"
 #include "Forr/ResourceManagement/Resources.hpp"
 
 #ifdef FORRENGINE_EXPORTS
@@ -85,22 +86,6 @@ namespace fe::component {
         Model() = default;
     };
 
-    namespace detail {
-        template <typename... Ts>
-        struct TupleRemoveLast;
-
-        template <typename T, typename... Ts>
-        struct TupleRemoveLast<T, Ts...> {
-            using type = decltype(std::tuple_cat(std::declval<std::tuple<T>>(),
-                                                 std::declval<typename TupleRemoveLast<Ts...>::type>()));
-        };
-
-        template <typename Last>
-        struct TupleRemoveLast<Last> {
-            using type = std::tuple<>;
-        };
-    } // namespace detail
-
 #define FORR_COMPONENTS_LIST(X) \
     X(Transform)                \
     X(LocalToWorld)             \
@@ -110,7 +95,7 @@ namespace fe::component {
     X(Model)
 
 #define FORR_GENERATE_COMPONENTS_TUPLE(COMPONENT_NAME) COMPONENT_NAME,
-    using AllComponents = detail::TupleRemoveLast<FORR_COMPONENTS_LIST(FORR_GENERATE_COMPONENTS_TUPLE) void>::type;
+    using AllComponents = fe::tuple_remove_last_element_t<FORR_COMPONENTS_LIST(FORR_GENERATE_COMPONENTS_TUPLE) void>;
 #undef FORR_GENERATE_COMPONENTS_TUPLE
 
 } // namespace fe::component

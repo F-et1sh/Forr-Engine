@@ -11,6 +11,7 @@
 ### Done
     Forr/Core/tuple.hpp added; fe::warm_up_registry() added
     'fe::dll_api::module_context::own_scoped()' fixed
+    fe::tuple_remove_last_element added
 
 ### Problem
     -
