@@ -343,7 +343,8 @@ void on_initialize(fe::context& context, fe::dll_api::module_context& self) {
     auto& render_graph = context.get<fe::RenderGraph>();
 
     auto forward_pass_handle = render_graph.AddPass<ForwardPass>(fe::fixed_string_view<32>{ "ForwardPass" });
-    self.own_scoped(fe::ScopedRenderPassHandle<ForwardPass>{ &render_graph, forward_pass_handle });
+    auto scoped_handle       = fe::ScopedRenderPassHandle<ForwardPass>{ &render_graph, forward_pass_handle };
+    self.own_scoped(std::move(scoped_handle));
 
     auto create_command_list = render_graph.Compile();
     auto mapping_result      = renderer.CreateRenderGraphResources(create_command_list);

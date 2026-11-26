@@ -54,7 +54,7 @@ namespace fe::dll_api {
     };
     using library_handle = std::unique_ptr<void, deleter>;
 
-    // TODO : write comments
+    // @brief RAII class to track loaded dll library's interactions with the engine
     class module_context {
     public:
         module_context() = default;
@@ -74,20 +74,32 @@ namespace fe::dll_api {
 
         FORR_CLASS_MOVABLEONLY(module_context)
 
+        // @brief takes ownership of a move-only RAII handle and tracks its lifetime;
+        // this function moves your scoped handle ( created via 'fe::create_unique_handle' ) and tracks its lifetime;
+        // you can use it to not create a field for every scoped handle you have to track
+        //
+        // @tparam ScopedHandleT a move-only handle type, usually created via 'fe::create_unique_handle'
+        //
+        // @param scoped_handle the scoped handle to take ownership of
+        //
+        // @returns lvalue reference of the stored handle
         template <typename ScopedHandleT>
+            requires(!std::is_lvalue_reference_v<ScopedHandleT>)
         ScopedHandleT& own_scoped(ScopedHandleT&& scoped_handle) {
-            using CleanT = std::decay_t<ScopedHandleT>;
-            auto ptr = std::make_unique<CleanT>(std::forward<ScopedHandleT>(scoped_handle));
+            auto           ptr = std::make_unique<ScopedHandleT>(std::forward<ScopedHandleT>(scoped_handle));
             ScopedHandleT& ref = *ptr;
-            m_cleanup.emplace_back([p = std::move(ptr)]() mutable { p.reset(); });
+            m_cleanup.emplace_back([p = std::move(ptr)]() {});
             return ref;
         }
 
+        // @brief add a lambda that will be called in the destructor
         template <typename Fn>
         void on_unload(Fn&& fn) {
             m_cleanup.emplace_back(std::forward<Fn>(fn));
         }
 
+        // @brief call all lambdas added via 'module_context::on_unload()';
+        // this function runs them in reverse order
         void unload() {
             for (auto& fn : std::views::reverse(m_cleanup)) {
                 fn();
@@ -95,6 +107,9 @@ namespace fe::dll_api {
             m_cleanup.clear();
         }
 
+        // @brief get raw loaded dll library's handle
+        //
+        // @returns raw library handle
         library_handle_raw get_library_handle_raw() const noexcept {
             return m_library_handle.get();
         }
