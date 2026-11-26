@@ -339,6 +339,19 @@ namespace fe {
         FORR_CLASS_MOVABLEONLY(RenderPass)
     };
 
+    /* forward declarations */
+    class RenderGraph;
+    template <RenderPassConcept RenderPassT>
+    struct RenderPassHandle;
+
+    template <typename T>
+    struct RenderPassDestroy {
+        void operator()(RenderGraph* render_graph, RenderPassHandle<T> render_pass_handle) const;
+    };
+
+    template <typename T>
+    using ScopedRenderPassHandle = fe::create_unique_handle<RenderPassDestroy<T>>;
+
     // this is the structure you get in 'fe::RenderGraph::AddPass<>' to
     //  access your mapped data and to remove the render pass if needed
     template <RenderPassConcept RenderPassT>
@@ -348,17 +361,12 @@ namespace fe {
         RenderPassDataT*        mapped_data{};
         fe::pointer<RenderPass> render_pass_ptr{};
         fe::hashed_string_view  render_pass_name{};
+        RenderGraph*            render_graph{};
+
+        ScopedRenderPassHandle<RenderPassT> make_scoped() const {
+            return ScopedRenderPassHandle<RenderPassT>{ render_graph, *this };
+        }
     };
-
-    class RenderGraph; // forward declaration
-
-    template <typename T>
-    struct RenderPassDestroy {
-        void operator()(RenderGraph* render_graph, RenderPassHandle<T> render_pass_handle)const;
-    };
-
-    template <typename T>
-    using ScopedRenderPassHandle = fe::create_unique_handle<RenderPassDestroy<T>>;
 
     class RenderGraph {
     public:
@@ -478,6 +486,7 @@ namespace fe {
             }
 
             render_pass_handle.render_pass_ptr = m_RenderPasses.create(std::move(render_pass));
+            render_pass_handle.render_graph    = this;
 
             return render_pass_handle;
         }
@@ -568,7 +577,7 @@ namespace fe {
     };
 
     template <typename T>
-    void RenderPassDestroy<T>::operator()(RenderGraph* render_graph, RenderPassHandle<T> render_pass_handle)const {
+    void RenderPassDestroy<T>::operator()(RenderGraph* render_graph, RenderPassHandle<T> render_pass_handle) const {
         if (render_graph) {
             render_graph->RemovePass(render_pass_handle);
         }
