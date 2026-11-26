@@ -19,16 +19,49 @@
 #include "Forr/Core/string.hpp"
 #include "Forr/Core/pointer.hpp"
 #include "Forr/Core/context.hpp"
+#include "Forr/Core/unique_handle.hpp"
+#include "Forr/Core/tuple.hpp"
 
 #ifdef FORRENGINE_EXPORTS
-    #define ENTT_API_EXPORT
+#define ENTT_API_EXPORT
 #else
-    #define ENTT_API_IMPORT
+#define ENTT_API_IMPORT
 #endif
 
 #include <entt/entt.hpp>
 
 namespace fe {
+    namespace detail {
+        template <typename Tuple>
+        struct RegistryTupleTraits;
+
+        template <typename... Args>
+        struct RegistryTupleTraits<std::tuple<Args...>> {
+            static void warm_up_registry(entt::registry& registry) {
+                (registry.storage<Args>(), ...);
+            }
+        };
+    } // namespace detail
+
+    // @brief calls 'entt::registry::storage<>()' for all passed template arguments to create pools in the registry
+    //
+    // @tparam Args types you want to create pools for
+    //
+    // @param registry the registry where to create the pools
+    template <typename... Args>
+    void warm_up_registry(entt::registry& registry) {
+        if constexpr (sizeof...(Args) == 0) {
+            return;
+        }
+        else if constexpr ((fe::is_tuple<Args>::value && ...)) {
+            using tuple = decltype(std::tuple_cat((std::declval<Args>(), ...)));
+            detail::RegistryTupleTraits<tuple>::warm_up_registry(registry);
+        }
+        else {
+            (registry.storage<Args>(), ...);
+        }
+    }
+
     struct EmptySystemDataT {};
 
     template <typename Context, typename... Args>
@@ -328,12 +361,12 @@ namespace fe {
     //
     // @param dirty_storage the storage you want see the entities' indices
     template <typename... Components>
-    static void bind_to_construct_of(ReactiveDirtyStorage& dirty_storage) noexcept {
+    void bind_to_construct_of(ReactiveDirtyStorage& dirty_storage) noexcept {
         (dirty_storage.on_construct<Components>(), ...);
     }
 
     template <typename... Components>
-    static void unbind_from_construct_of(ReactiveDirtyStorage& storage) noexcept {
+    void unbind_from_construct_of(ReactiveDirtyStorage& storage) noexcept {
         (storage.registry().on_construct<Components>().disconnect(&storage), ...);
     }
 
@@ -345,12 +378,12 @@ namespace fe {
     //
     // @param dirty_storage the storage you want see the entities' indices
     template <typename... Components>
-    static void bind_to_update_of(ReactiveDirtyStorage& dirty_storage) noexcept {
+    void bind_to_update_of(ReactiveDirtyStorage& dirty_storage) noexcept {
         (dirty_storage.on_update<Components>(), ...);
     }
 
     template <typename... Components>
-    static void unbind_from_update_of(ReactiveDirtyStorage& storage) noexcept {
+    void unbind_from_update_of(ReactiveDirtyStorage& storage) noexcept {
         (storage.registry().on_update<Components>().disconnect(&storage), ...);
     }
 
@@ -362,12 +395,12 @@ namespace fe {
     //
     // @param dirty_storage the storage you want see the entities' indices
     template <typename... Components>
-    static void bind_to_destroy_of(ReactiveDirtyStorage& dirty_storage) noexcept {
+    void bind_to_destroy_of(ReactiveDirtyStorage& dirty_storage) noexcept {
         (dirty_storage.on_destroy<Components>(), ...);
     }
 
     template <typename... Components>
-    static void unbind_from_destroy_of(ReactiveDirtyStorage& storage) noexcept {
+    void unbind_from_destroy_of(ReactiveDirtyStorage& storage) noexcept {
         (storage.registry().on_destroy<Components>().disconnect(&storage), ...);
     }
 
@@ -380,7 +413,7 @@ namespace fe {
     // @param enable if 'true', then the rule will work; if 'false', then it will be disabled; 'true' by default
     //               if you want to disable this, then call this function and put 'false' here
     template <typename RelatedComponent, typename MainComponent>
-    static void emplace_on_construct_of(entt::registry& registry, bool enable = true) noexcept {
+    void emplace_on_construct_of(entt::registry& registry, bool enable = true) noexcept {
         if (enable) {
             registry.on_construct<MainComponent>().template connect<&entt::registry::emplace_or_replace<RelatedComponent>>();
         }
@@ -398,7 +431,7 @@ namespace fe {
     // @param enable if 'true', then the rule will work; if 'false', then it will be disabled; 'true' by default
     //               if you want to disable this, then call this function and put 'false' here
     template <typename RelatedComponent, typename MainComponent>
-    static void remove_on_destroy_of(entt::registry& registry, bool enable = true) noexcept {
+    void remove_on_destroy_of(entt::registry& registry, bool enable = true) noexcept {
         if (enable) {
             registry.on_destroy<MainComponent>().template connect<&entt::registry::remove<RelatedComponent>>();
         }
@@ -421,7 +454,7 @@ namespace fe {
     // @param registry the registry there is rule is going to work
     // @param dirty_storage the reactive storage to put the entities, which's components has constructed or updated
     template <typename RelatedComponent, typename MainComponent, typename... Other>
-    static void bind_related_component(ReactiveDirtyStorage& dirty_storage) noexcept {
+    void bind_related_component(ReactiveDirtyStorage& dirty_storage) noexcept {
         fe::emplace_on_construct_of<RelatedComponent, MainComponent>(dirty_storage.registry(), true);
         fe::remove_on_destroy_of<RelatedComponent, MainComponent>(dirty_storage.registry(), true);
 
@@ -433,7 +466,7 @@ namespace fe {
     }
 
     template <typename RelatedComponent, typename MainComponent, typename... Other>
-    static void unbind_related_component(ReactiveDirtyStorage& dirty_storage) noexcept {
+    void unbind_related_component(ReactiveDirtyStorage& dirty_storage) noexcept {
         fe::emplace_on_construct_of<RelatedComponent, MainComponent>(dirty_storage.registry(), false);
         fe::remove_on_destroy_of<RelatedComponent, MainComponent>(dirty_storage.registry(), false);
 

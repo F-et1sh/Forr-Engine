@@ -19,6 +19,14 @@
 #include "Forr/Core/pointer.hpp"
 #include "Forr/ResourceManagement/Resources.hpp"
 
+#ifdef FORRENGINE_EXPORTS
+#define ENTT_API_EXPORT
+#else
+#define ENTT_API_IMPORT
+#endif
+
+#include <entt/entt.hpp>
+
 namespace fe::component {
     struct Transform {
         glm::vec3 position{};
@@ -76,4 +84,33 @@ namespace fe::component {
         Model(fe::pointer<resource::Model> model_ptr) : model_ptr(model_ptr) {}
         Model() = default;
     };
+
+    namespace detail {
+        template <typename... Ts>
+        struct TupleRemoveLast;
+
+        template <typename T, typename... Ts>
+        struct TupleRemoveLast<T, Ts...> {
+            using type = decltype(std::tuple_cat(std::declval<std::tuple<T>>(),
+                                                 std::declval<typename TupleRemoveLast<Ts...>::type>()));
+        };
+
+        template <typename Last>
+        struct TupleRemoveLast<Last> {
+            using type = std::tuple<>;
+        };
+    } // namespace detail
+
+#define FORR_COMPONENTS_LIST(X) \
+    X(Transform)                \
+    X(LocalToWorld)             \
+    X(Camera)                   \
+    X(ViewProjection)           \
+    X(Light)                    \
+    X(Model)
+
+#define FORR_GENERATE_COMPONENTS_TUPLE(COMPONENT_NAME) COMPONENT_NAME,
+    using AllComponents = detail::TupleRemoveLast<FORR_COMPONENTS_LIST(FORR_GENERATE_COMPONENTS_TUPLE) void>::type;
+#undef FORR_GENERATE_COMPONENTS_TUPLE
+
 } // namespace fe::component

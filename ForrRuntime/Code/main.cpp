@@ -110,13 +110,13 @@ int main(int argc, char* argv[]) {
     std::unique_ptr<entt::registry> registry = std::make_unique<entt::registry>();
 
     fe::context engine_context{};
-    engine_context.emplace(*main_event_bus, fe::make_hash("main"));
-    engine_context.emplace(*platform_system, fe::make_hash("main"));
-    engine_context.emplace(primary_window_handle, fe::make_hash("main"));
-    engine_context.emplace(*resource_manager, fe::make_hash("main"));
-    engine_context.emplace(*renderer, fe::make_hash("main"));
-    engine_context.emplace(*render_graph, fe::make_hash("main"));
-    engine_context.emplace(*registry, fe::make_hash("main"));
+    engine_context.emplace(*main_event_bus);
+    engine_context.emplace(*platform_system);
+    engine_context.emplace(primary_window_handle);
+    engine_context.emplace(*resource_manager);
+    engine_context.emplace(*renderer);
+    engine_context.emplace(*render_graph);
+    engine_context.emplace(*registry);
 
     fe::dll_api::module_context loaded_library{ std::filesystem::path(argv[1]) };
     if (!loaded_library.get_library_handle_raw()) {
@@ -138,13 +138,7 @@ int main(int argc, char* argv[]) {
 
     // main loop
 
-    fe::RenderGraphCollector<fe::component::Transform,
-                             fe::component::Camera,
-                             fe::component::ViewProjection,
-                             fe::component::LocalToWorld,
-                             fe::component::Model,
-                             fe::component::Light>
-        collector{ *registry };
+    fe::warm_up_registry<fe::component::AllComponents>(*registry);
 
     while (window_result->IsOpen()) {
         application_desc->on_update(engine_context, loaded_library);

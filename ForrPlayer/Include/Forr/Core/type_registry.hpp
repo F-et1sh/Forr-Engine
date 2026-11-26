@@ -17,7 +17,7 @@
 namespace fe {
     using registered_type_id = size_t;
 
-    namespace details {
+    namespace detail {
         // the index must be in cpp file
         FORR_API registered_type_id resolve_type_id(fe::string_hash domain_hashed_name, fe::string_hash type_hashed_name);
 
@@ -29,7 +29,7 @@ namespace fe {
             return fe::make_hash(__PRETTY_FUNCTION__);
 #endif
         }
-    } // namespace details
+    } // namespace detail
 
     // @tparam Domain - this is like 'namespaces' to separate type indices in different systems.
     //                      the kind of the typename you put there doesn't affect anything,
@@ -43,8 +43,8 @@ namespace fe {
         // @tparam T - type, which's index you want to get in this Domain's scope
         template <typename T>
         FORR_NODISCARD static type_id get_id() {
-            static const type_id id = static_cast<type_id>(details::resolve_type_id(details::get_hashed_name<Domain>(),
-                                                                                    details::get_hashed_name<T>()));
+            static const type_id id = static_cast<type_id>(detail::resolve_type_id(detail::get_hashed_name<Domain>(),
+                                                                                   detail::get_hashed_name<T>()));
             return id;
         }
     };

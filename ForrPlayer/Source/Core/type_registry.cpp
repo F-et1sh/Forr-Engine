@@ -16,7 +16,7 @@
 #include <unordered_map>
 #include <mutex>
 
-fe::registered_type_id fe::details::resolve_type_id(fe::string_hash domain_hashed_name, fe::string_hash type_hashed_name) {
+fe::registered_type_id fe::detail::resolve_type_id(fe::string_hash domain_hashed_name, fe::string_hash type_hashed_name) {
     static std::mutex mutex{};
     // domain hashed name --> { type hashed name --> type id }
     static std::unordered_map<fe::string_hash, std::unordered_map<fe::string_hash, fe::registered_type_id>> registry{};

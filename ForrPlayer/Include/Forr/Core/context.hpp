@@ -32,7 +32,7 @@ namespace fe {
         // @param object lvalue of your object
         // @param tag optional tag to distinguish multiple objects of the same type ( 0 by default )
         //
-        // @returns 'true' if everything is alright, 'false' if emplacement is failed
+        // @returns 'true' if everything is alright, 'false' otherwise
         template <typename T>
         bool emplace(T& object, fe::string_hash tag = {}) {
             const auto type_id = type_registry<context>::get_id<T>();
@@ -57,7 +57,7 @@ namespace fe {
         // @param object lvalue of your new object
         // @param tag optional tag to distinguish multiple objects of the same type ( 0 by default )
         //
-        // @returns 'true' if everything is alright, 'false' if replacement is failed
+        // @returns 'true' if everything is alright, 'false' otherwise
         template <typename T>
         bool replace(T& object, fe::string_hash tag = {}) {
             const type_registry<context>::type_id type_id = type_registry<context>::get_id<T>();
@@ -132,7 +132,7 @@ namespace fe {
         //
         // @param tag optional tag to distinguish multiple objects of the same type ( 0 by default )
         //
-        // @returns 'true' if everything is alright, 'false' if removement is failed
+        // @returns 'true' if everything is alright, 'false' otherwise
         template <typename T>
         bool remove(fe::string_hash tag = {}) {
             const type_registry<context>::type_id type_id = type_registry<context>::get_id<T>();

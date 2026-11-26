@@ -23,6 +23,28 @@
 #include <Forr/Core/context.hpp>
 #include <Forr/Core/dll_api.hpp>
 
+namespace game {
+    namespace components {
+        struct MyComponent {
+            int a{};
+        };
+
+        struct MyComponent2 {
+            int a{};
+        };
+
+#define GAME_COMPONENTS_LIST(X) \
+    X(MyComponent)              \
+    X(MyComponent2)
+
+#define GAME_GENERATE_COMPONENTS_TUPLE(COMPONENT_NAME) COMPONENT_NAME,
+
+        using AllComponents = fe::component::detail::TupleRemoveLast<GAME_COMPONENTS_LIST(GAME_GENERATE_COMPONENTS_TUPLE) void>;
+
+#undef GAME_GENERATE_COMPONENTS_TUPLE
+    } // namespace components
+} // namespace game
+
 struct ForwardPassData { // everything is temp
     fe::graphics::PipelineHandle pipeline_id{};
 
@@ -310,8 +332,15 @@ struct ForwardPass {
 };
 
 void on_initialize(fe::context& context, fe::dll_api::module_context& self) {
-    auto& renderer     = context.get<fe::IRenderer>(fe::make_hash("main"));
-    auto& render_graph = context.get<fe::RenderGraph>(fe::make_hash("main"));
+    //static std::unique_ptr<entt::registry> local_registry = std::make_unique<entt::registry>();
+    //context.emplace(local_registry, fe::make_hash("game"));
+
+    auto& registry = context.get<entt::registry>();
+
+    registry.emplace<game::components::MyComponent>(registry.create());
+
+    auto& renderer     = context.get<fe::IRenderer>();
+    auto& render_graph = context.get<fe::RenderGraph>();
 
     auto forward_pass_handle = render_graph.AddPass<ForwardPass>(fe::fixed_string_view<32>{ "ForwardPass" });
     self.own_scoped(fe::ScopedRenderPassHandle<ForwardPass>{ &render_graph, forward_pass_handle });
@@ -320,7 +349,7 @@ void on_initialize(fe::context& context, fe::dll_api::module_context& self) {
     auto mapping_result      = renderer.CreateRenderGraphResources(create_command_list);
     render_graph.SetupResourceBindings(mapping_result);
 
-    //auto& resource_manager = context.get<fe::ResourceManager>(fe::make_hash("main"));
+    //auto& resource_manager = context.get<fe::ResourceManager>();
 
     //Data data{};
     //data.model_handle = resource_manager.ImportResource<fe::resource::Model>(fe::PATH.getModelsPath() / u8"FlightHelmet" / u8"FlightHelmet.gltf");
@@ -331,12 +360,12 @@ void on_initialize(fe::context& context, fe::dll_api::module_context& self) {
 static size_t working_time{};
 
 void on_update(fe::context& context, fe::dll_api::module_context& self) {
-    auto& platform_system       = context.get<fe::IPlatformSystem>(fe::make_hash("main"));
-    auto& primary_window_handle = context.get<fe::WindowHandle>(fe::make_hash("main"));
-    auto& main_event_bus        = context.get<fe::EventBus>(fe::make_hash("main"));
-    auto& renderer              = context.get<fe::IRenderer>(fe::make_hash("main"));
-    auto& render_graph          = context.get<fe::RenderGraph>(fe::make_hash("main"));
-    auto& registry              = context.get<entt::registry>(fe::make_hash("main"));
+    auto& platform_system       = context.get<fe::IPlatformSystem>();
+    auto& primary_window_handle = context.get<fe::WindowHandle>();
+    auto& main_event_bus        = context.get<fe::EventBus>();
+    auto& renderer              = context.get<fe::IRenderer>();
+    auto& render_graph          = context.get<fe::RenderGraph>();
+    auto& registry              = context.get<entt::registry>();
 
     auto& primary_window = *platform_system.getWindow(primary_window_handle);
 
@@ -363,6 +392,19 @@ void on_update(fe::context& context, fe::dll_api::module_context& self) {
 }
 
 void on_release(fe::context& context, fe::dll_api::module_context& self) {
+    auto& registry = context.get<entt::registry>();
+
+    for (auto [id, storage] : registry.storage()) {
+#define GAME_GENERATE_COMPONENTS_TYPE_IDS(COMPONENT_NAME)                 \
+    if (entt::type_id<game::components::COMPONENT_NAME>().hash() == id) { \
+        registry.reset(id);                                               \
+    }
+
+        GAME_COMPONENTS_LIST(GAME_GENERATE_COMPONENTS_TYPE_IDS)
+
+#undef GAME_GENERATE_COMPONENTS_TYPE_IDS
+    }
+
     fe::logging::info("dll unloaded\nit worked for %llu frames", working_time);
 }
 
