@@ -1,5 +1,10 @@
 # Forr-Engine Not now, but :
 
+# Added 28.11.2026
+- create an extension for the 'Forr-Editor'
+- provide 'set_system_enabled' and 'override_system'
+- create 'in-game' events
+
 # Added 21.11.2026
 - rename 'ForrPlayer' --> 'ForrEngine' ( not that necessary )
 - rename 'ForrGame' --> 'ForrGame-Example'

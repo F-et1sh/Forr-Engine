@@ -1,5 +1,18 @@
 ﻿# Forr-Engine Devlog
 
+## 27.11.2026
+### Goal
+    provide hot reload
+    create an extension for the 'Forr-Editor' ( moved to 'not-now-but.md' )
+    provide 'set_system_enabled' and 'override_system' for the dll API ( moved to 'not-now-but.md' )
+    create 'in-game' events ( moved to 'not-now-but.md' )
+
+### Done
+    temp directory logic provided
+
+### Problem
+    -
+
 ## 26.11.2026
 ### Goal
     solve the 'entt::registry' problem : try adding a custom component in dll

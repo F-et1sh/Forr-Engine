@@ -54,7 +54,9 @@ namespace fe::dll_api {
     };
     using library_handle = std::unique_ptr<void, deleter>;
 
-    // @brief RAII class to track loaded dll library's interactions with the engine
+    // @brief RAII class to track loaded dll library's interactions with the engine;
+    // adding a render pass to the render graph, for example. this class guarantees that 'fe::RenderGraph::RemovePass()'
+    // will called before the library unloaded
     class module_context {
     public:
         module_context() = default;
